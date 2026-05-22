@@ -1055,6 +1055,8 @@ class TuningMethod(_common.CaseInSensitiveEnum):
   """Preference optimization tuning."""
   DISTILLATION = 'DISTILLATION'
   """Distillation tuning."""
+  REINFORCEMENT_TUNING = 'REINFORCEMENT_TUNING'
+  """Reinforcement tuning."""
 
 
 class FileState(_common.CaseInSensitiveEnum):
@@ -14257,6 +14259,102 @@ TuningValidationDatasetOrDict = Union[
 ]
 
 
+class ReinforcementTuningAutoraterScorer(_common.BaseModel):
+  """Reinforcement tuning autorater scorer."""
+
+  autorater_config: Optional[AutoraterConfig] = Field(
+      default=None, description="""Autorater config for evaluation."""
+  )
+
+
+class ReinforcementTuningAutoraterScorerDict(TypedDict, total=False):
+  """Reinforcement tuning autorater scorer."""
+
+  autorater_config: Optional[AutoraterConfigDict]
+  """Autorater config for evaluation."""
+
+
+ReinforcementTuningAutoraterScorerOrDict = Union[
+    ReinforcementTuningAutoraterScorer, ReinforcementTuningAutoraterScorerDict
+]
+
+
+class SingleReinforcementTuningRewardConfig(_common.BaseModel):
+  """Single reinforcement tuning reward config."""
+
+  autorater_scorer: Optional[ReinforcementTuningAutoraterScorer] = Field(
+      default=None, description=""""""
+  )
+
+
+class SingleReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Single reinforcement tuning reward config."""
+
+  autorater_scorer: Optional[ReinforcementTuningAutoraterScorerDict]
+  """"""
+
+
+SingleReinforcementTuningRewardConfigOrDict = Union[
+    SingleReinforcementTuningRewardConfig,
+    SingleReinforcementTuningRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
+    _common.BaseModel
+):
+  """Composite reinforcement tuning reward config weighted reward config."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None, description=""""""
+  )
+  weight: Optional[float] = Field(
+      default=None,
+      description="""How much this single reward contributes to the total overall reward.""",
+  )
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict(
+    TypedDict, total=False
+):
+  """Composite reinforcement tuning reward config weighted reward config."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """"""
+
+  weight: Optional[float]
+  """How much this single reward contributes to the total overall reward."""
+
+
+CompositeReinforcementTuningRewardConfigWeightedRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfig,
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfig(_common.BaseModel):
+  """Composite reinforcement tuning reward config."""
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfig]
+  ] = Field(default=None, description="""""")
+
+
+class CompositeReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Composite reinforcement tuning reward config."""
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict]
+  ]
+  """"""
+
+
+CompositeReinforcementTuningRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfig,
+    CompositeReinforcementTuningRewardConfigDict,
+]
+
+
 class CreateTuningJobConfig(_common.BaseModel):
   """Fine-tuning job creation request - optional fields."""
 
@@ -14265,7 +14363,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   method: Optional[TuningMethod] = Field(
       default=None,
-      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used.""",
+      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION or REINFORCEMENT_TUNING). If not set, the default method (SFT) will be used.""",
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
@@ -14343,6 +14441,32 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key.""",
   )
+  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None,
+      description="""Reward function configuration for reinforcement tuning. Reinforcement tuning only.""",
+  )
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfig
+  ] = Field(
+      default=None,
+      description="""Composite reward function configuration for reinforcement tuning. Reinforcement tuning only.""",
+  )
+  samples_per_prompt: Optional[int] = Field(
+      default=None,
+      description="""Number of different responses to generate per prompt during tuning. Reinforcement tuning only.""",
+  )
+  evaluate_interval: Optional[int] = Field(
+      default=None,
+      description="""How often at steps to evaluate the tuning job during training. Reinforcement tuning only.""",
+  )
+  checkpoint_interval: Optional[int] = Field(
+      default=None,
+      description="""How often at steps to save checkpoints during training. Reinforcement tuning only.""",
+  )
+  max_output_tokens: Optional[int] = Field(
+      default=None,
+      description="""The maximum number of tokens to generate per prompt. Reinforcement tuning only.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -14352,7 +14476,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   method: Optional[TuningMethod]
-  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used."""
+  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION or REINFORCEMENT_TUNING). If not set, the default method (SFT) will be used."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
   """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -14413,6 +14537,26 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   encryption_spec: Optional[EncryptionSpecDict]
   """The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """Reward function configuration for reinforcement tuning. Reinforcement tuning only."""
+
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfigDict
+  ]
+  """Composite reward function configuration for reinforcement tuning. Reinforcement tuning only."""
+
+  samples_per_prompt: Optional[int]
+  """Number of different responses to generate per prompt during tuning. Reinforcement tuning only."""
+
+  evaluate_interval: Optional[int]
+  """How often at steps to evaluate the tuning job during training. Reinforcement tuning only."""
+
+  checkpoint_interval: Optional[int]
+  """How often at steps to save checkpoints during training. Reinforcement tuning only."""
+
+  max_output_tokens: Optional[int]
+  """The maximum number of tokens to generate per prompt. Reinforcement tuning only."""
 
 
 CreateTuningJobConfigOrDict = Union[
