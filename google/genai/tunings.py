@@ -137,6 +137,48 @@ def _CancelTuningJobResponse_from_vertex(
   return to_object
 
 
+def _CompositeReinforcementTuningRewardConfigWeightedRewardConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['reward_config']) is not None:
+    setv(
+        to_object,
+        ['rewardConfig'],
+        _SingleReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['reward_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['weight']) is not None:
+    setv(to_object, ['weight'], getv(from_object, ['weight']))
+
+  return to_object
+
+
+def _CompositeReinforcementTuningRewardConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weighted_reward_configs']) is not None:
+    setv(
+        to_object,
+        ['weightedRewardConfigs'],
+        [
+            _CompositeReinforcementTuningRewardConfigWeightedRewardConfig_to_vertex(
+                item, to_object, root_object
+            )
+            for item in getv(from_object, ['weighted_reward_configs'])
+        ],
+    )
+
+  return to_object
+
+
 def _CreateTuningJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -269,6 +311,42 @@ def _CreateTuningJobConfig_to_mldev(
         ' Platform mode, not in Gemini Developer API mode.'
     )
 
+  if getv(from_object, ['reward_config']) is not None:
+    raise ValueError(
+        'reward_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['composite_reward_config']) is not None:
+    raise ValueError(
+        'composite_reward_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['samples_per_prompt']) is not None:
+    raise ValueError(
+        'samples_per_prompt parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['evaluate_interval']) is not None:
+    raise ValueError(
+        'evaluate_interval parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['checkpoint_interval']) is not None:
+    raise ValueError(
+        'checkpoint_interval parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    raise ValueError(
+        'max_output_tokens parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
   return to_object
 
 
@@ -309,6 +387,15 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['validation_dataset']), to_object, root_object
           ),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['validation_dataset']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec'],
+          _TuningValidationDataset_to_vertex(
+              getv(from_object, ['validation_dataset']), to_object, root_object
+          ),
+      )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
     setv(
@@ -344,6 +431,13 @@ def _CreateTuningJobConfig_to_vertex(
           ['distillationSpec', 'hyperParameters', 'epochCount'],
           getv(from_object, ['epoch_count']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['epoch_count']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'hyperParameters', 'epochCount'],
+          getv(from_object, ['epoch_count']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -371,6 +465,17 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['distillationSpec', 'hyperParameters', 'learningRateMultiplier'],
+          getv(from_object, ['learning_rate_multiplier']),
+      )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['learning_rate_multiplier']) is not None:
+      setv(
+          parent_object,
+          [
+              'reinforcementTuningSpec',
+              'hyperParameters',
+              'learningRateMultiplier',
+          ],
           getv(from_object, ['learning_rate_multiplier']),
       )
 
@@ -423,6 +528,13 @@ def _CreateTuningJobConfig_to_vertex(
           ['distillationSpec', 'hyperParameters', 'adapterSize'],
           getv(from_object, ['adapter_size']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['adapter_size']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'hyperParameters', 'adapterSize'],
+          getv(from_object, ['adapter_size']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -464,6 +576,13 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['distillationSpec', 'hyperParameters', 'batchSize'],
+          getv(from_object, ['batch_size']),
+      )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['batch_size']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'hyperParameters', 'batchSize'],
           getv(from_object, ['batch_size']),
       )
 
@@ -557,6 +676,54 @@ def _CreateTuningJobConfig_to_vertex(
         getv(from_object, ['encryption_spec']),
     )
 
+  if getv(from_object, ['reward_config']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'singleRewardConfig'],
+        _SingleReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['reward_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['composite_reward_config']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'compositeRewardConfig'],
+        _CompositeReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['composite_reward_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
+  if getv(from_object, ['samples_per_prompt']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'samplesPerPrompt'],
+        getv(from_object, ['samples_per_prompt']),
+    )
+
+  if getv(from_object, ['evaluate_interval']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'evaluateInterval'],
+        getv(from_object, ['evaluate_interval']),
+    )
+
+  if getv(from_object, ['checkpoint_interval']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'checkpointInterval'],
+        getv(from_object, ['checkpoint_interval']),
+    )
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'maxOutputTokens'],
+        getv(from_object, ['max_output_tokens']),
+    )
+
   return to_object
 
 
@@ -606,6 +773,155 @@ def _CreateTuningJobParametersPrivate_to_vertex(
     _CreateTuningJobConfig_to_vertex(
         getv(from_object, ['config']), to_object, root_object
     )
+
+  return to_object
+
+
+def _DistillationHyperParameters_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['adapterSize']) is not None:
+    setv(to_object, ['adapter_size'], getv(from_object, ['adapterSize']))
+
+  if getv(from_object, ['epochCount']) is not None:
+    setv(to_object, ['epoch_count'], getv(from_object, ['epochCount']))
+
+  if getv(from_object, ['learningRateMultiplier']) is not None:
+    setv(
+        to_object,
+        ['learning_rate_multiplier'],
+        getv(from_object, ['learningRateMultiplier']),
+    )
+
+  if getv(from_object, ['generationConfig']) is not None:
+    setv(
+        to_object,
+        ['generation_config'],
+        _GenerationConfig_from_vertex(
+            getv(from_object, ['generationConfig']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['learningRate']) is not None:
+    setv(to_object, ['learning_rate'], getv(from_object, ['learningRate']))
+
+  if getv(from_object, ['batchSize']) is not None:
+    setv(to_object, ['batch_size'], getv(from_object, ['batchSize']))
+
+  return to_object
+
+
+def _DistillationSamplingSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['baseTeacherModel']) is not None:
+    setv(
+        to_object,
+        ['base_teacher_model'],
+        getv(from_object, ['baseTeacherModel']),
+    )
+
+  if getv(from_object, ['tunedTeacherModelSource']) is not None:
+    setv(
+        to_object,
+        ['tuned_teacher_model_source'],
+        getv(from_object, ['tunedTeacherModelSource']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['promptDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['prompt_dataset_uri'],
+        getv(from_object, ['promptDatasetUri']),
+    )
+
+  if getv(from_object, ['hyperparameters']) is not None:
+    setv(
+        to_object,
+        ['hyperparameters'],
+        _DistillationHyperParameters_from_vertex(
+            getv(from_object, ['hyperparameters']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _DistillationSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['promptDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['prompt_dataset_uri'],
+        getv(from_object, ['promptDatasetUri']),
+    )
+
+  if getv(from_object, ['baseTeacherModel']) is not None:
+    setv(
+        to_object,
+        ['base_teacher_model'],
+        getv(from_object, ['baseTeacherModel']),
+    )
+
+  if getv(from_object, ['hyperParameters']) is not None:
+    setv(
+        to_object,
+        ['hyper_parameters'],
+        _DistillationHyperParameters_from_vertex(
+            getv(from_object, ['hyperParameters']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['pipelineRootDirectory']) is not None:
+    setv(
+        to_object,
+        ['pipeline_root_directory'],
+        getv(from_object, ['pipelineRootDirectory']),
+    )
+
+  if getv(from_object, ['studentModel']) is not None:
+    setv(to_object, ['student_model'], getv(from_object, ['studentModel']))
+
+  if getv(from_object, ['trainingDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['training_dataset_uri'],
+        getv(from_object, ['trainingDatasetUri']),
+    )
+
+  if getv(from_object, ['tunedTeacherModelSource']) is not None:
+    setv(
+        to_object,
+        ['tuned_teacher_model_source'],
+        getv(from_object, ['tunedTeacherModelSource']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['tuningMode']) is not None:
+    setv(to_object, ['tuning_mode'], getv(from_object, ['tuningMode']))
 
   return to_object
 
@@ -1019,6 +1335,24 @@ def _MultiSpeakerVoiceConfig_to_vertex(
   return to_object
 
 
+def _ReinforcementTuningAutoraterScorer_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['autorater_config']) is not None:
+    setv(
+        to_object,
+        ['autoraterConfig'],
+        _AutoraterConfig_to_vertex(
+            getv(from_object, ['autorater_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
 def _ReplicatedVoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1045,6 +1379,24 @@ def _ReplicatedVoiceConfig_to_vertex(
     raise ValueError(
         'voice_consent_signature parameter is only supported in Gemini'
         ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
+def _SingleReinforcementTuningRewardConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['autorater_scorer']) is not None:
+    setv(
+        to_object,
+        ['autoraterScorer'],
+        _ReinforcementTuningAutoraterScorer_to_vertex(
+            getv(from_object, ['autorater_scorer']), to_object, root_object
+        ),
     )
 
   return to_object
@@ -1177,6 +1529,13 @@ def _TuningDataset_to_vertex(
           ['distillationSpec', 'promptDatasetUri'],
           getv(from_object, ['gcs_uri']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['gcs_uri']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'trainingDatasetUri'],
+          getv(from_object, ['gcs_uri']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -1200,6 +1559,13 @@ def _TuningDataset_to_vertex(
       setv(
           parent_object,
           ['distillationSpec', 'promptDatasetUri'],
+          getv(from_object, ['vertex_dataset_resource']),
+      )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['vertex_dataset_resource']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'trainingDatasetUri'],
           getv(from_object, ['vertex_dataset_resource']),
       )
 
@@ -1337,7 +1703,9 @@ def _TuningJob_from_vertex(
     setv(
         to_object,
         ['distillation_spec'],
-        getv(from_object, ['distillationSpec']),
+        _DistillationSpec_from_vertex(
+            getv(from_object, ['distillationSpec']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['tuningDataStats']) is not None:
@@ -1411,18 +1779,29 @@ def _TuningJob_from_vertex(
   if getv(from_object, ['veoTuningSpec']) is not None:
     setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
-  if getv(from_object, ['distillationSamplingSpec']) is not None:
-    setv(
-        to_object,
-        ['distillation_sampling_spec'],
-        getv(from_object, ['distillationSamplingSpec']),
-    )
-
   if getv(from_object, ['tuningJobMetadata']) is not None:
     setv(
         to_object,
         ['tuning_job_metadata'],
         getv(from_object, ['tuningJobMetadata']),
+    )
+
+  if getv(from_object, ['veoLoraTuningSpec']) is not None:
+    setv(
+        to_object,
+        ['veo_lora_tuning_spec'],
+        getv(from_object, ['veoLoraTuningSpec']),
+    )
+
+  if getv(from_object, ['distillationSamplingSpec']) is not None:
+    setv(
+        to_object,
+        ['distillation_sampling_spec'],
+        _DistillationSamplingSpec_from_vertex(
+            getv(from_object, ['distillationSamplingSpec']),
+            to_object,
+            root_object,
+        ),
     )
 
   return to_object
