@@ -36,6 +36,9 @@ class DeepResearchAgentConfig(BaseModel):
     next turn.
     """
 
+    enable_bigquery_tool: Optional[bool] = None
+    """Enables bigquery tool for the Deep Research agent."""
+
     thinking_summaries: Optional[Literal["auto", "none"]] = None
     """Whether to include thought summaries in the response."""
 

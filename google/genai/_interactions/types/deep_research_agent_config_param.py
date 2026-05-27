@@ -35,6 +35,9 @@ class DeepResearchAgentConfigParam(TypedDict, total=False):
     next turn.
     """
 
+    enable_bigquery_tool: bool
+    """Enables bigquery tool for the Deep Research agent."""
+
     thinking_summaries: Literal["auto", "none"]
     """Whether to include thought summaries in the response."""
 
