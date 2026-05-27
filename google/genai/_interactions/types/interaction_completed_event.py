@@ -18,10 +18,18 @@
 from typing import Optional
 from typing_extensions import Literal
 
+from .usage import Usage
 from .._models import BaseModel
 from .interaction import Interaction
 
-__all__ = ["InteractionCompletedEvent"]
+__all__ = ["InteractionCompletedEvent", "Metadata"]
+
+
+class Metadata(BaseModel):
+    """Optional metadata accompanying ANY streamed event."""
+
+    usage: Optional[Usage] = None
+    """Statistics on the interaction request's token usage."""
 
 
 class InteractionCompletedEvent(BaseModel):
@@ -38,3 +46,6 @@ class InteractionCompletedEvent(BaseModel):
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
+
+    metadata: Optional[Metadata] = None
+    """Optional metadata accompanying ANY streamed event."""
