@@ -23,14 +23,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
 
-def _Environment_to_vertex_enum_validate(enum_value: Any) -> None:
-  if enum_value in set(['ENVIRONMENT_MOBILE', 'ENVIRONMENT_DESKTOP']):
-    raise ValueError(
-        f'{enum_value} enum value is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-
 def _AudioTranscriptionConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -127,32 +119,6 @@ def _CodeExecutionResult_to_vertex(
     raise ValueError(
         'id parameter is only supported in Gemini Developer API mode, not in'
         ' Gemini Enterprise Agent Platform mode.'
-    )
-
-  return to_object
-
-
-def _ComputerUse_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    _Environment_to_vertex_enum_validate(getv(from_object, ['environment']))
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
-    raise ValueError(
-        'enable_prompt_injection_detection parameter is only supported in'
-        ' Gemini Developer API mode, not in Gemini Enterprise Agent Platform'
-        ' mode.'
     )
 
   return to_object
@@ -1926,11 +1892,7 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ComputerUse_to_vertex(getv(from_object, ['computer_use']), to_object),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
