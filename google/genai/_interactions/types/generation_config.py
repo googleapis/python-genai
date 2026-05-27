@@ -33,11 +33,25 @@ ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfig]
 class GenerationConfig(BaseModel):
     """Configuration parameters for model interactions."""
 
+    frequency_penalty: Optional[float] = None
+    """
+    Penalizes tokens based on their frequency in the generated text. A positive
+    value helps to reduce the repetition of words and phrases. Valid values can
+    range from [-2.0, 2.0].
+    """
+
     image_config: Optional[ImageConfig] = None
     """Configuration for image interaction."""
 
     max_output_tokens: Optional[int] = None
     """The maximum number of tokens to include in the response."""
+
+    presence_penalty: Optional[float] = None
+    """Penalizes tokens that have already appeared in the generated text.
+
+    A positive value encourages the model to generate more diverse and less
+    repetitive text. Valid values can range from [-2.0, 2.0].
+    """
 
     seed: Optional[int] = None
     """Seed used in decoding for reproducibility."""

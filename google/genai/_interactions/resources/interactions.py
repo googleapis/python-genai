@@ -80,6 +80,7 @@ class InteractionsResource(SyncAPIResource):
         input: interaction_create_params.Input,
         model: ModelParam,
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -108,6 +109,12 @@ class InteractionsResource(SyncAPIResource):
           model: The name of the `Model` used for generating the interaction.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          cached_content:
+              The name of the cached content used as context to serve the prediction. Note:
+              only used in explicit caching, where users can have control over caching (e.g.
+              what content to cache) and enjoy guaranteed cost savings. Format:
+              `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
 
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
@@ -155,6 +162,7 @@ class InteractionsResource(SyncAPIResource):
         model: ModelParam,
         stream: Literal[True],
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -184,6 +192,12 @@ class InteractionsResource(SyncAPIResource):
           stream: Input only. Whether the interaction will be streamed.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          cached_content:
+              The name of the cached content used as context to serve the prediction. Note:
+              only used in explicit caching, where users can have control over caching (e.g.
+              what content to cache) and enjoy guaranteed cost savings. Format:
+              `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
 
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
@@ -391,6 +405,7 @@ class InteractionsResource(SyncAPIResource):
         model: ModelParam,
         stream: bool,
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -420,6 +435,12 @@ class InteractionsResource(SyncAPIResource):
           stream: Input only. Whether the interaction will be streamed.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          cached_content:
+              The name of the cached content used as context to serve the prediction. Note:
+              only used in explicit caching, where users can have control over caching (e.g.
+              what content to cache) and enjoy guaranteed cost savings. Format:
+              `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
 
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
@@ -464,6 +485,7 @@ class InteractionsResource(SyncAPIResource):
         input: interaction_create_params.Input,
         model: ModelParam | Omit = omit,
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -519,6 +541,7 @@ class InteractionsResource(SyncAPIResource):
                     "input": input,
                     "model": model,
                     "background": background,
+                    "cached_content": cached_content,
                     "environment": environment,
                     "generation_config": generation_config,
                     "previous_interaction_id": previous_interaction_id,
@@ -820,6 +843,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         input: interaction_create_params.Input,
         model: ModelParam,
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -848,6 +872,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
           model: The name of the `Model` used for generating the interaction.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          cached_content:
+              The name of the cached content used as context to serve the prediction. Note:
+              only used in explicit caching, where users can have control over caching (e.g.
+              what content to cache) and enjoy guaranteed cost savings. Format:
+              `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
 
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
@@ -895,6 +925,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         model: ModelParam,
         stream: Literal[True],
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -924,6 +955,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
           stream: Input only. Whether the interaction will be streamed.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          cached_content:
+              The name of the cached content used as context to serve the prediction. Note:
+              only used in explicit caching, where users can have control over caching (e.g.
+              what content to cache) and enjoy guaranteed cost savings. Format:
+              `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
 
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
@@ -1131,6 +1168,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         model: ModelParam,
         stream: bool,
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -1160,6 +1198,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
           stream: Input only. Whether the interaction will be streamed.
 
           background: Input only. Whether to run the model interaction in the background.
+
+          cached_content:
+              The name of the cached content used as context to serve the prediction. Note:
+              only used in explicit caching, where users can have control over caching (e.g.
+              what content to cache) and enjoy guaranteed cost savings. Format:
+              `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
 
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
@@ -1204,6 +1248,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         input: interaction_create_params.Input,
         model: ModelParam | Omit = omit,
         background: bool | Omit = omit,
+        cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
         previous_interaction_id: str | Omit = omit,
@@ -1255,6 +1300,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "input": input,
                     "model": model,
                     "background": background,
+                    "cached_content": cached_content,
                     "environment": environment,
                     "generation_config": generation_config,
                     "previous_interaction_id": previous_interaction_id,

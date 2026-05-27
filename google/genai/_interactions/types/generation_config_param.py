@@ -35,11 +35,25 @@ ToolChoice: TypeAlias = Union[ToolChoiceType, ToolChoiceConfigParam]
 class GenerationConfigParam(TypedDict, total=False):
     """Configuration parameters for model interactions."""
 
+    frequency_penalty: float
+    """
+    Penalizes tokens based on their frequency in the generated text. A positive
+    value helps to reduce the repetition of words and phrases. Valid values can
+    range from [-2.0, 2.0].
+    """
+
     image_config: ImageConfigParam
     """Configuration for image interaction."""
 
     max_output_tokens: int
     """The maximum number of tokens to include in the response."""
+
+    presence_penalty: float
+    """Penalizes tokens that have already appeared in the generated text.
+
+    A positive value encourages the model to generate more diverse and less
+    repetitive text. Valid values can range from [-2.0, 2.0].
+    """
 
     seed: int
     """Seed used in decoding for reproducibility."""
