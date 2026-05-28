@@ -246,16 +246,6 @@ def _BatchJobSource_from_mldev(
   if getv(from_object, ['fileName']) is not None:
     setv(to_object, ['file_name'], getv(from_object, ['fileName']))
 
-  if getv(from_object, ['requests', 'requests']) is not None:
-    setv(
-        to_object,
-        ['inlined_requests'],
-        [
-            _InlinedRequest_from_mldev(item, to_object)
-            for item in getv(from_object, ['requests', 'requests'])
-        ],
-    )
-
   return to_object
 
 
