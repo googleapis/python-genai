@@ -270,7 +270,7 @@ def _format_data(data: object, format_: PropertyFormat, format_template: str | N
                 binary = binary.encode()
 
         if not isinstance(binary, bytes):
-            raise RuntimeError(f"Could not read bytes from {data}; Received {type(binary)}")
+            raise RuntimeError(f"Could not read bytes from {data!r}; Received {type(binary)}")
 
         return base64.b64encode(binary).decode("ascii")
 
@@ -438,7 +438,7 @@ async def _async_format_data(data: object, format_: PropertyFormat, format_templ
                 binary = binary.encode()
 
         if not isinstance(binary, bytes):
-            raise RuntimeError(f"Could not read bytes from {data}; Received {type(binary)}")
+            raise RuntimeError(f"Could not read bytes from {data!r}; Received {type(binary)}")
 
         return base64.b64encode(binary).decode("ascii")
 

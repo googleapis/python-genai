@@ -250,7 +250,7 @@ class HttpResponse:
           dict[str, str],
           httpx.Headers,
           'CIMultiDictProxy[str]',
-          CaseInsensitiveDict,
+          CaseInsensitiveDict[str],
       ],
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
@@ -351,10 +351,14 @@ class HttpResponse:
     chunk = ''
     balance = 0
     data_buffer: list[str] = []
+    response_stream: Iterator[str]
     if isinstance(self.response_stream, httpx.Response):
       response_stream = self.response_stream.iter_lines()
     else:
-      response_stream = self.response_stream.iter_lines(decode_unicode=True)
+      response_stream = (
+          line.decode('utf-8') if isinstance(line, bytes) else line
+          for line in self.response_stream.iter_lines(decode_unicode=True)
+      )
     for line in response_stream:
       if not line:
         if data_buffer:
