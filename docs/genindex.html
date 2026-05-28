@@ -335,6 +335,10 @@
 </li>
           <li><a href="genai.html#genai.types.SupervisedHyperParametersDict.adapter_size">(genai.types.SupervisedHyperParametersDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.VeoHyperParameters.adapter_size">(genai.types.VeoHyperParameters attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.VeoHyperParametersDict.adapter_size">(genai.types.VeoHyperParametersDict attribute)</a>
+</li>
         </ul></li>
         <li><a href="genai.html#genai.types.AdapterSize.ADAPTER_SIZE_EIGHT">ADAPTER_SIZE_EIGHT (genai.types.AdapterSize attribute)</a>
 </li>
@@ -378,6 +382,12 @@
           <li><a href="genai.html#genai.types.Schema.additional_properties">(genai.types.Schema attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.SchemaDict.additional_properties">(genai.types.SchemaDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.client.AsyncClient.agents">agents (genai.client.AsyncClient property)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.client.Client.agents">(genai.client.Client property)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.Metric.aggregate_summary_fn">aggregate_summary_fn (genai.types.Metric attribute)</a>
@@ -751,11 +761,21 @@
         <ul>
           <li><a href="genai.html#genai.types.EvaluationConfigDict.autorater_config">(genai.types.EvaluationConfigDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.ReinforcementTuningAutoraterScorer.autorater_config">(genai.types.ReinforcementTuningAutoraterScorer attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.ReinforcementTuningAutoraterScorerDict.autorater_config">(genai.types.ReinforcementTuningAutoraterScorerDict attribute)</a>
+</li>
         </ul></li>
         <li><a href="genai.html#genai.types.AutoraterConfig.autorater_model">autorater_model (genai.types.AutoraterConfig attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.AutoraterConfigDict.autorater_model">(genai.types.AutoraterConfigDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.SingleReinforcementTuningRewardConfig.autorater_scorer">autorater_scorer (genai.types.SingleReinforcementTuningRewardConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.SingleReinforcementTuningRewardConfigDict.autorater_scorer">(genai.types.SingleReinforcementTuningRewardConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.AutoraterConfigDict">AutoraterConfigDict (class in genai.types)</a>
@@ -1282,6 +1302,12 @@
           <li><a href="genai.html#genai.types.TunedModelCheckpointDict.checkpoint_id">(genai.types.TunedModelCheckpointDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.checkpoint_interval">checkpoint_interval (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.checkpoint_interval">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.CheckpointDict">CheckpointDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.Model.checkpoints">checkpoints (genai.types.Model attribute)</a>
@@ -1298,6 +1324,12 @@
 
         <ul>
           <li><a href="genai.html#genai.types.LogprobsResultDict.chosen_candidates">(genai.types.LogprobsResultDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.RagChunk.chunk_id">chunk_id (genai.types.RagChunk attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.RagChunkDict.chunk_id">(genai.types.RagChunkDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.ImportFileConfig.chunking_config">chunking_config (genai.types.ImportFileConfig attribute)</a>
@@ -1432,6 +1464,16 @@
         </ul></li>
         <li><a href="genai.html#genai.types.CompletionStatsDict">CompletionStatsDict (class in genai.types)</a>
 </li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.composite_reward_config">composite_reward_config (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.composite_reward_config">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigDict">CompositeReinforcementTuningRewardConfigDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict">CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.GenerateVideosConfig.compression_quality">compression_quality (genai.types.GenerateVideosConfig attribute)</a>
 
         <ul>
@@ -1486,6 +1528,8 @@
           <li><a href="genai.html#genai.types.SegmentImageConfigDict.confidence_threshold">(genai.types.SegmentImageConfigDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.ControlReferenceImage.config">config (genai.types.ControlReferenceImage attribute)</a>
 
         <ul>
@@ -1536,8 +1580,6 @@
           <li><a href="genai.html#genai.types.UpscaleImageParametersDict.config">(genai.types.UpscaleImageParametersDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.live.AsyncLive.connect">connect() (genai.live.AsyncLive method)</a>
 </li>
         <li><a href="genai.html#genai.types.ReplicatedVoiceConfig.consent_audio">consent_audio (genai.types.ReplicatedVoiceConfig attribute)</a>
@@ -1760,6 +1802,12 @@
 
         <ul>
           <li><a href="genai.html#genai.types.UnifiedMetricDict.custom_code_execution_spec">(genai.types.UnifiedMetricDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.EvaluationParserConfig.custom_code_parser_config">custom_code_parser_config (genai.types.EvaluationParserConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.EvaluationParserConfigDict.custom_code_parser_config">(genai.types.EvaluationParserConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.ToolParallelAiSearch.custom_configs">custom_configs (genai.types.ToolParallelAiSearch attribute)</a>
@@ -2440,6 +2488,12 @@
           <li><a href="genai.html#genai.types.GenerationConfigDict.enable_enhanced_civic_answers">(genai.types.GenerationConfigDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.ComputerUse.enable_prompt_injection_detection">enable_prompt_injection_detection (genai.types.ComputerUse attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.ComputerUseDict.enable_prompt_injection_detection">(genai.types.ComputerUseDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.GoogleMaps.enable_widget">enable_widget (genai.types.GoogleMaps attribute)</a>
 
         <ul>
@@ -2590,9 +2644,13 @@
           <li><a href="genai.html#genai.types.ComputerUseDict.environment">(genai.types.ComputerUseDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.Environment.ENVIRONMENT_BROWSER">ENVIRONMENT_BROWSER (genai.types.Environment attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.Environment.ENVIRONMENT_DESKTOP">ENVIRONMENT_DESKTOP (genai.types.Environment attribute)</a>
+</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="genai.html#genai.types.Environment.ENVIRONMENT_BROWSER">ENVIRONMENT_BROWSER (genai.types.Environment attribute)</a>
+        <li><a href="genai.html#genai.types.Environment.ENVIRONMENT_MOBILE">ENVIRONMENT_MOBILE (genai.types.Environment attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.Environment.ENVIRONMENT_UNSPECIFIED">ENVIRONMENT_UNSPECIFIED (genai.types.Environment attribute)</a>
 </li>
@@ -2682,6 +2740,12 @@
           <li><a href="genai.html#genai.types.TuningJobDict.evaluate_dataset_runs">(genai.types.TuningJobDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.evaluate_interval">evaluate_interval (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.evaluate_interval">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.EvaluateDatasetResponseDict">EvaluateDatasetResponseDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.EvaluateDatasetRunDict">EvaluateDatasetRunDict (class in genai.types)</a>
@@ -2711,6 +2775,10 @@
         <li><a href="genai.html#genai.types.EvaluationConfigDict">EvaluationConfigDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.EvaluationDatasetDict">EvaluationDatasetDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.EvaluationParserConfigCustomCodeParserConfigDict">EvaluationParserConfigCustomCodeParserConfigDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.EvaluationParserConfigDict">EvaluationParserConfigDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.ComputationBasedMetricType.EXACT_MATCH">EXACT_MATCH (genai.types.ComputationBasedMetricType attribute)</a>
 </li>
@@ -2886,6 +2954,8 @@
           <li><a href="genai.html#genai.types.FileSearchStoreDict.failed_documents_count">(genai.types.FileSearchStoreDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.TuningSpeed.FAST">FAST (genai.types.TuningSpeed attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.ModelSelectionConfig.feature_selection_preference">feature_selection_preference (genai.types.ModelSelectionConfig attribute)</a>
 
         <ul>
@@ -2906,6 +2976,12 @@
           <li><a href="genai.html#genai.types.Part.file_data">(genai.types.Part attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.PartDict.file_data">(genai.types.PartDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.RagChunk.file_id">file_id (genai.types.RagChunk attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.RagChunkDict.file_id">(genai.types.RagChunkDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.BatchJobDestination.file_name">file_name (genai.types.BatchJobDestination attribute)</a>
@@ -3052,10 +3128,10 @@
           <li><a href="genai.html#genai.types.TranscriptionDict.finished">(genai.types.TranscriptionDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.FinishReason">FinishReason (class in genai.types)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="genai.html#genai.types.FinishReason">FinishReason (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.RagChunkPageSpan.first_page">first_page (genai.types.RagChunkPageSpan attribute)</a>
 
         <ul>
@@ -3502,14 +3578,14 @@
 </li>
         <li><a href="genai.html#genai.types.GenerateVideosSourceDict">GenerateVideosSourceDict (class in genai.types)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.LiveServerContent.generation_complete">generation_complete (genai.types.LiveServerContent attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.LiveServerContentDict.generation_complete">(genai.types.LiveServerContentDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.AutoraterConfig.generation_config">generation_config (genai.types.AutoraterConfig attribute)</a>
 
         <ul>
@@ -3518,6 +3594,10 @@
           <li><a href="genai.html#genai.types.CountTokensConfig.generation_config">(genai.types.CountTokensConfig attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.CountTokensConfigDict.generation_config">(genai.types.CountTokensConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationHyperParameters.generation_config">(genai.types.DistillationHyperParameters attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationHyperParametersDict.generation_config">(genai.types.DistillationHyperParametersDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.LiveClientSetup.generation_config">(genai.types.LiveClientSetup attribute)</a>
 </li>
@@ -4127,9 +4207,19 @@
 </li>
           <li><a href="genai.html#genai.types.SupervisedTuningSpecDict.hyper_parameters">(genai.types.SupervisedTuningSpecDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpec.hyper_parameters">(genai.types.VeoLoraTuningSpec attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpecDict.hyper_parameters">(genai.types.VeoLoraTuningSpecDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.VeoTuningSpec.hyper_parameters">(genai.types.VeoTuningSpec attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.VeoTuningSpecDict.hyper_parameters">(genai.types.VeoTuningSpecDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.DistillationSamplingSpec.hyperparameters">hyperparameters (genai.types.DistillationSamplingSpec attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.DistillationSamplingSpecDict.hyperparameters">(genai.types.DistillationSamplingSpecDict attribute)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -4698,6 +4788,8 @@
           <li><a href="genai.html#genai.types.UpscaleImageConfigDict.labels">(genai.types.UpscaleImageConfigDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.VideoOrientation.LANDSCAPE">LANDSCAPE (genai.types.VideoOrientation attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.Language">Language (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.EditImageConfig.language">language (genai.types.EditImageConfig attribute)</a>
@@ -5126,9 +5218,13 @@
           <li><a href="genai.html#genai.types.SchemaDict.max_length">(genai.types.SchemaDict attribute)</a>
 </li>
         </ul></li>
-        <li><a href="genai.html#genai.types.GenerateContentConfig.max_output_tokens">max_output_tokens (genai.types.GenerateContentConfig attribute)</a>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.max_output_tokens">max_output_tokens (genai.types.CreateTuningJobConfig attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.max_output_tokens">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.GenerateContentConfig.max_output_tokens">(genai.types.GenerateContentConfig attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.GenerateContentConfigDict.max_output_tokens">(genai.types.GenerateContentConfigDict attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.GenerationConfig.max_output_tokens">(genai.types.GenerationConfig attribute)</a>
@@ -6421,6 +6517,12 @@
         </ul></li>
         <li><a href="genai.html#genai.types.GenerateContentResponse.parsed">parsed (genai.types.GenerateContentResponse attribute)</a>
 </li>
+        <li><a href="genai.html#genai.types.EvaluationParserConfigCustomCodeParserConfig.parsing_function">parsing_function (genai.types.EvaluationParserConfigCustomCodeParserConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.EvaluationParserConfigCustomCodeParserConfigDict.parsing_function">(genai.types.EvaluationParserConfigCustomCodeParserConfigDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.Segment.part_index">part_index (genai.types.Segment attribute)</a>
 
         <ul>
@@ -6588,6 +6690,8 @@
         <li><a href="genai.html#genai.types.PointwiseMetricResultDict">PointwiseMetricResultDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.PointwiseMetricSpecDict">PointwiseMetricSpecDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.VideoOrientation.PORTRAIT">PORTRAIT (genai.types.VideoOrientation attribute)</a>
 </li>
         <li><a href="genai.html#genai.types.GenerateImagesResponse.positive_prompt_safety_attributes">positive_prompt_safety_attributes (genai.types.GenerateImagesResponse attribute)</a>
 
@@ -6763,9 +6867,13 @@
         </ul></li>
         <li><a href="genai.html#genai.types.SegmentMode.PROMPT">PROMPT (genai.types.SegmentMode attribute)</a>
 </li>
-        <li><a href="genai.html#genai.types.DistillationSpec.prompt_dataset_uri">prompt_dataset_uri (genai.types.DistillationSpec attribute)</a>
+        <li><a href="genai.html#genai.types.DistillationSamplingSpec.prompt_dataset_uri">prompt_dataset_uri (genai.types.DistillationSamplingSpec attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.DistillationSamplingSpecDict.prompt_dataset_uri">(genai.types.DistillationSamplingSpecDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.DistillationSpec.prompt_dataset_uri">(genai.types.DistillationSpec attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.DistillationSpecDict.prompt_dataset_uri">(genai.types.DistillationSpecDict attribute)</a>
 </li>
         </ul></li>
@@ -7109,6 +7217,12 @@
 </li>
         <li><a href="genai.html#genai.types.RegisterFilesResponseDict">RegisterFilesResponseDict (class in genai.types)</a>
 </li>
+        <li><a href="genai.html#genai.types.TuningSpeed.REGULAR">REGULAR (genai.types.TuningSpeed attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.TuningMethod.REINFORCEMENT_TUNING">REINFORCEMENT_TUNING (genai.types.TuningMethod attribute)</a>
+</li>
+        <li><a href="genai.html#genai.types.ReinforcementTuningAutoraterScorerDict">ReinforcementTuningAutoraterScorerDict (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.GroundingChunkMapsPlaceAnswerSourcesReviewSnippet.relative_publish_time_description">relative_publish_time_description (genai.types.GroundingChunkMapsPlaceAnswerSourcesReviewSnippet attribute)</a>
 
         <ul>
@@ -7179,14 +7293,14 @@
           <li><a href="genai.html#genai.types.GenerateVideosConfigDict.resize_mode">(genai.types.GenerateVideosConfigDict attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.GenerateVideosConfig.resolution">resolution (genai.types.GenerateVideosConfig attribute)</a>
 
         <ul>
           <li><a href="genai.html#genai.types.GenerateVideosConfigDict.resolution">(genai.types.GenerateVideosConfigDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.ResourceScope">ResourceScope (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.FunctionDeclaration.response">response (genai.types.FunctionDeclaration attribute)</a>
@@ -7307,6 +7421,12 @@
         </ul></li>
         <li><a href="genai.html#genai.types.GenerateVideosOperation.result">result (genai.types.GenerateVideosOperation attribute)</a>
 </li>
+        <li><a href="genai.html#genai.types.LLMBasedMetricSpec.result_parser_config">result_parser_config (genai.types.LLMBasedMetricSpec attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.LLMBasedMetricSpecDict.result_parser_config">(genai.types.LLMBasedMetricSpecDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.LiveServerSessionResumptionUpdate.resumable">resumable (genai.types.LiveServerSessionResumptionUpdate attribute)</a>
 
         <ul>
@@ -7401,6 +7521,16 @@
 
         <ul>
           <li><a href="genai.html#genai.types.GroundingChunkMapsPlaceAnswerSourcesDict.review_snippets">(genai.types.GroundingChunkMapsPlaceAnswerSourcesDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfig.reward_config">reward_config (genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict.reward_config">(genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfig.reward_config">(genai.types.CreateTuningJobConfig attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.reward_config">(genai.types.CreateTuningJobConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.DatasetDistributionDistributionBucket.right">right (genai.types.DatasetDistributionDistributionBucket attribute)</a>
@@ -7567,6 +7697,12 @@
 </li>
         <li><a href="genai.html#genai.types.SafetySettingDict">SafetySettingDict (class in genai.types)</a>
 </li>
+        <li><a href="genai.html#genai.types.CreateTuningJobConfig.samples_per_prompt">samples_per_prompt (genai.types.CreateTuningJobConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CreateTuningJobConfigDict.samples_per_prompt">(genai.types.CreateTuningJobConfigDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.AutoraterConfig.sampling_count">sampling_count (genai.types.AutoraterConfig attribute)</a>
 
         <ul>
@@ -8040,6 +8176,8 @@
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.SingleEmbedContentResponseDict">SingleEmbedContentResponseDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.SingleReinforcementTuningRewardConfigDict">SingleReinforcementTuningRewardConfigDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.Document.size_bytes">size_bytes (genai.types.Document attribute)</a>
 
@@ -9058,6 +9196,10 @@
 </li>
           <li><a href="genai.html#genai.types.SupervisedTuningSpecDict.training_dataset_uri">(genai.types.SupervisedTuningSpecDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpec.training_dataset_uri">(genai.types.VeoLoraTuningSpec attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpecDict.training_dataset_uri">(genai.types.VeoLoraTuningSpecDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.VeoTuningSpec.training_dataset_uri">(genai.types.VeoTuningSpec attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.VeoTuningSpecDict.training_dataset_uri">(genai.types.VeoTuningSpecDict attribute)</a>
@@ -9223,6 +9365,14 @@
 </li>
         <li><a href="genai.html#genai.types.TuningMode.TUNING_MODE_UNSPECIFIED">TUNING_MODE_UNSPECIFIED (genai.types.TuningMode attribute)</a>
 </li>
+        <li><a href="genai.html#genai.types.VeoHyperParameters.tuning_speed">tuning_speed (genai.types.VeoHyperParameters attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.VeoHyperParametersDict.tuning_speed">(genai.types.VeoHyperParametersDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.TuningSpeed.TUNING_SPEED_UNSPECIFIED">TUNING_SPEED_UNSPECIFIED (genai.types.TuningSpeed attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.DatasetStats.tuning_step_count">tuning_step_count (genai.types.DatasetStats attribute)</a>
 
         <ul>
@@ -9277,6 +9427,8 @@
           <li><a href="genai.html#genai.client.Client.tunings">(genai.client.Client property)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.TuningSpeed">TuningSpeed (class in genai.types)</a>
+</li>
         <li><a href="genai.html#genai.types.TuningTask">TuningTask (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.TuningValidationDatasetDict">TuningValidationDatasetDict (class in genai.types)</a>
@@ -9700,6 +9852,10 @@
 </li>
           <li><a href="genai.html#genai.types.SupervisedTuningSpecDict.validation_dataset_uri">(genai.types.SupervisedTuningSpecDict attribute)</a>
 </li>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpec.validation_dataset_uri">(genai.types.VeoLoraTuningSpec attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpecDict.validation_dataset_uri">(genai.types.VeoLoraTuningSpecDict attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.VeoTuningSpec.validation_dataset_uri">(genai.types.VeoTuningSpec attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.VeoTuningSpecDict.validation_dataset_uri">(genai.types.VeoTuningSpecDict attribute)</a>
@@ -9737,6 +9893,12 @@
           <li><a href="genai.html#genai.types.VeoHyperParametersDict.veo_data_mixture_ratio">(genai.types.VeoHyperParametersDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.TuningJob.veo_lora_tuning_spec">veo_lora_tuning_spec (genai.types.TuningJob attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.TuningJobDict.veo_lora_tuning_spec">(genai.types.TuningJobDict attribute)</a>
+</li>
+        </ul></li>
         <li><a href="genai.html#genai.types.TuningJob.veo_tuning_spec">veo_tuning_spec (genai.types.TuningJob attribute)</a>
 
         <ul>
@@ -9744,6 +9906,8 @@
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.VeoHyperParametersDict">VeoHyperParametersDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.VeoLoraTuningSpecDict">VeoLoraTuningSpecDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.VeoTuningSpecDict">VeoTuningSpecDict (class in genai.types)</a>
 </li>
@@ -9793,14 +9957,14 @@
           <li><a href="genai.html#genai.types.RetrievalDict.vertex_rag_store">(genai.types.RetrievalDict attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.client.Client.vertexai">vertexai (genai.client.Client attribute)</a>
 
         <ul>
           <li><a href="genai.html#id0">(genai.client.Client property)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="genai.html#genai.types.VertexAISearchDataStoreSpecDict">VertexAISearchDataStoreSpecDict (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.VertexAISearchDict">VertexAISearchDict (class in genai.types)</a>
@@ -9863,6 +10027,14 @@
           <li><a href="genai.html#genai.types.PartDict.video_metadata">(genai.types.PartDict attribute)</a>
 </li>
         </ul></li>
+        <li><a href="genai.html#genai.types.VeoLoraTuningSpec.video_orientation">video_orientation (genai.types.VeoLoraTuningSpec attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.VeoLoraTuningSpecDict.video_orientation">(genai.types.VeoLoraTuningSpecDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.VideoOrientation.VIDEO_ORIENTATION_UNSPECIFIED">VIDEO_ORIENTATION_UNSPECIFIED (genai.types.VideoOrientation attribute)</a>
+</li>
         <li><a href="genai.html#genai.types.VideoCompressionQuality">VideoCompressionQuality (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.VideoDict">VideoDict (class in genai.types)</a>
@@ -9876,6 +10048,8 @@
         <li><a href="genai.html#genai.types.VideoGenerationReferenceType">VideoGenerationReferenceType (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.VideoMetadataDict">VideoMetadataDict (class in genai.types)</a>
+</li>
+        <li><a href="genai.html#genai.types.VideoOrientation">VideoOrientation (class in genai.types)</a>
 </li>
         <li><a href="genai.html#genai.types.MusicGenerationMode.VOCALIZATION">VOCALIZATION (genai.types.MusicGenerationMode attribute)</a>
 </li>
@@ -9991,9 +10165,13 @@
         </ul></li>
         <li><a href="genai.html#genai.types.WebSearchDict">WebSearchDict (class in genai.types)</a>
 </li>
-        <li><a href="genai.html#genai.types.WeightedPrompt.weight">weight (genai.types.WeightedPrompt attribute)</a>
+        <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfig.weight">weight (genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfig attribute)</a>
 
         <ul>
+          <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict.weight">(genai.types.CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict attribute)</a>
+</li>
+          <li><a href="genai.html#genai.types.WeightedPrompt.weight">(genai.types.WeightedPrompt attribute)</a>
+</li>
           <li><a href="genai.html#genai.types.WeightedPromptDict.weight">(genai.types.WeightedPromptDict attribute)</a>
 </li>
         </ul></li>
@@ -10007,6 +10185,12 @@
           <li><a href="genai.html#genai.types.LiveMusicSetWeightedPromptsParameters.weighted_prompts">(genai.types.LiveMusicSetWeightedPromptsParameters attribute)</a>
 </li>
           <li><a href="genai.html#genai.types.LiveMusicSetWeightedPromptsParametersDict.weighted_prompts">(genai.types.LiveMusicSetWeightedPromptsParametersDict attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfig.weighted_reward_configs">weighted_reward_configs (genai.types.CompositeReinforcementTuningRewardConfig attribute)</a>
+
+        <ul>
+          <li><a href="genai.html#genai.types.CompositeReinforcementTuningRewardConfigDict.weighted_reward_configs">(genai.types.CompositeReinforcementTuningRewardConfigDict attribute)</a>
 </li>
         </ul></li>
         <li><a href="genai.html#genai.types.WeightedPromptDict">WeightedPromptDict (class in genai.types)</a>
