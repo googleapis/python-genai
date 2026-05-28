@@ -303,21 +303,6 @@ class DynamicRetrievalConfigMode(_common.CaseInSensitiveEnum):
   """Run retrieval only when system decides it is necessary."""
 
 
-class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
-  """Function calling mode."""
-
-  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
-  """Unspecified function calling mode. This value should not be used."""
-  AUTO = 'AUTO'
-  """Default model behavior, model decides to predict either function calls or natural language response."""
-  ANY = 'ANY'
-  """Model is constrained to always predicting function calls only. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
-  NONE = 'NONE'
-  """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
-  VALIDATED = 'VALIDATED'
-  """Model is constrained to predict either function calls or natural language response. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
-
-
 class ThinkingLevel(_common.CaseInSensitiveEnum):
   """The number of thoughts tokens that the model should generate."""
 
@@ -425,6 +410,21 @@ class HarmBlockThreshold(_common.CaseInSensitiveEnum):
   """Do not block any content, regardless of its harm probability."""
   OFF = 'OFF'
   """Turn off the safety filter entirely."""
+
+
+class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
+  """Function calling mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Unspecified function calling mode. This value should not be used."""
+  AUTO = 'AUTO'
+  """Default model behavior, model decides to predict either function calls or natural language response."""
+  ANY = 'ANY'
+  """Model is constrained to always predicting function calls only. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
+  NONE = 'NONE'
+  """Model will not predict any function calls. Model behavior is same as when not passing any function declarations."""
+  VALIDATED = 'VALIDATED'
+  """Model is constrained to predict either function calls or natural language response. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
 
 
 class FinishReason(_common.CaseInSensitiveEnum):
@@ -1055,6 +1055,8 @@ class TuningMethod(_common.CaseInSensitiveEnum):
   """Preference optimization tuning."""
   DISTILLATION = 'DISTILLATION'
   """Distillation tuning."""
+  REINFORCEMENT_TUNING = 'REINFORCEMENT_TUNING'
+  """Reinforcement tuning."""
 
 
 class FileState(_common.CaseInSensitiveEnum):
@@ -1591,12 +1593,11 @@ PartialArgOrDict = Union[PartialArg, PartialArgDict]
 
 
 class FunctionCall(_common.BaseModel):
-  """A function call."""
+  """A predicted FunctionCall returned from the model that contains a string representing the FunctionDeclaration.name and a structured JSON object containing the parameters and their values."""
 
   id: Optional[str] = Field(
       default=None,
-      description="""The unique id of the function call. If populated, the client to execute the
-   `function_call` and return the response with the matching `id`.""",
+      description="""Optional. The unique id of the function call. If populated, the client to execute the `function_call` and return the response with the matching `id`.""",
   )
   args: Optional[dict[str, Any]] = Field(
       default=None,
@@ -1617,11 +1618,10 @@ class FunctionCall(_common.BaseModel):
 
 
 class FunctionCallDict(TypedDict, total=False):
-  """A function call."""
+  """A predicted FunctionCall returned from the model that contains a string representing the FunctionDeclaration.name and a structured JSON object containing the parameters and their values."""
 
   id: Optional[str]
-  """The unique id of the function call. If populated, the client to execute the
-   `function_call` and return the response with the matching `id`."""
+  """Optional. The unique id of the function call. If populated, the client to execute the `function_call` and return the response with the matching `id`."""
 
   args: Optional[dict[str, Any]]
   """Optional. The function parameters and values in JSON object format. See FunctionDeclaration.parameters for parameter details."""
@@ -4964,139 +4964,6 @@ SchemaUnion = Union[
 SchemaUnionDict = Union[SchemaUnion, SchemaDict]
 
 
-class LatLng(_common.BaseModel):
-  """An object that represents a latitude/longitude pair.
-
-  This is expressed as a pair of doubles to represent degrees latitude and
-  degrees longitude. Unless specified otherwise, this object must conform to the
-  <a href="https://en.wikipedia.org/wiki/World_Geodetic_System#1984_version">
-  WGS84 standard</a>. Values must be within normalized ranges.
-  """
-
-  latitude: Optional[float] = Field(
-      default=None,
-      description="""The latitude in degrees. It must be in the range [-90.0, +90.0].""",
-  )
-  longitude: Optional[float] = Field(
-      default=None,
-      description="""The longitude in degrees. It must be in the range [-180.0, +180.0]""",
-  )
-
-
-class LatLngDict(TypedDict, total=False):
-  """An object that represents a latitude/longitude pair.
-
-  This is expressed as a pair of doubles to represent degrees latitude and
-  degrees longitude. Unless specified otherwise, this object must conform to the
-  <a href="https://en.wikipedia.org/wiki/World_Geodetic_System#1984_version">
-  WGS84 standard</a>. Values must be within normalized ranges.
-  """
-
-  latitude: Optional[float]
-  """The latitude in degrees. It must be in the range [-90.0, +90.0]."""
-
-  longitude: Optional[float]
-  """The longitude in degrees. It must be in the range [-180.0, +180.0]"""
-
-
-LatLngOrDict = Union[LatLng, LatLngDict]
-
-
-class RetrievalConfig(_common.BaseModel):
-  """Retrieval config."""
-
-  lat_lng: Optional[LatLng] = Field(
-      default=None, description="""Optional. The location of the user."""
-  )
-  language_code: Optional[str] = Field(
-      default=None, description="""The language code of the user."""
-  )
-
-
-class RetrievalConfigDict(TypedDict, total=False):
-  """Retrieval config."""
-
-  lat_lng: Optional[LatLngDict]
-  """Optional. The location of the user."""
-
-  language_code: Optional[str]
-  """The language code of the user."""
-
-
-RetrievalConfigOrDict = Union[RetrievalConfig, RetrievalConfigDict]
-
-
-class FunctionCallingConfig(_common.BaseModel):
-  """Function calling config."""
-
-  allowed_function_names: Optional[list[str]] = Field(
-      default=None,
-      description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match FunctionDeclaration.name. With mode set to ANY, model will predict a function call from the set of function names provided.""",
-  )
-  mode: Optional[FunctionCallingConfigMode] = Field(
-      default=None, description="""Optional. Function calling mode."""
-  )
-  stream_function_call_arguments: Optional[bool] = Field(
-      default=None,
-      description="""Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the `FunctionCall.partial_args` field. This field is not supported in Gemini API.""",
-  )
-
-
-class FunctionCallingConfigDict(TypedDict, total=False):
-  """Function calling config."""
-
-  allowed_function_names: Optional[list[str]]
-  """Optional. Function names to call. Only set when the Mode is ANY. Function names should match FunctionDeclaration.name. With mode set to ANY, model will predict a function call from the set of function names provided."""
-
-  mode: Optional[FunctionCallingConfigMode]
-  """Optional. Function calling mode."""
-
-  stream_function_call_arguments: Optional[bool]
-  """Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the `FunctionCall.partial_args` field. This field is not supported in Gemini API."""
-
-
-FunctionCallingConfigOrDict = Union[
-    FunctionCallingConfig, FunctionCallingConfigDict
-]
-
-
-class ToolConfig(_common.BaseModel):
-  """Tool config.
-
-  This config is shared for all tools provided in the request.
-  """
-
-  retrieval_config: Optional[RetrievalConfig] = Field(
-      default=None, description="""Optional. Retrieval config."""
-  )
-  function_calling_config: Optional[FunctionCallingConfig] = Field(
-      default=None, description="""Optional. Function calling config."""
-  )
-  include_server_side_tool_invocations: Optional[bool] = Field(
-      default=None,
-      description="""If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool invocations.""",
-  )
-
-
-class ToolConfigDict(TypedDict, total=False):
-  """Tool config.
-
-  This config is shared for all tools provided in the request.
-  """
-
-  retrieval_config: Optional[RetrievalConfigDict]
-  """Optional. Retrieval config."""
-
-  function_calling_config: Optional[FunctionCallingConfigDict]
-  """Optional. Function calling config."""
-
-  include_server_side_tool_invocations: Optional[bool]
-  """If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool invocations."""
-
-
-ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
-
-
 class VoiceConsentSignature(_common.BaseModel):
   """The signature of the voice consent check."""
 
@@ -5807,6 +5674,137 @@ class SafetySettingDict(TypedDict, total=False):
 
 
 SafetySettingOrDict = Union[SafetySetting, SafetySettingDict]
+
+
+class LatLng(_common.BaseModel):
+  """An object that represents a latitude/longitude pair.
+
+  This is expressed as a pair of doubles to represent degrees latitude and
+  degrees longitude. Unless specified otherwise, this object must conform to the
+  WGS84 standard. Values must be within normalized ranges.
+  """
+
+  latitude: Optional[float] = Field(
+      default=None,
+      description="""The latitude in degrees. It must be in the range [-90.0, +90.0].""",
+  )
+  longitude: Optional[float] = Field(
+      default=None,
+      description="""The longitude in degrees. It must be in the range [-180.0, +180.0].""",
+  )
+
+
+class LatLngDict(TypedDict, total=False):
+  """An object that represents a latitude/longitude pair.
+
+  This is expressed as a pair of doubles to represent degrees latitude and
+  degrees longitude. Unless specified otherwise, this object must conform to the
+  WGS84 standard. Values must be within normalized ranges.
+  """
+
+  latitude: Optional[float]
+  """The latitude in degrees. It must be in the range [-90.0, +90.0]."""
+
+  longitude: Optional[float]
+  """The longitude in degrees. It must be in the range [-180.0, +180.0]."""
+
+
+LatLngOrDict = Union[LatLng, LatLngDict]
+
+
+class RetrievalConfig(_common.BaseModel):
+  """Retrieval config."""
+
+  lat_lng: Optional[LatLng] = Field(
+      default=None, description="""The location of the user."""
+  )
+  language_code: Optional[str] = Field(
+      default=None, description="""The language code of the user."""
+  )
+
+
+class RetrievalConfigDict(TypedDict, total=False):
+  """Retrieval config."""
+
+  lat_lng: Optional[LatLngDict]
+  """The location of the user."""
+
+  language_code: Optional[str]
+  """The language code of the user."""
+
+
+RetrievalConfigOrDict = Union[RetrievalConfig, RetrievalConfigDict]
+
+
+class FunctionCallingConfig(_common.BaseModel):
+  """Function calling config."""
+
+  allowed_function_names: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. Function names to call. Only set when the Mode is ANY. Function names should match FunctionDeclaration.name. With mode set to ANY, model will predict a function call from the set of function names provided.""",
+  )
+  mode: Optional[FunctionCallingConfigMode] = Field(
+      default=None, description="""Optional. Function calling mode."""
+  )
+  stream_function_call_arguments: Optional[bool] = Field(
+      default=None,
+      description="""Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the `FunctionCall.partial_args` field. This field is not supported in Gemini API.""",
+  )
+
+
+class FunctionCallingConfigDict(TypedDict, total=False):
+  """Function calling config."""
+
+  allowed_function_names: Optional[list[str]]
+  """Optional. Function names to call. Only set when the Mode is ANY. Function names should match FunctionDeclaration.name. With mode set to ANY, model will predict a function call from the set of function names provided."""
+
+  mode: Optional[FunctionCallingConfigMode]
+  """Optional. Function calling mode."""
+
+  stream_function_call_arguments: Optional[bool]
+  """Optional. When set to true, arguments of a single function call will be streamed out in multiple parts/contents/responses. Partial parameter results will be returned in the `FunctionCall.partial_args` field. This field is not supported in Gemini API."""
+
+
+FunctionCallingConfigOrDict = Union[
+    FunctionCallingConfig, FunctionCallingConfigDict
+]
+
+
+class ToolConfig(_common.BaseModel):
+  """Tool config.
+
+  This config is shared for all tools provided in the request.
+  """
+
+  retrieval_config: Optional[RetrievalConfig] = Field(
+      default=None, description="""Optional. Retrieval config."""
+  )
+  function_calling_config: Optional[FunctionCallingConfig] = Field(
+      default=None, description="""Optional. Function calling config."""
+  )
+  include_server_side_tool_invocations: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool interactions. This field is not supported in Vertex AI.""",
+  )
+
+
+class ToolConfigDict(TypedDict, total=False):
+  """Tool config.
+
+  This config is shared for all tools provided in the request.
+  """
+
+  retrieval_config: Optional[RetrievalConfigDict]
+  """Optional. Retrieval config."""
+
+  function_calling_config: Optional[FunctionCallingConfigDict]
+  """Optional. Function calling config."""
+
+  include_server_side_tool_invocations: Optional[bool]
+  """Optional. If true, the API response will include the server-side tool calls and responses within the `Content` message. This allows clients to observe the server's tool interactions. This field is not supported in Vertex AI."""
+
+
+ToolConfigOrDict = Union[ToolConfig, ToolConfigDict]
 
 
 SpeechConfigUnion = Union[str, SpeechConfig]
@@ -14257,6 +14255,102 @@ TuningValidationDatasetOrDict = Union[
 ]
 
 
+class ReinforcementTuningAutoraterScorer(_common.BaseModel):
+  """Reinforcement tuning autorater scorer."""
+
+  autorater_config: Optional[AutoraterConfig] = Field(
+      default=None, description="""Autorater config for evaluation."""
+  )
+
+
+class ReinforcementTuningAutoraterScorerDict(TypedDict, total=False):
+  """Reinforcement tuning autorater scorer."""
+
+  autorater_config: Optional[AutoraterConfigDict]
+  """Autorater config for evaluation."""
+
+
+ReinforcementTuningAutoraterScorerOrDict = Union[
+    ReinforcementTuningAutoraterScorer, ReinforcementTuningAutoraterScorerDict
+]
+
+
+class SingleReinforcementTuningRewardConfig(_common.BaseModel):
+  """Single reinforcement tuning reward config."""
+
+  autorater_scorer: Optional[ReinforcementTuningAutoraterScorer] = Field(
+      default=None, description=""""""
+  )
+
+
+class SingleReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Single reinforcement tuning reward config."""
+
+  autorater_scorer: Optional[ReinforcementTuningAutoraterScorerDict]
+  """"""
+
+
+SingleReinforcementTuningRewardConfigOrDict = Union[
+    SingleReinforcementTuningRewardConfig,
+    SingleReinforcementTuningRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
+    _common.BaseModel
+):
+  """Composite reinforcement tuning reward config weighted reward config."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None, description=""""""
+  )
+  weight: Optional[float] = Field(
+      default=None,
+      description="""How much this single reward contributes to the total overall reward.""",
+  )
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict(
+    TypedDict, total=False
+):
+  """Composite reinforcement tuning reward config weighted reward config."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """"""
+
+  weight: Optional[float]
+  """How much this single reward contributes to the total overall reward."""
+
+
+CompositeReinforcementTuningRewardConfigWeightedRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfig,
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfig(_common.BaseModel):
+  """Composite reinforcement tuning reward config."""
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfig]
+  ] = Field(default=None, description="""""")
+
+
+class CompositeReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Composite reinforcement tuning reward config."""
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict]
+  ]
+  """"""
+
+
+CompositeReinforcementTuningRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfig,
+    CompositeReinforcementTuningRewardConfigDict,
+]
+
+
 class CreateTuningJobConfig(_common.BaseModel):
   """Fine-tuning job creation request - optional fields."""
 
@@ -14265,7 +14359,7 @@ class CreateTuningJobConfig(_common.BaseModel):
   )
   method: Optional[TuningMethod] = Field(
       default=None,
-      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used.""",
+      description="""The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION or REINFORCEMENT_TUNING). If not set, the default method (SFT) will be used.""",
   )
   validation_dataset: Optional[TuningValidationDataset] = Field(
       default=None,
@@ -14343,6 +14437,32 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key.""",
   )
+  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None,
+      description="""Reward function configuration for reinforcement tuning. Reinforcement tuning only.""",
+  )
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfig
+  ] = Field(
+      default=None,
+      description="""Composite reward function configuration for reinforcement tuning. Reinforcement tuning only.""",
+  )
+  samples_per_prompt: Optional[int] = Field(
+      default=None,
+      description="""Number of different responses to generate per prompt during tuning. Reinforcement tuning only.""",
+  )
+  evaluate_interval: Optional[int] = Field(
+      default=None,
+      description="""How often at steps to evaluate the tuning job during training. Reinforcement tuning only.""",
+  )
+  checkpoint_interval: Optional[int] = Field(
+      default=None,
+      description="""How often at steps to save checkpoints during training. Reinforcement tuning only.""",
+  )
+  max_output_tokens: Optional[int] = Field(
+      default=None,
+      description="""The maximum number of tokens to generate per prompt. Reinforcement tuning only.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -14352,7 +14472,7 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   """Used to override HTTP request options."""
 
   method: Optional[TuningMethod]
-  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION). If not set, the default method (SFT) will be used."""
+  """The method to use for tuning (SUPERVISED_FINE_TUNING or PREFERENCE_TUNING or DISTILLATION or REINFORCEMENT_TUNING). If not set, the default method (SFT) will be used."""
 
   validation_dataset: Optional[TuningValidationDatasetDict]
   """Validation dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -14413,6 +14533,26 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
 
   encryption_spec: Optional[EncryptionSpecDict]
   """The encryption spec of the tuning job. Customer-managed encryption key options for a TuningJob. If this is set, then all resources created by the TuningJob will be encrypted with provided encryption key."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """Reward function configuration for reinforcement tuning. Reinforcement tuning only."""
+
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfigDict
+  ]
+  """Composite reward function configuration for reinforcement tuning. Reinforcement tuning only."""
+
+  samples_per_prompt: Optional[int]
+  """Number of different responses to generate per prompt during tuning. Reinforcement tuning only."""
+
+  evaluate_interval: Optional[int]
+  """How often at steps to evaluate the tuning job during training. Reinforcement tuning only."""
+
+  checkpoint_interval: Optional[int]
+  """How often at steps to save checkpoints during training. Reinforcement tuning only."""
+
+  max_output_tokens: Optional[int]
+  """The maximum number of tokens to generate per prompt. Reinforcement tuning only."""
 
 
 CreateTuningJobConfigOrDict = Union[

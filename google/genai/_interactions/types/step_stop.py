@@ -18,9 +18,17 @@
 from typing import Optional
 from typing_extensions import Literal
 
+from .usage import Usage
 from .._models import BaseModel
 
-__all__ = ["StepStop"]
+__all__ = ["StepStop", "Metadata"]
+
+
+class Metadata(BaseModel):
+    """Optional metadata accompanying ANY streamed event."""
+
+    usage: Optional[Usage] = None
+    """Statistics on the interaction request's token usage."""
 
 
 class StepStop(BaseModel):
@@ -32,3 +40,6 @@ class StepStop(BaseModel):
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
+
+    metadata: Optional[Metadata] = None
+    """Optional metadata accompanying ANY streamed event."""

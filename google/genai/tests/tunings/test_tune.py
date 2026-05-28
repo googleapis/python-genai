@@ -279,6 +279,66 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
+    pytest_helper.TestTableItem(
+        name="test_tune_reinforcement",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                tuned_model_display_name="Model display name",
+                epoch_count=1,
+                method="REINFORCEMENT_TUNING",
+                adapter_size="ADAPTER_SIZE_ONE",
+                learning_rate_multiplier=1.0,
+                batch_size=4,
+                samples_per_prompt=4,
+                evaluate_interval=100,
+                checkpoint_interval=100,
+                max_output_tokens=2048,
+                reward_config=genai_types.SingleReinforcementTuningRewardConfig(
+                    autorater_scorer=genai_types.ReinforcementTuningAutoraterScorer(
+                        autorater_config=genai_types.AutoraterConfig(
+                            autorater_model="test-model"
+                        )
+                    )
+                ),
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_reinforcement_composite",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                tuned_model_display_name="Model display name",
+                epoch_count=1,
+                method="REINFORCEMENT_TUNING",
+                adapter_size="ADAPTER_SIZE_ONE",
+                learning_rate_multiplier=1.0,
+                composite_reward_config=genai_types.CompositeReinforcementTuningRewardConfig(
+                    weighted_reward_configs=[
+                        genai_types.CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
+                            weight=1.0,
+                            reward_config=genai_types.SingleReinforcementTuningRewardConfig(
+                                autorater_scorer=genai_types.ReinforcementTuningAutoraterScorer(
+                                    autorater_config=genai_types.AutoraterConfig(
+                                        autorater_model="test-model"
+                                    )
+                                )
+                            )
+                        )
+                    ]
+                ),
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
 ]
 
 pytestmark = pytest_helper.setup(

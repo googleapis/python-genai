@@ -18,6 +18,7 @@
 from typing import Dict, List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
+from .usage import Usage
 from .._utils import PropertyInfo
 from .._models import BaseModel
 from .annotation import Annotation
@@ -59,6 +60,7 @@ __all__ = [
     "DeltaGoogleMapsResult",
     "DeltaFunctionResult",
     "DeltaFunctionResultResultFunctionResultSubcontentList",
+    "Metadata",
 ]
 
 
@@ -124,7 +126,7 @@ class DeltaDocument(BaseModel):
 
     data: Optional[str] = None
 
-    mime_type: Optional[Literal["application/pdf"]] = None
+    mime_type: Optional[Literal["application/pdf", "text/csv"]] = None
 
     uri: Optional[str] = None
 
@@ -361,6 +363,13 @@ Delta: TypeAlias = Annotated[
 ]
 
 
+class Metadata(BaseModel):
+    """Optional metadata accompanying ANY streamed event."""
+
+    usage: Optional[Usage] = None
+    """Statistics on the interaction request's token usage."""
+
+
 class StepDelta(BaseModel):
     delta: Delta
 
@@ -372,3 +381,6 @@ class StepDelta(BaseModel):
     """
     The event_id token to be used to resume the interaction stream, from this event.
     """
+
+    metadata: Optional[Metadata] = None
+    """Optional metadata accompanying ANY streamed event."""
