@@ -719,7 +719,75 @@ def test_function_google_search(client):
   # bad request to combine function call and google search retrieval
   with pytest.raises(errors.ClientError):
     client.models.generate_content(
-        model='gemini-2.5-flash',
+        model='gemini-3.5-flash',
+        contents=contents,
+        config=config,
+    )
+
+
+def test_function_google_search_server_side_tool_invocations(client):
+  contents = (
+      'What is the weather in Buenos Aires? If it is raining, schedule a'
+      ' meeting.'
+  )
+  schedule_meeting = {
+      'name': 'schedule_meeting',
+      'description': 'Schedule a meeting',
+      'parameters': {
+          'type': 'object',
+          'properties': {'reason': {'type': 'string'}},
+          'required': ['reason'],
+      },
+  }
+  config = types.GenerateContentConfig(
+      tools=[
+          types.Tool(
+              google_search=types.GoogleSearch(),
+          ),
+          types.Tool(
+              function_declarations=[schedule_meeting],
+          ),
+      ],
+      tool_config=types.ToolConfig(
+          include_server_side_tool_invocations=True,
+      ),
+  )
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    client.models.generate_content(
+        model='gemini-3.5-flash',
+        contents=contents,
+        config=config,
+    )
+
+
+def test_function_google_search_server_side_tool_invocations_one_tool(client):
+  contents = (
+      'What is the weather in Buenos Aires? If it is raining, schedule a'
+      ' meeting.'
+  )
+  schedule_meeting = {
+      'name': 'schedule_meeting',
+      'description': 'Schedule a meeting',
+      'parameters': {
+          'type': 'object',
+          'properties': {'reason': {'type': 'string'}},
+          'required': ['reason'],
+      },
+  }
+  config = types.GenerateContentConfig(
+      tools=[
+          types.Tool(
+              google_search=types.GoogleSearch(),
+              function_declarations=[schedule_meeting],
+          ),
+      ],
+      tool_config=types.ToolConfig(
+          include_server_side_tool_invocations=True,
+      ),
+  )
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    client.models.generate_content(
+        model='gemini-3.5-flash',
         contents=contents,
         config=config,
     )

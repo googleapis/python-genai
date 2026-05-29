@@ -993,6 +993,10 @@ def t_tools(
         function_tool.function_declarations += (
             transformed_tool.function_declarations
         )
+        tool_copy = transformed_tool.model_copy()
+        tool_copy.function_declarations = None
+        if tool_copy.model_dump(exclude_none=True):
+          tools.append(tool_copy)
       else:
         tools.append(transformed_tool)
   if function_tool.function_declarations:
