@@ -1612,12 +1612,12 @@ async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_bidi_setup_to_api_with_stream_translation_config(vertexai):
+async def test_bidi_setup_to_api_with_streaming_translation_config(vertexai):
   api_client = mock_api_client(vertexai=vertexai)
 
   # Test 1: Config defined using dict representation.
   config_dict = {
-      'stream_translation_config': {
+      'streaming_translation_config': {
           'echo_target_language': True,
           'target_language_code': 'es',
       },
@@ -1628,23 +1628,23 @@ async def test_bidi_setup_to_api_with_stream_translation_config(vertexai):
         api_client=api_client, model='test_model', config=config_dict
     )
 
+  expected_result = {
+      'setup': {
+          'model': 'models/test_model',
+          'generationConfig': {
+              'streamingTranslationConfig': {
+                  'echo_target_language': True,
+                  'target_language_code': 'es',
+              },
+          },
+      }
+  }
   if not vertexai:
-    expected_result = {
-        'setup': {
-            'model': 'models/test_model',
-            'generationConfig': {
-                'streamTranslationConfig': {
-                    'echo_target_language': True,
-                    'target_language_code': 'es',
-                },
-            },
-        }
-    }
     assert result == expected_result
 
   # Test 2: Config defined using types.LiveConnectConfig.
   config = types.LiveConnectConfig(
-      stream_translation_config=types.StreamTranslationConfig(
+      streaming_translation_config=types.StreamingTranslationConfig(
           echo_target_language=True,
           target_language_code='es',
       )

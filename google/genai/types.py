@@ -19794,7 +19794,7 @@ class RealtimeInputConfigDict(TypedDict, total=False):
 RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
 
 
-class StreamTranslationConfig(_common.BaseModel):
+class StreamingTranslationConfig(_common.BaseModel):
   """Config for stream translation."""
 
   echo_target_language: Optional[bool] = Field(
@@ -19810,7 +19810,7 @@ class StreamTranslationConfig(_common.BaseModel):
   )
 
 
-class StreamTranslationConfigDict(TypedDict, total=False):
+class StreamingTranslationConfigDict(TypedDict, total=False):
   """Config for stream translation."""
 
   echo_target_language: Optional[bool]
@@ -19823,8 +19823,8 @@ class StreamTranslationConfigDict(TypedDict, total=False):
       language codes (e.g. "en", "es", "fr")."""
 
 
-StreamTranslationConfigOrDict = Union[
-    StreamTranslationConfig, StreamTranslationConfigDict
+StreamingTranslationConfigOrDict = Union[
+    StreamingTranslationConfig, StreamingTranslationConfigDict
 ]
 
 
@@ -19966,8 +19966,8 @@ If included the server will send SessionResumptionUpdate messages.""",
       response.
       """,
   )
-  stream_translation_config: Optional[StreamTranslationConfig] = Field(
-      default=None, description="""Config for stream translation."""
+  streaming_translation_config: Optional[StreamingTranslationConfig] = Field(
+      default=None, description="""Config for streaming translation."""
   )
 
 
@@ -20087,8 +20087,8 @@ If included the server will send SessionResumptionUpdate messages."""
       response.
       """
 
-  stream_translation_config: Optional[StreamTranslationConfigDict]
-  """Config for stream translation."""
+  streaming_translation_config: Optional[StreamingTranslationConfigDict]
+  """Config for streaming translation."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
