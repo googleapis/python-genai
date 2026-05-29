@@ -43,10 +43,143 @@ from .audio_response_format import AudioResponseFormat
 from .image_response_format import ImageResponseFormat
 from .deep_research_agent_config import DeepResearchAgentConfig
 
-__all__ = ["Interaction", "AgentConfig", "Environment", "Input", "ResponseFormat", "ResponseFormatResponseFormatList"]
+__all__ = [
+    "Interaction",
+    "AgentConfig",
+    "AgentConfigCodeMender",
+    "AgentConfigCodeMenderFindRequest",
+    "AgentConfigCodeMenderFindRequestSourceFile",
+    "AgentConfigCodeMenderFixRequest",
+    "AgentConfigCodeMenderFixRequestSourceFile",
+    "AgentConfigCodeMenderSessionConfig",
+    "Environment",
+    "Input",
+    "ResponseFormat",
+    "ResponseFormatResponseFormatList",
+]
+
+
+class AgentConfigCodeMenderFindRequestSourceFile(BaseModel):
+    """Content of a single file in the codebase."""
+
+    content: Optional[str] = None
+    """The UTF-8 encoded text content of the file."""
+
+    path: Optional[str] = None
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigCodeMenderFindRequest(BaseModel):
+    """Parameters for finding vulnerabilities.
+
+    This field is only applicable when
+    session_type is SESSION_TYPE_FIND.
+    """
+
+    description: Optional[str] = None
+    """
+    Additional context or custom instructions provided by the user to guide the
+    vulnerability analysis.
+    """
+
+    finding_id: Optional[str] = None
+    """The identifier of a specific finding to verify.
+
+    This is primarily used in VERIFY mode to focus the agent's execution-based
+    validation on a single vulnerability.
+    """
+
+    source_files: Optional[List[AgentConfigCodeMenderFindRequestSourceFile]] = None
+    """A list of source files to provide as context for the scan."""
+
+
+class AgentConfigCodeMenderFixRequestSourceFile(BaseModel):
+    """Content of a single file in the codebase."""
+
+    content: Optional[str] = None
+    """The UTF-8 encoded text content of the file."""
+
+    path: Optional[str] = None
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigCodeMenderFixRequest(BaseModel):
+    """Parameters for fixing vulnerabilities.
+
+    This field is only applicable when
+    session_type is SESSION_TYPE_FIX.
+    """
+
+    description: Optional[str] = None
+    """
+    Additional context or custom instructions provided by the user to guide the
+    patch generation process.
+    """
+
+    finding_id: Optional[str] = None
+    """The identifier of the specific security finding to be remediated.
+
+    This ID maps to a previously discovered vulnerability.
+    """
+
+    source_files: Optional[List[AgentConfigCodeMenderFixRequestSourceFile]] = None
+    """A list of source files providing context for the remediation.
+
+    These files are typically the ones containing the identified vulnerability.
+    """
+
+
+class AgentConfigCodeMenderSessionConfig(BaseModel):
+    """
+    Optional session-specific configurations to override default agent
+    behavior.
+    """
+
+    max_rounds: Optional[int] = None
+    """
+    The maximum number of interaction rounds the agent is allowed to perform before
+    reaching a timeout.
+    """
+
+    pipeline_mode: Optional[Literal["scan", "find", "full", "verify"]] = None
+    """The pipeline mode of a CodeMender session.
+
+    It can only be used for a find session.
+    """
+
+    topology: Optional[str] = None
+    """The cognitive architecture or "thinking" topology used by the agent (e.g.
+
+    "default", "deep").
+    """
+
+
+class AgentConfigCodeMender(BaseModel):
+    """Configuration for the CodeMender agent."""
+
+    type: Literal["code-mender"]
+
+    find_request: Optional[AgentConfigCodeMenderFindRequest] = None
+    """Parameters for finding vulnerabilities.
+
+    This field is only applicable when session_type is SESSION_TYPE_FIND.
+    """
+
+    fix_request: Optional[AgentConfigCodeMenderFixRequest] = None
+    """Parameters for fixing vulnerabilities.
+
+    This field is only applicable when session_type is SESSION_TYPE_FIX.
+    """
+
+    session_config: Optional[AgentConfigCodeMenderSessionConfig] = None
+    """Optional session-specific configurations to override default agent behavior."""
+
+    session_type: Optional[Literal["find", "fix"]] = None
+    """The session type of a CodeMender session."""
+
 
 AgentConfig: TypeAlias = Annotated[
-    Union[DynamicAgentConfig, DeepResearchAgentConfig], PropertyInfo(discriminator="type")
+    Union[DynamicAgentConfig, DeepResearchAgentConfig, AgentConfigCodeMender], PropertyInfo(discriminator="type")
 ]
 
 Environment: TypeAlias = Union[str, environment.Environment]

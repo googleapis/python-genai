@@ -46,6 +46,12 @@ __all__ = [
     "ResponseFormatResponseFormatList",
     "BaseCreateAgentInteractionParams",
     "AgentConfig",
+    "AgentConfigCodeMender",
+    "AgentConfigCodeMenderFindRequest",
+    "AgentConfigCodeMenderFindRequestSourceFile",
+    "AgentConfigCodeMenderFixRequest",
+    "AgentConfigCodeMenderFixRequestSourceFile",
+    "AgentConfigCodeMenderSessionConfig",
     "CreateModelInteractionParamsNonStreaming",
     "CreateModelInteractionParamsStreaming",
     "CreateAgentInteractionParamsNonStreaming",
@@ -202,7 +208,126 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     """
 
 
-AgentConfig: TypeAlias = Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam]
+class AgentConfigCodeMenderFindRequestSourceFile(TypedDict, total=False):
+    """Content of a single file in the codebase."""
+
+    content: str
+    """The UTF-8 encoded text content of the file."""
+
+    path: str
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigCodeMenderFindRequest(TypedDict, total=False):
+    """Parameters for finding vulnerabilities.
+
+    This field is only applicable when
+    session_type is SESSION_TYPE_FIND.
+    """
+
+    description: str
+    """
+    Additional context or custom instructions provided by the user to guide the
+    vulnerability analysis.
+    """
+
+    finding_id: str
+    """The identifier of a specific finding to verify.
+
+    This is primarily used in VERIFY mode to focus the agent's execution-based
+    validation on a single vulnerability.
+    """
+
+    source_files: Iterable[AgentConfigCodeMenderFindRequestSourceFile]
+    """A list of source files to provide as context for the scan."""
+
+
+class AgentConfigCodeMenderFixRequestSourceFile(TypedDict, total=False):
+    """Content of a single file in the codebase."""
+
+    content: str
+    """The UTF-8 encoded text content of the file."""
+
+    path: str
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigCodeMenderFixRequest(TypedDict, total=False):
+    """Parameters for fixing vulnerabilities.
+
+    This field is only applicable when
+    session_type is SESSION_TYPE_FIX.
+    """
+
+    description: str
+    """
+    Additional context or custom instructions provided by the user to guide the
+    patch generation process.
+    """
+
+    finding_id: str
+    """The identifier of the specific security finding to be remediated.
+
+    This ID maps to a previously discovered vulnerability.
+    """
+
+    source_files: Iterable[AgentConfigCodeMenderFixRequestSourceFile]
+    """A list of source files providing context for the remediation.
+
+    These files are typically the ones containing the identified vulnerability.
+    """
+
+
+class AgentConfigCodeMenderSessionConfig(TypedDict, total=False):
+    """
+    Optional session-specific configurations to override default agent
+    behavior.
+    """
+
+    max_rounds: int
+    """
+    The maximum number of interaction rounds the agent is allowed to perform before
+    reaching a timeout.
+    """
+
+    pipeline_mode: Literal["scan", "find", "full", "verify"]
+    """The pipeline mode of a CodeMender session.
+
+    It can only be used for a find session.
+    """
+
+    topology: str
+    """The cognitive architecture or "thinking" topology used by the agent (e.g.
+
+    "default", "deep").
+    """
+
+
+class AgentConfigCodeMender(TypedDict, total=False):
+    """Configuration for the CodeMender agent."""
+
+    type: Required[Literal["code-mender"]]
+
+    find_request: AgentConfigCodeMenderFindRequest
+    """Parameters for finding vulnerabilities.
+
+    This field is only applicable when session_type is SESSION_TYPE_FIND.
+    """
+
+    fix_request: AgentConfigCodeMenderFixRequest
+    """Parameters for fixing vulnerabilities.
+
+    This field is only applicable when session_type is SESSION_TYPE_FIX.
+    """
+
+    session_config: AgentConfigCodeMenderSessionConfig
+    """Optional session-specific configurations to override default agent behavior."""
+
+    session_type: Literal["find", "fix"]
+    """The session type of a CodeMender session."""
+
+
+AgentConfig: TypeAlias = Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam, AgentConfigCodeMender]
 
 
 class CreateModelInteractionParamsNonStreaming(BaseCreateModelInteractionParams, total=False):
