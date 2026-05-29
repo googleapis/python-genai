@@ -162,7 +162,11 @@ class Language(_common.CaseInSensitiveEnum):
 
 
 class FunctionResponseScheduling(_common.CaseInSensitiveEnum):
-  """Specifies how the response should be scheduled in the conversation."""
+  """Specifies how the response should be scheduled in the conversation.
+
+  Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults
+  to WHEN_IDLE.
+  """
 
   SCHEDULING_UNSPECIFIED = 'SCHEDULING_UNSPECIFIED'
   """This value is unused."""
@@ -1642,8 +1646,7 @@ FunctionCallOrDict = Union[FunctionCall, FunctionCallDict]
 class FunctionResponseBlob(_common.BaseModel):
   """Raw media bytes for function response.
 
-  Text should not be sent as raw bytes, use the FunctionResponse.response
-  field.
+  Text should not be sent as raw bytes, use the 'text' field.
   """
 
   mime_type: Optional[str] = Field(
@@ -1651,31 +1654,28 @@ class FunctionResponseBlob(_common.BaseModel):
       description="""Required. The IANA standard MIME type of the source data.""",
   )
   data: Optional[bytes] = Field(
-      default=None, description="""Required. Inline media bytes."""
+      default=None, description="""Required. Raw bytes."""
   )
   display_name: Optional[str] = Field(
       default=None,
-      description="""Optional. Display name of the blob.
-      Used to provide a label or filename to distinguish blobs.""",
+      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API.""",
   )
 
 
 class FunctionResponseBlobDict(TypedDict, total=False):
   """Raw media bytes for function response.
 
-  Text should not be sent as raw bytes, use the FunctionResponse.response
-  field.
+  Text should not be sent as raw bytes, use the 'text' field.
   """
 
   mime_type: Optional[str]
   """Required. The IANA standard MIME type of the source data."""
 
   data: Optional[bytes]
-  """Required. Inline media bytes."""
+  """Required. Raw bytes."""
 
   display_name: Optional[str]
-  """Optional. Display name of the blob.
-      Used to provide a label or filename to distinguish blobs."""
+  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API."""
 
 
 FunctionResponseBlobOrDict = Union[
@@ -1684,7 +1684,10 @@ FunctionResponseBlobOrDict = Union[
 
 
 class FunctionResponseFileData(_common.BaseModel):
-  """URI based data for function response."""
+  """URI based data for function response.
+
+  This data type is not supported in Gemini API.
+  """
 
   file_uri: Optional[str] = Field(
       default=None, description="""Required. URI."""
@@ -1695,13 +1698,15 @@ class FunctionResponseFileData(_common.BaseModel):
   )
   display_name: Optional[str] = Field(
       default=None,
-      description="""Optional. Display name of the file.
-      Used to provide a label or filename to distinguish files.""",
+      description="""Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled.""",
   )
 
 
 class FunctionResponseFileDataDict(TypedDict, total=False):
-  """URI based data for function response."""
+  """URI based data for function response.
+
+  This data type is not supported in Gemini API.
+  """
 
   file_uri: Optional[str]
   """Required. URI."""
@@ -1710,8 +1715,7 @@ class FunctionResponseFileDataDict(TypedDict, total=False):
   """Required. The IANA standard MIME type of the source data."""
 
   display_name: Optional[str]
-  """Optional. Display name of the file.
-      Used to provide a label or filename to distinguish files."""
+  """Optional. Display name of the file data. Used to provide a label or filename to distinguish file datas. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled."""
 
 
 FunctionResponseFileDataOrDict = Union[
@@ -1724,18 +1728,17 @@ class FunctionResponsePart(_common.BaseModel):
 
   A `FunctionResponsePart` consists of data which has an associated datatype. A
   `FunctionResponsePart` can only contain one of the accepted types in
-  `FunctionResponsePart.data`.
-
-  A `FunctionResponsePart` must have a fixed IANA MIME type identifying the
-  type and subtype of the media if the `inline_data` field is filled with raw
-  bytes.
+  `FunctionResponsePart.data`. A `FunctionResponsePart` must have a fixed IANA
+  MIME type identifying the type and subtype of the media if the `inline_data`
+  field is filled with raw bytes.
   """
 
   inline_data: Optional[FunctionResponseBlob] = Field(
-      default=None, description="""Optional. Inline media bytes."""
+      default=None, description="""Inline media bytes."""
   )
   file_data: Optional[FunctionResponseFileData] = Field(
-      default=None, description="""Optional. URI based data."""
+      default=None,
+      description="""URI based data. This field is not supported in Gemini API.""",
   )
 
   @classmethod
@@ -1778,18 +1781,16 @@ class FunctionResponsePartDict(TypedDict, total=False):
 
   A `FunctionResponsePart` consists of data which has an associated datatype. A
   `FunctionResponsePart` can only contain one of the accepted types in
-  `FunctionResponsePart.data`.
-
-  A `FunctionResponsePart` must have a fixed IANA MIME type identifying the
-  type and subtype of the media if the `inline_data` field is filled with raw
-  bytes.
+  `FunctionResponsePart.data`. A `FunctionResponsePart` must have a fixed IANA
+  MIME type identifying the type and subtype of the media if the `inline_data`
+  field is filled with raw bytes.
   """
 
   inline_data: Optional[FunctionResponseBlobDict]
-  """Optional. Inline media bytes."""
+  """Inline media bytes."""
 
   file_data: Optional[FunctionResponseFileDataDict]
-  """Optional. URI based data."""
+  """URI based data. This field is not supported in Gemini API."""
 
 
 FunctionResponsePartOrDict = Union[
@@ -1798,20 +1799,23 @@ FunctionResponsePartOrDict = Union[
 
 
 class FunctionResponse(_common.BaseModel):
-  """A function response."""
+  """The result output from a FunctionCall that contains a string representing the FunctionDeclaration.name and a structured JSON object containing any output from the function is used as context to the model.
+
+  This should contain the result of a `FunctionCall` made based on model
+  prediction.
+  """
 
   will_continue: Optional[bool] = Field(
       default=None,
-      description="""Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished.""",
+      description="""Optional. Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished. This may still trigger the model generation. To avoid triggering the generation and finish the function call, additionally set `scheduling` to `SILENT`. This field is not supported in Vertex AI.""",
   )
   scheduling: Optional[FunctionResponseScheduling] = Field(
       default=None,
-      description="""Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
+      description="""Optional. Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE.""",
   )
   parts: Optional[list[FunctionResponsePart]] = Field(
       default=None,
-      description="""List of parts that constitute a function response. Each part may
-      have a different IANA MIME type.""",
+      description="""Optional. Ordered `Parts` that constitute a function response. Parts may have different IANA MIME types.""",
   )
   id: Optional[str] = Field(
       default=None,
@@ -1843,17 +1847,20 @@ class FunctionResponse(_common.BaseModel):
 
 
 class FunctionResponseDict(TypedDict, total=False):
-  """A function response."""
+  """The result output from a FunctionCall that contains a string representing the FunctionDeclaration.name and a structured JSON object containing any output from the function is used as context to the model.
+
+  This should contain the result of a `FunctionCall` made based on model
+  prediction.
+  """
 
   will_continue: Optional[bool]
-  """Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls (see FunctionDeclaration.behavior for details), ignored otherwise. If false, the default, future responses will not be considered. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished."""
+  """Optional. Signals that function call continues, and more responses will be returned, turning the function call into a generator. Is only applicable to NON_BLOCKING function calls, is ignored otherwise. If set to false, future responses will not be considered. It is allowed to return empty `response` with `will_continue=False` to signal that the function call is finished. This may still trigger the model generation. To avoid triggering the generation and finish the function call, additionally set `scheduling` to `SILENT`. This field is not supported in Vertex AI."""
 
   scheduling: Optional[FunctionResponseScheduling]
-  """Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
+  """Optional. Specifies how the response should be scheduled in the conversation. Only applicable to NON_BLOCKING function calls, is ignored otherwise. Defaults to WHEN_IDLE."""
 
   parts: Optional[list[FunctionResponsePartDict]]
-  """List of parts that constitute a function response. Each part may
-      have a different IANA MIME type."""
+  """Optional. Ordered `Parts` that constitute a function response. Parts may have different IANA MIME types."""
 
   id: Optional[str]
   """Optional. The id of the function call this response is for. Populated by the client to match the corresponding function call `id`."""
