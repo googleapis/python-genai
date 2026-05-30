@@ -919,6 +919,11 @@ However you define your schema, don't duplicate it in your input prompt,
 including by giving examples of expected JSON output. If you do, the generated
 output might be lower in quality.
 
+When defining schemas with Python type hints, `dict[str, AllowedType]`
+describes an object with arbitrary string keys whose values all share the same
+schema. To describe an object with a fixed set of named fields, use a Pydantic
+model or provide an explicit JSON Schema with `properties`.
+
 #### JSON Schema support
 
 Schemas can be provided as standard JSON schema.

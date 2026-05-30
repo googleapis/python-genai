@@ -383,6 +383,10 @@ for message in chat.get_history():
 ### Structured Outputs (Pydantic)
 
 Enforce a specific JSON schema using standard Python type hints or Pydantic models.
+When using Python type hints, `dict[str, AllowedType]` describes an object with
+arbitrary string keys whose values all use the same schema. Use a Pydantic model
+or an explicit JSON Schema with `properties` for objects with a fixed set of
+named fields.
 
 ```python
 from google import genai
