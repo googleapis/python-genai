@@ -97,14 +97,3 @@ disable_error_code = [
     "no-redef",
 ]
 
-# Remove after the switch.
-[[tool.mypy.overrides]]
-module = [
-    "google.genai._interactions",
-    "google.genai._interactions.*"
-]
-# 'redundant-cast' is safe to ignore.
-disable_error_code = [
-  "redundant-cast",
-]
-implicit_reexport = true
