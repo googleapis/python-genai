@@ -1246,7 +1246,7 @@ class BaseApiClient:
         )
     else:
       patched_http_options = self._http_options
-    # Skip adding project and locations when getting Vertex AI base models.
+    # Skip adding project and locations when getting Vertex AI base/publisher models.
     query_vertex_base_models = False
     if (
         self.vertexai
