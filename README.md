@@ -15,11 +15,16 @@ Google's generative models into their Python applications. It supports the
 [Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
-## Code Generation
+## Agent Skills
 
-Generative models are often unaware of recent API and SDK updates and may suggest outdated or legacy code.
+Large Language Models (LLMs) and generative AI coding assistants are often trained on static datasets. As a result, they may be unaware of recent updates and suggest outdated or legacy libraries.
 
-We recommend using our Code Generation instructions [`codegen_instructions.md`](https://raw.githubusercontent.com/googleapis/python-genai/refs/heads/main/codegen_instructions.md) when generating Google Gen AI SDK code to guide your model towards using the more recent SDK features. Copy and paste the instructions into your development environment to provide the model with the necessary context.
+To ensure your AI coding helper (such as Antigravity, Claude Code, Cursor, or other IDE extensions) generates up-to-date code using the correct SDK syntax and best practices, we recommend equipping your assistant with **Gemini API Skills**. Loading these skills injects the correct patterns and guidelines directly into your AI assistant's context.
+
+Depending on your target platform, use the corresponding Agent Skill repository:
+
+*   **Gemini Developer API**: Use the [google-gemini/gemini-skills](https://github.com/google-gemini/gemini-skills) repository.
+*   **Gemini Enterprise Agent Platform (formerly Vertex AI)**: Use the [google/skills](https://github.com/google/skills/tree/main/skills/cloud/gemini-api) repository.
 
 ## Installation
 
@@ -43,7 +48,7 @@ from google.genai import types
 ## Create a client
 
 Please run one of the following code blocks to create a client for
-different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Vertex AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview)).
+different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)).
 
 ```python
 from google import genai
@@ -55,9 +60,9 @@ client = genai.Client(api_key='GEMINI_API_KEY')
 ```python
 from google import genai
 
-# Only run this block for Vertex AI API
+# Only run this block for Agent Platform
 client = genai.Client(
-    enterprise=True, project='your-project-id', location='us-central1'
+    enterprise=True, project='your-project-id', location='global'
 )
 ```
 
@@ -114,13 +119,13 @@ precedence.
 export GEMINI_API_KEY='your-api-key'
 ```
 
-**Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
+**Gemini API on Agent Platform:** Set `GOOGLE_GENAI_USE_ENTERPRISE`,
 `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 ```bash
-export GOOGLE_GENAI_USE_VERTEXAI=true
+export GOOGLE_GENAI_USE_ENTERPRISE=true
 export GOOGLE_CLOUD_PROJECT='your-project-id'
-export GOOGLE_CLOUD_LOCATION='us-central1'
+export GOOGLE_CLOUD_LOCATION='global'
 ```
 
 ```python
@@ -156,7 +161,7 @@ To explicitly close the async client:
 from google.genai import Client
 
 aclient = Client(
-    enterprise=True, project='my-project-id', location='us-central1'
+    enterprise=True, project='my-project-id', location='global'
 ).aio
 response_1 = await aclient.models.generate_content(
     model=MODEL_ID,
@@ -222,7 +227,7 @@ from google.genai import types
 client = genai.Client(
     enterprise=True,
     project='your-project-id',
-    location='us-central1',
+    location='global',
     http_options=types.HttpOptions(api_version='v1')
 )
 ```
@@ -305,7 +310,6 @@ will not include api version, project, or location.
 Expected request url will be:
 https://test-api-gateway-proxy.com/publishers/google/models/gemini-3-pro-preview
 
-
 ## Types
 
 Parameter types can be specified as either dictionaries(`TypedDict`) or
@@ -323,7 +327,7 @@ See the 'Create a client' section above to initialize a client.
 
 ```python
 response = client.models.generate_content(
-    model='gemini-2.5-flash', contents='Why is the sky blue?'
+    model='gemini-3.5-flash', contents='Why is the sky blue?'
 )
 print(response.text)
 ```
@@ -334,7 +338,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash-image',
+    model='gemini-3.1-flash-image',
     contents='A cartoon infographic for flying sneakers',
     config=types.GenerateContentConfig(
         response_modalities=["IMAGE"],
@@ -363,7 +367,7 @@ python code.
 ```python
 file = client.files.upload(file='a11.txt')
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents=['Could you summarize this file?', file]
 )
 print(response.text)
@@ -596,7 +600,7 @@ we use GenerateContentConfig to specify the desired behavior from the model.
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='high',
     config=types.GenerateContentConfig(
         system_instruction='I say high, you say low',
@@ -645,7 +649,7 @@ print(async_pager[0])
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='Say something bad.',
     config=types.GenerateContentConfig(
         safety_settings=[
@@ -679,7 +683,7 @@ def get_current_weather(location: str) -> str:
 
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[get_current_weather]),
 )
@@ -697,7 +701,7 @@ as follows:
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -744,7 +748,7 @@ function = types.FunctionDeclaration(
 tool = types.Tool(function_declarations=[function])
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[tool]),
 )
@@ -788,7 +792,7 @@ function_response_content = types.Content(
 )
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents=[
         user_prompt_content,
         function_call_content,
@@ -823,7 +827,7 @@ def get_current_weather(location: str) -> str:
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -853,7 +857,7 @@ def get_current_weather(location: str) -> str:
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -900,10 +904,9 @@ async def run():
 
             # Send request to the model with MCP function declarations
             response = await client.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.5-flash",
                 contents=prompt,
                 config=genai.types.GenerateContentConfig(
-                    temperature=0,
                     tools=[session],  # uses the session, will automatically call the tool using automatic function calling
                 ),
             )
@@ -945,7 +948,7 @@ user_profile = {
 }
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='Give me a random user profile.',
     config={
         'response_mime_type': 'application/json',
@@ -975,7 +978,7 @@ class CountryInfo(BaseModel):
 
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -989,7 +992,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -1028,7 +1031,7 @@ to you, rather than being returned as one chunk.
 
 ```python
 for chunk in client.models.generate_content_stream(
-    model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
+    model='gemini-3.5-flash', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1042,7 +1045,7 @@ you can use the `from_uri` class method to create a `Part` object.
 from google.genai import types
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents=[
         'What is this image about?',
         types.Part.from_uri(
@@ -1066,7 +1069,7 @@ with open(YOUR_IMAGE_PATH, 'rb') as f:
     image_bytes = f.read()
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents=[
         'What is this image about?',
         types.Part.from_bytes(data=image_bytes, mime_type=YOUR_IMAGE_MIME_TYPE),
@@ -1085,7 +1088,7 @@ of `client.models.generate_content`
 
 ```python
 response = await client.aio.models.generate_content(
-    model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
+    model='gemini-3.5-flash', contents='Tell me a story in 300 words.'
 )
 
 print(response.text)
@@ -1095,7 +1098,7 @@ print(response.text)
 
 ```python
 async for chunk in await client.aio.models.generate_content_stream(
-    model='gemini-2.5-flash', contents='Tell me a story in 300 words.'
+    model='gemini-3.5-flash', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1104,7 +1107,7 @@ async for chunk in await client.aio.models.generate_content_stream(
 
 ```python
 response = client.models.count_tokens(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1116,7 +1119,7 @@ Compute tokens is only supported in Vertex AI.
 
 ```python
 response = client.models.compute_tokens(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1126,7 +1129,7 @@ print(response)
 
 ```python
 response = await client.aio.models.count_tokens(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1137,7 +1140,7 @@ print(response)
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
 result = tokenizer.count_tokens("What is your name?")
 ```
 
@@ -1146,7 +1149,7 @@ result = tokenizer.count_tokens("What is your name?")
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
 result = tokenizer.compute_tokens("What is your name?")
 ```
 
@@ -1251,8 +1254,6 @@ response3.generated_images[0].image.show()
 
 ### Veo
 
-Support for generating videos is considered public preview
-
 #### Generate Videos (Text to Video)
 
 ```python
@@ -1355,7 +1356,7 @@ that it can reflect on its previous responses (i.e., engage in an ongoing
 ### Send Message (Synchronous Non-Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-2.5-flash')
+chat = client.chats.create(model='gemini-3.5-flash')
 response = chat.send_message('tell me a story')
 print(response.text)
 response = chat.send_message('summarize the story you told me in 1 sentence')
@@ -1365,7 +1366,7 @@ print(response.text)
 ### Send Message (Synchronous Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-2.5-flash')
+chat = client.chats.create(model='gemini-3.5-flash')
 for chunk in chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1373,7 +1374,7 @@ for chunk in chat.send_message_stream('tell me a story'):
 ### Send Message (Asynchronous Non-Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-2.5-flash')
+chat = client.aio.chats.create(model='gemini-3.5-flash')
 response = await chat.send_message('tell me a story')
 print(response.text)
 ```
@@ -1381,7 +1382,7 @@ print(response.text)
 ### Send Message (Asynchronous Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-2.5-flash')
+chat = client.aio.chats.create(model='gemini-3.5-flash')
 async for chunk in await chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1440,7 +1441,7 @@ else:
     file_uris = [file1.uri, file2.uri]
 
 cached_content = client.caches.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     config=types.CreateCachedContentConfig(
         contents=[
             types.Content(
@@ -1475,7 +1476,7 @@ cached_content = client.caches.get(name=cached_content.name)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     contents='Summarize the pdfs',
     config=types.GenerateContentConfig(
         cached_content=cached_content.name,
@@ -1496,7 +1497,7 @@ See the [documentation site](https://ai.google.dev/gemini-api/docs/interactions)
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input='Tell me a short joke about programming.'
 )
 print(interaction.outputs[-1].text)
@@ -1510,14 +1511,14 @@ The Interactions API supports server-side state management. You can continue a c
 ```python
 # 1. First turn
 interaction1 = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input='Hi, my name is Amir.'
 )
 print(f"Model: {interaction1.outputs[-1].text}")
 
 # 2. Second turn (passing previous_interaction_id)
 interaction2 = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input='What is my name?',
     previous_interaction_id=interaction1.id
 )
@@ -1567,7 +1568,7 @@ import base64
 # base64_image = ...
 
 interaction = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input=[
         {'type': 'text', 'text': 'Describe the image.'},
         {'type': 'image', 'data': base64_image, 'mime_type': 'image/png'}
@@ -1602,7 +1603,7 @@ weather_tool = {
 
 # 2. Send the request with tools
 interaction = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input='What is the weather in Mountain View, CA?',
     tools=[weather_tool]
 )
@@ -1617,7 +1618,7 @@ for output in interaction.outputs:
 
         # Send result back to the model
         interaction = client.interactions.create(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             previous_interaction_id=interaction.id,
             input=[{
                 'type': 'function_result',
@@ -1637,7 +1638,7 @@ You can also use Google's built-in tools, such as **Google Search** or **Code Ex
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input='Who won the last Super Bowl?',
     tools=[{'type': 'google_search'}]
 )
@@ -1653,7 +1654,7 @@ if text_output:
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     input='Calculate the 50th Fibonacci number.',
     tools=[{'type': 'code_execution'}]
 )
@@ -1696,7 +1697,7 @@ section above to initialize a client.
 ```python
 from google.genai import types
 
-model = 'gemini-2.5-flash'
+model = 'gemini-3.5-flash'
 training_dataset = types.TuningDataset(
     # or gcs_uri=my_vertex_multimodal_dataset
     gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
@@ -1850,7 +1851,7 @@ Vertex AI:
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
-    model='gemini-2.5-flash',
+    model='gemini-3.5-flash',
     src='bq://my-project.my-dataset.my-table',  # or "gs://path/to/input/data"
 )
 
@@ -1862,7 +1863,7 @@ Gemini Developer API:
 ```python
 # Create a batch job with inlined requests
 batch_job = client.batches.create(
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     src=[{
         "contents": [{
             "parts": [{
@@ -1897,7 +1898,7 @@ file = client.files.upload(
 
 # Create a batch job with file name
 batch_job = client.batches.create(
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     src="files/test-json",
 )
 ```
