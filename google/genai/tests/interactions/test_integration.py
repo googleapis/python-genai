@@ -13,8 +13,12 @@
 # limitations under the License.
 
 from unittest import mock
+
+from ..._gaos import google_genai as gaos_google_genai
 import pytest
+
 from ... import client as client_lib
+
 
 pytest_plugins = ("pytest_asyncio",)
 
@@ -37,48 +41,50 @@ def test_client_future_warning():
 
 def test_client_timeout():
   with mock.patch.object(
-      client_lib, "GeminiNextGenAPIClient", spec_set=True
-  ) as mock_nextgen_client:
+      gaos_google_genai, "GenAI", spec_set=True
+  ) as mock_genai:
+    mock_client = mock.Mock()
+    mock_genai.return_value = mock_client
 
     client = client_lib.Client(
         api_key="placeholder",
         http_options={"api_version": "v1alpha", "timeout": 5000},
     )
 
-    _ = client.interactions
+    # Trigger client build
+    _ = client.interactions.with_raw_response
 
-    mock_nextgen_client.assert_called_once_with(
-        base_url=mock.ANY,
-        api_key="placeholder",
-        api_version="v1alpha",
-        default_headers=mock.ANY,
-        http_client=mock.ANY,
-        timeout=5.0,
-        max_retries=mock.ANY,
-        client_adapter=mock.ANY,
+    mock_genai.assert_called_once_with(
+        security=mock.ANY,
+        api_version=mock.ANY,
+        user_project=mock.ANY,
+        server_url=mock.ANY,
+        client=mock.ANY,
+        timeout_ms=5000,
     )
 
 
 @pytest.mark.asyncio
 async def test_async_client_timeout():
   with mock.patch.object(
-      client_lib, "AsyncGeminiNextGenAPIClient", spec_set=True
-  ) as mock_nextgen_client:
+      gaos_google_genai, "AsyncGenAI", spec_set=True
+  ) as mock_async_genai:
+    mock_client = mock.Mock()
+    mock_async_genai.return_value = mock_client
 
     client = client_lib.Client(
         api_key="placeholder",
         http_options={"api_version": "v1alpha", "timeout": 5000},
     )
 
-    _ = client.aio.interactions
+    # Trigger client build
+    _ = client.aio.interactions.with_raw_response
 
-    mock_nextgen_client.assert_called_once_with(
-        base_url=mock.ANY,
-        api_key="placeholder",
-        api_version="v1alpha",
-        default_headers=mock.ANY,
-        http_client=mock.ANY,
-        timeout=5.0,
-        max_retries=mock.ANY,
-        client_adapter=mock.ANY,
+    mock_async_genai.assert_called_once_with(
+        security=mock.ANY,
+        api_version=mock.ANY,
+        user_project=mock.ANY,
+        server_url=mock.ANY,
+        async_client=mock.ANY,
+        timeout_ms=5000,
     )
