@@ -120,18 +120,9 @@ def format_destination(
 
 def find_afc_incompatible_tool_indexes(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    is_agent_platform: bool = False,
 ) -> list[int]:
-  """Checks if the config contains any AFC incompatible tools.
-
-  A `types.Tool` object that contains `function_declarations` is considered a
-  non-AFC tool for this execution path.
-
-  Args:
-    config: The GenerateContentConfig to check for incompatible tools.
-
-  Returns:
-    A list of indexes of the incompatible tools in the config.
-  """
+  """Checks if the config contains any AFC incompatible tools."""
   if not config:
     return []
   config_model = _create_generate_content_config_model(config)
@@ -143,9 +134,11 @@ def find_afc_incompatible_tool_indexes(
   for index, tool in enumerate(config_model.tools):
     if not isinstance(tool, types.Tool):
       continue
-    if tool.function_declarations:
+    if getattr(tool, 'function_declarations', None):
       incompatible_tools_indexes.append(index)
-    if tool.mcp_servers:
+
+    # Only mark it incompatible if it's MLDev, not Agent Platform.
+    if getattr(tool, 'mcp_servers', None) and not is_agent_platform:
       incompatible_tools_indexes.append(index)
   return incompatible_tools_indexes
 
@@ -383,12 +376,15 @@ async def get_function_response_parts_async(
       if not part.function_call:
         continue
       func_name = part.function_call.name
-      if func_name is not None and part.function_call.args is not None:
+      if func_name is not None:
         func = function_map[func_name]
-        args = convert_number_values_for_dict_function_call_args(
+        # Treat None as an empty dictionary for execution
+        raw_args = (
             part.function_call.args
+            if part.function_call.args is not None
+            else {}
         )
-        func_response: _common.StringDict
+        args = convert_number_values_for_dict_function_call_args(raw_args)
         try:
           if isinstance(func, McpToGenAiToolAdapter):
             mcp_tool_response = await func.call_tool(
@@ -409,7 +405,7 @@ async def get_function_response_parts_async(
                 )
             }
         except Exception as e:  # pylint: disable=broad-except
-          func_response = {'error': str(e)}
+          func_response = {'error': str(e)}  # type: ignore[dict-item]
         func_response_part = types.Part.from_function_response(
             name=func_name, response=func_response
         )
@@ -551,6 +547,7 @@ def parse_config_for_mcp_usage(
 
 async def parse_config_for_mcp_sessions(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    is_agent_platform: bool = False,
 ) -> tuple[
     Optional[types.GenerateContentConfig],
     dict[str, McpToGenAiToolAdapter],
@@ -571,7 +568,7 @@ async def parse_config_for_mcp_sessions(
     for tool in parsed_config.tools:
       if McpClientSession is not None and isinstance(tool, McpClientSession):
         mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
+            tool, await tool.list_tools(), is_agent_platform=is_agent_platform
         )
         # Extend the config with the MCP session tools converted to GenAI tools.
         parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
@@ -677,3 +674,19 @@ def prepare_resumable_upload(
         http_options.headers = {}
     http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
   return http_options, size_bytes, mime_type
+
+
+def has_agent_platform_mcp_servers(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> bool:
+    """Checks whether the configuration contains any MCP server requests."""
+    if not config:
+      return False
+    config_model = _create_generate_content_config_model(config)
+    if not config_model.tools:
+      return False
+
+    for tool in config_model.tools:
+      if getattr(tool, 'mcp_servers', None):
+        return True
+    return False

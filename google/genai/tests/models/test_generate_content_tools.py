@@ -27,6 +27,19 @@ from ... import errors
 from ... import types
 from .. import pytest_helper
 
+
+import contextlib
+from unittest import mock
+import pytest
+from ... import _mcp_utils
+
+try:
+  from mcp import types as mcp_types
+  from mcp import ClientSession
+except ImportError:
+  mcp_types = None
+  ClientSession = None
+
 GOOGLE_HOMEPAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google_homepage.png')
 )
@@ -1979,3 +1992,109 @@ def test_server_side_mcp_only_stream(client):
     )
     for chunk in response:
       pass
+
+
+@pytest.mark.asyncio
+async def test_client_side_mcp_unary_async(client):
+    """Test client-side MCP execution for Agent Platform."""
+    if not client._api_client.vertexai:
+      pytest.skip('Vertex MCP test is not applicable to MLDev.')
+
+    if mcp_types is None:
+      pytest.skip('MCP library is not installed.')
+
+    # Need to mock this since MCP bypasses the replay client recorder
+    mock_session = mock.AsyncMock(spec=ClientSession)
+    mock_session.list_tools.return_value = mcp_types.ListToolsResult(
+        tools=[
+            mcp_types.Tool(
+                name='list_endpoints',
+                description='Lists endpoints',
+                inputSchema={'type': 'object', 'properties': {}}
+            )
+        ]
+    )
+
+    mock_session.call_tool.return_value = mcp_types.CallToolResult(
+        content=[
+            mcp_types.TextContent(
+                type='text', text='Endpoint list: [my-endpoint-123]'
+            )
+        ]
+    )
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(*args, **kwargs):
+      yield mock_session
+
+    with mock.patch.object(_mcp_utils, '_connect_agent_platform_mcp', side_effect=mock_connect):
+
+      response = await client.aio.models.generate_content(
+          model='gemini-2.5-flash',
+          contents='List my endpoints.',
+          config={
+              'tools': [
+                  types.Tool(
+                      mcp_servers=[types.McpServer(name='endpoints')]
+                  )
+              ],
+              'automatic_function_calling': {'disable': False}
+          }
+      )
+
+    assert response.text is not None
+    assert mock_session.list_tools.called
+    assert mock_session.call_tool.called
+
+
+@pytest.mark.asyncio
+async def test_client_side_mcp_stream_async_raises(client):
+    """Test that streaming with Agent Platform MCP raises an error."""
+
+    if not client._api_client.vertexai:
+      pytest.skip('Vertex MCP test is not applicable to MLDev.')
+
+    with pytest.raises(
+        NotImplementedError,
+        match=(
+            'MCP servers are not yet supported for streaming in the Agent'
+            ' Platform API.'
+        )
+    ):
+      response = await client.aio.models.generate_content_stream(
+          model='gemini-2.5-flash',
+          contents='List my endpoints.',
+          config={
+              'tools': [
+                  types.Tool(
+                      mcp_servers=[types.McpServer(name='endpoints')]
+                  )
+              ]
+          }
+      )
+      async for _ in response:
+        pass
+
+
+@pytest.mark.asyncio
+async def test_client_side_mcp_missing_name_raises(client):
+    """Test that an MCP server without a name raises an error."""
+
+    if not client._api_client.vertexai:
+      pytest.skip('Vertex MCP test is not applicable to MLDev.')
+
+    with pytest.raises(
+        ValueError,
+        match="Agent Platform MCP servers require a 'name' field."
+    ):
+      await client.aio.models.generate_content(
+          model='gemini-2.5-flash',
+          contents='List my endpoints.',
+          config={
+              'tools': [
+                  types.Tool(
+                      mcp_servers=[types.McpServer(name=None)]
+                  )
+              ]
+          }
+      )

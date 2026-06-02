@@ -1523,6 +1523,26 @@ def _LiveServerMessage_from_vertex(
   return to_object
 
 
+def _McpServer_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    raise ValueError(
+        'name parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['streamable_http_transport']) is not None:
+    raise ValueError(
+        'streamable_http_transport parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
 def _MultiSpeakerVoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1941,9 +1961,13 @@ def _Tool_to_vertex(
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['mcp_servers']) is not None:
-    raise ValueError(
-        'mcp_servers parameter is only supported in Gemini Developer API mode,'
-        ' not in Gemini Enterprise Agent Platform mode.'
+    setv(
+        to_object,
+        ['mcpServers'],
+        [
+            _McpServer_to_vertex(item, to_object)
+            for item in getv(from_object, ['mcp_servers'])
+        ],
     )
 
   return to_object
