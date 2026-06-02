@@ -1612,12 +1612,12 @@ async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
-async def test_bidi_setup_to_api_with_stream_translation_config(vertexai):
+async def test_bidi_setup_to_api_with_translation_config(vertexai):
   api_client = mock_api_client(vertexai=vertexai)
 
   # Test 1: Config defined using dict representation.
   config_dict = {
-      'stream_translation_config': {
+      'translation_config': {
           'echo_target_language': True,
           'target_language_code': 'es',
       },
@@ -1633,7 +1633,7 @@ async def test_bidi_setup_to_api_with_stream_translation_config(vertexai):
         'setup': {
             'model': 'models/test_model',
             'generationConfig': {
-                'streamTranslationConfig': {
+                'translationConfig': {
                     'echo_target_language': True,
                     'target_language_code': 'es',
                 },
@@ -1644,7 +1644,7 @@ async def test_bidi_setup_to_api_with_stream_translation_config(vertexai):
 
   # Test 2: Config defined using types.LiveConnectConfig.
   config = types.LiveConnectConfig(
-      stream_translation_config=types.StreamTranslationConfig(
+      translation_config=types.TranslationConfig(
           echo_target_language=True,
           target_language_code='es',
       )

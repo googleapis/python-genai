@@ -474,11 +474,11 @@ def _LiveConnectConfig_to_mldev(
         ],
     )
 
-  if getv(from_object, ['stream_translation_config']) is not None:
+  if getv(from_object, ['translation_config']) is not None:
     setv(
         parent_object,
-        ['setup', 'generationConfig', 'streamTranslationConfig'],
-        getv(from_object, ['stream_translation_config']),
+        ['setup', 'generationConfig', 'translationConfig'],
+        getv(from_object, ['translation_config']),
     )
 
   return to_object
