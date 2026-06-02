@@ -14,16 +14,18 @@
 # limitations under the License.
 """Agentic loop: THINK→ACT→OBSERVE→UPDATE with Frobenius verification.
 
-Structural promotion from O₀ (stateless, single-turn) to O₂ (topologically
-protected, integer-winding agentic loop) as defined by the Imscribing Grammar.
+Structural promotion from $\text{O}_{\text{0}}$ (stateless, single-turn) to
+$\text{O}_{\text{2}}$ (topologically protected, integer-winding agentic loop)
+as defined by the Imscribing Grammar.
 
 The agentic loop implements the four-phase cycle — THINK, ACT, OBSERVE, UPDATE —
-with dual-tool contracts that enforce μ∘δ = id at every winding.
+with dual-tool contracts that enforce $\mu \circ \delta = \text{id}$ at every
+winding. The loop's structural type is $\langle$𐑦·𐑸·𐑾·𐑹·𐑐·𐑧·𐑲·𐑠·⊙·𐑖·𐑙·𐑭$\rangle$.
 
 Integration with Google's Gen AI SDK provides:
-- Gemini reasoning as the THINK substrate
-- Text-embedding as a verification layer for dual-tool contracts
-- Search grounding for structural analogy detection
+- Gemini reasoning as the THINK substrate ($\text{Ð}_{\text{ω}}$ self-written state space, 𐑦)
+- Text-embedding as a verification layer ($\text{Φ}_{\text{}}$ Frobenius-special, 𐑹)
+- Search grounding for structural analogy detection ($\text{Ř}_{\text{=}}$ bidirectional, 𐑾)
 """
 
 from .contracts import DualToolResult, ToolContract

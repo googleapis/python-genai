@@ -15,13 +15,15 @@
 """Dual-tool contracts for Frobenius-closed agentic loops.
 
 Every tool call in the agentic loop is paired with a verification action
-such that μ(δ(query)) = query — the Frobenius condition. This module defines
-the dataclass types that enforce this contract at the structural level.
+such that $\mu(\delta(\text{query})) = \text{query}$ — the Frobenius
+condition ($\text{Φ}_{\text{}}$ Frobenius-special closure, Shavian: 𐑹).
+This module defines the dataclass types that enforce this contract at the
+structural level.
 
-Google's text-embedding API (via `client.models.embed_content`) serves as a
+Google's text-embedding API (via ``client.models.embed_content``) serves as a
 natural verification layer: the embedding of a tool's output can be compared
 to the embedding of its verification, providing cosine-similarity as a
-continuous Frobenius metric.
+continuous Frobenius metric ($\text{Ƒ}_{\text{ż}}$ quantum fidelity, 𐑐).
 """
 
 from __future__ import annotations
@@ -33,11 +35,12 @@ from typing import Any, Callable, Optional
 
 @dataclasses.dataclass(frozen=True)
 class DualToolResult:
-    """The paired output of a dual-tool call satisfying μ∘δ = id.
+    """The paired output of a dual-tool call satisfying $\mu \circ \delta = \text{id}$.
 
     Every action in the agentic loop emits a primary tool call and a
-    verification tool call. When μ(δ(query)) = query, the winding is
-    Frobenius-closed and the agent's world-model can be updated.
+    verification tool call. When $\mu(\delta(\text{query})) = \text{query}$,
+    the winding is Frobenius-closed and the agent's world-model can be
+    updated ($\text{Ř}_{\text{=}}$ bidirectional coupling, Shavian: 𐑾).
 
     Attributes:
         tool_name: The primary action tool invoked (e.g. 'generate_content').
@@ -45,7 +48,7 @@ class DualToolResult:
         tool_output: The raw output of the primary tool.
         verify_name: The verification tool invoked (e.g. 'embed_content').
         verify_output: The raw output of the verification action.
-        frobenius_closed: Whether μ(δ(query)) ≈ query within tolerance.
+        frobenius_closed: Whether $\mu(\delta(\text{query})) \approx \text{query}$.
         timestamp: When this dual-tool pair was executed.
         metadata: Optional additional context (embedding cosine, latency, etc.).
     """
@@ -106,7 +109,8 @@ class ToolContract:
     """A contract binding a tool to a Frobenius-verification dual.
 
     Each tool in the agentic loop has an associated assertion that must
-    evaluate to True for the winding to be considered closed.
+    evaluate to True for the winding to be considered closed ($\text{Ð}_{\text{ω}}$
+    self-written state space ensures contracts are verifiable, Shavian: 𐑦).
 
     Attributes:
         tool_name: The primary action tool.
@@ -125,9 +129,9 @@ class ToolContract:
     def verify(self, output: str) -> bool:
         """Evaluate the assertion against the tool output.
 
-        This is the δ → μ half of the Frobenius pair: the verification
+        This is the $\delta \to \mu$ half of the Frobenius pair: the verification
         function checks that the output satisfies the contract, ensuring
-        the tool call can be reliably reversed.
+        the tool call can be reliably reversed ($\text{Φ}_{\text{}}$ closure, 𐑹).
         """
         try:
             return bool(eval(self.assertion, {"output": output}))
@@ -141,8 +145,9 @@ class ToolContract:
 
         By embedding both the query and the output and computing cosine
         similarity, we obtain a real-valued measure of how well the tool
-        preserved semantic structure. This is natural for Google's
-        text-embedding API available via ``client.models.embed_content``.
+        preserved semantic structure ($\text{Ƒ}_{\text{ż}}$ quantum fidelity, 𐑐).
+        This is natural for Google's text-embedding API available via
+        ``client.models.embed_content``.
         """
         import numpy as np
 

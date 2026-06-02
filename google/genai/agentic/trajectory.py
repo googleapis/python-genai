@@ -12,16 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Trajectory tracking for the agentic loop.
+"""AgentTrajectory — monotonic winding history with $\Omega_{\text{z}}$ invariant.
 
-An AgentTrajectory is a monotonic sequence of windings. Each winding records
-the four phases of the THINK→ACT→OBSERVE→UPDATE cycle and whether the
-Frobenius condition μ∘δ = id was satisfied.
+The trajectory is the state space of the agentic loop. It records a monotonic
+sequence of windings. Each winding records the four phases of the THINK→ACT→
+OBSERVE→UPDATE cycle and whether the Frobenius condition $\mu \circ \delta =
+\text{id}$ was satisfied.
 
 The winding counter is never reset — the trajectory is the state space
-(Ð_ω imscriptive context). Structural health metrics (frobenius_ratio,
-winding_count) provide the topological invariants that distinguish
-O₂ (integer-winding) from O₀ (zero-winding).
+($\text{Ð}_{\text{ω}}$ imscriptive context, Shavian: 𐑦). Structural health
+metrics (frobenius_ratio, winding_count) provide the topological invariants
+that distinguish $\text{O}_{\text{2}}$ (integer-winding, Shavian: 𐑭) from
+$\text{O}_{\text{0}}$ (zero-winding, Shavian: 𐑷).
 """
 
 from __future__ import annotations
@@ -46,7 +48,7 @@ class AgentCycle:
         update_note: Summary of the world-model update applied after verification.
         done: Whether this cycle terminated the agentic loop.
         conclusion: The final conclusion if done=True.
-        frobenius_closed: Whether μ∘δ = id was satisfied.
+        frobenius_closed: Whether $\mu \circ \delta = \text{id}$ was satisfied.
     """
 
     winding: int
@@ -80,7 +82,8 @@ class AgentTrajectory:
     """Monotonic trajectory of agentic windings.
 
     The trajectory is the state space — it is never summarized or discarded.
-    Each winding adds a new point to the monotonic advance (Ω_z invariant).
+    Each winding adds a new point to the monotonic advance ($\Omega_{\text{z}}$
+    invariant, Shavian: 𐑭).
 
     Attributes:
         _cycles: Ordered list of completed windings.
@@ -98,10 +101,10 @@ class AgentTrajectory:
 
     @property
     def frobenius_ratio(self) -> float:
-        """Fraction of windings where μ∘δ = id was satisfied.
+        """Fraction of windings where $\mu \circ \delta = \text{id}$ was satisfied.
 
         A ratio of 1.0 means every winding was Frobenius-closed.
-        This is the structural health metric for O₂ promotion.
+        This is the structural health metric for $\text{O}_{\text{2}}$ promotion.
         """
         if not self._cycles:
             return 0.0
@@ -126,7 +129,8 @@ class AgentTrajectory:
         """Serialize the entire trajectory for LLM context injection.
 
         Returns the full winding history so the model can reason over
-        its own prior states — enabling Ð_ω self-written state space.
+        its own prior states — enabling $\text{Ð}_{\text{ω}}$ self-written
+        state space (Shavian: 𐑦).
         """
         return [c.to_dict() for c in self._cycles]
 
@@ -135,7 +139,7 @@ class AgentTrajectory:
 
         Returns:
             A dict with winding_count, frobenius_ratio, last_winding,
-            total_updates, and the trajectory's Ω invariant status.
+            total_updates, and the $\Omega$ invariant status.
         """
         return {
             "winding_count": self.winding_count,
@@ -145,13 +149,13 @@ class AgentTrajectory:
                 1 for c in self._cycles if c.update_note
             ),
             "omega_invariant": (
-                "Ω_z" if self.frobenius_ratio >= 0.95
-                else "Ω_2" if self.frobenius_ratio >= 0.8
-                else "Ω_0"
+                "𐑭" if self.frobenius_ratio >= 0.95
+                else "𐑴" if self.frobenius_ratio >= 0.8
+                else "𐑷"
             ),
             "structural_tier": (
-                "O₂" if self.winding_count >= 2 and self.frobenius_ratio >= 0.8
-                else "O₁" if self.winding_count >= 1
-                else "O₀"
+                "O\u2082" if self.winding_count >= 2 and self.frobenius_ratio >= 0.8
+                else "O\u2081" if self.winding_count >= 1
+                else "O\u2080"
             ),
         }
