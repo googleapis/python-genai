@@ -18531,6 +18531,10 @@ class Transcription(_common.BaseModel):
       default=None,
       description="""Optional. The bool indicates the end of the transcription.""",
   )
+  language_code: Optional[str] = Field(
+      default=None,
+      description="""The BCP-47 language code of the transcription.""",
+  )
 
 
 class TranscriptionDict(TypedDict, total=False):
@@ -18541,6 +18545,9 @@ class TranscriptionDict(TypedDict, total=False):
 
   finished: Optional[bool]
   """Optional. The bool indicates the end of the transcription."""
+
+  language_code: Optional[str]
+  """The BCP-47 language code of the transcription."""
 
 
 TranscriptionOrDict = Union[Transcription, TranscriptionDict]
