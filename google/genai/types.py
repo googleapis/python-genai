@@ -3564,7 +3564,7 @@ class GoogleMaps(_common.BaseModel):
   )
   enable_widget: Optional[bool] = Field(
       default=None,
-      description="""Optional. Whether to return a widget context token in the GroundingMetadata of the response. Developers can use the widget context token to render a Google Maps widget with geospatial context related to the places that the model references in the response.""",
+      description="""Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response.""",
   )
 
 
@@ -3575,7 +3575,7 @@ class GoogleMapsDict(TypedDict, total=False):
   """The authentication config to access the API. Only API key is supported. This field is not supported in Gemini API."""
 
   enable_widget: Optional[bool]
-  """Optional. Whether to return a widget context token in the GroundingMetadata of the response. Developers can use the widget context token to render a Google Maps widget with geospatial context related to the places that the model references in the response."""
+  """Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
