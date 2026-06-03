@@ -1050,6 +1050,43 @@ class ImageResizeMode(_common.CaseInSensitiveEnum):
       any parts of the image in the process)."""
 
 
+class ResponseParseType(_common.CaseInSensitiveEnum):
+  """Defines how to parse sample response."""
+
+  RESPONSE_PARSE_TYPE_UNSPECIFIED = 'RESPONSE_PARSE_TYPE_UNSPECIFIED'
+  """Default value. This value is unused."""
+  IDENTITY = 'IDENTITY'
+  """Use the sample response as is."""
+  REGEX_EXTRACT = 'REGEX_EXTRACT'
+  """Use regex to extract the important part of sample response."""
+
+
+class MatchOperation(_common.CaseInSensitiveEnum):
+  """Match operation to use for evaluation."""
+
+  MATCH_OPERATION_UNSPECIFIED = 'MATCH_OPERATION_UNSPECIFIED'
+  """Default value. This value is unused."""
+  REGEX_CONTAINS = 'REGEX_CONTAINS'
+  """Equivalent to GoogleSQL `REGEX_CONTAINS(target, expression)`."""
+  PARTIAL_MATCH = 'PARTIAL_MATCH'
+  """`expression` is a substring of target."""
+  EXACT_MATCH = 'EXACT_MATCH'
+  """`expression` is an exact match of target."""
+
+
+class ReinforcementTuningThinkingLevel(_common.CaseInSensitiveEnum):
+  """Represents how much to think for the tuning job."""
+
+  REINFORCEMENT_TUNING_THINKING_LEVEL_UNSPECIFIED = (
+      'REINFORCEMENT_TUNING_THINKING_LEVEL_UNSPECIFIED'
+  )
+  """Unspecified thinking level."""
+  MINIMAL = 'MINIMAL'
+  """Little to no thinking."""
+  HIGH = 'HIGH'
+  """High thinking level."""
+
+
 class TuningMethod(_common.CaseInSensitiveEnum):
   """Enum representing the tuning method."""
 
@@ -12104,54 +12141,6 @@ class DistillationSpecDict(TypedDict, total=False):
 DistillationSpecOrDict = Union[DistillationSpec, DistillationSpecDict]
 
 
-class GcsDestination(_common.BaseModel):
-  """The Google Cloud Storage location where the output is to be written to."""
-
-  output_uri_prefix: Optional[str] = Field(
-      default=None,
-      description="""Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist.""",
-  )
-
-  @pydantic.model_validator(mode='after')
-  def _validate_gcs_path(self) -> 'GcsDestination':
-    if self.output_uri_prefix and not self.output_uri_prefix.startswith(
-        'gs://'
-    ):
-      raise ValueError(
-          'output_uri_prefix must be a valid GCS path starting with "gs://".'
-      )
-    return self
-
-
-class GcsDestinationDict(TypedDict, total=False):
-  """The Google Cloud Storage location where the output is to be written to."""
-
-  output_uri_prefix: Optional[str]
-  """Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist."""
-
-
-GcsDestinationOrDict = Union[GcsDestination, GcsDestinationDict]
-
-
-class OutputConfig(_common.BaseModel):
-  """Config for evaluation output."""
-
-  gcs_destination: Optional[GcsDestination] = Field(
-      default=None,
-      description="""Cloud storage destination for evaluation output.""",
-  )
-
-
-class OutputConfigDict(TypedDict, total=False):
-  """Config for evaluation output."""
-
-  gcs_destination: Optional[GcsDestinationDict]
-  """Cloud storage destination for evaluation output."""
-
-
-OutputConfigOrDict = Union[OutputConfig, OutputConfigDict]
-
-
 class AutoraterConfig(_common.BaseModel):
   """Autorater config used for evaluation."""
 
@@ -12218,6 +12207,612 @@ class AutoraterConfigDict(TypedDict, total=False):
 
 
 AutoraterConfigOrDict = Union[AutoraterConfig, AutoraterConfigDict]
+
+
+class ReinforcementTuningParseResponseConfig(_common.BaseModel):
+  """Defines how to parse sample response for reinforcement tuning."""
+
+  parse_type: Optional[ResponseParseType] = Field(
+      default=None, description="""Defines how to parse sample response."""
+  )
+  regex_extract_expression: Optional[str] = Field(
+      default=None,
+      description="""Defines the regex to extract the important part of sample response. This field is only used when `parse_type` is `REGEX_EXTRACT`.""",
+  )
+
+
+class ReinforcementTuningParseResponseConfigDict(TypedDict, total=False):
+  """Defines how to parse sample response for reinforcement tuning."""
+
+  parse_type: Optional[ResponseParseType]
+  """Defines how to parse sample response."""
+
+  regex_extract_expression: Optional[str]
+  """Defines the regex to extract the important part of sample response. This field is only used when `parse_type` is `REGEX_EXTRACT`."""
+
+
+ReinforcementTuningParseResponseConfigOrDict = Union[
+    ReinforcementTuningParseResponseConfig,
+    ReinforcementTuningParseResponseConfigDict,
+]
+
+
+class ReinforcementTuningAutoraterScorerParsedResponseConversionScorer(
+    _common.BaseModel
+):
+  """Scores responses by directly converting parsed autorater response to float reward (reward is clipped to be within [-1, 1])."""
+
+  pass
+
+
+class ReinforcementTuningAutoraterScorerParsedResponseConversionScorerDict(
+    TypedDict, total=False
+):
+  """Scores responses by directly converting parsed autorater response to float reward (reward is clipped to be within [-1, 1])."""
+
+  pass
+
+
+ReinforcementTuningAutoraterScorerParsedResponseConversionScorerOrDict = Union[
+    ReinforcementTuningAutoraterScorerParsedResponseConversionScorer,
+    ReinforcementTuningAutoraterScorerParsedResponseConversionScorerDict,
+]
+
+
+class ReinforcementTuningAutoraterScorerExactMatchScorer(_common.BaseModel):
+  """Scores autorater responses by using exact string match reward scorer."""
+
+  correct_answer_reward: Optional[float] = Field(
+      default=None,
+      description="""Assigns this reward score if parsed response string equals the expression.""",
+  )
+  wrong_answer_reward: Optional[float] = Field(
+      default=None,
+      description="""Assigns this reward score if parsed reward value does not equal the expression.""",
+  )
+  expression: Optional[str] = Field(
+      default=None,
+      description="""The string expression to match against. Supports substitution in the format of `references.reference` (wrapped in double curly braces) before matching. No regex support.""",
+  )
+
+
+class ReinforcementTuningAutoraterScorerExactMatchScorerDict(
+    TypedDict, total=False
+):
+  """Scores autorater responses by using exact string match reward scorer."""
+
+  correct_answer_reward: Optional[float]
+  """Assigns this reward score if parsed response string equals the expression."""
+
+  wrong_answer_reward: Optional[float]
+  """Assigns this reward score if parsed reward value does not equal the expression."""
+
+  expression: Optional[str]
+  """The string expression to match against. Supports substitution in the format of `references.reference` (wrapped in double curly braces) before matching. No regex support."""
+
+
+ReinforcementTuningAutoraterScorerExactMatchScorerOrDict = Union[
+    ReinforcementTuningAutoraterScorerExactMatchScorer,
+    ReinforcementTuningAutoraterScorerExactMatchScorerDict,
+]
+
+
+class ReinforcementTuningAutoraterScorer(_common.BaseModel):
+  """Reinforcement tuning autorater scorer."""
+
+  autorater_config: Optional[AutoraterConfig] = Field(
+      default=None, description="""Autorater config for evaluation."""
+  )
+  autorater_prompt: Optional[str] = Field(
+      default=None,
+      description="""Allows substituting `prompt`, `response`, `system_instruction` and `references.reference` (each wrapped in double curly braces) into the autorater prompt.""",
+  )
+  autorater_response_parse_config: Optional[
+      ReinforcementTuningParseResponseConfig
+  ] = Field(default=None, description="""Parses autorater returned response.""")
+  parsed_response_conversion_scorer: Optional[
+      ReinforcementTuningAutoraterScorerParsedResponseConversionScorer
+  ] = Field(
+      default=None,
+      description="""Scores autorater responses by directly converting parsed autorater response to float reward.""",
+  )
+  exact_match_scorer: Optional[
+      ReinforcementTuningAutoraterScorerExactMatchScorer
+  ] = Field(
+      default=None,
+      description="""Scores autorater responses by using exact string match reward scorer.""",
+  )
+
+
+class ReinforcementTuningAutoraterScorerDict(TypedDict, total=False):
+  """Reinforcement tuning autorater scorer."""
+
+  autorater_config: Optional[AutoraterConfigDict]
+  """Autorater config for evaluation."""
+
+  autorater_prompt: Optional[str]
+  """Allows substituting `prompt`, `response`, `system_instruction` and `references.reference` (each wrapped in double curly braces) into the autorater prompt."""
+
+  autorater_response_parse_config: Optional[
+      ReinforcementTuningParseResponseConfigDict
+  ]
+  """Parses autorater returned response."""
+
+  parsed_response_conversion_scorer: Optional[
+      ReinforcementTuningAutoraterScorerParsedResponseConversionScorerDict
+  ]
+  """Scores autorater responses by directly converting parsed autorater response to float reward."""
+
+  exact_match_scorer: Optional[
+      ReinforcementTuningAutoraterScorerExactMatchScorerDict
+  ]
+  """Scores autorater responses by using exact string match reward scorer."""
+
+
+ReinforcementTuningAutoraterScorerOrDict = Union[
+    ReinforcementTuningAutoraterScorer, ReinforcementTuningAutoraterScorerDict
+]
+
+
+class ReinforcementTuningCodeExecutionRewardScorer(_common.BaseModel):
+  """Scores parsed responses for code execution use cases."""
+
+  python_code_snippet: Optional[str] = Field(
+      default=None,
+      description="""Example python code snippet which assigns reward of 1 to answer matching user provided reference answer in per prompt references map.""",
+  )
+
+
+class ReinforcementTuningCodeExecutionRewardScorerDict(TypedDict, total=False):
+  """Scores parsed responses for code execution use cases."""
+
+  python_code_snippet: Optional[str]
+  """Example python code snippet which assigns reward of 1 to answer matching user provided reference answer in per prompt references map."""
+
+
+ReinforcementTuningCodeExecutionRewardScorerOrDict = Union[
+    ReinforcementTuningCodeExecutionRewardScorer,
+    ReinforcementTuningCodeExecutionRewardScorerDict,
+]
+
+
+class ReinforcementTuningStringMatchRewardScorerStringMatchExpression(
+    _common.BaseModel
+):
+  """Evaluates parsed response using match type against expression."""
+
+  match_operation: Optional[MatchOperation] = Field(
+      default=None, description="""Match operation to use for evaluation."""
+  )
+  expression: Optional[str] = Field(
+      default=None,
+      description="""String or regular expression to match against. Customer can also provide a references map (key/value pairs) whose value will be substituted into the expression by referencing `references.key_name` (wrapped in double curly braces).""",
+  )
+
+
+class ReinforcementTuningStringMatchRewardScorerStringMatchExpressionDict(
+    TypedDict, total=False
+):
+  """Evaluates parsed response using match type against expression."""
+
+  match_operation: Optional[MatchOperation]
+  """Match operation to use for evaluation."""
+
+  expression: Optional[str]
+  """String or regular expression to match against. Customer can also provide a references map (key/value pairs) whose value will be substituted into the expression by referencing `references.key_name` (wrapped in double curly braces)."""
+
+
+ReinforcementTuningStringMatchRewardScorerStringMatchExpressionOrDict = Union[
+    ReinforcementTuningStringMatchRewardScorerStringMatchExpression,
+    ReinforcementTuningStringMatchRewardScorerStringMatchExpressionDict,
+]
+
+
+class ReinforcementTuningStringMatchRewardScorerJsonMatchExpression(
+    _common.BaseModel
+):
+  """Converts parsed responses to JSON format, finds the first-level matching key, then performs StringMatchExpression on the value."""
+
+  key_name: Optional[str] = Field(
+      default=None,
+      description="""Json key name to find the value to match against.""",
+  )
+  value_string_match_expression: Optional[
+      ReinforcementTuningStringMatchRewardScorerStringMatchExpression
+  ] = Field(
+      default=None,
+      description="""String match expression to match against the value of json key.""",
+  )
+
+
+class ReinforcementTuningStringMatchRewardScorerJsonMatchExpressionDict(
+    TypedDict, total=False
+):
+  """Converts parsed responses to JSON format, finds the first-level matching key, then performs StringMatchExpression on the value."""
+
+  key_name: Optional[str]
+  """Json key name to find the value to match against."""
+
+  value_string_match_expression: Optional[
+      ReinforcementTuningStringMatchRewardScorerStringMatchExpressionDict
+  ]
+  """String match expression to match against the value of json key."""
+
+
+ReinforcementTuningStringMatchRewardScorerJsonMatchExpressionOrDict = Union[
+    ReinforcementTuningStringMatchRewardScorerJsonMatchExpression,
+    ReinforcementTuningStringMatchRewardScorerJsonMatchExpressionDict,
+]
+
+
+class ReinforcementTuningStringMatchRewardScorer(_common.BaseModel):
+  """Scores parsed responses for string matching use cases."""
+
+  wrong_answer_reward: Optional[float] = Field(
+      default=None,
+      description="""Wrong answer reward is returned if evaluator evaluates to `false`. All wrong answers get the same reward.""",
+  )
+  correct_answer_reward: Optional[float] = Field(
+      default=None,
+      description="""Correct answer reward is returned if evaluator evaluates to `true`. All correct answers get the same reward.""",
+  )
+  string_match_expression: Optional[
+      ReinforcementTuningStringMatchRewardScorerStringMatchExpression
+  ] = Field(
+      default=None,
+      description="""Uses string match expression to evaluate parsed response.""",
+  )
+  json_match_expression: Optional[
+      ReinforcementTuningStringMatchRewardScorerJsonMatchExpression
+  ] = Field(
+      default=None,
+      description="""Uses json match expression to evaluate parsed response.""",
+  )
+
+
+class ReinforcementTuningStringMatchRewardScorerDict(TypedDict, total=False):
+  """Scores parsed responses for string matching use cases."""
+
+  wrong_answer_reward: Optional[float]
+  """Wrong answer reward is returned if evaluator evaluates to `false`. All wrong answers get the same reward."""
+
+  correct_answer_reward: Optional[float]
+  """Correct answer reward is returned if evaluator evaluates to `true`. All correct answers get the same reward."""
+
+  string_match_expression: Optional[
+      ReinforcementTuningStringMatchRewardScorerStringMatchExpressionDict
+  ]
+  """Uses string match expression to evaluate parsed response."""
+
+  json_match_expression: Optional[
+      ReinforcementTuningStringMatchRewardScorerJsonMatchExpressionDict
+  ]
+  """Uses json match expression to evaluate parsed response."""
+
+
+ReinforcementTuningStringMatchRewardScorerOrDict = Union[
+    ReinforcementTuningStringMatchRewardScorer,
+    ReinforcementTuningStringMatchRewardScorerDict,
+]
+
+
+class ReinforcementTuningCloudRunRewardScorer(_common.BaseModel):
+  """Scores parsed responses by calling a Cloud Run service."""
+
+  cloud_run_uri: Optional[str] = Field(
+      default=None,
+      description="""URI of the Cloud Run service that will be used to compute the reward. The Vertex AI Secure Fine Tuning Service Agent (`service-PROJECT_NUMBER@gcp-sa-vertex-tune.iam.gserviceaccount.com`, where `PROJECT_NUMBER` is the numeric project number) must be granted the permission (e.g. by granting `roles/run.invoker` in IAM) to invoke the Cloud Run service.""",
+  )
+
+
+class ReinforcementTuningCloudRunRewardScorerDict(TypedDict, total=False):
+  """Scores parsed responses by calling a Cloud Run service."""
+
+  cloud_run_uri: Optional[str]
+  """URI of the Cloud Run service that will be used to compute the reward. The Vertex AI Secure Fine Tuning Service Agent (`service-PROJECT_NUMBER@gcp-sa-vertex-tune.iam.gserviceaccount.com`, where `PROJECT_NUMBER` is the numeric project number) must be granted the permission (e.g. by granting `roles/run.invoker` in IAM) to invoke the Cloud Run service."""
+
+
+ReinforcementTuningCloudRunRewardScorerOrDict = Union[
+    ReinforcementTuningCloudRunRewardScorer,
+    ReinforcementTuningCloudRunRewardScorerDict,
+]
+
+
+class SingleReinforcementTuningRewardConfig(_common.BaseModel):
+  """Single reinforcement tuning reward config."""
+
+  autorater_scorer: Optional[ReinforcementTuningAutoraterScorer] = Field(
+      default=None,
+      description="""Scores parsed responses for autorater use cases by using a model to compute the reward.""",
+  )
+  reward_name: Optional[str] = Field(
+      default=None,
+      description="""A unique reward name used to identify each single reinforcement tuning reward.""",
+  )
+  parse_response_config: Optional[ReinforcementTuningParseResponseConfig] = (
+      Field(
+          default=None, description="""Defines how to parse sample response."""
+      )
+  )
+  code_execution_reward_scorer: Optional[
+      ReinforcementTuningCodeExecutionRewardScorer
+  ] = Field(
+      default=None,
+      description="""Scores parsed responses for code execution use cases.""",
+  )
+  string_match_reward_scorer: Optional[
+      ReinforcementTuningStringMatchRewardScorer
+  ] = Field(
+      default=None,
+      description="""Scores parsed responses for simple string matching use cases against reference answer without writing python code.""",
+  )
+  cloud_run_reward_scorer: Optional[ReinforcementTuningCloudRunRewardScorer] = (
+      Field(
+          default=None,
+          description="""Scores parsed responses by calling a Cloud Run service.""",
+      )
+  )
+
+
+class SingleReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Single reinforcement tuning reward config."""
+
+  autorater_scorer: Optional[ReinforcementTuningAutoraterScorerDict]
+  """Scores parsed responses for autorater use cases by using a model to compute the reward."""
+
+  reward_name: Optional[str]
+  """A unique reward name used to identify each single reinforcement tuning reward."""
+
+  parse_response_config: Optional[ReinforcementTuningParseResponseConfigDict]
+  """Defines how to parse sample response."""
+
+  code_execution_reward_scorer: Optional[
+      ReinforcementTuningCodeExecutionRewardScorerDict
+  ]
+  """Scores parsed responses for code execution use cases."""
+
+  string_match_reward_scorer: Optional[
+      ReinforcementTuningStringMatchRewardScorerDict
+  ]
+  """Scores parsed responses for simple string matching use cases against reference answer without writing python code."""
+
+  cloud_run_reward_scorer: Optional[ReinforcementTuningCloudRunRewardScorerDict]
+  """Scores parsed responses by calling a Cloud Run service."""
+
+
+SingleReinforcementTuningRewardConfigOrDict = Union[
+    SingleReinforcementTuningRewardConfig,
+    SingleReinforcementTuningRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
+    _common.BaseModel
+):
+  """Composite reinforcement tuning reward config weighted reward config."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None, description=""""""
+  )
+  weight: Optional[float] = Field(
+      default=None,
+      description="""How much this single reward contributes to the total overall reward.""",
+  )
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict(
+    TypedDict, total=False
+):
+  """Composite reinforcement tuning reward config weighted reward config."""
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """"""
+
+  weight: Optional[float]
+  """How much this single reward contributes to the total overall reward."""
+
+
+CompositeReinforcementTuningRewardConfigWeightedRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfig,
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfig(_common.BaseModel):
+  """Composite reinforcement tuning reward config."""
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfig]
+  ] = Field(default=None, description="""""")
+
+
+class CompositeReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Composite reinforcement tuning reward config."""
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict]
+  ]
+  """"""
+
+
+CompositeReinforcementTuningRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfig,
+    CompositeReinforcementTuningRewardConfigDict,
+]
+
+
+class ReinforcementTuningHyperParameters(_common.BaseModel):
+  """Hyperparameters for Reinforcement Tuning."""
+
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Number of training epochs for the tuning job.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Learning rate multiplier for Reinforcement Learning.""",
+  )
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None, description="""Adapter size for Reinforcement Tuning."""
+  )
+  samples_per_prompt: Optional[int] = Field(
+      default=None,
+      description="""Number of different responses to generate per prompt during tuning.""",
+  )
+  batch_size: Optional[int] = Field(
+      default=None,
+      description="""Batch size for the tuning job. How many prompts to process at a train step. If not set, the batch size will be determined automatically.""",
+  )
+  evaluate_interval: Optional[int] = Field(
+      default=None,
+      description="""How often (in steps) to evaluate the tuning job during training. If not set, evaluation will run per epoch.""",
+  )
+  checkpoint_interval: Optional[int] = Field(
+      default=None,
+      description="""How often (in steps) to save checkpoints during training. If not set, one checkpoint per epoch will be saved.""",
+  )
+  max_output_tokens: Optional[int] = Field(
+      default=None,
+      description="""The maximum number of tokens to generate per prompt. If not set, defaults to 32768.""",
+  )
+  thinking_level: Optional[ReinforcementTuningThinkingLevel] = Field(
+      default=None,
+      description="""Indicates the maximum thinking depth. Use with earlier models shall result in error.""",
+  )
+
+
+class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Reinforcement Tuning."""
+
+  epoch_count: Optional[int]
+  """Number of training epochs for the tuning job."""
+
+  learning_rate_multiplier: Optional[float]
+  """Learning rate multiplier for Reinforcement Learning."""
+
+  adapter_size: Optional[AdapterSize]
+  """Adapter size for Reinforcement Tuning."""
+
+  samples_per_prompt: Optional[int]
+  """Number of different responses to generate per prompt during tuning."""
+
+  batch_size: Optional[int]
+  """Batch size for the tuning job. How many prompts to process at a train step. If not set, the batch size will be determined automatically."""
+
+  evaluate_interval: Optional[int]
+  """How often (in steps) to evaluate the tuning job during training. If not set, evaluation will run per epoch."""
+
+  checkpoint_interval: Optional[int]
+  """How often (in steps) to save checkpoints during training. If not set, one checkpoint per epoch will be saved."""
+
+  max_output_tokens: Optional[int]
+  """The maximum number of tokens to generate per prompt. If not set, defaults to 32768."""
+
+  thinking_level: Optional[ReinforcementTuningThinkingLevel]
+  """Indicates the maximum thinking depth. Use with earlier models shall result in error."""
+
+
+ReinforcementTuningHyperParametersOrDict = Union[
+    ReinforcementTuningHyperParameters, ReinforcementTuningHyperParametersDict
+]
+
+
+class ReinforcementTuningSpec(_common.BaseModel):
+  """Reinforcement tuning spec for tuning."""
+
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfig
+  ] = Field(default=None, description="""""")
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file. If no validation dataset is provided, by default the API splits 25% of the training dataset or 50 examples, whichever is larger, as the validation dataset.""",
+  )
+  hyper_parameters: Optional[ReinforcementTuningHyperParameters] = Field(
+      default=None,
+      description="""Additional hyper-parameters to use during tuning.""",
+  )
+  single_reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None,
+      description="""Single reward function configuration for reinforcement tuning.""",
+  )
+
+
+class ReinforcementTuningSpecDict(TypedDict, total=False):
+  """Reinforcement tuning spec for tuning."""
+
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfigDict
+  ]
+  """"""
+
+  training_dataset_uri: Optional[str]
+  """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
+
+  validation_dataset_uri: Optional[str]
+  """Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file. If no validation dataset is provided, by default the API splits 25% of the training dataset or 50 examples, whichever is larger, as the validation dataset."""
+
+  hyper_parameters: Optional[ReinforcementTuningHyperParametersDict]
+  """Additional hyper-parameters to use during tuning."""
+
+  single_reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """Single reward function configuration for reinforcement tuning."""
+
+
+ReinforcementTuningSpecOrDict = Union[
+    ReinforcementTuningSpec, ReinforcementTuningSpecDict
+]
+
+
+class GcsDestination(_common.BaseModel):
+  """The Google Cloud Storage location where the output is to be written to."""
+
+  output_uri_prefix: Optional[str] = Field(
+      default=None,
+      description="""Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist.""",
+  )
+
+  @pydantic.model_validator(mode='after')
+  def _validate_gcs_path(self) -> 'GcsDestination':
+    if self.output_uri_prefix and not self.output_uri_prefix.startswith(
+        'gs://'
+    ):
+      raise ValueError(
+          'output_uri_prefix must be a valid GCS path starting with "gs://".'
+      )
+    return self
+
+
+class GcsDestinationDict(TypedDict, total=False):
+  """The Google Cloud Storage location where the output is to be written to."""
+
+  output_uri_prefix: Optional[str]
+  """Required. Google Cloud Storage URI to output directory. If the uri doesn't end with '/', a '/' will be automatically appended. The directory is created if it doesn't exist."""
+
+
+GcsDestinationOrDict = Union[GcsDestination, GcsDestinationDict]
+
+
+class OutputConfig(_common.BaseModel):
+  """Config for evaluation output."""
+
+  gcs_destination: Optional[GcsDestination] = Field(
+      default=None,
+      description="""Cloud storage destination for evaluation output.""",
+  )
+
+
+class OutputConfigDict(TypedDict, total=False):
+  """Config for evaluation output."""
+
+  gcs_destination: Optional[GcsDestinationDict]
+  """Cloud storage destination for evaluation output."""
+
+
+OutputConfigOrDict = Union[OutputConfig, OutputConfigDict]
 
 
 class EvaluationConfig(_common.BaseModel):
@@ -13838,6 +14433,9 @@ class TuningJob(_common.BaseModel):
   distillation_spec: Optional[DistillationSpec] = Field(
       default=None, description="""Tuning Spec for Distillation."""
   )
+  reinforcement_tuning_spec: Optional[ReinforcementTuningSpec] = Field(
+      default=None, description=""""""
+  )
   tuning_data_stats: Optional[TuningDataStats] = Field(
       default=None,
       description="""Output only. The tuning data statistics associated with this TuningJob.""",
@@ -13963,6 +14561,9 @@ class TuningJobDict(TypedDict, total=False):
 
   distillation_spec: Optional[DistillationSpecDict]
   """Tuning Spec for Distillation."""
+
+  reinforcement_tuning_spec: Optional[ReinforcementTuningSpecDict]
+  """"""
 
   tuning_data_stats: Optional[TuningDataStatsDict]
   """Output only. The tuning data statistics associated with this TuningJob."""
@@ -14262,102 +14863,6 @@ TuningValidationDatasetOrDict = Union[
 ]
 
 
-class ReinforcementTuningAutoraterScorer(_common.BaseModel):
-  """Reinforcement tuning autorater scorer."""
-
-  autorater_config: Optional[AutoraterConfig] = Field(
-      default=None, description="""Autorater config for evaluation."""
-  )
-
-
-class ReinforcementTuningAutoraterScorerDict(TypedDict, total=False):
-  """Reinforcement tuning autorater scorer."""
-
-  autorater_config: Optional[AutoraterConfigDict]
-  """Autorater config for evaluation."""
-
-
-ReinforcementTuningAutoraterScorerOrDict = Union[
-    ReinforcementTuningAutoraterScorer, ReinforcementTuningAutoraterScorerDict
-]
-
-
-class SingleReinforcementTuningRewardConfig(_common.BaseModel):
-  """Single reinforcement tuning reward config."""
-
-  autorater_scorer: Optional[ReinforcementTuningAutoraterScorer] = Field(
-      default=None, description=""""""
-  )
-
-
-class SingleReinforcementTuningRewardConfigDict(TypedDict, total=False):
-  """Single reinforcement tuning reward config."""
-
-  autorater_scorer: Optional[ReinforcementTuningAutoraterScorerDict]
-  """"""
-
-
-SingleReinforcementTuningRewardConfigOrDict = Union[
-    SingleReinforcementTuningRewardConfig,
-    SingleReinforcementTuningRewardConfigDict,
-]
-
-
-class CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
-    _common.BaseModel
-):
-  """Composite reinforcement tuning reward config weighted reward config."""
-
-  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
-      default=None, description=""""""
-  )
-  weight: Optional[float] = Field(
-      default=None,
-      description="""How much this single reward contributes to the total overall reward.""",
-  )
-
-
-class CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict(
-    TypedDict, total=False
-):
-  """Composite reinforcement tuning reward config weighted reward config."""
-
-  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
-  """"""
-
-  weight: Optional[float]
-  """How much this single reward contributes to the total overall reward."""
-
-
-CompositeReinforcementTuningRewardConfigWeightedRewardConfigOrDict = Union[
-    CompositeReinforcementTuningRewardConfigWeightedRewardConfig,
-    CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict,
-]
-
-
-class CompositeReinforcementTuningRewardConfig(_common.BaseModel):
-  """Composite reinforcement tuning reward config."""
-
-  weighted_reward_configs: Optional[
-      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfig]
-  ] = Field(default=None, description="""""")
-
-
-class CompositeReinforcementTuningRewardConfigDict(TypedDict, total=False):
-  """Composite reinforcement tuning reward config."""
-
-  weighted_reward_configs: Optional[
-      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict]
-  ]
-  """"""
-
-
-CompositeReinforcementTuningRewardConfigOrDict = Union[
-    CompositeReinforcementTuningRewardConfig,
-    CompositeReinforcementTuningRewardConfigDict,
-]
-
-
 class CreateTuningJobConfig(_common.BaseModel):
   """Fine-tuning job creation request - optional fields."""
 
@@ -14470,6 +14975,14 @@ class CreateTuningJobConfig(_common.BaseModel):
       default=None,
       description="""The maximum number of tokens to generate per prompt. Reinforcement tuning only.""",
   )
+  thinking_level: Optional[ReinforcementTuningThinkingLevel] = Field(
+      default=None,
+      description="""Indicates the maximum thinking depth. Use with earlier models shall result in error. Reinforcement tuning only.""",
+  )
+  validation_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file. If no validation dataset is provided, by default the API splits 25% of the training dataset or 50 examples, whichever is larger, as the validation dataset. Reinforcement tuning only.""",
+  )
 
 
 class CreateTuningJobConfigDict(TypedDict, total=False):
@@ -14561,6 +15074,12 @@ class CreateTuningJobConfigDict(TypedDict, total=False):
   max_output_tokens: Optional[int]
   """The maximum number of tokens to generate per prompt. Reinforcement tuning only."""
 
+  thinking_level: Optional[ReinforcementTuningThinkingLevel]
+  """Indicates the maximum thinking depth. Use with earlier models shall result in error. Reinforcement tuning only."""
+
+  validation_dataset_uri: Optional[str]
+  """Cloud Storage path to file containing validation dataset for tuning. The dataset must be formatted as a JSONL file. If no validation dataset is provided, by default the API splits 25% of the training dataset or 50 examples, whichever is larger, as the validation dataset. Reinforcement tuning only."""
+
 
 CreateTuningJobConfigOrDict = Union[
     CreateTuningJobConfig, CreateTuningJobConfigDict
@@ -14651,6 +15170,206 @@ class TuningOperationDict(TypedDict, total=False):
 
 
 TuningOperationOrDict = Union[TuningOperation, TuningOperationDict]
+
+
+class ReinforcementTuningExample(_common.BaseModel):
+  """User-facing format for Gemini Reinforcement Tuning examples on Vertex."""
+
+  contents: Optional[list[Content]] = Field(
+      default=None,
+      description="""Multi-turn contents that represents the Prompt.""",
+  )
+  references: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""References for the given prompt. The key is the name of the reference, and the value is the reference itself.""",
+  )
+  system_instruction: Optional[Content] = Field(
+      default=None,
+      description="""Corresponds to `system_instruction` in user-facing GenerateContentRequest.""",
+  )
+
+
+class ReinforcementTuningExampleDict(TypedDict, total=False):
+  """User-facing format for Gemini Reinforcement Tuning examples on Vertex."""
+
+  contents: Optional[list[ContentDict]]
+  """Multi-turn contents that represents the Prompt."""
+
+  references: Optional[dict[str, str]]
+  """References for the given prompt. The key is the name of the reference, and the value is the reference itself."""
+
+  system_instruction: Optional[ContentDict]
+  """Corresponds to `system_instruction` in user-facing GenerateContentRequest."""
+
+
+ReinforcementTuningExampleOrDict = Union[
+    ReinforcementTuningExample, ReinforcementTuningExampleDict
+]
+
+
+class ValidateRewardConfig(_common.BaseModel):
+  """Optional parameters for tunings.validate_reward."""
+
+  http_options: Optional[HttpOptions] = Field(
+      default=None, description="""Used to override HTTP request options."""
+  )
+
+
+class ValidateRewardConfigDict(TypedDict, total=False):
+  """Optional parameters for tunings.validate_reward."""
+
+  http_options: Optional[HttpOptionsDict]
+  """Used to override HTTP request options."""
+
+
+ValidateRewardConfigOrDict = Union[
+    ValidateRewardConfig, ValidateRewardConfigDict
+]
+
+
+class _ValidateRewardParameters(_common.BaseModel):
+  """Parameters for the validate_reward method.
+
+  Validates a reinforcement tuning reward configuration against a sample
+  response and example before creating a reinforcement tuning job.
+  """
+
+  parent: Optional[str] = Field(
+      default=None,
+      description="""Required. The resource name of the Location to validate the reward in, e.g. `projects/{project}/locations/{location}`.""",
+  )
+  sample_response: Optional[Content] = Field(
+      default=None,
+      description="""Required. The sample response for validating the reward configuration.""",
+  )
+  example: Optional[ReinforcementTuningExample] = Field(
+      default=None,
+      description="""Required. The example to validate the reward configuration.""",
+  )
+  single_reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None,
+      description="""Single reward function configuration for reinforcement tuning. Mutually exclusive with composite_reward_config.""",
+  )
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfig
+  ] = Field(
+      default=None,
+      description="""Composite reward function configuration for reinforcement tuning. Mutually exclusive with single_reward_config.""",
+  )
+  config: Optional[ValidateRewardConfig] = Field(
+      default=None, description="""Optional parameters for the request."""
+  )
+
+
+class _ValidateRewardParametersDict(TypedDict, total=False):
+  """Parameters for the validate_reward method.
+
+  Validates a reinforcement tuning reward configuration against a sample
+  response and example before creating a reinforcement tuning job.
+  """
+
+  parent: Optional[str]
+  """Required. The resource name of the Location to validate the reward in, e.g. `projects/{project}/locations/{location}`."""
+
+  sample_response: Optional[ContentDict]
+  """Required. The sample response for validating the reward configuration."""
+
+  example: Optional[ReinforcementTuningExampleDict]
+  """Required. The example to validate the reward configuration."""
+
+  single_reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """Single reward function configuration for reinforcement tuning. Mutually exclusive with composite_reward_config."""
+
+  composite_reward_config: Optional[
+      CompositeReinforcementTuningRewardConfigDict
+  ]
+  """Composite reward function configuration for reinforcement tuning. Mutually exclusive with single_reward_config."""
+
+  config: Optional[ValidateRewardConfigDict]
+  """Optional parameters for the request."""
+
+
+_ValidateRewardParametersOrDict = Union[
+    _ValidateRewardParameters, _ValidateRewardParametersDict
+]
+
+
+class ReinforcementTuningRewardInfo(_common.BaseModel):
+  """The reward info for a reward function."""
+
+  reward: Optional[float] = Field(
+      default=None,
+      description="""Output only. The calculated reward for the reward function.""",
+  )
+  user_requested_aux_info: Optional[str] = Field(
+      default=None,
+      description="""Output only. The user-requested auxiliary info for the reward function.""",
+  )
+
+
+class ReinforcementTuningRewardInfoDict(TypedDict, total=False):
+  """The reward info for a reward function."""
+
+  reward: Optional[float]
+  """Output only. The calculated reward for the reward function."""
+
+  user_requested_aux_info: Optional[str]
+  """Output only. The user-requested auxiliary info for the reward function."""
+
+
+ReinforcementTuningRewardInfoOrDict = Union[
+    ReinforcementTuningRewardInfo, ReinforcementTuningRewardInfoDict
+]
+
+
+class ValidateRewardResponse(_common.BaseModel):
+  """Response for the validate_reward method.
+
+  Contains the computed reward for a reinforcement tuning reward
+  configuration.
+  """
+
+  sdk_http_response: Optional[HttpResponse] = Field(
+      default=None, description="""Used to retain the full HTTP response."""
+  )
+  overall_reward: Optional[float] = Field(
+      default=None,
+      description="""Output only. The overall weighted reward. For a `CompositeReinforcementTuningRewardConfig`, this is the weighted average of all rewards. For a `SingleReinforcementTuningRewardConfig`, this will be the value of the single reward.""",
+  )
+  error: Optional[str] = Field(
+      default=None,
+      description="""Output only. In case of an error, this field will be populated with a detailed error message to help with debugging.""",
+  )
+  reward_info_details: Optional[dict[str, ReinforcementTuningRewardInfo]] = (
+      Field(
+          default=None, description="""A map from reward name to reward info."""
+      )
+  )
+
+
+class ValidateRewardResponseDict(TypedDict, total=False):
+  """Response for the validate_reward method.
+
+  Contains the computed reward for a reinforcement tuning reward
+  configuration.
+  """
+
+  sdk_http_response: Optional[HttpResponseDict]
+  """Used to retain the full HTTP response."""
+
+  overall_reward: Optional[float]
+  """Output only. The overall weighted reward. For a `CompositeReinforcementTuningRewardConfig`, this is the weighted average of all rewards. For a `SingleReinforcementTuningRewardConfig`, this will be the value of the single reward."""
+
+  error: Optional[str]
+  """Output only. In case of an error, this field will be populated with a detailed error message to help with debugging."""
+
+  reward_info_details: Optional[dict[str, ReinforcementTuningRewardInfoDict]]
+  """A map from reward name to reward info."""
+
+
+ValidateRewardResponseOrDict = Union[
+    ValidateRewardResponse, ValidateRewardResponseDict
+]
 
 
 class CreateCachedContentConfig(_common.BaseModel):
