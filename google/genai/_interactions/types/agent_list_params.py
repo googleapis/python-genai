@@ -17,9 +17,7 @@
 
 from __future__ import annotations
 
-from typing_extensions import Annotated, TypedDict
-
-from .._utils import PropertyInfo
+from typing_extensions import TypedDict
 
 __all__ = ["AgentListParams"]
 
@@ -27,8 +25,8 @@ __all__ = ["AgentListParams"]
 class AgentListParams(TypedDict, total=False):
     api_version: str
 
-    page_size: Annotated[int, PropertyInfo(alias="pageSize")]
+    page_size: int
 
-    page_token: Annotated[str, PropertyInfo(alias="pageToken")]
+    page_token: str
 
     parent: str

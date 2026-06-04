@@ -17,32 +17,25 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-__all__ = [
-    "GeminiNextGenAPIClientAdapter",
-    "AsyncGeminiNextGenAPIClientAdapter"
-]
+__all__ = ["GeminiNextGenAPIClientAdapter", "AsyncGeminiNextGenAPIClientAdapter"]
+
 
 class BaseGeminiNextGenAPIClientAdapter(ABC):
     @abstractmethod
-    def is_vertex_ai(self) -> bool:
-        ...
+    def is_vertex_ai(self) -> bool: ...
 
     @abstractmethod
-    def get_project(self) -> str | None:
-        ...
+    def get_project(self) -> str | None: ...
 
     @abstractmethod
-    def get_location(self) -> str | None:
-        ...
+    def get_location(self) -> str | None: ...
 
 
 class AsyncGeminiNextGenAPIClientAdapter(BaseGeminiNextGenAPIClientAdapter):
     @abstractmethod
-    async def async_get_auth_headers(self) -> dict[str, str] | None:
-        ...
+    async def async_get_auth_headers(self) -> dict[str, str] | None: ...
 
 
 class GeminiNextGenAPIClientAdapter(BaseGeminiNextGenAPIClientAdapter):
     @abstractmethod
-    def get_auth_headers(self) -> dict[str, str] | None:
-        ...
+    def get_auth_headers(self) -> dict[str, str] | None: ...

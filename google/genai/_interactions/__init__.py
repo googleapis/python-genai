@@ -98,7 +98,7 @@ __all__ = [
     "DefaultAsyncHttpxClient",
     "DefaultAioHttpClient",
     "AsyncGeminiNextGenAPIClientAdapter",
-    "GeminiNextGenAPIClientAdapter"
+    "GeminiNextGenAPIClientAdapter",
 ]
 
 if not _t.TYPE_CHECKING:

@@ -35,7 +35,7 @@ from ._types import (
     RequestOptions,
     not_given,
 )
-from ._utils import is_given
+from ._utils import is_given, is_mapping_t
 from ._compat import cached_property
 from ._models import FinalRequestOptions
 from ._version import __version__
@@ -116,6 +116,15 @@ class GeminiNextGenAPIClient(SyncAPIClient):
 
         self.client_adapter = client_adapter
 
+        custom_headers_env = os.environ.get("GEMINI_NEXT_GEN_API_CUSTOM_HEADERS")
+        if custom_headers_env is not None:
+            parsed: dict[str, str] = {}
+            for line in custom_headers_env.split("\n"):
+                colon = line.find(":")
+                if colon >= 0:
+                    parsed[line[:colon].strip()] = line[colon + 1 :].strip()
+            default_headers = {**parsed, **(default_headers if is_mapping_t(default_headers) else {})}
+
         super().__init__(
             version=__version__,
             base_url=base_url,
@@ -179,7 +188,11 @@ class GeminiNextGenAPIClient(SyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if headers.get("Authorization") or custom_headers.get("Authorization") or isinstance(custom_headers.get("Authorization"), Omit):
+        if (
+            headers.get("Authorization")
+            or custom_headers.get("Authorization")
+            or isinstance(custom_headers.get("Authorization"), Omit)
+        ):
             return
         if self.api_key and headers.get("x-goog-api-key"):
             return
@@ -189,25 +202,22 @@ class GeminiNextGenAPIClient(SyncAPIClient):
         raise TypeError(
             '"Could not resolve authentication method. Expected the api_key to be set. Or for the `x-goog-api-key` headers to be explicitly omitted"'
         )
-    
+
     @override
     def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
         if not self.client_adapter or not self.client_adapter.is_vertex_ai():
             return options
 
         headers = options.headers or {}
-        has_auth = headers.get("Authorization") or headers.get("x-goog-api-key")   # pytype: disable=attribute-error
+        has_auth = headers.get("Authorization") or headers.get("x-goog-api-key")  # pytype: disable=attribute-error
         if has_auth:
             return options
 
         adapted_headers = self.client_adapter.get_auth_headers()
         if adapted_headers:
-            options.headers = {
-                **adapted_headers,
-                **headers
-            }
+            options.headers = {**adapted_headers, **headers}
         return options
-    
+
     def copy(
         self,
         *,
@@ -350,6 +360,15 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
 
         self.client_adapter = client_adapter
 
+        custom_headers_env = os.environ.get("GEMINI_NEXT_GEN_API_CUSTOM_HEADERS")
+        if custom_headers_env is not None:
+            parsed: dict[str, str] = {}
+            for line in custom_headers_env.split("\n"):
+                colon = line.find(":")
+                if colon >= 0:
+                    parsed[line[:colon].strip()] = line[colon + 1 :].strip()
+            default_headers = {**parsed, **(default_headers if is_mapping_t(default_headers) else {})}
+
         super().__init__(
             version=__version__,
             base_url=base_url,
@@ -413,7 +432,11 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
 
     @override
     def _validate_headers(self, headers: Headers, custom_headers: Headers) -> None:
-        if headers.get("Authorization") or custom_headers.get("Authorization") or isinstance(custom_headers.get("Authorization"), Omit):
+        if (
+            headers.get("Authorization")
+            or custom_headers.get("Authorization")
+            or isinstance(custom_headers.get("Authorization"), Omit)
+        ):
             return
         if self.api_key and headers.get("x-goog-api-key"):
             return
@@ -423,23 +446,20 @@ class AsyncGeminiNextGenAPIClient(AsyncAPIClient):
         raise TypeError(
             '"Could not resolve authentication method. Expected the api_key to be set. Or for the `x-goog-api-key` headers to be explicitly omitted"'
         )
-    
+
     @override
     async def _prepare_options(self, options: FinalRequestOptions) -> FinalRequestOptions:
         if not self.client_adapter or not self.client_adapter.is_vertex_ai():
             return options
 
         headers = options.headers or {}
-        has_auth = headers.get("Authorization") or headers.get("x-goog-api-key")     # pytype: disable=attribute-error
+        has_auth = headers.get("Authorization") or headers.get("x-goog-api-key")  # pytype: disable=attribute-error
         if has_auth:
             return options
 
         adapted_headers = await self.client_adapter.async_get_auth_headers()
         if adapted_headers:
-            options.headers = {
-                **adapted_headers,
-                **headers
-            }
+            options.headers = {**adapted_headers, **headers}
         return options
 
     def copy(

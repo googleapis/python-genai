@@ -19,6 +19,7 @@ from typing import List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
 from .._utils import PropertyInfo
+from .content import Content
 from .._models import BaseModel
 from .text_content import TextContent
 from .image_content import ImageContent
@@ -36,7 +37,7 @@ class FunctionResultStep(BaseModel):
     call_id: str
     """Required. ID to match the ID from the function call block."""
 
-    result: Union[List[ResultFunctionResultSubcontentList], str, object]
+    result: Union[List[Content], List[ResultFunctionResultSubcontentList], str]
     """The result of the tool call."""
 
     type: Literal["function_result"]

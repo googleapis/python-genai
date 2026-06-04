@@ -129,7 +129,7 @@ class WebhooksResource(SyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path="webhooks"),
             body=maybe_transform(
                 {
                     "subscribed_events": subscribed_events,
@@ -214,7 +214,7 @@ class WebhooksResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._patch(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}"),
             body=maybe_transform(
                 {
                     "name": name,
@@ -272,7 +272,7 @@ class WebhooksResource(SyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path="webhooks"),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -320,7 +320,7 @@ class WebhooksResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -358,7 +358,7 @@ class WebhooksResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -399,7 +399,7 @@ class WebhooksResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:ping'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}:ping"),
             body=maybe_transform(body, webhook_ping_params.WebhookPingParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -442,7 +442,7 @@ class WebhooksResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:rotateSigningSecret'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}:rotateSigningSecret"),
             body=maybe_transform(
                 {"revocation_behavior": revocation_behavior},
                 webhook_rotate_signing_secret_params.WebhookRotateSigningSecretParams,
@@ -534,7 +534,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path="webhooks"),
             body=await async_maybe_transform(
                 {
                     "subscribed_events": subscribed_events,
@@ -619,7 +619,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._patch(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}"),
             body=await async_maybe_transform(
                 {
                     "name": name,
@@ -679,7 +679,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         return await self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='webhooks'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path="webhooks"),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -727,7 +727,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -765,7 +765,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -806,7 +806,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:ping'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}:ping"),
             body=await async_maybe_transform(body, webhook_ping_params.WebhookPingParams),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -849,7 +849,7 @@ class AsyncWebhooksResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'webhooks/{id}:rotateSigningSecret'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"webhooks/{id}:rotateSigningSecret"),
             body=await async_maybe_transform(
                 {"revocation_behavior": revocation_behavior},
                 webhook_rotate_signing_secret_params.WebhookRotateSigningSecretParams,

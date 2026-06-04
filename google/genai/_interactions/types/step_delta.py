@@ -20,6 +20,7 @@ from typing_extensions import Literal, Annotated, TypeAlias
 
 from .usage import Usage
 from .._utils import PropertyInfo
+from .content import Content
 from .._models import BaseModel
 from .annotation import Annotation
 from .text_content import TextContent
@@ -129,6 +130,7 @@ class DeltaDocument(BaseModel):
     mime_type: Optional[Literal["application/pdf", "text/csv"]] = None
 
     uri: Optional[str] = None
+
 
 
 class DeltaVideo(BaseModel):
@@ -285,7 +287,7 @@ DeltaMCPServerToolResultResultFunctionResultSubcontentList: TypeAlias = Annotate
 
 
 class DeltaMCPServerToolResult(BaseModel):
-    result: Union[List[DeltaMCPServerToolResultResultFunctionResultSubcontentList], str, object]
+    result: Union[List[Content], List[DeltaMCPServerToolResultResultFunctionResultSubcontentList], str]
 
     type: Literal["mcp_server_tool_result"]
 
@@ -325,7 +327,7 @@ class DeltaFunctionResult(BaseModel):
     call_id: str
     """Required. ID to match the ID from the function call block."""
 
-    result: Union[List[DeltaFunctionResultResultFunctionResultSubcontentList], str, object]
+    result: Union[List[Content], List[DeltaFunctionResultResultFunctionResultSubcontentList], str]
 
     type: Literal["function_result"]
 

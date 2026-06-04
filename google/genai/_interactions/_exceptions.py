@@ -88,7 +88,11 @@ class APIConnectionError(APIError):
 
 class APITimeoutError(APIConnectionError):
     def __init__(self, request: httpx.Request) -> None:
-        super().__init__(message="Request timed out. This is a client-side timeout. You can increase the timeout by setting the `timeout` argument on your request or in the client http options.", request=request)
+        super().__init__(
+            message="Request timed out. This is a client-side timeout. You can increase the timeout by setting the `timeout` argument on your request or in the client http options.",
+            request=request,
+        )
+
 
 class BadRequestError(APIStatusError):
     status_code: Literal[400] = 400  # pyright: ignore[reportIncompatibleVariableOverride]

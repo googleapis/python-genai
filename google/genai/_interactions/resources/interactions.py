@@ -498,9 +498,13 @@ class InteractionsResource(SyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         if model is not omit and agent_config is not omit:
-            raise ValueError("Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`.")
+            raise ValueError(
+                "Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`."
+            )
         if agent is not omit and generation_config is not omit:
-            raise ValueError("Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`.")
+            raise ValueError(
+                "Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`."
+            )
 
         # For streaming requests against vertex+legacy-lyria, swap in the
         # Stream subclass that activates the per-event SSE remap during
@@ -513,7 +517,7 @@ class InteractionsResource(SyncAPIResource):
             else Stream[InteractionSSEEvent]
         )
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='interactions'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path="interactions"),
             body=maybe_transform(
                 {
                     "input": input,
@@ -577,7 +581,7 @@ class InteractionsResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"interactions/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -617,7 +621,7 @@ class InteractionsResource(SyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"interactions/{id}/cancel"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -771,7 +775,7 @@ class InteractionsResource(SyncAPIResource):
             else Stream[InteractionSSEEvent]
         )
         return self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"interactions/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -1238,9 +1242,13 @@ class AsyncInteractionsResource(AsyncAPIResource):
         if not api_version:
             raise ValueError(f"Expected a non-empty value for `api_version` but received {api_version!r}")
         if model is not omit and agent_config is not omit:
-            raise ValueError("Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`.")
+            raise ValueError(
+                "Invalid request: specified `model` and `agent_config`. If specifying `model`, use `generation_config`."
+            )
         if agent is not omit and generation_config is not omit:
-            raise ValueError("Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`.")
+            raise ValueError(
+                "Invalid request: specified `agent` and `generation_config`. If specifying `agent`, use `agent_config`."
+            )
 
         # See sync `create` above for rationale.
         stream_cls = (
@@ -1249,7 +1257,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
             else AsyncStream[InteractionSSEEvent]
         )
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path='interactions'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path="interactions"),
             body=await async_maybe_transform(
                 {
                     "input": input,
@@ -1313,7 +1321,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._delete(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"interactions/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -1353,7 +1361,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
         if not id:
             raise ValueError(f"Expected a non-empty value for `id` but received {id!r}")
         return await self._post(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}/cancel'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"interactions/{id}/cancel"),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
@@ -1503,7 +1511,7 @@ class AsyncInteractionsResource(AsyncAPIResource):
             else AsyncStream[InteractionSSEEvent]
         )
         return await self._get(
-            self._client._build_maybe_vertex_path(api_version=api_version, path=f'interactions/{id}'),
+            self._client._build_maybe_vertex_path(api_version=api_version, path=f"interactions/{id}"),
             options=make_request_options(
                 extra_headers=extra_headers,
                 extra_query=extra_query,

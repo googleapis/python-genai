@@ -23,6 +23,7 @@ from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
+from .content_param import ContentParam
 from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
@@ -37,7 +38,7 @@ class FunctionResultStepParam(TypedDict, total=False):
     call_id: Required[str]
     """Required. ID to match the ID from the function call block."""
 
-    result: Required[Union[Iterable[ResultFunctionResultSubcontentList], str, object]]
+    result: Required[Union[Iterable[ContentParam], Iterable[ResultFunctionResultSubcontentList], str]]
     """The result of the tool call."""
 
     type: Required[Literal["function_result"]]

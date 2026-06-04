@@ -417,9 +417,9 @@ class BaseClient(Generic[_HttpxClientT, _DefaultStreamT]):
 
     def _build_maybe_vertex_path(self, *, api_version: str, path: str) -> str:
         if not self._is_vertex or not self._vertex_location or not self._vertex_project:
-            return f'/{api_version}/{path}'
+            return f"/{api_version}/{path}"
 
-        return f'{api_version}/projects/{self._vertex_project}/locations/{self._vertex_location}/{path}'
+        return f"{api_version}/projects/{self._vertex_project}/locations/{self._vertex_location}/{path}"
 
     def _enforce_trailing_slash(self, url: URL) -> URL:
         if url.raw_path.endswith(b"/"):

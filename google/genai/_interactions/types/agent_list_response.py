@@ -17,8 +17,6 @@
 
 from typing import List, Optional
 
-from pydantic import Field as FieldInfo
-
 from .agent import Agent
 from .._models import BaseModel
 
@@ -28,4 +26,4 @@ __all__ = ["AgentListResponse"]
 class AgentListResponse(BaseModel):
     agents: Optional[List[Agent]] = None
 
-    next_page_token: Optional[str] = FieldInfo(alias="nextPageToken", default=None)
+    next_page_token: Optional[str] = None

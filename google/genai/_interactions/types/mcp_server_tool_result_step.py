@@ -19,6 +19,7 @@ from typing import List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
 from .._utils import PropertyInfo
+from .content import Content
 from .._models import BaseModel
 from .text_content import TextContent
 from .image_content import ImageContent
@@ -36,7 +37,7 @@ class MCPServerToolResultStep(BaseModel):
     call_id: str
     """Required. ID to match the ID from the function call block."""
 
-    result: Union[str, List[ResultFunctionResultSubcontentList], object]
+    result: Union[List[Content], List[ResultFunctionResultSubcontentList], object]
     """The output from the MCP server call. Can be simple text or rich content."""
 
     type: Literal["mcp_server_tool_result"]

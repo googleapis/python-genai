@@ -23,6 +23,7 @@ from typing_extensions import Literal, Required, Annotated, TypeAlias, TypedDict
 from .._types import Base64FileInput
 from .._utils import PropertyInfo
 from .._models import set_pydantic_config
+from .content_param import ContentParam
 from .text_content_param import TextContentParam
 from .image_content_param import ImageContentParam
 
@@ -37,7 +38,7 @@ class MCPServerToolResultStepParam(TypedDict, total=False):
     call_id: Required[str]
     """Required. ID to match the ID from the function call block."""
 
-    result: Required[Union[str, Iterable[ResultFunctionResultSubcontentList], object]]
+    result: Required[Union[Iterable[ContentParam], Iterable[ResultFunctionResultSubcontentList], object]]
     """The output from the MCP server call. Can be simple text or rich content."""
 
     type: Required[Literal["mcp_server_tool_result"]]
