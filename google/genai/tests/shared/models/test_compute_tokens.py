@@ -18,13 +18,14 @@
 
 from .... import types as genai_types
 from ... import pytest_helper
+from ... import shared
 
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_compute_tokens',
         parameters=genai_types._ComputeTokensParameters(
-            model='gemini-2.5-flash',
+            model=shared.GEMINI_MODEL,
             contents='The quick brown fox jumps over the lazy dog.',
         ),
         exception_if_mldev=(

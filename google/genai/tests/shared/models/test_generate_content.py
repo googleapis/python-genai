@@ -17,20 +17,21 @@
 
 from .... import types as genai_types
 from ... import pytest_helper
+from ... import shared
 
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_generate_content',
         parameters=genai_types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model=shared.GEMINI_MODEL,
             contents='The quick brown fox jumps over the lazy dog.',
         ),
     ),
     pytest_helper.TestTableItem(
         name='test_generate_content_with_config_schema',
         parameters=genai_types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model=shared.GEMINI_MODEL,
             contents='Return a summary of the passage.',
             config={'response_mime_type': 'application/json', 'response_schema': {'type': 'OBJECT', 'properties': {'summary': {'type': 'STRING'}}}},
         ),
@@ -39,7 +40,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_generate_content_with_config_json_schema',
         parameters=genai_types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model=shared.GEMINI_MODEL,
             contents='Return a JSON summary.',
             config={'response_mime_type': 'application/json', 'response_json_schema': {'type': 'object', 'properties': {'summary': {'type': 'string'}}}},
         ),

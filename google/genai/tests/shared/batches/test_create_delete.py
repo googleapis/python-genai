@@ -17,6 +17,7 @@
 
 from .... import types as genai_types
 from ... import pytest_helper
+from ... import shared
 
 
 def create_delete(client, parameters):
@@ -35,7 +36,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_create_delete_mldev",
         parameters=genai_types._CreateBatchJobParameters(
-            model="gemini-2.5-flash",
+            model=shared.GEMINI_MODEL,
             src=[{
                 "contents": [{
                     "parts": [{"text": "Why is the sky blue?"}],
