@@ -34,6 +34,14 @@ __all__ = [
     "FileSearch",
     "GoogleMaps",
     "Retrieval",
+    "RetrievalExaAISearchConfig",
+    "RetrievalParallelAISearchConfig",
+    "RetrievalRagStoreConfig",
+    "RetrievalRagStoreConfigRagResource",
+    "RetrievalRagStoreConfigRagRetrievalConfig",
+    "RetrievalRagStoreConfigRagRetrievalConfigFilter",
+    "RetrievalRagStoreConfigRagRetrievalConfigHybridSearch",
+    "RetrievalRagStoreConfigRagRetrievalConfigRanking",
     "RetrievalVertexAISearchConfig",
 ]
 
@@ -122,6 +130,112 @@ class GoogleMaps(TypedDict, total=False):
     """The longitude of the user's location."""
 
 
+class RetrievalExaAISearchConfig(TypedDict, total=False):
+    """Used to specify configuration for ExaAISearch."""
+
+    api_key: Required[str]
+    """Required. The API key for ExaAiSearch."""
+
+    custom_config: Dict[str, object]
+    """Optional.
+
+    This field can be used to pass any parameter from the Exa.ai Search API.
+    """
+
+
+class RetrievalParallelAISearchConfig(TypedDict, total=False):
+    """Used to specify configuration for ParallelAISearch."""
+
+    api_key: str
+    """Optional. The API key for ParallelAiSearch."""
+
+    custom_config: Dict[str, object]
+    """Optional. Custom configs for ParallelAiSearch."""
+
+
+class RetrievalRagStoreConfigRagResource(TypedDict, total=False):
+    """The definition of the Rag resource."""
+
+    rag_corpus: str
+    """Optional. RagCorpora resource name."""
+
+    rag_file_ids: SequenceNotStr[str]
+    """Optional.
+
+    rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.
+    """
+
+
+class RetrievalRagStoreConfigRagRetrievalConfigFilter(TypedDict, total=False):
+    """Optional. Config for filters."""
+
+    metadata_filter: str
+    """Optional. String for metadata filtering."""
+
+    vector_distance_threshold: float
+    """Optional.
+
+    Only returns contexts with vector distance smaller than the threshold.
+    """
+
+    vector_similarity_threshold: float
+    """Optional.
+
+    Only returns contexts with vector similarity larger than the threshold.
+    """
+
+
+class RetrievalRagStoreConfigRagRetrievalConfigHybridSearch(TypedDict, total=False):
+    """Optional. Config for Hybrid Search."""
+
+    alpha: float
+    """Optional.
+
+    Alpha value controls the weight between dense and sparse vector search results.
+    """
+
+
+class RetrievalRagStoreConfigRagRetrievalConfigRanking(TypedDict, total=False):
+    """Optional. Config for ranking and reranking."""
+
+    ranking_config: Required[Literal["rank_service"]]
+
+    model_name: str
+    """Optional. The model name of the rank service."""
+
+
+class RetrievalRagStoreConfigRagRetrievalConfig(TypedDict, total=False):
+    """Optional. The retrieval config for the Rag query."""
+
+    filter: RetrievalRagStoreConfigRagRetrievalConfigFilter
+    """Optional. Config for filters."""
+
+    hybrid_search: RetrievalRagStoreConfigRagRetrievalConfigHybridSearch
+    """Optional. Config for Hybrid Search."""
+
+    ranking: RetrievalRagStoreConfigRagRetrievalConfigRanking
+    """Optional. Config for ranking and reranking."""
+
+    top_k: int
+    """Optional. The number of contexts to retrieve."""
+
+
+class RetrievalRagStoreConfig(TypedDict, total=False):
+    """Used to specify configuration for RagStore."""
+
+    rag_resources: Iterable[RetrievalRagStoreConfigRagResource]
+    """Optional. The representation of the rag source."""
+
+    rag_retrieval_config: RetrievalRagStoreConfigRagRetrievalConfig
+    """Optional. The retrieval config for the Rag query."""
+
+    similarity_top_k: int
+    """Optional. Number of top k results to return from the selected corpora."""
+
+    vector_distance_threshold: float
+    """Optional. Only return results with vector distance smaller than the threshold."""
+
+
 class RetrievalVertexAISearchConfig(TypedDict, total=False):
     """Used to specify configuration for VertexAISearch."""
 
@@ -137,7 +251,16 @@ class Retrieval(TypedDict, total=False):
 
     type: Required[Literal["retrieval"]]
 
-    retrieval_types: List[Literal["vertex_ai_search"]]
+    exa_ai_search_config: RetrievalExaAISearchConfig
+    """Used to specify configuration for ExaAISearch."""
+
+    parallel_ai_search_config: RetrievalParallelAISearchConfig
+    """Used to specify configuration for ParallelAISearch."""
+
+    rag_store_config: RetrievalRagStoreConfig
+    """Used to specify configuration for RagStore."""
+
+    retrieval_types: List[Literal["vertex_ai_search", "rag_store", "exa_ai_search", "parallel_ai_search"]]
     """The types of file retrieval to enable."""
 
     vertex_ai_search_config: RetrievalVertexAISearchConfig
