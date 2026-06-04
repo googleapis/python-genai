@@ -18,6 +18,8 @@
 from typing import Dict, List, Union, Optional
 from typing_extensions import Literal, Annotated, TypeAlias
 
+from pydantic import Field as FieldInfo
+
 from .._utils import PropertyInfo
 from .._models import BaseModel
 from .function import Function
@@ -33,6 +35,14 @@ __all__ = [
     "FileSearch",
     "GoogleMaps",
     "Retrieval",
+    "RetrievalExaAISearchConfig",
+    "RetrievalParallelAISearchConfig",
+    "RetrievalRagStoreConfig",
+    "RetrievalRagStoreConfigRagResource",
+    "RetrievalRagStoreConfigRagRetrievalConfig",
+    "RetrievalRagStoreConfigRagRetrievalConfigFilter",
+    "RetrievalRagStoreConfigRagRetrievalConfigHybridSearch",
+    "RetrievalRagStoreConfigRagRetrievalConfigRanking",
     "RetrievalVertexAISearchConfig",
 ]
 
@@ -121,6 +131,112 @@ class GoogleMaps(BaseModel):
     """The longitude of the user's location."""
 
 
+class RetrievalExaAISearchConfig(BaseModel):
+    """Used to specify configuration for ExaAISearch."""
+
+    api_key: str
+    """Required. The API key for ExaAiSearch."""
+
+    custom_config: Optional[Dict[str, object]] = None
+    """Optional.
+
+    This field can be used to pass any parameter from the Exa.ai Search API.
+    """
+
+
+class RetrievalParallelAISearchConfig(BaseModel):
+    """Used to specify configuration for ParallelAISearch."""
+
+    api_key: Optional[str] = None
+    """Optional. The API key for ParallelAiSearch."""
+
+    custom_config: Optional[Dict[str, object]] = None
+    """Optional. Custom configs for ParallelAiSearch."""
+
+
+class RetrievalRagStoreConfigRagResource(BaseModel):
+    """The definition of the Rag resource."""
+
+    rag_corpus: Optional[str] = None
+    """Optional. RagCorpora resource name."""
+
+    rag_file_ids: Optional[List[str]] = None
+    """Optional.
+
+    rag_file_id. The files should be in the same rag_corpus set in rag_corpus field.
+    """
+
+
+class RetrievalRagStoreConfigRagRetrievalConfigFilter(BaseModel):
+    """Optional. Config for filters."""
+
+    metadata_filter: Optional[str] = None
+    """Optional. String for metadata filtering."""
+
+    vector_distance_threshold: Optional[float] = None
+    """Optional.
+
+    Only returns contexts with vector distance smaller than the threshold.
+    """
+
+    vector_similarity_threshold: Optional[float] = None
+    """Optional.
+
+    Only returns contexts with vector similarity larger than the threshold.
+    """
+
+
+class RetrievalRagStoreConfigRagRetrievalConfigHybridSearch(BaseModel):
+    """Optional. Config for Hybrid Search."""
+
+    alpha: Optional[float] = None
+    """Optional.
+
+    Alpha value controls the weight between dense and sparse vector search results.
+    """
+
+
+class RetrievalRagStoreConfigRagRetrievalConfigRanking(BaseModel):
+    """Optional. Config for ranking and reranking."""
+
+    ranking_config: Literal["rank_service"]
+
+    api_model_name: Optional[str] = FieldInfo(alias="model_name", default=None)
+    """Optional. The model name of the rank service."""
+
+
+class RetrievalRagStoreConfigRagRetrievalConfig(BaseModel):
+    """Optional. The retrieval config for the Rag query."""
+
+    filter: Optional[RetrievalRagStoreConfigRagRetrievalConfigFilter] = None
+    """Optional. Config for filters."""
+
+    hybrid_search: Optional[RetrievalRagStoreConfigRagRetrievalConfigHybridSearch] = None
+    """Optional. Config for Hybrid Search."""
+
+    ranking: Optional[RetrievalRagStoreConfigRagRetrievalConfigRanking] = None
+    """Optional. Config for ranking and reranking."""
+
+    top_k: Optional[int] = None
+    """Optional. The number of contexts to retrieve."""
+
+
+class RetrievalRagStoreConfig(BaseModel):
+    """Used to specify configuration for RagStore."""
+
+    rag_resources: Optional[List[RetrievalRagStoreConfigRagResource]] = None
+    """Optional. The representation of the rag source."""
+
+    rag_retrieval_config: Optional[RetrievalRagStoreConfigRagRetrievalConfig] = None
+    """Optional. The retrieval config for the Rag query."""
+
+    similarity_top_k: Optional[int] = None
+    """Optional. Number of top k results to return from the selected corpora."""
+
+    vector_distance_threshold: Optional[float] = None
+    """Optional. Only return results with vector distance smaller than the threshold."""
+
+
 class RetrievalVertexAISearchConfig(BaseModel):
     """Used to specify configuration for VertexAISearch."""
 
@@ -136,7 +252,18 @@ class Retrieval(BaseModel):
 
     type: Literal["retrieval"]
 
-    retrieval_types: Optional[List[Literal["vertex_ai_search"]]] = None
+    exa_ai_search_config: Optional[RetrievalExaAISearchConfig] = None
+    """Used to specify configuration for ExaAISearch."""
+
+    parallel_ai_search_config: Optional[RetrievalParallelAISearchConfig] = None
+    """Used to specify configuration for ParallelAISearch."""
+
+    rag_store_config: Optional[RetrievalRagStoreConfig] = None
+    """Used to specify configuration for RagStore."""
+
+    retrieval_types: Optional[List[Literal["vertex_ai_search", "rag_store", "exa_ai_search", "parallel_ai_search"]]] = (
+        None
+    )
     """The types of file retrieval to enable."""
 
     vertex_ai_search_config: Optional[RetrievalVertexAISearchConfig] = None
