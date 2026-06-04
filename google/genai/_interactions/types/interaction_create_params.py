@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import List, Union, Iterable
+from typing import Dict, List, Union, Iterable
 from typing_extensions import Literal, Required, TypeAlias, TypedDict
 
 from .step_param import StepParam
@@ -44,6 +44,7 @@ __all__ = [
     "Environment",
     "ResponseFormat",
     "ResponseFormatResponseFormatList",
+    "SafetySetting",
     "BaseCreateAgentInteractionParams",
     "AgentConfig",
     "AgentConfigFindRequest",
@@ -89,6 +90,18 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     generation_config: GenerationConfigParam
     """Input only. Configuration parameters for the model interaction."""
 
+    labels: Dict[str, str]
+    """Optional.
+
+    The labels with user-defined metadata for the request. It is used for billing
+    and reporting only.
+
+    Label keys and values can be no longer than 63 characters (Unicode codepoints)
+    and can only contain lowercase letters, numeric characters, underscores, and
+    dashes. International characters are allowed. Label values are optional. Label
+    keys must start with a letter.
+    """
+
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
 
@@ -103,6 +116,9 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
 
     response_modalities: List[Literal["text", "image", "audio", "video", "document"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+
+    safety_settings: Iterable[SafetySetting]
+    """Safety settings for the interaction."""
 
     service_tier: Literal["flex", "standard", "priority"]
     """The service tier for the interaction."""
@@ -150,6 +166,48 @@ ResponseFormat: TypeAlias = Union[
 ]
 
 
+class SafetySetting(TypedDict, total=False):
+    """A safety setting that affects the safety-blocking behavior.
+
+    A SafetySetting consists of a
+    harm category and a
+    threshold for that
+    category.
+    """
+
+    category: Required[
+        Literal[
+            "hate_speech",
+            "dangerous_content",
+            "harassment",
+            "sexually_explicit",
+            "civic_integrity",
+            "image_hate",
+            "image_dangerous_content",
+            "image_harassment",
+            "image_sexually_explicit",
+            "jailbreak",
+        ]
+    ]
+    """Required. The harm category to be blocked."""
+
+    threshold: Required[
+        Literal["block_low_and_above", "block_medium_and_above", "block_only_high", "block_none", "off"]
+    ]
+    """Required.
+
+    The threshold for blocking content. If the harm probability exceeds this
+    threshold, the content will be blocked.
+    """
+
+    method: Literal["severity", "probability"]
+    """Optional.
+
+    The method for blocking content. If not specified, the default behavior is to
+    use the probability score.
+    """
+
+
 class BaseCreateAgentInteractionParams(TypedDict, total=False):
     api_version: str
 
@@ -182,6 +240,18 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     an existing environment ID.
     """
 
+    labels: Dict[str, str]
+    """Optional.
+
+    The labels with user-defined metadata for the request. It is used for billing
+    and reporting only.
+
+    Label keys and values can be no longer than 63 characters (Unicode codepoints)
+    and can only contain lowercase letters, numeric characters, underscores, and
+    dashes. International characters are allowed. Label values are optional. Label
+    keys must start with a letter.
+    """
+
     previous_interaction_id: str
     """The ID of the previous interaction, if any."""
 
@@ -196,6 +266,9 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
 
     response_modalities: List[Literal["text", "image", "audio", "video", "document"]]
     """The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+
+    safety_settings: Iterable[SafetySetting]
+    """Safety settings for the interaction."""
 
     service_tier: Literal["flex", "standard", "priority"]
     """The service tier for the interaction."""

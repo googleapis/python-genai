@@ -55,6 +55,7 @@ __all__ = [
     "Input",
     "ResponseFormat",
     "ResponseFormatResponseFormatList",
+    "SafetySetting",
 ]
 
 
@@ -229,6 +230,44 @@ ResponseFormat: TypeAlias = Union[
 ]
 
 
+class SafetySetting(BaseModel):
+    """A safety setting that affects the safety-blocking behavior.
+
+    A SafetySetting consists of a
+    harm category and a
+    threshold for that
+    category.
+    """
+
+    category: Literal[
+        "hate_speech",
+        "dangerous_content",
+        "harassment",
+        "sexually_explicit",
+        "civic_integrity",
+        "image_hate",
+        "image_dangerous_content",
+        "image_harassment",
+        "image_sexually_explicit",
+        "jailbreak",
+    ]
+    """Required. The harm category to be blocked."""
+
+    threshold: Literal["block_low_and_above", "block_medium_and_above", "block_only_high", "block_none", "off"]
+    """Required.
+
+    The threshold for blocking content. If the harm probability exceeds this
+    threshold, the content will be blocked.
+    """
+
+    method: Optional[Literal["severity", "probability"]] = None
+    """Optional.
+
+    The method for blocking content. If not specified, the default behavior is to
+    use the probability score.
+    """
+
+
 class Interaction(BaseModel):
     """The Interaction resource."""
 
@@ -297,6 +336,18 @@ class Interaction(BaseModel):
     input: Optional[Input] = None
     """The input for the interaction."""
 
+    labels: Optional[Dict[str, str]] = None
+    """Optional.
+
+    The labels with user-defined metadata for the request. It is used for billing
+    and reporting only.
+
+    Label keys and values can be no longer than 63 characters (Unicode codepoints)
+    and can only contain lowercase letters, numeric characters, underscores, and
+    dashes. International characters are allowed. Label values are optional. Label
+    keys must start with a letter.
+    """
+
     model: Optional[Model] = None
     """The name of the `Model` used for generating the interaction."""
 
@@ -317,6 +368,9 @@ class Interaction(BaseModel):
 
     role: Optional[str] = None
     """Output only. The role of the interaction."""
+
+    safety_settings: Optional[List[SafetySetting]] = None
+    """Safety settings for the interaction."""
 
     service_tier: Optional[Literal["flex", "standard", "priority"]] = None
     """The service tier for the interaction."""
