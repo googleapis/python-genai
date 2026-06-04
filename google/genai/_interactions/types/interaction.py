@@ -94,7 +94,10 @@ class Interaction(BaseModel):
 
     agent: Union[
         Literal[
-            "deep-research-pro-preview-12-2025", "deep-research-preview-04-2026", "deep-research-max-preview-04-2026"
+            "deep-research-pro-preview-12-2025",
+            "deep-research-preview-04-2026",
+            "deep-research-max-preview-04-2026",
+            "antigravity-preview-05-2026",
         ],
         str,
         None,
