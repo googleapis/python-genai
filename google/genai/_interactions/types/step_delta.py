@@ -227,9 +227,6 @@ class DeltaMCPServerToolCall(BaseModel):
 
     type: Literal["mcp_server_tool_call"]
 
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
-
 
 class DeltaFileSearchCall(BaseModel):
     type: Literal["file_search_call"]
@@ -294,9 +291,6 @@ class DeltaMCPServerToolResult(BaseModel):
     name: Optional[str] = None
 
     server_name: Optional[str] = None
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
 
 
 class DeltaFileSearchResult(BaseModel):

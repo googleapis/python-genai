@@ -47,6 +47,3 @@ class MCPServerToolResultStep(BaseModel):
 
     server_name: Optional[str] = None
     """The name of the used MCP server."""
-
-    signature: Optional[str] = None
-    """A signature hash for backend validation."""
