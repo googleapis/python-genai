@@ -282,6 +282,55 @@ class PhishBlockThreshold(_common.CaseInSensitiveEnum):
   """Blocks Extremely high confidence URL that is risky."""
 
 
+class ToolAnnotations(_common.BaseModel):
+  """
+  Additional properties describing a Tool to clients.
+
+  NOTE: all properties in ToolAnnotations are **hints**.
+  They are not guaranteed to provide a faithful description of
+  tool behavior (including descriptive properties like `title`).
+
+  Clients should never make tool use decisions based on ToolAnnotations
+  received from untrusted servers.
+  """
+
+  title: str | None = None
+  """A human-readable title for the tool."""
+
+  readOnlyHint: bool | None = None
+  """
+  If true, the tool does not modify its environment.
+  Default: false
+  """
+
+  destructiveHint: bool | None = None
+  """
+  If true, the tool may perform destructive updates to its environment.
+  If false, the tool performs only additive updates.
+  (This property is meaningful only when `readOnlyHint == false`)
+  Default: true
+  """
+
+  idempotentHint: bool | None = None
+  """
+  If true, calling the tool repeatedly with the same arguments
+  will have no additional effect on the its environment.
+  (This property is meaningful only when `readOnlyHint == false`)
+  Default: false
+  """
+
+  openWorldHint: bool | None = None
+  """
+  If true, this tool may interact with an "open world" of external
+  entities. If false, the tool's domain of interaction is closed.
+  For example, the world of a web search tool is open, whereas that
+  of a memory tool is not.
+  Default: true
+  """
+
+  model_config = ConfigDict(extra='allow')
+
+
 class Behavior(_common.CaseInSensitiveEnum):
   """Specifies the function Behavior.
 
@@ -4476,6 +4525,10 @@ class FunctionDeclaration(_common.BaseModel):
   behavior: Optional[Behavior] = Field(
       default=None,
       description="""Optional. Specifies the function Behavior. Currently only non-blocking functions are supported. If not specified, the system keeps the current function call behavior. This field is currently only supported by the BidiGenerateContent method.""",
+  )
+  tool_annotations: Optional[ToolAnnotations] = Field(
+      default=None,
+      description="""Optional. Annotations for the function declaration.""",
   )
 
   @classmethod
