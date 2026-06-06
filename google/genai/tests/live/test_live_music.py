@@ -133,6 +133,29 @@ async def get_connect_message(api_client, model):
   return await _test_connect()
 
 
+async def get_connect_call(api_client, model):
+  mock_ws = AsyncMock()
+  mock_ws.send = AsyncMock()
+  mock_ws.recv = AsyncMock(return_value=b'some response')
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None):
+    mock_connect.call_args = (uri, additional_headers)
+    yield mock_ws
+
+  mock_connect.call_args = None
+
+  @patch.object(live_music, 'connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(api_client)
+    async with live_module.music.connect(model=model):
+      pass
+
+    return mock_connect.call_args
+
+  return await _test_connect()
+
+
 def test_mldev_from_env(monkeypatch):
   api_key = 'google_api_key'
   monkeypatch.setenv('GOOGLE_API_KEY', api_key)
@@ -166,6 +189,23 @@ def test_websocket_base_url():
       http_options={'base_url': base_url},
   )
   assert api_client._websocket_base_url() == 'wss://test.com'
+
+
+@pytest.mark.asyncio
+async def test_connect_uses_api_key_header_not_url_query():
+  api_client = gl_client.BaseApiClient(
+      api_key='TEST_API_KEY',
+      http_options={'base_url': 'https://test.com', 'headers': {}},
+  )
+
+  uri, headers = await get_connect_call(api_client, model='lyria-realtime-exp')
+
+  assert uri == (
+      'wss://test.com/ws/google.ai.generativelanguage.v1beta.'
+      'GenerativeService.BidiGenerateMusic'
+  )
+  assert 'key=' not in uri
+  assert headers['x-goog-api-key'] == 'TEST_API_KEY'
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
