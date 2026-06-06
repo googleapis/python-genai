@@ -17,14 +17,13 @@
 
 from typing import TYPE_CHECKING, Any, Set, Dict, List, Tuple, Union, Optional, cast
 from datetime import datetime
-from typing_extensions import Literal, Annotated, TypeAlias, override
+from typing_extensions import Literal, TypeAlias, override
 
 from . import environment
 from .step import Step
 from .tool import Tool
 from .model import Model
 from .usage import Usage
-from .._utils import PropertyInfo
 from .content import Content
 from .._compat import PYDANTIC_V1
 from .._models import BaseModel
@@ -43,10 +42,164 @@ from .audio_response_format import AudioResponseFormat
 from .image_response_format import ImageResponseFormat
 from .deep_research_agent_config import DeepResearchAgentConfig
 
-__all__ = ["Interaction", "AgentConfig", "Environment", "Input", "ResponseFormat", "ResponseFormatResponseFormatList"]
+__all__ = [
+    "Interaction",
+    "AgentConfig",
+    "AgentConfigFindRequest",
+    "AgentConfigFindRequestSessionConfig",
+    "AgentConfigFindRequestSourceFile",
+    "AgentConfigFixRequest",
+    "AgentConfigFixRequestSessionConfig",
+    "AgentConfigFixRequestSourceFile",
+    "Environment",
+    "Input",
+    "ResponseFormat",
+    "ResponseFormatResponseFormatList",
+]
 
-AgentConfig: TypeAlias = Annotated[
-    Union[DynamicAgentConfig, DeepResearchAgentConfig], PropertyInfo(discriminator="type")
+
+class AgentConfigFindRequestSessionConfig(BaseModel):
+    """
+    Optional session-specific configurations to override default agent
+    behavior.
+    """
+
+    max_rounds: Optional[int] = None
+    """
+    The maximum number of interaction rounds the agent is allowed to perform before
+    reaching a timeout.
+    """
+
+    pipeline_mode: Optional[Literal["scan", "verify"]] = None
+    """The pipeline mode of a CodeMender session.
+
+    It can only be used for a find session.
+    """
+
+    topology: Optional[str] = None
+    """The cognitive architecture or "thinking" topology used by the agent (e.g.
+
+    "default", "deep").
+    """
+
+
+class AgentConfigFindRequestSourceFile(BaseModel):
+    """Content of a single file in the codebase."""
+
+    content: Optional[str] = None
+    """The UTF-8 encoded text content of the file."""
+
+    path: Optional[str] = None
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigFindRequest(BaseModel):
+    """
+    Request parameters specific to FIND sessions, used for discovering
+    vulnerabilities in a codebase.
+    """
+
+    request: Literal["find_request"]
+
+    description: Optional[str] = None
+    """
+    Additional context or custom instructions provided by the user to guide the
+    vulnerability analysis.
+    """
+
+    finding_id: Optional[str] = None
+    """The identifier of a specific finding to verify.
+
+    This is primarily used in VERIFY mode to focus the agent's execution-based
+    validation on a single vulnerability.
+    """
+
+    session_config: Optional[AgentConfigFindRequestSessionConfig] = None
+    """Optional session-specific configurations to override default agent behavior."""
+
+    session_id: Optional[str] = None
+    """
+    Parameter for grouping multiple interactions that belong to the same CodeMender
+    session.
+    """
+
+    source_files: Optional[List[AgentConfigFindRequestSourceFile]] = None
+    """A list of source files to provide as context for the scan."""
+
+
+class AgentConfigFixRequestSessionConfig(BaseModel):
+    """
+    Optional session-specific configurations to override default agent
+    behavior.
+    """
+
+    max_rounds: Optional[int] = None
+    """
+    The maximum number of interaction rounds the agent is allowed to perform before
+    reaching a timeout.
+    """
+
+    pipeline_mode: Optional[Literal["scan", "verify"]] = None
+    """The pipeline mode of a CodeMender session.
+
+    It can only be used for a find session.
+    """
+
+    topology: Optional[str] = None
+    """The cognitive architecture or "thinking" topology used by the agent (e.g.
+
+    "default", "deep").
+    """
+
+
+class AgentConfigFixRequestSourceFile(BaseModel):
+    """Content of a single file in the codebase."""
+
+    content: Optional[str] = None
+    """The UTF-8 encoded text content of the file."""
+
+    path: Optional[str] = None
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigFixRequest(BaseModel):
+    """
+    Request parameters specific to FIX sessions, used for generating and
+    validating security patches.
+    """
+
+    request: Literal["fix_request"]
+
+    description: Optional[str] = None
+    """
+    Additional context or custom instructions provided by the user to guide the
+    patch generation process.
+    """
+
+    finding_id: Optional[str] = None
+    """The identifier of the specific security finding to be remediated.
+
+    This ID maps to a previously discovered vulnerability.
+    """
+
+    session_config: Optional[AgentConfigFixRequestSessionConfig] = None
+    """Optional session-specific configurations to override default agent behavior."""
+
+    session_id: Optional[str] = None
+    """
+    Parameter for grouping multiple interactions that belong to the same CodeMender
+    session.
+    """
+
+    source_files: Optional[List[AgentConfigFixRequestSourceFile]] = None
+    """A list of source files providing context for the remediation.
+
+    These files are typically the ones containing the identified vulnerability.
+    """
+
+
+AgentConfig: TypeAlias = Union[
+    DeepResearchAgentConfig, DynamicAgentConfig, AgentConfigFindRequest, AgentConfigFixRequest
 ]
 
 Environment: TypeAlias = Union[str, environment.Environment]

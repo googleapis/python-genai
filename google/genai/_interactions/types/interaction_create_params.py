@@ -46,6 +46,12 @@ __all__ = [
     "ResponseFormatResponseFormatList",
     "BaseCreateAgentInteractionParams",
     "AgentConfig",
+    "AgentConfigFindRequest",
+    "AgentConfigFindRequestSessionConfig",
+    "AgentConfigFindRequestSourceFile",
+    "AgentConfigFixRequest",
+    "AgentConfigFixRequestSessionConfig",
+    "AgentConfigFixRequestSourceFile",
     "CreateModelInteractionParamsNonStreaming",
     "CreateModelInteractionParamsStreaming",
     "CreateAgentInteractionParamsNonStreaming",
@@ -203,7 +209,149 @@ class BaseCreateAgentInteractionParams(TypedDict, total=False):
     """
 
 
-AgentConfig: TypeAlias = Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam]
+class AgentConfigFindRequestSessionConfig(TypedDict, total=False):
+    """
+    Optional session-specific configurations to override default agent
+    behavior.
+    """
+
+    max_rounds: int
+    """
+    The maximum number of interaction rounds the agent is allowed to perform before
+    reaching a timeout.
+    """
+
+    pipeline_mode: Literal["scan", "verify"]
+    """The pipeline mode of a CodeMender session.
+
+    It can only be used for a find session.
+    """
+
+    topology: str
+    """The cognitive architecture or "thinking" topology used by the agent (e.g.
+
+    "default", "deep").
+    """
+
+
+class AgentConfigFindRequestSourceFile(TypedDict, total=False):
+    """Content of a single file in the codebase."""
+
+    content: str
+    """The UTF-8 encoded text content of the file."""
+
+    path: str
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigFindRequest(TypedDict, total=False):
+    """
+    Request parameters specific to FIND sessions, used for discovering
+    vulnerabilities in a codebase.
+    """
+
+    request: Required[Literal["find_request"]]
+
+    description: str
+    """
+    Additional context or custom instructions provided by the user to guide the
+    vulnerability analysis.
+    """
+
+    finding_id: str
+    """The identifier of a specific finding to verify.
+
+    This is primarily used in VERIFY mode to focus the agent's execution-based
+    validation on a single vulnerability.
+    """
+
+    session_config: AgentConfigFindRequestSessionConfig
+    """Optional session-specific configurations to override default agent behavior."""
+
+    session_id: str
+    """
+    Parameter for grouping multiple interactions that belong to the same CodeMender
+    session.
+    """
+
+    source_files: Iterable[AgentConfigFindRequestSourceFile]
+    """A list of source files to provide as context for the scan."""
+
+
+class AgentConfigFixRequestSessionConfig(TypedDict, total=False):
+    """
+    Optional session-specific configurations to override default agent
+    behavior.
+    """
+
+    max_rounds: int
+    """
+    The maximum number of interaction rounds the agent is allowed to perform before
+    reaching a timeout.
+    """
+
+    pipeline_mode: Literal["scan", "verify"]
+    """The pipeline mode of a CodeMender session.
+
+    It can only be used for a find session.
+    """
+
+    topology: str
+    """The cognitive architecture or "thinking" topology used by the agent (e.g.
+
+    "default", "deep").
+    """
+
+
+class AgentConfigFixRequestSourceFile(TypedDict, total=False):
+    """Content of a single file in the codebase."""
+
+    content: str
+    """The UTF-8 encoded text content of the file."""
+
+    path: str
+    """The relative path of the file from the project root."""
+
+
+class AgentConfigFixRequest(TypedDict, total=False):
+    """
+    Request parameters specific to FIX sessions, used for generating and
+    validating security patches.
+    """
+
+    request: Required[Literal["fix_request"]]
+
+    description: str
+    """
+    Additional context or custom instructions provided by the user to guide the
+    patch generation process.
+    """
+
+    finding_id: str
+    """The identifier of the specific security finding to be remediated.
+
+    This ID maps to a previously discovered vulnerability.
+    """
+
+    session_config: AgentConfigFixRequestSessionConfig
+    """Optional session-specific configurations to override default agent behavior."""
+
+    session_id: str
+    """
+    Parameter for grouping multiple interactions that belong to the same CodeMender
+    session.
+    """
+
+    source_files: Iterable[AgentConfigFixRequestSourceFile]
+    """A list of source files providing context for the remediation.
+
+    These files are typically the ones containing the identified vulnerability.
+    """
+
+
+AgentConfig: TypeAlias = Union[
+    DeepResearchAgentConfigParam, DynamicAgentConfigParam, AgentConfigFindRequest, AgentConfigFixRequest
+]
 
 
 class CreateModelInteractionParamsNonStreaming(BaseCreateModelInteractionParams, total=False):
