@@ -71,6 +71,14 @@ class BaseCreateModelInteractionParams(TypedDict, total=False):
     background: bool
     """Input only. Whether to run the model interaction in the background."""
 
+    cached_content: str
+    """
+    The name of the cached content used as context to serve the prediction. Note:
+    only used in explicit caching, where users can have control over caching (e.g.
+    what content to cache) and enjoy guaranteed cost savings. Format:
+    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
+    """
+
     environment: Environment
     """The environment configuration for the interaction.
 

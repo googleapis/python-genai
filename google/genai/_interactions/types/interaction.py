@@ -260,6 +260,14 @@ class Interaction(BaseModel):
     agent_config: Optional[AgentConfig] = None
     """Configuration parameters for the agent interaction."""
 
+    cached_content: Optional[str] = None
+    """
+    The name of the cached content used as context to serve the prediction. Note:
+    only used in explicit caching, where users can have control over caching (e.g.
+    what content to cache) and enjoy guaranteed cost savings. Format:
+    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
+    """
+
     environment: Optional[Environment] = None
     """The environment configuration for the interaction.
 
