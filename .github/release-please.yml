@@ -1,0 +1,5 @@
+releaseType: python
+handleGHRelease: true
+bumpMinorPreMajor: false
+extraFiles:
+  - google/genai/version.py

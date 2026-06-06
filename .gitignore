@@ -1,0 +1,20 @@
+# Build artifacts
+*.py[cod]
+google_genai.egg-info/
+build/
+dist/
+
+# Test files
+.nox/
+
+# Coverage files
+.coverage
+coverage.xml
+nosetests.xml
+
+# IDE files
+.idea
+.vscode
+
+# macOS
+.DS_Store
