@@ -103,13 +103,22 @@ _LEGACY_EVENT_TYPE_RENAMES: Dict[str, str] = {
 }
 
 
+def _is_legacy_lyria_model(model: object) -> bool:
+    if not isinstance(model, str):
+        return False
+    return any(
+        model == known_model or model.endswith(f"/models/{known_model}")
+        for known_model in LEGACY_LYRIA_MODELS
+    )
+
+
 def is_legacy_lyria_request(*, is_vertex: bool, model: object) -> bool:
     """Return True iff the (client, model) combination needs the shim active.
 
     Used at request issue time (in the resource layer) to decide whether to
     pick the `LegacyLyriaInteractionStream` subclass for streaming requests.
     """
-    return bool(is_vertex) and isinstance(model, str) and model in LEGACY_LYRIA_MODELS
+    return bool(is_vertex) and _is_legacy_lyria_model(model)
 
 
 def is_legacy_lyria_response_body(data: object) -> bool:
@@ -125,7 +134,7 @@ def is_legacy_lyria_response_body(data: object) -> bool:
         return False
     typed_data: Dict[str, Any] = cast("Dict[str, Any]", data)
     model = typed_data.get("model")
-    return isinstance(model, str) and model in LEGACY_LYRIA_MODELS
+    return _is_legacy_lyria_model(model)
 
 
 def maybe_remap_legacy_sse_event(data: Dict[str, Any]) -> Dict[str, Any]:
