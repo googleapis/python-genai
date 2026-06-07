@@ -28,7 +28,7 @@ __all__ = ["InteractionCreatedEvent", "Metadata"]
 class Metadata(BaseModel):
     """Optional metadata accompanying ANY streamed event."""
 
-    usage: Optional[Usage] = None
+    total_usage: Optional[Usage] = None
     """Statistics on the interaction request's token usage."""
 
 
