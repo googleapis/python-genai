@@ -189,6 +189,31 @@ def _Candidate_from_mldev(
   return to_object
 
 
+def _dedupe_mldev_candidate_parts(candidates: list[dict[str, Any]]) -> None:
+  if len(candidates) < 2:
+    return
+
+  first_parts = getv(candidates[0], ['content', 'parts'])
+  if not isinstance(first_parts, list):
+    return
+
+  duplicate_tail = []
+  for candidate in candidates[1:]:
+    parts = getv(candidate, ['content', 'parts'])
+    if not isinstance(parts, list) or not parts:
+      return
+    duplicate_tail.extend(parts)
+
+  if (
+      duplicate_tail
+      and len(first_parts) > len(duplicate_tail)
+      and first_parts[-len(duplicate_tail) :] == duplicate_tail
+  ):
+    content = getv(candidates[0], ['content'])
+    if isinstance(content, dict):
+      content['parts'] = first_parts[: -len(duplicate_tail)]
+
+
 def _CitationMetadata_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1697,13 +1722,15 @@ def _GenerateContentResponse_from_mldev(
     )
 
   if getv(from_object, ['candidates']) is not None:
+    candidates = [
+        _Candidate_from_mldev(item, to_object, root_object)
+        for item in getv(from_object, ['candidates'])
+    ]
+    _dedupe_mldev_candidate_parts(candidates)
     setv(
         to_object,
         ['candidates'],
-        [
-            _Candidate_from_mldev(item, to_object, root_object)
-            for item in getv(from_object, ['candidates'])
-        ],
+        candidates,
     )
 
   if getv(from_object, ['modelVersion']) is not None:
