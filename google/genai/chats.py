@@ -252,7 +252,7 @@ class Chat(_BaseChat):
     response = self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-        config=config if config else self._config,
+        config=config if config is not None else self._config,
     )
     model_output = (
         [response.candidates[0].content]
@@ -310,7 +310,7 @@ class Chat(_BaseChat):
       for chunk in self._modules.generate_content_stream(
           model=self._model,
           contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-          config=config if config else self._config,
+          config=config if config is not None else self._config,
       ):
         if not _validate_response(chunk):
           is_valid = False
@@ -414,7 +414,7 @@ class AsyncChat(_BaseChat):
     response = await self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-        config=config if config else self._config,
+        config=config if config is not None else self._config,
     )
     model_output = (
         [response.candidates[0].content]
@@ -473,7 +473,7 @@ class AsyncChat(_BaseChat):
       async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
           model=self._model,
           contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-          config=config if config else self._config,
+          config=config if config is not None else self._config,
       ):
         if not _validate_response(chunk):
           is_valid = False

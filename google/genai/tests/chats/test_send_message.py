@@ -16,13 +16,17 @@
 import json
 import os
 import sys
+from unittest import mock
 
 from pydantic import BaseModel
 from pydantic import ValidationError
 import pytest
 
 from .. import pytest_helper
+from ... import chats
+from ... import client as client_module
 from ... import errors
+from ... import models
 from ... import types
 
 try:
@@ -48,6 +52,30 @@ pytest_plugins = ('pytest_asyncio',)
 
 
 MODEL_NAME = 'gemini-2.5-flash'
+
+
+@pytest.fixture
+def mock_api_client():
+  api_client = mock.MagicMock(spec=client_module.ApiClient)
+  api_client.api_key = 'TEST_API_KEY'
+  api_client._host = lambda: 'test_host'
+  api_client._http_options = {'headers': {}}
+  api_client.vertexai = False
+  return api_client
+
+
+def _valid_chat_response() -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part.from_text(text='mock response')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
 
 def divide_intergers_with_customized_math_rule(
     numerator: int, denominator: int
@@ -739,6 +767,106 @@ async def test_async_stream_function_calling(client):
       'numerator': 100,
       'denominator': 2,
   }
+
+
+def test_send_message_preserves_zero_temperature_override(mock_api_client):
+  seen_configs = []
+
+  def mock_generate_content(*, model, contents, config):
+    seen_configs.append(config)
+    return _valid_chat_response()
+
+  with mock.patch.object(
+      models.Models, 'generate_content', side_effect=mock_generate_content
+  ):
+    chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+        model=MODEL_NAME, config={'temperature': 1.0}
+    )
+    chat.send_message('first turn', config={'temperature': 0.0})
+    chat.send_message('second turn', config={'temperature': 0.0})
+
+  assert seen_configs == [{'temperature': 0.0}, {'temperature': 0.0}]
+
+
+def test_send_message_stream_preserves_zero_temperature_override(
+    mock_api_client,
+):
+  seen_configs = []
+  response = _valid_chat_response()
+
+  def mock_generate_content_stream(*, model, contents, config):
+    seen_configs.append(config)
+    return [response]
+
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      side_effect=mock_generate_content_stream,
+  ):
+    chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+        model=MODEL_NAME, config={'temperature': 1.0}
+    )
+    list(chat.send_message_stream('first turn', config={'temperature': 0.0}))
+    list(chat.send_message_stream('second turn', config={'temperature': 0.0}))
+
+  assert seen_configs == [{'temperature': 0.0}, {'temperature': 0.0}]
+
+
+@pytest.mark.asyncio
+async def test_async_send_message_preserves_zero_temperature_override(
+    mock_api_client,
+):
+  seen_configs = []
+
+  async def mock_generate_content(*, model, contents, config):
+    seen_configs.append(config)
+    return _valid_chat_response()
+
+  with mock.patch.object(
+      models.AsyncModels, 'generate_content', side_effect=mock_generate_content
+  ):
+    chat = chats.AsyncChats(modules=models.AsyncModels(mock_api_client)).create(
+        model=MODEL_NAME, config={'temperature': 1.0}
+    )
+    await chat.send_message('first turn', config={'temperature': 0.0})
+    await chat.send_message('second turn', config={'temperature': 0.0})
+
+  assert seen_configs == [{'temperature': 0.0}, {'temperature': 0.0}]
+
+
+@pytest.mark.asyncio
+async def test_async_send_message_stream_preserves_zero_temperature_override(
+    mock_api_client,
+):
+  seen_configs = []
+  response = _valid_chat_response()
+
+  async def mock_generate_content_stream(*, model, contents, config):
+    seen_configs.append(config)
+
+    async def iterator():
+      yield response
+
+    return iterator()
+
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content_stream',
+      side_effect=mock_generate_content_stream,
+  ):
+    chat = chats.AsyncChats(modules=models.AsyncModels(mock_api_client)).create(
+        model=MODEL_NAME, config={'temperature': 1.0}
+    )
+    async for _ in await chat.send_message_stream(
+        'first turn', config={'temperature': 0.0}
+    ):
+      pass
+    async for _ in await chat.send_message_stream(
+        'second turn', config={'temperature': 0.0}
+    ):
+      pass
+
+  assert seen_configs == [{'temperature': 0.0}, {'temperature': 0.0}]
 
 
 @pytest.mark.asyncio
