@@ -98,10 +98,25 @@ def _extract_curated_history(
           is_valid = False
         i += 1
       if is_valid:
-        curated_history.extend(current_output)
+        curated_history.extend(_merge_model_outputs(current_output))
       elif curated_history:
         curated_history.pop()
   return curated_history
+
+
+def _merge_model_outputs(contents: list[Content]) -> list[Content]:
+  """Merge adjacent model chunks into one turn for request history."""
+  merged: list[Content] = []
+  for content in contents:
+    if (
+        content.role == "model"
+        and merged
+        and merged[-1].role == "model"
+    ):
+      merged[-1].parts = (merged[-1].parts or []) + (content.parts or [])
+    else:
+      merged.append(content.model_copy())
+  return merged
 
 
 class _BaseChat:
@@ -168,7 +183,7 @@ class _BaseChat:
     self._comprehensive_history.extend(output_contents)
     if is_valid:
       self._curated_history.extend(input_contents)
-      self._curated_history.extend(output_contents)
+      self._curated_history.extend(_merge_model_outputs(output_contents))
 
   def get_history(self, curated: bool = False) -> list[Content]:
     """Returns the chat history.
