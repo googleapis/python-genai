@@ -15,10 +15,9 @@
 import pytest
 from google.genai import Client
 
-@pytest.mark.xfail(reason="Stream not yet exported on public google.genai.interactions path")
 def test_streaming_compat():
     client = Client(api_key="placeholder")
-    from google.genai.interactions import Stream
+    from google.genai._interactions import Stream
 
     try:
         result = client.interactions.create(
