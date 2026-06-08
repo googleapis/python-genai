@@ -17,7 +17,7 @@ from google.genai import Client
 
 def test_webhooks_compat():
     client = Client(api_key="placeholder")
-    from google.genai._interactions.types import (
+    from google.genai.interactions import (
         Webhook,
         WebhookDeleteResponse,
         WebhookListResponse,

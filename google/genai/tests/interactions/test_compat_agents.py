@@ -17,7 +17,7 @@ from google.genai import Client
 
 def test_agents_compat():
     client = Client(api_key="placeholder")
-    from google.genai._interactions.types import (
+    from google.genai.interactions import (
         agent_create_params,
         AgentDeleteResponse,
     )
