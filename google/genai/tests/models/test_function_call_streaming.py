@@ -148,6 +148,11 @@ pytestmark = pytest_helper.setup(
     test_method='models.generate_content_stream',
 )
 
+
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='in private it was not able to find the replay file',
+)
 def test_streaming_with_python_native_no_afc_config(client):
   """Tests streaming function calls with native python AFC without disabling AFC."""
   if not client.vertexai:
@@ -173,6 +178,10 @@ def test_streaming_with_python_native_no_afc_config(client):
   assert 'not compatible with automatic function calling (AFC)' in str(e.value)
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='in private it was not able to find the replay file',
+)
 def test_streaming_with_python_afc_disabled_false(client):
   """Tests streaming function calls with native python AFC without disabling AFC."""
   if not client.vertexai:

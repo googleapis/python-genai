@@ -2159,6 +2159,10 @@ def test_schema_with_additional_properties(client):
     )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_function(client):
   def get_weather(city: str) -> str:
     """Returns the weather in a city."""
