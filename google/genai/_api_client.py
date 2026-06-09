@@ -250,7 +250,7 @@ class HttpResponse:
           dict[str, str],
           httpx.Headers,
           'CIMultiDictProxy[str]',
-          CaseInsensitiveDict,
+          CaseInsensitiveDict[Any],
       ],
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
@@ -1000,7 +1000,7 @@ class BaseApiClient:
 
     def _maybe_set(
         args: Optional[_common.StringDict],
-        ctx,
+        ctx: Union[ssl.SSLContext, bool],
     ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
@@ -1052,7 +1052,7 @@ class BaseApiClient:
 
     def _maybe_set(
         args: Optional[_common.StringDict],
-        ctx,
+        ctx: Union[ssl.SSLContext, bool],
     ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
@@ -1110,7 +1110,7 @@ class BaseApiClient:
 
     def _maybe_set(
         args: Optional[_common.StringDict],
-        ctx,
+        ctx: Union[ssl.SSLContext, bool],
     ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
@@ -1445,7 +1445,7 @@ class BaseApiClient:
               url=url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),  # type: ignore[arg-type]
               **self._async_client_session_request_args,
           )
         except (
@@ -1468,7 +1468,7 @@ class BaseApiClient:
               url=url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),  # type: ignore[arg-type]
               **self._async_client_session_request_args,
           )
 
@@ -1477,7 +1477,7 @@ class BaseApiClient:
           # Extract the underlying aiohttp.ClientResponse from the
           # AsyncAuthorizedSession Response.
           response = response._response
-        return HttpResponse(response.headers, response)
+        return HttpResponse(response.headers, response)  # type: ignore[arg-type]
       else:
         # aiohttp is not available. Fall back to httpx.
         httpx_request = self._async_httpx_client.build_request(  # type: ignore[union-attr]
@@ -1515,7 +1515,7 @@ class BaseApiClient:
               url=url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),  # type: ignore[arg-type]
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1546,7 +1546,7 @@ class BaseApiClient:
               url=url,
               headers=http_request.headers,
               data=data,
-              timeout=aiohttp.ClientTimeout(total=http_request.timeout),
+              timeout=aiohttp.ClientTimeout(total=http_request.timeout),  # type: ignore[arg-type]
               **self._async_client_session_request_args,
           )
           await errors.APIError.raise_for_async_response(response)
@@ -1983,7 +1983,7 @@ class BaseApiClient:
               url=upload_url,
               data=file_chunk,
               headers=upload_headers,
-              timeout=aiohttp.ClientTimeout(total=timeout_in_seconds),
+              timeout=aiohttp.ClientTimeout(total=timeout_in_seconds),  # type: ignore[arg-type]
           )
 
           if response.headers.get('X-Goog-Upload-Status'):
@@ -2014,7 +2014,7 @@ class BaseApiClient:
             'Failed to upload file: Upload status is not finalized.'
         )
       return HttpResponse(
-          response.headers, response_stream=[await response.text()]  # type: ignore[union-attr]
+          response.headers, response_stream=[await response.text()]  # type: ignore[union-attr, arg-type]
       )
     else:
       # aiohttp is not available. Fall back to httpx.
@@ -2134,12 +2134,12 @@ class BaseApiClient:
           url=http_request.url,
           headers=http_request.headers,
           data=data,
-          timeout=aiohttp.ClientTimeout(total=http_request.timeout),
+          timeout=aiohttp.ClientTimeout(total=http_request.timeout),  # type: ignore[arg-type]
       )
       await errors.APIError.raise_for_async_response(response)
 
       return HttpResponse(
-          response.headers, byte_stream=[await response.read()]
+          response.headers, byte_stream=[await response.read()]  # type: ignore[arg-type]
       ).byte_stream[0]
     else:
       # aiohttp is not available. Fall back to httpx.
