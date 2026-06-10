@@ -690,3 +690,31 @@ def has_agent_platform_mcp_servers(
       if getattr(tool, 'mcp_servers', None):
         return True
     return False
+
+
+def get_usage_header(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+    usage: str = 'afc',
+) -> types.GenerateContentConfig:
+  """Sets the afc version label."""
+  usage_header = f'google-genai-sdk/{usage}'
+  if not config:
+    config_model = types.GenerateContentConfig()
+  elif isinstance(config, dict):
+    config_model = types.GenerateContentConfig(**config)
+  else:
+    config_model = config
+
+  if not config_model.http_options:
+    config_model.http_options = types.HttpOptions()
+  existing_headers = config_model.http_options.headers or {}
+  if 'user-agent' in existing_headers:
+    existing_headers['user-agent'] += usage_header
+  else:
+    existing_headers['user-agent'] = usage_header
+  if 'x-goog-api-client' in existing_headers:
+    existing_headers['x-goog-api-client'] += usage_header
+  else:
+    existing_headers['x-goog-api-client'] = usage_header
+  config_model.http_options.headers = existing_headers
+  return config_model

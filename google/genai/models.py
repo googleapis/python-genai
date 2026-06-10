@@ -6476,6 +6476,7 @@ class Models(_api_module.BaseModule):
     response = types.GenerateContentResponse()
     i = 0
     while remaining_remote_calls_afc > 0:
+      parsed_config = _extra_utils.get_usage_header(parsed_config)
       i += 1
       response = self._generate_content(
           model=model, contents=contents, config=parsed_config
@@ -6644,6 +6645,7 @@ class Models(_api_module.BaseModule):
     func_response_parts = None
     i = 0
     while remaining_remote_calls_afc > 0:
+      parsed_config = _extra_utils.get_usage_header(parsed_config)
       i += 1
       response = self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
@@ -8639,6 +8641,7 @@ class AsyncModels(_api_module.BaseModule):
       response = types.GenerateContentResponse()
 
       while remaining_remote_calls_afc > 0:
+        final_parsed_config = _extra_utils.get_usage_header(final_parsed_config)
         response = await self._generate_content(
             model=model, contents=contents, config=final_parsed_config
         )
@@ -8834,6 +8837,7 @@ class AsyncModels(_api_module.BaseModule):
       chunk = None
       i = 0
       while remaining_remote_calls_afc > 0:
+        config = _extra_utils.get_usage_header(config)
         i += 1
         response = await self._generate_content_stream(
             model=model, contents=contents, config=config
