@@ -61,6 +61,12 @@ def replays_prefix():
   return 'test'
 
 
+# Overridden at the module level for each test file.
+@pytest.fixture
+def location():
+  return None
+
+
 def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
   test_name_ending = os.environ.get('PYTEST_CURRENT_TEST').split('::')[-1]
   test_name = (
@@ -72,7 +78,7 @@ def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
 
 
 @pytest.fixture
-def client(use_vertex, replays_prefix, http_options, request):
+def client(use_vertex, replays_prefix, http_options, location, request):
   mode = request.config.getoption('--mode')
   if mode not in ['auto', 'record', 'replay', 'api', 'tap']:
     raise ValueError('Invalid mode: ' + mode)
@@ -121,6 +127,7 @@ def client(use_vertex, replays_prefix, http_options, request):
       vertexai=use_vertex,
       http_options=http_options,
       private=private,
+      location=location,
   )
 
   with mock.patch.object(

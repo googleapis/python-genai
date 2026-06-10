@@ -43,6 +43,8 @@ pytestmark = pytest_helper.setup(
     globals_for_file=globals(),
     test_method='tunings.tune',
     test_table=test_table,
+    # Ignore the env var and always set the location to us-central1
+    location='us-central1',
 )
 
 pytest_plugins = ('pytest_asyncio',)

@@ -40,7 +40,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=_UploadGetDeleteParameters(
             file_path="tests/data/google.png",
         ),
-        exception_if_vertex='only supported in the Gemini Developer client',
+        exception_if_vertex="only supported in the Gemini Developer",
     ),
 ]
 

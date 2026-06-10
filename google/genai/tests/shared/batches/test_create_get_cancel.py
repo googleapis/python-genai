@@ -43,7 +43,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 }]
             }],
         ),
-        exception_if_vertex="Exactly one of ",
+        exception_if_vertex="only supported in Gemini Developer",
     ),
 ]
 

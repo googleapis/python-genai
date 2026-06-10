@@ -143,6 +143,7 @@ def setup(
     test_method: Optional[str] = None,
     test_table: Optional[list[TestTableItem]] = None,
     http_options: Optional[HttpOptions] = None,
+    location: Optional[str] = None,
 ):
   """Generates parameterization for tests, run for both Vertex and MLDev."""
   replays_directory = (
@@ -192,10 +193,10 @@ def setup(
 
   # Add fixture for requested client option.
   return pytest.mark.parametrize(
-      'use_vertex, replays_prefix, http_options',
+      'use_vertex, replays_prefix, http_options, location',
       [
-          (True, replays_directory, http_options),
-          (False, replays_directory, http_options),
+          (True, replays_directory, http_options, location),
+          (False, replays_directory, http_options, location),
       ],
   )
 
