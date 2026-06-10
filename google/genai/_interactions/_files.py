@@ -39,7 +39,9 @@ _T = TypeVar("_T")
 
 
 def is_base64_file_input(obj: object) -> TypeGuard[Base64FileInput]:
-    return isinstance(obj, io.IOBase) or isinstance(obj, os.PathLike)
+    return isinstance(obj, bytes) or isinstance(obj, io.IOBase) or isinstance(
+        obj, os.PathLike
+    )
 
 
 def is_file_content(obj: object) -> TypeGuard[FileContent]:

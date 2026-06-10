@@ -18,7 +18,7 @@ import functools
 import hashlib
 import os
 import tempfile
-from typing import Optional, cast
+from typing import Optional
 import uuid
 
 import requests  # type: ignore
@@ -75,7 +75,7 @@ def _load_file(file_url_path: str) -> bytes:
   """Loads file bytes from the given file url path."""
   resp = requests.get(file_url_path)
   resp.raise_for_status()
-  return cast(bytes, resp.content)
+  return resp.content
 
 
 def _is_valid_model(*, model_data: bytes, expected_hash: str) -> bool:
