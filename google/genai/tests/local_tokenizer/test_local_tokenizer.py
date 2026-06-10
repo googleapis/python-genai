@@ -29,6 +29,7 @@ class TestLocalTokenizer(unittest.TestCase):
     self.mock_load_model_proto = patch(
         'genai._local_tokenizer_loader.load_model_proto'
     ).start()
+    self.addCleanup(patch.stopall)
     self.mock_get_sentencepiece = patch(
         'genai._local_tokenizer_loader.get_sentencepiece'
     ).start()
@@ -38,9 +39,6 @@ class TestLocalTokenizer(unittest.TestCase):
     self.mock_get_sentencepiece.return_value = self.mock_tokenizer
 
     self.tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3-pro-preview')
-
-  def tearDown(self):
-    patch.stopall()
 
   def test_count_tokens_simple_string(self):
     self.mock_tokenizer.encode.return_value = [[1, 2, 3]]
@@ -341,3 +339,72 @@ class TestParseHexByte(unittest.TestCase):
   def test_invalid_hex_value(self):
     with self.assertRaisesRegex(ValueError, 'Invalid hex value'):
       local_tokenizer._parse_hex_byte('<0xFG>')
+
+
+class TestLocalTokenizerHuggingFace(unittest.TestCase):
+
+  def setUp(self):
+    self.mock_get_huggingface_tokenizer = patch(
+        'genai._local_tokenizer_loader.get_huggingface_tokenizer'
+    ).start()
+    self.addCleanup(patch.stopall)
+
+    self.mock_tokenizer = MagicMock()
+    self.mock_get_huggingface_tokenizer.return_value = self.mock_tokenizer
+
+    # gemini-3.5-flash maps to gemma4 (HuggingFace)
+    self.tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
+
+  def test_count_tokens_simple_string(self):
+    self.mock_tokenizer.encode.return_value = [[1, 2, 3]]
+    result = self.tokenizer.count_tokens('Hello world')
+    self.assertEqual(result.total_tokens, 3)
+    self.mock_tokenizer.encode.assert_called_once_with(['Hello world'])
+
+  def test_compute_tokens_simple_string(self):
+    self.mock_tokenizer.encode.return_value = [[1, 2, 3]]
+    self.mock_tokenizer.convert_ids_to_tokens.return_value = ['He', 'llo', ' world']
+
+    result = self.tokenizer.compute_tokens('Hello world')
+
+    self.assertEqual(len(result.tokens_info), 1)
+    self.assertEqual(result.tokens_info[0].token_ids, [1, 2, 3])
+    self.assertEqual(result.tokens_info[0].tokens, [b'He', b'llo', b' world'])
+    self.assertEqual(result.tokens_info[0].role, 'user')
+
+    self.mock_tokenizer.encode.assert_called_once_with(['Hello world'])
+    self.mock_tokenizer.convert_ids_to_tokens.assert_called_once_with([1, 2, 3])
+
+  def test_compute_tokens_special_characters(self):
+    self.mock_tokenizer.encode.return_value = [[1, 2]]
+    # Use U+2581 (lower one eighth block) and underscore
+    self.mock_tokenizer.convert_ids_to_tokens.return_value = ['_world', '\u2581hello']
+
+    result = self.tokenizer.compute_tokens('dummy')
+
+    self.assertEqual(result.tokens_info[0].tokens, [b' world', b' hello'])
+
+  def test_compute_tokens_with_chat_history(self):
+    self.mock_tokenizer.encode.return_value = [[1], [2, 3]]
+    self.mock_tokenizer.convert_ids_to_tokens.side_effect = [
+        ['Hello'],
+        ['Hi', ' there!']
+    ]
+    history = [
+        types.Content(role='user', parts=[types.Part(text='Hello')]),
+        types.Content(role='model', parts=[types.Part(text='Hi there!')]),
+    ]
+    result = self.tokenizer.compute_tokens(history)
+    self.assertEqual(len(result.tokens_info), 2)
+    self.assertEqual(result.tokens_info[0].token_ids, [1])
+    self.assertEqual(result.tokens_info[0].tokens, [b'Hello'])
+    self.assertEqual(result.tokens_info[0].role, 'user')
+    self.assertEqual(result.tokens_info[1].token_ids, [2, 3])
+    self.assertEqual(result.tokens_info[1].tokens, [b'Hi', b' there!'])
+    self.assertEqual(result.tokens_info[1].role, 'model')
+
+    self.mock_tokenizer.encode.assert_called_once_with(['Hello', 'Hi there!'])
+    self.mock_tokenizer.convert_ids_to_tokens.assert_has_calls([
+        unittest.mock.call([1]),
+        unittest.mock.call([2, 3])
+    ])

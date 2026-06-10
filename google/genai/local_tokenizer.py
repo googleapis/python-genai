@@ -291,8 +291,12 @@ class LocalTokenizer:
 
   def __init__(self, model_name: str):
     self._tokenizer_name = loader.get_tokenizer_name(model_name)
-    self._model_proto = loader.load_model_proto(self._tokenizer_name)
-    self._tokenizer = loader.get_sentencepiece(self._tokenizer_name)
+    self._model_proto = None
+    if self._tokenizer_name in loader.GEMMA_TOKENIZER_TO_MODEL_NAMES:
+      self._tokenizer = loader.get_huggingface_tokenizer(self._tokenizer_name)
+    else:
+      self._model_proto = loader.load_model_proto(self._tokenizer_name)
+      self._tokenizer = loader.get_sentencepiece(self._tokenizer_name)
 
   @_common.experimental_warning(
       "The SDK's local tokenizer implementation is experimental and may change"
@@ -365,27 +369,46 @@ class LocalTokenizer:
       # tokens_info=[TokensInfo(token_ids=[279, 329, 1313, 2508, 13], tokens=[b' What', b' is', b' your', b' name', b'?'], role='user')]
     """
     processed_contents = t.t_contents(contents)
+    roles = []
+
     text_accumulator = _TextsAccumulator()
     for content in processed_contents:
       text_accumulator.add_content(content)
-    tokens_protos = self._tokenizer.EncodeAsImmutableProto(
-        text_accumulator.get_texts()
-    )
-
-    roles = []
-    for content in processed_contents:
       if content.parts:
         for _ in content.parts:
           roles.append(content.role)
 
     token_infos = []
+    if self._tokenizer_name in loader.GEMMA_TOKENIZER_TO_MODEL_NAMES:
+      # Use the HuggingFace tokenizer since gemma_pytorch is not available for
+      # gemma 4+.
+      token_ids = self._tokenizer.encode(list(text_accumulator.get_texts()))
+      for token_id, role in zip(token_ids, roles):
+        token_infos.append(
+            types.TokensInfo(
+                token_ids=token_id,
+                tokens=[
+                    token.replace("_", " ")
+                    .encode("utf-8")
+                    .replace(b"\xe2\x96\x81", b" ")
+                    for token in self._tokenizer.convert_ids_to_tokens(token_id)
+                ],
+                role=role,
+            )
+        )
+      return types.ComputeTokensResult(tokens_info=token_infos)
+
+    tokens_protos = self._tokenizer.EncodeAsImmutableProto(
+        text_accumulator.get_texts()
+    )
+
     for tokens_proto, role in zip(tokens_protos, roles):
       token_infos.append(
           types.TokensInfo(
               token_ids=[piece.id for piece in tokens_proto.pieces],
               tokens=[
                   _token_str_to_bytes(
-                      piece.piece, self._model_proto.pieces[piece.id].type
+                      piece.piece, self._model_proto.pieces[piece.id].type  # type: ignore[union-attr]
                   )
                   for piece in tokens_proto.pieces
               ],
