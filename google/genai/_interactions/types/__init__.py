@@ -33,9 +33,11 @@ from .step_start import StepStart as StepStart
 from .tool_param import ToolParam as ToolParam
 from .environment import Environment as Environment
 from .error_event import ErrorEvent as ErrorEvent
+from .fix_request import FixRequest as FixRequest
 from .interaction import Interaction as Interaction
 from .model_param import ModelParam as ModelParam
 from .usage_param import UsageParam as UsageParam
+from .find_request import FindRequest as FindRequest
 from .image_config import ImageConfig as ImageConfig
 from .text_content import TextContent as TextContent
 from .thought_step import ThoughtStep as ThoughtStep
@@ -58,8 +60,10 @@ from .document_content import DocumentContent as DocumentContent
 from .tool_choice_type import ToolChoiceType as ToolChoiceType
 from .agent_list_params import AgentListParams as AgentListParams
 from .environment_param import EnvironmentParam as EnvironmentParam
+from .fix_request_param import FixRequestParam as FixRequestParam
 from .generation_config import GenerationConfig as GenerationConfig
 from .model_output_step import ModelOutputStep as ModelOutputStep
+from .find_request_param import FindRequestParam as FindRequestParam
 from .function_call_step import FunctionCallStep as FunctionCallStep
 from .google_maps_result import GoogleMapsResult as GoogleMapsResult
 from .image_config_param import ImageConfigParam as ImageConfigParam
