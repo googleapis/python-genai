@@ -273,6 +273,12 @@ class AgentConfigFindRequest(TypedDict, total=False):
     validation on a single vulnerability.
     """
 
+    model: str
+    """The name of the model to use for the CodeMender agent.
+
+    One CodeMender session will only use one model.
+    """
+
     session_config: AgentConfigFindRequestSessionConfig
     """Optional session-specific configurations to override default agent behavior."""
 
@@ -339,6 +345,12 @@ class AgentConfigFixRequest(TypedDict, total=False):
     """The identifier of the specific security finding to be remediated.
 
     This ID maps to a previously discovered vulnerability.
+    """
+
+    model: str
+    """The name of the model to use for the CodeMender agent.
+
+    One CodeMender session will only use one model.
     """
 
     session_config: AgentConfigFixRequestSessionConfig
