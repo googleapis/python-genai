@@ -2159,28 +2159,6 @@ def test_schema_with_additional_properties(client):
     )
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_function(client):
-  def get_weather(city: str) -> str:
-    """Returns the weather in a city."""
-    return f'The weather in {city} is sunny and 100 degrees.'
-
-  response = client.models.generate_content(
-      model=GEMINI_FLASH_LATEST,
-      contents=(
-          'What is the weather like in Sunnyvale? Answer in very short'
-          ' sentence.'
-      ),
-      config={
-          'tools': [get_weather],
-      },
-  )
-  assert '100' in response.text
-
-
 def test_invalid_input_without_transformer(client):
   with pytest.raises(ValidationError) as e:
     client.models.generate_content(

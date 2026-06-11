@@ -49,11 +49,7 @@ def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
       function_declarations=[{
           "name": tool.name,
           "description": tool.description,
-          "parameters": types.Schema.from_json_schema(
-              json_schema=types.JSONSchema(
-                  **_filter_to_supported_schema(tool.inputSchema)
-              )
-          ),
+          "parameters_json_schema": tool.inputSchema,
       }]
   )
 
@@ -126,42 +122,6 @@ def set_mcp_usage_header(headers: dict[str, str]) -> None:
       existing_header + f" mcp_used/{version_label}"
   ).lstrip()
 
-
-def _filter_to_supported_schema(
-    schema: _common.StringDict,
-) -> _common.StringDict:
-  """Filters the schema to only include fields that are supported by JSONSchema."""
-  supported_fields: set[str] = set(types.JSONSchema.model_fields.keys())
-
-  supported_fields.update([
-      "additionalProperties", "anyOf", "oneOf", "$defs", "$ref"
-  ])
-
-  schema_field_names = (
-      "items",
-      "additionalProperties",
-      "additional_properties",
-  )
-  list_schema_field_names = ("anyOf", "any_of", "oneOf", "one_of")
-  dict_schema_field_names = ("properties", "defs", "$defs")
-
-  filtered_schema: dict[str, Any] = {}
-  for field_name, field_value in schema.items():
-    if field_name in schema_field_names:
-      filtered_schema[field_name] = _filter_to_supported_schema(field_value)
-    elif field_name in list_schema_field_names:
-      filtered_schema[field_name] = [
-          _filter_to_supported_schema(value) for value in field_value
-      ]
-    elif field_name in dict_schema_field_names:
-      filtered_schema[field_name] = {
-          key: _filter_to_supported_schema(value)
-          for key, value in field_value.items()
-      }
-    elif field_name in supported_fields:
-      filtered_schema[field_name] = field_value
-
-  return filtered_schema
 
 @contextlib.asynccontextmanager
 async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typing.AsyncIterator[Any]:
