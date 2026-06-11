@@ -6476,13 +6476,17 @@ class Models(_api_module.BaseModule):
     response = types.GenerateContentResponse()
     i = 0
     while remaining_remote_calls_afc > 0:
-      parsed_config = _extra_utils.get_usage_header(parsed_config)
+      parsed_config_to_call = parsed_config.copy() if parsed_config else None
+      function_map = _extra_utils.get_function_map(parsed_config)
+      if function_map:
+        parsed_config_to_call = _extra_utils.get_usage_header(
+            parsed_config_to_call
+        )
       i += 1
       response = self._generate_content(
-          model=model, contents=contents, config=parsed_config
+          model=model, contents=contents, config=parsed_config_to_call
       )
 
-      function_map = _extra_utils.get_function_map(parsed_config)
       if not function_map:
         break
       if not response:
@@ -6645,13 +6649,16 @@ class Models(_api_module.BaseModule):
     func_response_parts = None
     i = 0
     while remaining_remote_calls_afc > 0:
-      parsed_config = _extra_utils.get_usage_header(parsed_config)
+      parsed_config_to_call = parsed_config.copy() if parsed_config else None
+      function_map = _extra_utils.get_function_map(parsed_config)
+      if function_map:
+        parsed_config_to_call = _extra_utils.get_usage_header(
+            parsed_config_to_call
+        )
       i += 1
       response = self._generate_content_stream(
-          model=model, contents=contents, config=parsed_config
+          model=model, contents=contents, config=parsed_config_to_call
       )
-
-      function_map = _extra_utils.get_function_map(parsed_config)
 
       if i == 1:
         # First request gets a function call.
@@ -8641,9 +8648,20 @@ class AsyncModels(_api_module.BaseModule):
       response = types.GenerateContentResponse()
 
       while remaining_remote_calls_afc > 0:
-        final_parsed_config = _extra_utils.get_usage_header(final_parsed_config)
+        function_map = _extra_utils.get_function_map(
+            final_parsed_config,
+            mcp_to_genai_tool_adapters,
+            is_caller_method_async=True,
+        )
+        final_parsed_config_to_call = (
+            final_parsed_config.copy() if final_parsed_config else None
+        )
+        if function_map:
+          final_parsed_config_to_call = _extra_utils.get_usage_header(
+              final_parsed_config_to_call
+          )
         response = await self._generate_content(
-            model=model, contents=contents, config=final_parsed_config
+            model=model, contents=contents, config=final_parsed_config_to_call
         )
         remaining_remote_calls_afc -= 1
         if remaining_remote_calls_afc == 0:
@@ -8651,11 +8669,6 @@ class AsyncModels(_api_module.BaseModule):
               'Reached max remote calls for automatic function calling.'
           )
 
-        function_map = _extra_utils.get_function_map(
-            final_parsed_config,
-            mcp_to_genai_tool_adapters,
-            is_caller_method_async=True,
-        )
         if not function_map:
           break
         if not response:
@@ -8837,10 +8850,15 @@ class AsyncModels(_api_module.BaseModule):
       chunk = None
       i = 0
       while remaining_remote_calls_afc > 0:
-        config = _extra_utils.get_usage_header(config)
+        function_map = _extra_utils.get_function_map(
+            config, mcp_to_genai_tool_adapters, is_caller_method_async=True
+        )
+        config_to_call = config.copy() if config else None
+        if function_map:
+          config_to_call = _extra_utils.get_usage_header(config_to_call)
         i += 1
         response = await self._generate_content_stream(
-            model=model, contents=contents, config=config
+            model=model, contents=contents, config=config_to_call
         )
         # TODO: b/453739108 - make AFC logic more robust like the other 3 methods.
         if i > 1:
@@ -8850,10 +8868,6 @@ class AsyncModels(_api_module.BaseModule):
           logger.info(
               'Reached max remote calls for automatic function calling.'
           )
-
-        function_map = _extra_utils.get_function_map(
-            config, mcp_to_genai_tool_adapters, is_caller_method_async=True
-        )
 
         if i == 1:
           # First request gets a function call.
