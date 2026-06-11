@@ -17,7 +17,7 @@
 
 from __future__ import annotations
 
-from typing import List, Union, Iterable
+from typing import Dict, List, Union, Iterable
 from typing_extensions import Literal, overload
 
 import httpx
@@ -83,10 +83,12 @@ class InteractionsResource(SyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
@@ -121,6 +123,14 @@ class InteractionsResource(SyncAPIResource):
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -129,6 +139,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -165,10 +177,12 @@ class InteractionsResource(SyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -204,6 +218,14 @@ class InteractionsResource(SyncAPIResource):
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -212,6 +234,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -252,10 +276,12 @@ class InteractionsResource(SyncAPIResource):
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
@@ -284,6 +310,14 @@ class InteractionsResource(SyncAPIResource):
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -292,6 +326,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -335,10 +371,12 @@ class InteractionsResource(SyncAPIResource):
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -368,6 +406,14 @@ class InteractionsResource(SyncAPIResource):
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -376,6 +422,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -410,10 +458,12 @@ class InteractionsResource(SyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -449,6 +499,14 @@ class InteractionsResource(SyncAPIResource):
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -457,6 +515,8 @@ class InteractionsResource(SyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -490,10 +550,12 @@ class InteractionsResource(SyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
@@ -551,10 +613,12 @@ class InteractionsResource(SyncAPIResource):
                     "cached_content": cached_content,
                     "environment": environment,
                     "generation_config": generation_config,
+                    "labels": labels,
                     "previous_interaction_id": previous_interaction_id,
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
                     "response_modalities": response_modalities,
+                    "safety_settings": safety_settings,
                     "service_tier": service_tier,
                     "store": store,
                     "stream": stream,
@@ -853,10 +917,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
@@ -891,6 +957,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -899,6 +973,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -935,10 +1011,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -974,6 +1052,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -982,6 +1068,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -1022,10 +1110,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Omit = omit,
@@ -1054,6 +1144,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -1062,6 +1160,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -1105,10 +1205,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         agent_config: interaction_create_params.AgentConfig | Omit = omit,
         background: bool | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -1138,6 +1240,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
           environment: The environment configuration for the interaction. Can be an object specifying
               remote environment sources or a string referencing an existing environment ID.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -1146,6 +1256,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -1180,10 +1292,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         system_instruction: str | Omit = omit,
@@ -1219,6 +1333,14 @@ class AsyncInteractionsResource(AsyncAPIResource):
 
           generation_config: Input only. Configuration parameters for the model interaction.
 
+          labels: Optional. The labels with user-defined metadata for the request. It is used for
+              billing and reporting only.
+
+              Label keys and values can be no longer than 63 characters (Unicode codepoints)
+              and can only contain lowercase letters, numeric characters, underscores, and
+              dashes. International characters are allowed. Label values are optional. Label
+              keys must start with a letter.
+
           previous_interaction_id: The ID of the previous interaction, if any.
 
           response_format: Enforces that the generated response is a JSON object that complies with the
@@ -1227,6 +1349,8 @@ class AsyncInteractionsResource(AsyncAPIResource):
           response_mime_type: The mime type of the response. This is required if response_format is set.
 
           response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
+
+          safety_settings: Safety settings for the interaction.
 
           service_tier: The service tier for the interaction.
 
@@ -1260,10 +1384,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
         cached_content: str | Omit = omit,
         environment: interaction_create_params.Environment | Omit = omit,
         generation_config: GenerationConfigParam | Omit = omit,
+        labels: Dict[str, str] | Omit = omit,
         previous_interaction_id: str | Omit = omit,
         response_format: interaction_create_params.ResponseFormat | Omit = omit,
         response_mime_type: str | Omit = omit,
         response_modalities: List[Literal["text", "image", "audio", "video", "document"]] | Omit = omit,
+        safety_settings: Iterable[interaction_create_params.SafetySetting] | Omit = omit,
         service_tier: Literal["flex", "standard", "priority"] | Omit = omit,
         store: bool | Omit = omit,
         stream: Literal[False] | Literal[True] | Omit = omit,
@@ -1317,10 +1443,12 @@ class AsyncInteractionsResource(AsyncAPIResource):
                     "cached_content": cached_content,
                     "environment": environment,
                     "generation_config": generation_config,
+                    "labels": labels,
                     "previous_interaction_id": previous_interaction_id,
                     "response_format": response_format,
                     "response_mime_type": response_mime_type,
                     "response_modalities": response_modalities,
+                    "safety_settings": safety_settings,
                     "service_tier": service_tier,
                     "store": store,
                     "stream": stream,
