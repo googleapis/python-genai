@@ -114,6 +114,12 @@ class AgentConfigFindRequest(BaseModel):
     validation on a single vulnerability.
     """
 
+    model: Optional[str] = None
+    """The name of the model to use for the CodeMender agent.
+
+    One CodeMender session will only use one model.
+    """
+
     session_config: Optional[AgentConfigFindRequestSessionConfig] = None
     """Optional session-specific configurations to override default agent behavior."""
 
@@ -180,6 +186,12 @@ class AgentConfigFixRequest(BaseModel):
     """The identifier of the specific security finding to be remediated.
 
     This ID maps to a previously discovered vulnerability.
+    """
+
+    model: Optional[str] = None
+    """The name of the model to use for the CodeMender agent.
+
+    One CodeMender session will only use one model.
     """
 
     session_config: Optional[AgentConfigFixRequestSessionConfig] = None
