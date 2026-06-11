@@ -6476,7 +6476,9 @@ class Models(_api_module.BaseModule):
     response = types.GenerateContentResponse()
     i = 0
     while remaining_remote_calls_afc > 0:
-      parsed_config_to_call = parsed_config.copy() if parsed_config else None
+      parsed_config_to_call = (
+          parsed_config.model_copy(deep=True) if parsed_config else None
+      )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
         parsed_config_to_call = _extra_utils.get_usage_header(
@@ -6649,7 +6651,9 @@ class Models(_api_module.BaseModule):
     func_response_parts = None
     i = 0
     while remaining_remote_calls_afc > 0:
-      parsed_config_to_call = parsed_config.copy() if parsed_config else None
+      parsed_config_to_call = (
+          parsed_config.model_copy(deep=True) if parsed_config else None
+      )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
         parsed_config_to_call = _extra_utils.get_usage_header(
@@ -7040,7 +7044,7 @@ class Models(_api_module.BaseModule):
     if config.query_base is None:
       config.query_base = True
     if self._api_client.vertexai:
-      config = config.copy()
+      config = config.model_copy(deep=True)
       if not config.query_base:
         # Filter for tuning jobs artifacts by labels.
         filter_value = config.filter
@@ -8654,7 +8658,9 @@ class AsyncModels(_api_module.BaseModule):
             is_caller_method_async=True,
         )
         final_parsed_config_to_call = (
-            final_parsed_config.copy() if final_parsed_config else None
+            final_parsed_config.model_copy(deep=True)
+            if final_parsed_config
+            else None
         )
         if function_map:
           final_parsed_config_to_call = _extra_utils.get_usage_header(
@@ -8853,7 +8859,7 @@ class AsyncModels(_api_module.BaseModule):
         function_map = _extra_utils.get_function_map(
             config, mcp_to_genai_tool_adapters, is_caller_method_async=True
         )
-        config_to_call = config.copy() if config else None
+        config_to_call = config.model_copy(deep=True) if config else None
         if function_map:
           config_to_call = _extra_utils.get_usage_header(config_to_call)
         i += 1
@@ -9033,7 +9039,7 @@ class AsyncModels(_api_module.BaseModule):
     if config.query_base is None:
       config.query_base = True
     if self._api_client.vertexai:
-      config = config.copy()
+      config = config.model_copy(deep=True)
       if not config.query_base:
         # Filter for tuning jobs artifacts by labels.
         filter_value = config.filter
