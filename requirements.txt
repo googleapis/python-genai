@@ -32,3 +32,4 @@ websockets==16.0
 mcp>=1.14.0; python_version > '3.9'
 sentencepiece>=0.2.0
 protobuf
+transformers>=5.10.1
