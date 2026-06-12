@@ -39,7 +39,14 @@ dependencies = [
 
 [project.optional-dependencies]
 aiohttp = ["aiohttp>=3.10.11, <4.0.0"]
-local-tokenizer = ["sentencepiece>=0.2.0", "protobuf", "transformers"]
+local-tokenizer = [
+    "sentencepiece>=0.2.0",
+    "protobuf",
+    "pillow",
+    "torch",
+    "torchvision",
+    "transformers",
+]
 pyopenssl = ["pyopenssl"]
 
 [project.urls]

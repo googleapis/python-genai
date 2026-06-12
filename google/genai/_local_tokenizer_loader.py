@@ -24,7 +24,6 @@ import uuid
 import requests  # type: ignore
 import sentencepiece as spm
 from sentencepiece import sentencepiece_model_pb2
-from transformers import AutoProcessor
 
 
 # Source of truth: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
@@ -218,6 +217,13 @@ def get_tokenizer_name(model_name: str) -> str:
 def get_huggingface_tokenizer(tokenizer_name: str) -> Any:
   """Loads huggingface tokenizer from the given tokenizer name."""
   # Load the processor which includes the tokenizer
+  try:
+    from transformers import AutoProcessor
+  except ImportError:
+    raise ImportError(
+        "Please install transformers to use huggingface tokenizer: pip install"
+        " transformers"
+    ) from ImportError
   processor = AutoProcessor.from_pretrained(  # type: ignore[no-untyped-call]
       GEMMA_TOKENIZER_TO_MODEL_NAMES[tokenizer_name]
   )
