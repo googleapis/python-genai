@@ -1018,9 +1018,11 @@ class BaseApiClient:
       Returns:
         The client args with the SSL context included.
       """
-      if not args or not args.get(verify):
-        args = (args or {}).copy()
+      args = (args or {}).copy()
+      if not args.get(verify):
         args[verify] = ctx
+      if 'timeout' not in args:
+        args['timeout'] = None
       # Drop the args that isn't used by the httpx client.
       copied_args = args.copy()
       for key in copied_args.copy():
