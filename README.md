@@ -15,6 +15,13 @@ Google's generative models into their Python applications. It supports the
 [Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
+> [!WARNING]
+> **Upcoming Breaking Change to Automatic Function Calling (AFC):**
+> We will introduce a breaking change to the Automatic Function Calling (AFC)
+> feature in the next major version. Specifically, users will not be able to
+> invoke AFC from direct calls to `Models.generate_content` or its stream and
+> async variants. Instead, users should invoke AFC from `chats` modules.
+
 ## Agent Skills
 
 Large Language Models (LLMs) and generative AI coding assistants are often trained on static datasets. As a result, they may be unaware of recent updates and suggest outdated or legacy libraries.
