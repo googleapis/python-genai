@@ -62,8 +62,7 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
-exclude = ["tests/", "_test_api_client\\.py", "_gaos/"]
-explicit_package_bases = true
+exclude = ["tests/", "_test_api_client\\.py"]
 plugins = ["pydantic.mypy"]
 # we are ignoring 'unused-ignore' because we run mypy on Python 3.9 - 3.13 and
 # some errors in _automatic_function_calling_util.py only apply in 3.10+
@@ -80,18 +79,8 @@ show_error_codes = true
 
 [[tool.mypy.overrides]]
 module = [
-    "google.genai._gaos",
-    "google.genai._gaos.*"
-]
-# Auto-generated code in _gaos has type errors; ignore them but keep type info
-# for imports. This will only affect the _gaos module.
-ignore_errors = true
-
-# Remove after the switch.
-[[tool.mypy.overrides]]
-module = [
-    "google.genai._interactions",
-    "google.genai._interactions.*"
+    "genai._interactions",
+    "genai._interactions.*"
 ]
 # 'redundant-cast' is safe to ignore.
 disable_error_code = [
