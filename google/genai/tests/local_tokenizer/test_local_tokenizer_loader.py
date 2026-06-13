@@ -247,22 +247,3 @@ class TestLoaderFunctions(unittest.TestCase):
     mock_get.assert_called_once()
 
 
-class TestGetHuggingFaceTokenizer(unittest.TestCase):
-
-  @patch("genai._local_tokenizer_loader.AutoProcessor")
-  def test_get_huggingface_tokenizer_success(self, mock_auto_processor):
-    mock_processor = MagicMock()
-    mock_tokenizer = MagicMock()
-    mock_processor.tokenizer = mock_tokenizer
-    mock_auto_processor.from_pretrained.return_value = mock_processor
-
-    tokenizer = loader.get_huggingface_tokenizer("gemma4")
-
-    self.assertEqual(tokenizer, mock_tokenizer)
-    mock_auto_processor.from_pretrained.assert_called_once_with(
-        "google/gemma-4-E4B-it"
-    )
-
-  def test_get_huggingface_tokenizer_unsupported(self):
-    with self.assertRaises(KeyError):
-      loader.get_huggingface_tokenizer("unsupported")

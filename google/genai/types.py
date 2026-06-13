@@ -1228,7 +1228,7 @@ class StartSensitivity(_common.CaseInSensitiveEnum):
   """Start of speech sensitivity."""
 
   START_SENSITIVITY_UNSPECIFIED = 'START_SENSITIVITY_UNSPECIFIED'
-  """The default is START_SENSITIVITY_LOW."""
+  """The default is START_SENSITIVITY_LOW for Gemini Enterprise Agent Platform and START_SENSITIVITY_HIGH for Gemini Live."""
   START_SENSITIVITY_HIGH = 'START_SENSITIVITY_HIGH'
   """Automatic detection will detect the start of speech more often."""
   START_SENSITIVITY_LOW = 'START_SENSITIVITY_LOW'
@@ -1239,7 +1239,7 @@ class EndSensitivity(_common.CaseInSensitiveEnum):
   """End of speech sensitivity."""
 
   END_SENSITIVITY_UNSPECIFIED = 'END_SENSITIVITY_UNSPECIFIED'
-  """The default is END_SENSITIVITY_LOW."""
+  """The default is END_SENSITIVITY_LOW for Gemini Enterprise Agent Platform and END_SENSITIVITY_HIGH for Gemini Live."""
   END_SENSITIVITY_HIGH = 'END_SENSITIVITY_HIGH'
   """Automatic detection ends speech more often."""
   END_SENSITIVITY_LOW = 'END_SENSITIVITY_LOW'

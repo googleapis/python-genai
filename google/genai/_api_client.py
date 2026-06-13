@@ -447,9 +447,14 @@ class HttpResponse:
       try:
         while True:
           # Read a line from the stream. This returns bytes.
-          line_bytes = await self.response_stream.content.readline(
-              max_line_length=READ_BUFFER_SIZE
-          )
+          try:
+            line_bytes = await self.response_stream.content.readline(
+                max_line_length=READ_BUFFER_SIZE
+            )
+          except TypeError:
+            # Ensure backwards compatibility with older versions of
+            # aiohttp that do not support max_line_length.
+            line_bytes = await self.response_stream.content.readline()
           if not line_bytes:
             break
           # Decode the bytes and remove trailing whitespace and newlines.
@@ -1013,9 +1018,11 @@ class BaseApiClient:
       Returns:
         The client args with the SSL context included.
       """
-      if not args or not args.get(verify):
-        args = (args or {}).copy()
+      args = (args or {}).copy()
+      if not args.get(verify):
         args[verify] = ctx
+      if 'timeout' not in args:
+        args['timeout'] = None
       # Drop the args that isn't used by the httpx client.
       copied_args = args.copy()
       for key in copied_args.copy():

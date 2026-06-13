@@ -709,11 +709,13 @@ def get_usage_header(
     config_model.http_options = types.HttpOptions()
   existing_headers = config_model.http_options.headers or {}
   if 'user-agent' in existing_headers:
-    existing_headers['user-agent'] += usage_header
+    if usage_header not in existing_headers['user-agent']:
+      existing_headers['user-agent'] += f' {usage_header}'
   else:
     existing_headers['user-agent'] = usage_header
   if 'x-goog-api-client' in existing_headers:
-    existing_headers['x-goog-api-client'] += usage_header
+    if usage_header not in existing_headers['x-goog-api-client']:
+      existing_headers['x-goog-api-client'] += f' {usage_header}'
   else:
     existing_headers['x-goog-api-client'] = usage_header
   config_model.http_options.headers = existing_headers
