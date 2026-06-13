@@ -63,7 +63,10 @@ class ComputerUse(TypedDict, total=False):
 
     type: Required[Literal["computer_use"]]
 
-    environment: Literal["browser"]
+    enable_prompt_injection_detection: bool
+    """Whether enable the prompt injection detection check on computer-use request."""
+
+    environment: Literal["browser", "mobile", "desktop"]
     """The environment being operated."""
 
     excluded_predefined_functions: SequenceNotStr[str]

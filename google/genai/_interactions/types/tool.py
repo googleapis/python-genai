@@ -64,7 +64,10 @@ class ComputerUse(BaseModel):
 
     type: Literal["computer_use"]
 
-    environment: Optional[Literal["browser"]] = None
+    enable_prompt_injection_detection: Optional[bool] = None
+    """Whether enable the prompt injection detection check on computer-use request."""
+
+    environment: Optional[Literal["browser", "mobile", "desktop"]] = None
     """The environment being operated."""
 
     excluded_predefined_functions: Optional[List[str]] = None
