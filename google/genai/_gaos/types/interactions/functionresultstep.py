@@ -19,7 +19,6 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .content import Content, ContentParam
 from .functionresultsubcontent import (
     FunctionResultSubcontent,
     FunctionResultSubcontentParam,
@@ -31,16 +30,24 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-FunctionResultStepResultParam = TypeAliasType(
-    "FunctionResultStepResultParam",
-    Union[List[ContentParam], List[FunctionResultSubcontentParam], str],
+class FunctionResultStepResultParam(TypedDict):
+    pass
+
+
+class FunctionResultStepResult(BaseModel):
+    pass
+
+
+FunctionResultStepResultUnionParam = TypeAliasType(
+    "FunctionResultStepResultUnionParam",
+    Union[FunctionResultStepResultParam, List[FunctionResultSubcontentParam], str],
 )
 r"""The result of the tool call."""
 
 
-FunctionResultStepResult = TypeAliasType(
-    "FunctionResultStepResult",
-    Union[List[Content], List[FunctionResultSubcontent], str],
+FunctionResultStepResultUnion = TypeAliasType(
+    "FunctionResultStepResultUnion",
+    Union[FunctionResultStepResult, List[FunctionResultSubcontent], str],
 )
 r"""The result of the tool call."""
 
@@ -50,7 +57,7 @@ class FunctionResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    result: FunctionResultStepResultParam
+    result: FunctionResultStepResultUnionParam
     r"""The result of the tool call."""
     type: Literal["function_result"]
     name: NotRequired[str]
@@ -65,7 +72,7 @@ class FunctionResultStep(BaseModel):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
 
-    result: FunctionResultStepResult
+    result: FunctionResultStepResultUnion
     r"""The result of the tool call."""
 
     type: Annotated[

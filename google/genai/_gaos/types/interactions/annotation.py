@@ -46,14 +46,14 @@ class UnknownAnnotation(BaseModel):
 
 
 _ANNOTATION_VARIANTS: dict[str, Any] = {
+    "url_citation": URLCitation,
     "file_citation": FileCitation,
     "place_citation": PlaceCitation,
-    "url_citation": URLCitation,
 }
 
 
 Annotation = Annotated[
-    Union[FileCitation, PlaceCitation, URLCitation, UnknownAnnotation],
+    Union[URLCitation, FileCitation, PlaceCitation, UnknownAnnotation],
     BeforeValidator(
         partial(
             parse_open_union,

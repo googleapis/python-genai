@@ -18,11 +18,15 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
-from .agentconfig import AgentConfig, AgentConfigParam
+from ...utils.unions import parse_open_union
 from .agentoption import AgentOption
-from .agentsecurityrequest import AgentSecurityRequest, AgentSecurityRequestParam
 from .audiocontent import AudioContent, AudioContentParam
 from .content import Content, ContentParam
+from .deepresearchagentconfig import (
+    DeepResearchAgentConfig,
+    DeepResearchAgentConfigParam,
+)
+from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
 from .environment import Environment, EnvironmentParam
 from .generationconfig import GenerationConfig, GenerationConfigParam
 from .imagecontent import ImageContent, ImageContentParam
@@ -36,8 +40,10 @@ from .tool import Tool, ToolParam
 from .usage import Usage, UsageParam
 from .videocontent import VideoContent, VideoContentParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
+from functools import partial
 import pydantic
-from pydantic import model_serializer, model_validator
+from pydantic import ConfigDict, model_serializer, model_validator
+from pydantic.functional_validators import BeforeValidator
 from typing import Any, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
@@ -87,14 +93,39 @@ r"""The environment configuration for the interaction. Can be an object specifyi
 
 InteractionAgentConfigTypedDict = TypeAliasType(
     "InteractionAgentConfigTypedDict",
-    Union[AgentConfigParam, AgentSecurityRequestParam],
+    Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam],
 )
 r"""Configuration parameters for the agent interaction."""
 
 
-InteractionAgentConfig = TypeAliasType(
-    "InteractionAgentConfig", Union[AgentConfig, AgentSecurityRequest]
-)
+class UnknownInteractionAgentConfig(BaseModel):
+    r"""A InteractionAgentConfig variant the SDK doesn't recognize. Preserves the raw payload."""
+
+    type: Literal["UNKNOWN"] = "UNKNOWN"
+    raw: Any
+    is_unknown: Literal[True] = True
+
+    model_config = ConfigDict(frozen=True)
+
+
+_INTERACTION_AGENT_CONFIG_VARIANTS: dict[str, Any] = {
+    "deep-research": DeepResearchAgentConfig,
+    "dynamic": DynamicAgentConfig,
+}
+
+
+InteractionAgentConfig = Annotated[
+    Union[DeepResearchAgentConfig, DynamicAgentConfig, UnknownInteractionAgentConfig],
+    BeforeValidator(
+        partial(
+            parse_open_union,
+            disc_key="type",
+            variants=_INTERACTION_AGENT_CONFIG_VARIANTS,
+            unknown_cls=UnknownInteractionAgentConfig,
+            union_name="InteractionAgentConfig",
+        )
+    ),
+]
 r"""Configuration parameters for the agent interaction."""
 
 

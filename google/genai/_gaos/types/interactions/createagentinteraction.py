@@ -18,9 +18,12 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from .agentconfig import AgentConfig, AgentConfigParam
 from .agentoption import AgentOption
-from .agentsecurityrequest import AgentSecurityRequest, AgentSecurityRequestParam
+from .deepresearchagentconfig import (
+    DeepResearchAgentConfig,
+    DeepResearchAgentConfigParam,
+)
+from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
 from .environment import Environment, EnvironmentParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
 from .responseformat import ResponseFormat, ResponseFormatParam
@@ -30,7 +33,7 @@ from .tool import Tool, ToolParam
 from .usage import Usage, UsageParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
 import pydantic
-from pydantic import model_serializer
+from pydantic import Field, model_serializer
 from typing import List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
@@ -62,14 +65,14 @@ r"""The environment configuration for the interaction. Can be an object specifyi
 
 CreateAgentInteractionAgentConfigParam = TypeAliasType(
     "CreateAgentInteractionAgentConfigParam",
-    Union[AgentConfigParam, AgentSecurityRequestParam],
+    Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam],
 )
 r"""Configuration parameters for the agent interaction."""
 
 
-CreateAgentInteractionAgentConfig = TypeAliasType(
-    "CreateAgentInteractionAgentConfig", Union[AgentConfig, AgentSecurityRequest]
-)
+CreateAgentInteractionAgentConfig = Annotated[
+    Union[DeepResearchAgentConfig, DynamicAgentConfig], Field(discriminator="type")
+]
 r"""Configuration parameters for the agent interaction."""
 
 

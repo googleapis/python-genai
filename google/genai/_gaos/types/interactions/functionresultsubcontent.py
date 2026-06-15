@@ -44,13 +44,13 @@ class UnknownFunctionResultSubcontent(BaseModel):
 
 
 _FUNCTION_RESULT_SUBCONTENT_VARIANTS: dict[str, Any] = {
-    "image": ImageContent,
     "text": TextContent,
+    "image": ImageContent,
 }
 
 
 FunctionResultSubcontent = Annotated[
-    Union[ImageContent, TextContent, UnknownFunctionResultSubcontent],
+    Union[TextContent, ImageContent, UnknownFunctionResultSubcontent],
     BeforeValidator(
         partial(
             parse_open_union,

@@ -29,9 +29,7 @@ from ...models.listagents import ListAgentsRequestParam as AgentListParams
 from ...models.listwebhooks import ListWebhooksRequestParam as WebhookListParams
 from ...types.agents.agent import Agent, AgentParam as AgentCreateParams
 from ...types.agents.agentlistresponse import AgentListResponse
-from ...types.interactions.agentconfig import AgentConfig
 from ...types.interactions.agentoption import AgentOption
-from ...types.interactions.agentsecurityrequest import AgentSecurityRequest
 from ...types.interactions.allowedtools import AllowedTools
 from ...types.interactions.allowlistentry import AllowlistEntry
 from ...types.interactions.annotation import Annotation
@@ -62,7 +60,6 @@ from ...types.interactions.error import Error
 from ...types.interactions.errorevent import ErrorEvent
 from ...types.interactions.exaaisearchconfig import ExaAISearchConfig
 from ...types.interactions.filecitation import FileCitation
-from ...types.interactions.filecontent import FileContent
 from ...types.interactions.filesearch import FileSearch
 from ...types.interactions.filesearchcalldelta import FileSearchCallDelta
 from ...types.interactions.filesearchcallstep import FileSearchCallStep
@@ -70,8 +67,6 @@ from ...types.interactions.filesearchresult import FileSearchResult
 from ...types.interactions.filesearchresultdelta import FileSearchResultDelta
 from ...types.interactions.filesearchresultstep import FileSearchResultStep
 from ...types.interactions.filter_ import Filter
-from ...types.interactions.findrequest import FindRequest
-from ...types.interactions.fixrequest import FixRequest
 from ...types.interactions.function import Function
 from ...types.interactions.functioncallstep import FunctionCallStep
 from ...types.interactions.functionresultdelta import FunctionResultDelta
@@ -129,7 +124,6 @@ from ...types.interactions.responsemodality import ResponseModality
 from ...types.interactions.retrieval import Retrieval
 from ...types.interactions.reviewsnippet import ReviewSnippet
 from ...types.interactions.servicetier import ServiceTier
-from ...types.interactions.sessionconfig import SessionConfig
 from ...types.interactions.source import Source
 from ...types.interactions.speechconfig import SpeechConfig
 from ...types.interactions.step import Step
@@ -187,13 +181,11 @@ ModelParam = Model
 WebhookDeleteResponse = Empty
 __all__ = [
     "Agent",
-    "AgentConfig",
     "AgentCreateParams",
     "AgentDeleteResponse",
     "AgentListParams",
     "AgentListResponse",
     "AgentOption",
-    "AgentSecurityRequest",
     "AllowedTools",
     "AllowlistEntry",
     "Annotation",
@@ -224,7 +216,6 @@ __all__ = [
     "ErrorEvent",
     "ExaAISearchConfig",
     "FileCitation",
-    "FileContent",
     "FileSearch",
     "FileSearchCallDelta",
     "FileSearchCallStep",
@@ -232,8 +223,6 @@ __all__ = [
     "FileSearchResultDelta",
     "FileSearchResultStep",
     "Filter",
-    "FindRequest",
-    "FixRequest",
     "Function",
     "FunctionCallStep",
     "FunctionResultDelta",
@@ -293,7 +282,6 @@ __all__ = [
     "Retrieval",
     "ReviewSnippet",
     "ServiceTier",
-    "SessionConfig",
     "SigningSecret",
     "Source",
     "SpeechConfig",

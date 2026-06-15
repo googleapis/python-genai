@@ -44,13 +44,13 @@ class UnknownThoughtSummaryContent(BaseModel):
 
 
 _THOUGHT_SUMMARY_CONTENT_VARIANTS: dict[str, Any] = {
-    "image": ImageContent,
     "text": TextContent,
+    "image": ImageContent,
 }
 
 
 ThoughtSummaryContent = Annotated[
-    Union[ImageContent, TextContent, UnknownThoughtSummaryContent],
+    Union[TextContent, ImageContent, UnknownThoughtSummaryContent],
     BeforeValidator(
         partial(
             parse_open_union,

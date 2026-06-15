@@ -19,7 +19,6 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .content import Content, ContentParam
 from .functionresultsubcontent import (
     FunctionResultSubcontent,
     FunctionResultSubcontentParam,
@@ -31,22 +30,30 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-FunctionResultDeltaResultTypedDict = TypeAliasType(
-    "FunctionResultDeltaResultTypedDict",
-    Union[List[ContentParam], List[FunctionResultSubcontentParam], str],
+class FunctionResultDeltaResultTypedDict(TypedDict):
+    pass
+
+
+class FunctionResultDeltaResult(BaseModel):
+    pass
+
+
+FunctionResultDeltaResultUnionTypedDict = TypeAliasType(
+    "FunctionResultDeltaResultUnionTypedDict",
+    Union[FunctionResultDeltaResultTypedDict, List[FunctionResultSubcontentParam], str],
 )
 
 
-FunctionResultDeltaResult = TypeAliasType(
-    "FunctionResultDeltaResult",
-    Union[List[Content], List[FunctionResultSubcontent], str],
+FunctionResultDeltaResultUnion = TypeAliasType(
+    "FunctionResultDeltaResultUnion",
+    Union[FunctionResultDeltaResult, List[FunctionResultSubcontent], str],
 )
 
 
 class FunctionResultDeltaTypedDict(TypedDict):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    result: FunctionResultDeltaResultTypedDict
+    result: FunctionResultDeltaResultUnionTypedDict
     type: Literal["function_result"]
     name: NotRequired[str]
     is_error: NotRequired[bool]
@@ -56,7 +63,7 @@ class FunctionResultDelta(BaseModel):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
 
-    result: FunctionResultDeltaResult
+    result: FunctionResultDeltaResultUnion
 
     type: Annotated[
         Annotated[

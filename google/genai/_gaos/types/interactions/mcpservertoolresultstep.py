@@ -19,7 +19,6 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .content import Content, ContentParam
 from .functionresultsubcontent import (
     FunctionResultSubcontent,
     FunctionResultSubcontentParam,
@@ -41,18 +40,14 @@ class MCPServerToolResultStepResult(BaseModel):
 
 MCPServerToolResultStepResultUnionParam = TypeAliasType(
     "MCPServerToolResultStepResultUnionParam",
-    Union[
-        MCPServerToolResultStepResultParam,
-        List[ContentParam],
-        List[FunctionResultSubcontentParam],
-    ],
+    Union[MCPServerToolResultStepResultParam, str, List[FunctionResultSubcontentParam]],
 )
 r"""The output from the MCP server call. Can be simple text or rich content."""
 
 
 MCPServerToolResultStepResultUnion = TypeAliasType(
     "MCPServerToolResultStepResultUnion",
-    Union[MCPServerToolResultStepResult, List[Content], List[FunctionResultSubcontent]],
+    Union[MCPServerToolResultStepResult, str, List[FunctionResultSubcontent]],
 )
 r"""The output from the MCP server call. Can be simple text or rich content."""
 

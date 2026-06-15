@@ -19,7 +19,6 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .content import Content, ContentParam
 from .functionresultsubcontent import (
     FunctionResultSubcontent,
     FunctionResultSubcontentParam,
@@ -31,27 +30,39 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-MCPServerToolResultDeltaResultTypedDict = TypeAliasType(
-    "MCPServerToolResultDeltaResultTypedDict",
-    Union[List[ContentParam], List[FunctionResultSubcontentParam], str],
+class MCPServerToolResultDeltaResultTypedDict(TypedDict):
+    pass
+
+
+class MCPServerToolResultDeltaResult(BaseModel):
+    pass
+
+
+MCPServerToolResultDeltaResultUnionTypedDict = TypeAliasType(
+    "MCPServerToolResultDeltaResultUnionTypedDict",
+    Union[
+        MCPServerToolResultDeltaResultTypedDict,
+        List[FunctionResultSubcontentParam],
+        str,
+    ],
 )
 
 
-MCPServerToolResultDeltaResult = TypeAliasType(
-    "MCPServerToolResultDeltaResult",
-    Union[List[Content], List[FunctionResultSubcontent], str],
+MCPServerToolResultDeltaResultUnion = TypeAliasType(
+    "MCPServerToolResultDeltaResultUnion",
+    Union[MCPServerToolResultDeltaResult, List[FunctionResultSubcontent], str],
 )
 
 
 class MCPServerToolResultDeltaTypedDict(TypedDict):
-    result: MCPServerToolResultDeltaResultTypedDict
+    result: MCPServerToolResultDeltaResultUnionTypedDict
     type: Literal["mcp_server_tool_result"]
     name: NotRequired[str]
     server_name: NotRequired[str]
 
 
 class MCPServerToolResultDelta(BaseModel):
-    result: MCPServerToolResultDeltaResult
+    result: MCPServerToolResultDeltaResultUnion
 
     type: Annotated[
         Annotated[
