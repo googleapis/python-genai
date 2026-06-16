@@ -19255,7 +19255,7 @@ LiveServerSetupCompleteOrDict = Union[
 
 
 class Transcription(_common.BaseModel):
-  """Audio transcription in Server Conent."""
+  """Audio transcription in Server Content."""
 
   text: Optional[str] = Field(
       default=None, description="""Optional. Transcription text."""
@@ -19271,7 +19271,7 @@ class Transcription(_common.BaseModel):
 
 
 class TranscriptionDict(TypedDict, total=False):
-  """Audio transcription in Server Conent."""
+  """Audio transcription in Server Content."""
 
   text: Optional[str]
   """Optional. Transcription text."""
@@ -19346,6 +19346,10 @@ class LiveServerContent(_common.BaseModel):
       it is waiting for more input from the user, e.g. because it expects the
       user to continue talking.""",
   )
+  interim_input_transcription: Optional[Transcription] = Field(
+      default=None,
+      description="""Low latency transcription updated while the user is speaking.""",
+  )
 
 
 class LiveServerContentDict(TypedDict, total=False):
@@ -19398,6 +19402,9 @@ class LiveServerContentDict(TypedDict, total=False):
   """If true, indicates that the model is not generating content because
       it is waiting for more input from the user, e.g. because it expects the
       user to continue talking."""
+
+  interim_input_transcription: Optional[TranscriptionDict]
+  """Low latency transcription updated while the user is speaking."""
 
 
 LiveServerContentOrDict = Union[LiveServerContent, LiveServerContentDict]
@@ -19639,6 +19646,10 @@ class VoiceActivity(_common.BaseModel):
   voice_activity_type: Optional[VoiceActivityType] = Field(
       default=None, description="""The type of the voice activity signal."""
   )
+  audio_offset: Optional[str] = Field(
+      default=None,
+      description="""The time voice activity detected in audio time, relative to the start of the audio stream.""",
+  )
 
 
 class VoiceActivityDict(TypedDict, total=False):
@@ -19646,6 +19657,9 @@ class VoiceActivityDict(TypedDict, total=False):
 
   voice_activity_type: Optional[VoiceActivityType]
   """The type of the voice activity signal."""
+
+  audio_offset: Optional[str]
+  """The time voice activity detected in audio time, relative to the start of the audio stream."""
 
 
 VoiceActivityOrDict = Union[VoiceActivity, VoiceActivityDict]
@@ -19895,13 +19909,58 @@ ContextWindowCompressionConfigOrDict = Union[
 ]
 
 
+class LanguageAuto(_common.BaseModel):
+  """Indicates the language of the audio should be automatically detected."""
+
+  pass
+
+
+class LanguageAutoDict(TypedDict, total=False):
+  """Indicates the language of the audio should be automatically detected."""
+
+  pass
+
+
+LanguageAutoOrDict = Union[LanguageAuto, LanguageAutoDict]
+
+
+class LanguageHints(_common.BaseModel):
+  """Provides hints to the model about possible languages present in the audio."""
+
+  language_codes: Optional[list[str]] = Field(
+      default=None,
+      description="""BCP-47 language codes. At least one must be specified.""",
+  )
+
+
+class LanguageHintsDict(TypedDict, total=False):
+  """Provides hints to the model about possible languages present in the audio."""
+
+  language_codes: Optional[list[str]]
+  """BCP-47 language codes. At least one must be specified."""
+
+
+LanguageHintsOrDict = Union[LanguageHints, LanguageHintsDict]
+
+
 class AudioTranscriptionConfig(_common.BaseModel):
   """The audio transcription configuration in Setup."""
 
   language_codes: Optional[list[str]] = Field(
       default=None,
-      description="""The language codes of the audio. BCP-47 language code. If not set, the transcription will be in the language detected by the model. If set, the server will use the language code specified in the model config as a hint for the language of the audio
-      """,
+      description="""Deprecated: use LanguageAuto or LanguageHints instead.""",
+  )
+  language_auto: Optional[LanguageAuto] = Field(
+      default=None,
+      description="""The model will detect the language automatically. Do not use together with LanguageHints.""",
+  )
+  language_hints: Optional[LanguageHints] = Field(
+      default=None,
+      description="""Specifies one or more languages in the audio. Do not use together with LanguageAuto.""",
+  )
+  adaptation_phrases: Optional[list[str]] = Field(
+      default=None,
+      description="""A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms.""",
   )
 
 
@@ -19909,8 +19968,16 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   """The audio transcription configuration in Setup."""
 
   language_codes: Optional[list[str]]
-  """The language codes of the audio. BCP-47 language code. If not set, the transcription will be in the language detected by the model. If set, the server will use the language code specified in the model config as a hint for the language of the audio
-      """
+  """Deprecated: use LanguageAuto or LanguageHints instead."""
+
+  language_auto: Optional[LanguageAutoDict]
+  """The model will detect the language automatically. Do not use together with LanguageHints."""
+
+  language_hints: Optional[LanguageHintsDict]
+  """Specifies one or more languages in the audio. Do not use together with LanguageAuto."""
+
+  adaptation_phrases: Optional[list[str]]
+  """A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms."""
 
 
 AudioTranscriptionConfigOrDict = Union[
