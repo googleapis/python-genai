@@ -18477,6 +18477,12 @@ class TestTableItem(_common.BaseModel):
       default=None,
       description="""Keys to ignore when comparing the request and response. This is useful for tests that are not deterministic.""",
   )
+  vertex_model: Optional[str] = Field(
+      default=None, description="""Model to use when running against Vertex."""
+  )
+  mldev_model: Optional[str] = Field(
+      default=None, description="""Model to use when running against MLDev."""
+  )
 
 
 class TestTableItemDict(TypedDict, total=False):
@@ -18504,6 +18510,12 @@ class TestTableItemDict(TypedDict, total=False):
 
   ignore_keys: Optional[list[str]]
   """Keys to ignore when comparing the request and response. This is useful for tests that are not deterministic."""
+
+  vertex_model: Optional[str]
+  """Model to use when running against Vertex."""
+
+  mldev_model: Optional[str]
+  """Model to use when running against MLDev."""
 
 
 TestTableItemOrDict = Union[TestTableItem, TestTableItemDict]

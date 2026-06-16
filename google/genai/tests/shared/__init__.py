@@ -13,4 +13,5 @@
 # limitations under the License.
 #
 
-GEMINI_MODEL = 'gemini-3.1-pro-preview'  # Gemini only
+GEMINI_MODEL = 'gemini-3.5-flash'  # Gemini only
+VERTEX_MODEL = 'gemini-2.5-flash'  # Vertex only

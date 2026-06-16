@@ -55,6 +55,11 @@ def use_vertex():
   return False
 
 
+@pytest.fixture
+def model_name(client) -> str:
+  return 'gemini-2.5-flash' if client._api_client.vertexai else 'gemini-3.5-flash'
+
+
 # Overridden at the module level for each test file.
 @pytest.fixture
 def replays_prefix():

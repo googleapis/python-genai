@@ -541,6 +541,30 @@ class ReplayApiClient(BaseApiClient):
             raw_body = json.dumps(raw_body)
             expected['sdk_http_response']['body'] = raw_body
     if not self._private:
+      if actual != expected:
+        def deep_diff(d1: Any, d2: Any, path: str = '') -> None:
+          if type(d1) != type(d2):
+            _debug_print(f"DIFF: Type mismatch at {path}: {type(d1)} != {type(d2)}")
+            return
+          if isinstance(d1, dict):
+            for k in set(d1.keys()).union(d2.keys()):
+              if k not in d1:
+                _debug_print(f"DIFF: Key {k} missing from Actual at {path}")
+              elif k not in d2:
+                _debug_print(f"DIFF: Key {k} missing from Expected at {path}")
+              else:
+                deep_diff(d1[k], d2[k], f"{path}.{k}" if path else k)
+          elif isinstance(d1, list):
+            if len(d1) != len(d2):
+              _debug_print(f"DIFF: List length mismatch at {path}: {len(d1)} != {len(d2)}")
+            for i in range(min(len(d1), len(d2))):
+              deep_diff(d1[i], d2[i], f"{path}[{i}]")
+          else:
+            if d1 != d2:
+              _debug_print(f"DIFF: Value mismatch at {path}: {repr(d1)} != {repr(d2)}")
+        _debug_print("--- START DEEP DIFF ---")
+        deep_diff(actual, expected)
+        _debug_print("--- END DEEP DIFF ---")
       assert (
           actual == expected
       ), f'SDK response mismatch:\nActual: {actual}\nExpected: {expected}'

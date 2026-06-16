@@ -31,6 +31,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_mldev=(
             'only supported in Gemini Enterprise Agent Platform'
         ),
+        vertex_model=shared.VERTEX_MODEL,
     ),
 ]
 
