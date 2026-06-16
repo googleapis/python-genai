@@ -21,7 +21,6 @@ from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils.unions import parse_open_union
 from .agentoption import AgentOption
 from .audiocontent import AudioContent, AudioContentParam
-from .content import Content, ContentParam
 from .deepresearchagentconfig import (
     DeepResearchAgentConfig,
     DeepResearchAgentConfigParam,
@@ -148,8 +147,6 @@ class InteractionTypedDict(TypedDict):
     r"""Output only. The time at which the response was last updated in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
-    role: NotRequired[str]
-    r"""Output only. The role of the interaction."""
     system_instruction: NotRequired[str]
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
@@ -188,8 +185,6 @@ class InteractionTypedDict(TypedDict):
     r"""Configuration parameters for the agent interaction."""
     input: NotRequired[InteractionsInputParam]
     r"""The input for the interaction."""
-    outputs: NotRequired[List[ContentParam]]
-    r"""Output only. Legacy responses from the model."""
     output_text: NotRequired[str]
     r"""Concatenated text from the last model output in response to the current request.
 
@@ -227,14 +222,6 @@ class Interaction(BaseModel):
     r"""Output only. The time at which the response was last updated in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
-
-    role: Annotated[
-        Optional[str],
-        pydantic.Field(
-            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-        ),
-    ] = None
-    r"""Output only. The role of the interaction."""
 
     system_instruction: Optional[str] = None
     r"""System instruction for the interaction."""
@@ -295,14 +282,6 @@ class Interaction(BaseModel):
     input: Optional[InteractionsInput] = None
     r"""The input for the interaction."""
 
-    outputs: Annotated[
-        Optional[List[Content]],
-        pydantic.Field(
-            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-        ),
-    ] = None
-    r"""Output only. Legacy responses from the model."""
-
     output_text: Optional[str] = None
     r"""Concatenated text from the last model output in response to the current request.
 
@@ -354,7 +333,6 @@ class Interaction(BaseModel):
                 "id",
                 "created",
                 "updated",
-                "role",
                 "system_instruction",
                 "tools",
                 "usage",
@@ -371,7 +349,6 @@ class Interaction(BaseModel):
                 "cached_content",
                 "agent_config",
                 "input",
-                "outputs",
                 "output_text",
                 "output_image",
                 "output_audio",
