@@ -21,13 +21,7 @@ from typing import Any, TYPE_CHECKING
 from ...utils.dynamic_imports import lazy_getattr, lazy_dir
 
 if TYPE_CHECKING:
-    from .agentconfig import AgentConfig, AgentConfigParam, UnknownAgentConfig
     from .agentoption import AgentOption
-    from .agentsecurityrequest import (
-        AgentSecurityRequest,
-        AgentSecurityRequestParam,
-        UnknownAgentSecurityRequest,
-    )
     from .allowedtools import AllowedTools, AllowedToolsParam
     from .allowlistentry import AllowlistEntry, AllowlistEntryParam
     from .annotation import Annotation, AnnotationParam, UnknownAnnotation
@@ -114,7 +108,6 @@ if TYPE_CHECKING:
     from .errorevent import ErrorEvent, ErrorEventTypedDict
     from .exaaisearchconfig import ExaAISearchConfig, ExaAISearchConfigParam
     from .filecitation import FileCitation, FileCitationParam
-    from .filecontent import FileContent, FileContentParam
     from .filesearch import FileSearch, FileSearchParam
     from .filesearchcalldelta import FileSearchCallDelta, FileSearchCallDeltaTypedDict
     from .filesearchcallstep import FileSearchCallStep, FileSearchCallStepParam
@@ -125,14 +118,14 @@ if TYPE_CHECKING:
     )
     from .filesearchresultstep import FileSearchResultStep, FileSearchResultStepParam
     from .filter_ import Filter, FilterParam
-    from .findrequest import FindRequest, FindRequestParam
-    from .fixrequest import FixRequest, FixRequestParam
     from .function import Function, FunctionParam
     from .functioncallstep import FunctionCallStep, FunctionCallStepParam
     from .functionresultdelta import (
         FunctionResultDelta,
         FunctionResultDeltaResult,
         FunctionResultDeltaResultTypedDict,
+        FunctionResultDeltaResultUnion,
+        FunctionResultDeltaResultUnionTypedDict,
         FunctionResultDeltaTypedDict,
     )
     from .functionresultstep import (
@@ -140,6 +133,8 @@ if TYPE_CHECKING:
         FunctionResultStepParam,
         FunctionResultStepResult,
         FunctionResultStepResultParam,
+        FunctionResultStepResultUnion,
+        FunctionResultStepResultUnionParam,
     )
     from .functionresultsubcontent import (
         FunctionResultSubcontent,
@@ -224,6 +219,7 @@ if TYPE_CHECKING:
         InteractionResponseFormatTypedDict,
         InteractionStatus,
         InteractionTypedDict,
+        UnknownInteractionAgentConfig,
     )
     from .interactioncompletedevent import (
         InteractionCompletedEvent,
@@ -263,6 +259,8 @@ if TYPE_CHECKING:
         MCPServerToolResultDelta,
         MCPServerToolResultDeltaResult,
         MCPServerToolResultDeltaResultTypedDict,
+        MCPServerToolResultDeltaResultUnion,
+        MCPServerToolResultDeltaResultUnionTypedDict,
         MCPServerToolResultDeltaTypedDict,
     )
     from .mcpservertoolresultstep import (
@@ -291,7 +289,6 @@ if TYPE_CHECKING:
     from .retrieval import Retrieval, RetrievalParam, RetrievalType
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
     from .servicetier import ServiceTier
-    from .sessionconfig import PipelineMode, SessionConfig, SessionConfigParam
     from .source import Source, SourceParam, SourceType
     from .speechconfig import SpeechConfig, SpeechConfigParam
     from .step import Step, StepParam, UnknownStep
@@ -361,11 +358,7 @@ if TYPE_CHECKING:
     from .webhookconfig import WebhookConfig, WebhookConfigParam
 
 __all__ = [
-    "AgentConfig",
-    "AgentConfigParam",
     "AgentOption",
-    "AgentSecurityRequest",
-    "AgentSecurityRequestParam",
     "AllowedTools",
     "AllowedToolsParam",
     "Allowlist",
@@ -444,8 +437,6 @@ __all__ = [
     "ExaAISearchConfigParam",
     "FileCitation",
     "FileCitationParam",
-    "FileContent",
-    "FileContentParam",
     "FileSearch",
     "FileSearchCallDelta",
     "FileSearchCallDeltaTypedDict",
@@ -460,10 +451,6 @@ __all__ = [
     "FileSearchResultTypedDict",
     "Filter",
     "FilterParam",
-    "FindRequest",
-    "FindRequestParam",
-    "FixRequest",
-    "FixRequestParam",
     "Function",
     "FunctionCallStep",
     "FunctionCallStepParam",
@@ -471,11 +458,15 @@ __all__ = [
     "FunctionResultDelta",
     "FunctionResultDeltaResult",
     "FunctionResultDeltaResultTypedDict",
+    "FunctionResultDeltaResultUnion",
+    "FunctionResultDeltaResultUnionTypedDict",
     "FunctionResultDeltaTypedDict",
     "FunctionResultStep",
     "FunctionResultStepParam",
     "FunctionResultStepResult",
     "FunctionResultStepResultParam",
+    "FunctionResultStepResultUnion",
+    "FunctionResultStepResultUnionParam",
     "FunctionResultSubcontent",
     "FunctionResultSubcontentParam",
     "GenerationConfig",
@@ -568,6 +559,8 @@ __all__ = [
     "MCPServerToolResultDelta",
     "MCPServerToolResultDeltaResult",
     "MCPServerToolResultDeltaResultTypedDict",
+    "MCPServerToolResultDeltaResultUnion",
+    "MCPServerToolResultDeltaResultUnionTypedDict",
     "MCPServerToolResultDeltaTypedDict",
     "MCPServerToolResultStep",
     "MCPServerToolResultStepParam",
@@ -586,7 +579,6 @@ __all__ = [
     "NetworkParam",
     "ParallelAISearchConfig",
     "ParallelAISearchConfigParam",
-    "PipelineMode",
     "PlaceCitation",
     "PlaceCitationParam",
     "RagResource",
@@ -606,8 +598,6 @@ __all__ = [
     "ReviewSnippet",
     "ReviewSnippetParam",
     "ServiceTier",
-    "SessionConfig",
-    "SessionConfigParam",
     "Source",
     "SourceParam",
     "SourceType",
@@ -674,11 +664,10 @@ __all__ = [
     "URLContextResultStatus",
     "URLContextResultStep",
     "URLContextResultStepParam",
-    "UnknownAgentConfig",
-    "UnknownAgentSecurityRequest",
     "UnknownAnnotation",
     "UnknownContent",
     "UnknownFunctionResultSubcontent",
+    "UnknownInteractionAgentConfig",
     "UnknownInteractionSSEEvent",
     "UnknownStep",
     "UnknownStepDeltaData",
@@ -702,13 +691,7 @@ __all__ = [
 ]
 
 _dynamic_imports: dict[str, str] = {
-    "AgentConfig": ".agentconfig",
-    "AgentConfigParam": ".agentconfig",
-    "UnknownAgentConfig": ".agentconfig",
     "AgentOption": ".agentoption",
-    "AgentSecurityRequest": ".agentsecurityrequest",
-    "AgentSecurityRequestParam": ".agentsecurityrequest",
-    "UnknownAgentSecurityRequest": ".agentsecurityrequest",
     "AllowedTools": ".allowedtools",
     "AllowedToolsParam": ".allowedtools",
     "AllowlistEntry": ".allowlistentry",
@@ -792,8 +775,6 @@ _dynamic_imports: dict[str, str] = {
     "ExaAISearchConfigParam": ".exaaisearchconfig",
     "FileCitation": ".filecitation",
     "FileCitationParam": ".filecitation",
-    "FileContent": ".filecontent",
-    "FileContentParam": ".filecontent",
     "FileSearch": ".filesearch",
     "FileSearchParam": ".filesearch",
     "FileSearchCallDelta": ".filesearchcalldelta",
@@ -808,10 +789,6 @@ _dynamic_imports: dict[str, str] = {
     "FileSearchResultStepParam": ".filesearchresultstep",
     "Filter": ".filter_",
     "FilterParam": ".filter_",
-    "FindRequest": ".findrequest",
-    "FindRequestParam": ".findrequest",
-    "FixRequest": ".fixrequest",
-    "FixRequestParam": ".fixrequest",
     "Function": ".function",
     "FunctionParam": ".function",
     "FunctionCallStep": ".functioncallstep",
@@ -819,11 +796,15 @@ _dynamic_imports: dict[str, str] = {
     "FunctionResultDelta": ".functionresultdelta",
     "FunctionResultDeltaResult": ".functionresultdelta",
     "FunctionResultDeltaResultTypedDict": ".functionresultdelta",
+    "FunctionResultDeltaResultUnion": ".functionresultdelta",
+    "FunctionResultDeltaResultUnionTypedDict": ".functionresultdelta",
     "FunctionResultDeltaTypedDict": ".functionresultdelta",
     "FunctionResultStep": ".functionresultstep",
     "FunctionResultStepParam": ".functionresultstep",
     "FunctionResultStepResult": ".functionresultstep",
     "FunctionResultStepResultParam": ".functionresultstep",
+    "FunctionResultStepResultUnion": ".functionresultstep",
+    "FunctionResultStepResultUnionParam": ".functionresultstep",
     "FunctionResultSubcontent": ".functionresultsubcontent",
     "FunctionResultSubcontentParam": ".functionresultsubcontent",
     "UnknownFunctionResultSubcontent": ".functionresultsubcontent",
@@ -893,6 +874,7 @@ _dynamic_imports: dict[str, str] = {
     "InteractionResponseFormatTypedDict": ".interaction",
     "InteractionStatus": ".interaction",
     "InteractionTypedDict": ".interaction",
+    "UnknownInteractionAgentConfig": ".interaction",
     "InteractionCompletedEvent": ".interactioncompletedevent",
     "InteractionCompletedEventTypedDict": ".interactioncompletedevent",
     "InteractionCreatedEvent": ".interactioncreatedevent",
@@ -919,6 +901,8 @@ _dynamic_imports: dict[str, str] = {
     "MCPServerToolResultDelta": ".mcpservertoolresultdelta",
     "MCPServerToolResultDeltaResult": ".mcpservertoolresultdelta",
     "MCPServerToolResultDeltaResultTypedDict": ".mcpservertoolresultdelta",
+    "MCPServerToolResultDeltaResultUnion": ".mcpservertoolresultdelta",
+    "MCPServerToolResultDeltaResultUnionTypedDict": ".mcpservertoolresultdelta",
     "MCPServerToolResultDeltaTypedDict": ".mcpservertoolresultdelta",
     "MCPServerToolResultStep": ".mcpservertoolresultstep",
     "MCPServerToolResultStepParam": ".mcpservertoolresultstep",
@@ -953,9 +937,6 @@ _dynamic_imports: dict[str, str] = {
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
     "ServiceTier": ".servicetier",
-    "PipelineMode": ".sessionconfig",
-    "SessionConfig": ".sessionconfig",
-    "SessionConfigParam": ".sessionconfig",
     "Source": ".source",
     "SourceParam": ".source",
     "SourceType": ".source",

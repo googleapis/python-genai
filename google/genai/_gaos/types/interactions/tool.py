@@ -41,9 +41,9 @@ ToolParam = TypeAliasType(
         CodeExecutionParam,
         URLContextParam,
         GoogleSearchParam,
+        FunctionParam,
         ComputerUseParam,
         FileSearchParam,
-        FunctionParam,
         GoogleMapsParam,
         MCPServerParam,
         RetrievalParam,
@@ -63,29 +63,29 @@ class UnknownTool(BaseModel):
 
 
 _TOOL_VARIANTS: dict[str, Any] = {
-    "code_execution": CodeExecution,
-    "computer_use": ComputerUse,
-    "file_search": FileSearch,
     "function": Function,
-    "google_maps": GoogleMaps,
-    "google_search": GoogleSearch,
-    "mcp_server": MCPServer,
-    "retrieval": Retrieval,
+    "code_execution": CodeExecution,
     "url_context": URLContext,
+    "computer_use": ComputerUse,
+    "mcp_server": MCPServer,
+    "google_search": GoogleSearch,
+    "file_search": FileSearch,
+    "google_maps": GoogleMaps,
+    "retrieval": Retrieval,
 }
 
 
 Tool = Annotated[
     Union[
-        CodeExecution,
-        ComputerUse,
-        FileSearch,
         Function,
-        GoogleMaps,
-        GoogleSearch,
-        MCPServer,
-        Retrieval,
+        CodeExecution,
         URLContext,
+        ComputerUse,
+        MCPServer,
+        GoogleSearch,
+        FileSearch,
+        GoogleMaps,
+        Retrieval,
         UnknownTool,
     ],
     BeforeValidator(
