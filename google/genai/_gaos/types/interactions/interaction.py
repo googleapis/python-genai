@@ -108,13 +108,13 @@ class UnknownInteractionAgentConfig(BaseModel):
 
 
 _INTERACTION_AGENT_CONFIG_VARIANTS: dict[str, Any] = {
-    "deep-research": DeepResearchAgentConfig,
     "dynamic": DynamicAgentConfig,
+    "deep-research": DeepResearchAgentConfig,
 }
 
 
 InteractionAgentConfig = Annotated[
-    Union[DeepResearchAgentConfig, DynamicAgentConfig, UnknownInteractionAgentConfig],
+    Union[DynamicAgentConfig, DeepResearchAgentConfig, UnknownInteractionAgentConfig],
     BeforeValidator(
         partial(
             parse_open_union,

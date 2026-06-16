@@ -71,7 +71,7 @@ r"""Configuration parameters for the agent interaction."""
 
 
 CreateAgentInteractionAgentConfig = Annotated[
-    Union[DeepResearchAgentConfig, DynamicAgentConfig], Field(discriminator="type")
+    Union[DynamicAgentConfig, DeepResearchAgentConfig], Field(discriminator="type")
 ]
 r"""Configuration parameters for the agent interaction."""
 
