@@ -189,6 +189,9 @@ class UnrecognizedStr(str):
                 core_schema.no_info_plain_validator_function(validate_lax)
             ]),
             strict_schema=core_schema.none_schema(),  # Always fails in strict mode
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda v: str(v)
+            ),
         )
 
 
@@ -207,4 +210,7 @@ class UnrecognizedInt(int):
                 core_schema.no_info_plain_validator_function(validate_lax)
             ]),
             strict_schema=core_schema.none_schema(),  # Always fails in strict mode
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda v: int(v)
+            ),
         )
