@@ -26,6 +26,7 @@ ServiceTier = Union[
         "flex",
         "standard",
         "priority",
+        "deferred",
     ],
     UnrecognizedStr,
 ]
