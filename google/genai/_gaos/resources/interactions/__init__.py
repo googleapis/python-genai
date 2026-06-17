@@ -112,7 +112,7 @@ from ...types.interactions.mcpservertoolresultstep import MCPServerToolResultSte
 from ...types.interactions.mediaresolution import MediaResolution
 from ...types.interactions.modalitytokens import ModalityTokens
 from ...types.interactions.model import Model
-from ...types.interactions.modeloutputstep import ModelOutputStep
+from ...types.interactions.modeloutputstep import ModelOutputStep, ModelOutputStepError
 from ...types.interactions.parallelaisearchconfig import ParallelAISearchConfig
 from ...types.interactions.placecitation import PlaceCitation
 from ...types.interactions.ragresource import RagResource
@@ -270,6 +270,7 @@ __all__ = [
     "ModalityTokens",
     "Model",
     "ModelOutputStep",
+    "ModelOutputStepError",
     "ModelParam",
     "ParallelAISearchConfig",
     "PlaceCitation",

@@ -274,7 +274,12 @@ if TYPE_CHECKING:
     from .mediaresolution import MediaResolution
     from .modalitytokens import ModalityTokens, ModalityTokensParam
     from .model import Model
-    from .modeloutputstep import ModelOutputStep, ModelOutputStepParam
+    from .modeloutputstep import (
+        ModelOutputStep,
+        ModelOutputStepError,
+        ModelOutputStepErrorParam,
+        ModelOutputStepParam,
+    )
     from .parallelaisearchconfig import (
         ParallelAISearchConfig,
         ParallelAISearchConfigParam,
@@ -573,6 +578,8 @@ __all__ = [
     "ModalityTokensParam",
     "Model",
     "ModelOutputStep",
+    "ModelOutputStepError",
+    "ModelOutputStepErrorParam",
     "ModelOutputStepParam",
     "Network",
     "NetworkEnum",
@@ -915,6 +922,8 @@ _dynamic_imports: dict[str, str] = {
     "ModalityTokensParam": ".modalitytokens",
     "Model": ".model",
     "ModelOutputStep": ".modeloutputstep",
+    "ModelOutputStepError": ".modeloutputstep",
+    "ModelOutputStepErrorParam": ".modeloutputstep",
     "ModelOutputStepParam": ".modeloutputstep",
     "ParallelAISearchConfig": ".parallelaisearchconfig",
     "ParallelAISearchConfigParam": ".parallelaisearchconfig",
