@@ -23,8 +23,58 @@ from .content import Content, ContentParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
+
+
+class ModelOutputStepErrorParam(TypedDict):
+    r"""The error result of the operation in case of failure or cancellation."""
+
+    code: NotRequired[int]
+    r"""The status code, which should be an enum value of google.rpc.Code."""
+    message: NotRequired[str]
+    r"""A developer-facing error message, which should be in English. Any
+    user-facing error message should be localized and sent in the
+    google.rpc.Status.details field, or localized by the client.
+    """
+    details: NotRequired[List[Dict[str, Any]]]
+    r"""A list of messages that carry the error details.  There is a common set of
+    message types for APIs to use.
+    """
+
+
+class ModelOutputStepError(BaseModel):
+    r"""The error result of the operation in case of failure or cancellation."""
+
+    code: Optional[int] = None
+    r"""The status code, which should be an enum value of google.rpc.Code."""
+
+    message: Optional[str] = None
+    r"""A developer-facing error message, which should be in English. Any
+    user-facing error message should be localized and sent in the
+    google.rpc.Status.details field, or localized by the client.
+    """
+
+    details: Optional[List[Dict[str, Any]]] = None
+    r"""A list of messages that carry the error details.  There is a common set of
+    message types for APIs to use.
+    """
+
+    @model_serializer(mode="wrap")
+    def serialize_model(self, handler):
+        optional_fields = set(["code", "message", "details"])
+        serialized = handler(self)
+        m = {}
+
+        for n, f in type(self).model_fields.items():
+            k = f.alias or n
+            val = serialized.get(k, serialized.get(n))
+
+            if val != UNSET_SENTINEL:
+                if val is not None or k not in optional_fields:
+                    m[k] = val
+
+        return m
 
 
 class ModelOutputStepParam(TypedDict):
@@ -32,6 +82,8 @@ class ModelOutputStepParam(TypedDict):
 
     type: Literal["model_output"]
     content: NotRequired[List[ContentParam]]
+    error: NotRequired[ModelOutputStepErrorParam]
+    r"""The error result of the operation in case of failure or cancellation."""
 
 
 class ModelOutputStep(BaseModel):
@@ -46,9 +98,12 @@ class ModelOutputStep(BaseModel):
 
     content: Optional[List[Content]] = None
 
+    error: Optional[ModelOutputStepError] = None
+    r"""The error result of the operation in case of failure or cancellation."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["content"])
+        optional_fields = set(["content", "error"])
         serialized = handler(self)
         m = {}
 

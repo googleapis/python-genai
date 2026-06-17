@@ -108,6 +108,7 @@ from . import googlesearchresultstep
 from . import interactioncompletedevent
 from . import interactioncreatedevent
 from . import interactionstatusupdate
+from . import modeloutputstep
 from . import placecitation
 from . import stepdelta
 from . import stepstart
@@ -202,6 +203,7 @@ __all__ = [
     "interactioncompletedevent",
     "interactioncreatedevent",
     "interactionstatusupdate",
+    "modeloutputstep",
     "placecitation",
     "stepdelta",
     "stepstart",
