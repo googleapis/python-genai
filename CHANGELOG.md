@@ -4,7 +4,7 @@
 
 ### Major updates
 
-* **The interactions implementation has been completely replaced**. The public api surface should be unchanged.  ([d830f16](https://github.com/googleapis/python-genai/commit/d830f165d223ac5f42ab3fa74d2c3d868b0054d8))
+* **The interactions implementation has been completely replaced**. The public api surface is unchanged.  ([d830f16](https://github.com/googleapis/python-genai/commit/d830f165d223ac5f42ab3fa74d2c3d868b0054d8))
 
 ### Features
 
