@@ -20,22 +20,26 @@ from ...models.createwebhook import CreateWebhookRequestParam as WebhookCreatePa
 from ...models.deletewebhook import DeleteWebhookRequestParam as WebhookDeleteParams
 from ...models.getwebhook import GetWebhookRequestParam as WebhookGetParams
 from ...models.listwebhooks import ListWebhooksRequestParam as WebhookListParams
-from ...models.pingwebhook import PingWebhookRequestParam as WebhookPingParams
-from ...models.rotatesigningsecret import (
+from ...types.interactions.empty import Empty as WebhookDeleteResponse
+from ...types.webhooks.pingwebhookrequest import (
+    PingWebhookRequest,
+    PingWebhookRequestParam as WebhookPingParams,
+)
+from ...types.webhooks.rotatesigningsecretrequest import (
+    RotateSigningSecretRequest,
     RotateSigningSecretRequestParam as WebhookRotateSigningSecretParams,
 )
-from ...models.updatewebhook import UpdateWebhookRequestParam as WebhookUpdateParams
-from ...types.interactions.empty import Empty as WebhookDeleteResponse
-from ...types.webhooks.pingwebhookrequest import PingWebhookRequest
-from ...types.webhooks.rotatesigningsecretrequest import RotateSigningSecretRequest
 from ...types.webhooks.signingsecret import SigningSecret
-from ...types.webhooks.webhook import Webhook, WebhookInput
+from ...types.webhooks.webhook import Webhook, WebhookInputParam as WebhookInput
 from ...types.webhooks.webhooklistresponse import WebhookListResponse
 from ...types.webhooks.webhookpingresponse import WebhookPingResponse
 from ...types.webhooks.webhookrotatesigningsecretresponse import (
     WebhookRotateSigningSecretResponse,
 )
-from ...types.webhooks.webhookupdate import WebhookUpdate
+from ...types.webhooks.webhookupdate import (
+    WebhookUpdate,
+    WebhookUpdateParam as WebhookUpdateParams,
+)
 
 __all__ = [
     "PingWebhookRequest",

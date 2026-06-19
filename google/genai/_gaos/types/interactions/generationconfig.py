@@ -24,9 +24,10 @@ from .thinkinglevel import ThinkingLevel
 from .thinkingsummaries import ThinkingSummaries
 from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
 from .toolchoicetype import ToolChoiceType
+import pydantic
 from pydantic import model_serializer
 from typing import List, Optional, Union
-from typing_extensions import NotRequired, TypeAliasType, TypedDict
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 ToolChoiceParam = TypeAliasType(
@@ -97,7 +98,12 @@ class GenerationConfig(BaseModel):
     speech_config: Optional[List[SpeechConfig]] = None
     r"""Configuration for speech interaction."""
 
-    image_config: Optional[ImageConfig] = None
+    image_config: Annotated[
+        Optional[ImageConfig],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
     r"""The configuration for image interaction."""
 
     presence_penalty: Optional[float] = None

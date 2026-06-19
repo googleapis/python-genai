@@ -95,6 +95,7 @@ Tool = Annotated[
             variants=_TOOL_VARIANTS,
             unknown_cls=UnknownTool,
             union_name="Tool",
+            lenient=True,
         )
     ),
 ]

@@ -27,10 +27,13 @@ import httpx
 
 
 class BackoffStrategy:
+    """Exponential backoff strategy configuration."""
+
     initial_interval: int
     max_interval: int
     exponent: float
     max_elapsed_time: int
+    jitter_ms: Optional[int]
 
     def __init__(
         self,
@@ -38,24 +41,68 @@ class BackoffStrategy:
         max_interval: int,
         exponent: float,
         max_elapsed_time: int,
+        jitter_ms: Optional[int] = None,
     ):
+        """Initialize a backoff strategy.
+
+        Args:
+            initial_interval: Initial retry interval in milliseconds.
+            max_interval: Maximum retry interval in milliseconds.
+            exponent: Base of the exponential backoff; the interval grows as
+                ``initial_interval * exponent ** retries``.
+            max_elapsed_time: Maximum total elapsed time in milliseconds. Only used
+                by the ``"backoff"`` strategy; ignored by ``"attempt-count-backoff"``.
+            jitter_ms: Additive jitter bound in milliseconds. When set, adds a random
+                value in ``[0, jitter_ms]`` to each computed backoff interval (default -25%
+                for attempt-count, +[0, 1s] for backoff).
+
+        Note:
+            When a response carries a ``Retry-After`` or ``retry-after-ms`` header,
+            that delay is used as-is and the sleep-shaping parameters
+            (``initial_interval``, ``max_interval``, ``exponent``, ``jitter_ms``) are
+            ignored for that attempt.
+        """
+        if jitter_ms is not None and jitter_ms < 0:
+            raise ValueError("jitter_ms must be >= 0")
         self.initial_interval = initial_interval
         self.max_interval = max_interval
         self.exponent = exponent
         self.max_elapsed_time = max_elapsed_time
+        self.jitter_ms = jitter_ms
 
 
 class RetryConfig:
+    """Runtime retry configuration."""
+
     strategy: str
-    backoff: BackoffStrategy
+    backoff: Optional[BackoffStrategy]
     retry_connection_errors: bool
+    max_retries: Optional[int]
+    status_codes_override: Optional[List[str]]
 
     def __init__(
-        self, strategy: str, backoff: BackoffStrategy, retry_connection_errors: bool
+        self,
+        strategy: str,
+        backoff: Optional[BackoffStrategy],
+        retry_connection_errors: bool,
+        max_retries: Optional[int] = None,
+        status_codes_override: Optional[List[str]] = None,
     ):
+        """Initialize a retry configuration.
+
+        Args:
+            strategy: Retry strategy: ``"none"``, ``"backoff"`` or ``"attempt-count-backoff"``.
+            backoff: Backoff parameters; falls back to a built-in default when ``None``.
+            retry_connection_errors: Whether to also retry transport-level connection errors.
+            max_retries: Maximum number of retries for the ``"attempt-count-backoff"`` strategy.
+            status_codes_override: Retryable HTTP status codes that take precedence over the
+                per-operation defaults when non-empty.
+        """
         self.strategy = strategy
         self.backoff = backoff
         self.retry_connection_errors = retry_connection_errors
+        self.max_retries = max_retries
+        self.status_codes_override = status_codes_override
 
 
 class Retries:
@@ -64,7 +111,7 @@ class Retries:
 
     def __init__(self, config: RetryConfig, status_codes: List[str]):
         self.config = config
-        self.status_codes = status_codes
+        self.status_codes = config.status_codes_override or status_codes
 
 
 class TemporaryError(Exception):
@@ -109,12 +156,29 @@ def _parse_retry_after_header(response: httpx.Response) -> Optional[int]:
     return None
 
 
+def _parse_retry_after_ms_header(response: httpx.Response) -> Optional[int]:
+    retry_after_ms_header = response.headers.get("retry-after-ms")
+    if not retry_after_ms_header:
+        return None
+
+    try:
+        milliseconds = float(retry_after_ms_header)
+        if milliseconds >= 0:
+            return round(milliseconds)
+    except (OverflowError, ValueError):
+        pass
+
+    return None
+
+
 def _get_sleep_interval(
     exception: Exception,
     initial_interval: int,
     max_interval: int,
     exponent: float,
     retries: int,
+    attempt_count_backoff: bool = False,
+    jitter_ms: Optional[int] = None,
 ) -> float:
     """Get sleep interval for retry with exponential backoff.
 
@@ -124,6 +188,8 @@ def _get_sleep_interval(
         max_interval: Maximum retry interval in milliseconds.
         exponent: Base for exponential backoff calculation.
         retries: Current retry attempt count.
+        attempt_count_backoff: Use multiplicative jitter when ``jitter_ms`` is unset.
+        jitter_ms: Additive jitter bound in ms; see ``BackoffStrategy.jitter_ms``.
 
     Returns:
         Sleep interval in seconds.
@@ -135,18 +201,25 @@ def _get_sleep_interval(
     ):
         return exception.retry_after / 1000
 
-    sleep = (initial_interval / 1000) * exponent**retries + random.uniform(0, 1)
+    sleep = (initial_interval / 1000) * exponent**retries
+    if jitter_ms is not None:
+        sleep += random.uniform(0, jitter_ms / 1000)
+    elif attempt_count_backoff:
+        sleep = sleep * (1 - random.random() * 0.25)
+    else:
+        sleep += random.uniform(0, 1)
     return min(sleep, max_interval / 1000)
 
 
 def retry(func, retries: Retries):
-    if retries.config.strategy == "backoff":
+    if retries.config.strategy in ("backoff", "attempt-count-backoff"):
 
-        def do_request() -> httpx.Response:
+        def do_request(attempt: int) -> httpx.Response:
             res: httpx.Response
             try:
-                res = func()
+                res = func(attempt)
 
+                should_retry = False
                 for code in retries.status_codes:
                     if "X" in code.upper():
                         code_range = int(code[0])
@@ -154,12 +227,15 @@ def retry(func, retries: Retries):
                         status_major = res.status_code / 100
 
                         if code_range <= status_major < code_range + 1:
-                            raise TemporaryError(res)
+                            should_retry = True
                     else:
                         parsed_code = int(code)
 
                         if res.status_code == parsed_code:
-                            raise TemporaryError(res)
+                            should_retry = True
+
+                if should_retry:
+                    raise TemporaryError(res)
             except (httpx.NetworkError, httpx.TimeoutException) as exception:
                 if retries.config.retry_connection_errors:
                     raise
@@ -171,26 +247,39 @@ def retry(func, retries: Retries):
                 raise PermanentError(exception) from exception
 
             return res
+
+        backoff = retries.config.backoff or BackoffStrategy(500, 60000, 1.5, 3600000)
+        if retries.config.strategy == "attempt-count-backoff":
+            return retry_with_attempt_count_backoff(
+                do_request,
+                backoff.initial_interval,
+                backoff.max_interval,
+                backoff.exponent,
+                retries.config.max_retries or 0,
+                backoff.jitter_ms,
+            )
 
         return retry_with_backoff(
             do_request,
-            retries.config.backoff.initial_interval,
-            retries.config.backoff.max_interval,
-            retries.config.backoff.exponent,
-            retries.config.backoff.max_elapsed_time,
+            backoff.initial_interval,
+            backoff.max_interval,
+            backoff.exponent,
+            backoff.max_elapsed_time,
+            backoff.jitter_ms,
         )
 
-    return func()
+    return func(0)
 
 
 async def retry_async(func, retries: Retries):
-    if retries.config.strategy == "backoff":
+    if retries.config.strategy in ("backoff", "attempt-count-backoff"):
 
-        async def do_request() -> httpx.Response:
+        async def do_request(attempt: int) -> httpx.Response:
             res: httpx.Response
             try:
-                res = await func()
+                res = await func(attempt)
 
+                should_retry = False
                 for code in retries.status_codes:
                     if "X" in code.upper():
                         code_range = int(code[0])
@@ -198,12 +287,15 @@ async def retry_async(func, retries: Retries):
                         status_major = res.status_code / 100
 
                         if code_range <= status_major < code_range + 1:
-                            raise TemporaryError(res)
+                            should_retry = True
                     else:
                         parsed_code = int(code)
 
                         if res.status_code == parsed_code:
-                            raise TemporaryError(res)
+                            should_retry = True
+
+                if should_retry:
+                    raise TemporaryError(res)
             except (httpx.NetworkError, httpx.TimeoutException) as exception:
                 if retries.config.retry_connection_errors:
                     raise
@@ -216,15 +308,27 @@ async def retry_async(func, retries: Retries):
 
             return res
 
+        backoff = retries.config.backoff or BackoffStrategy(500, 60000, 1.5, 3600000)
+        if retries.config.strategy == "attempt-count-backoff":
+            return await retry_with_attempt_count_backoff_async(
+                do_request,
+                backoff.initial_interval,
+                backoff.max_interval,
+                backoff.exponent,
+                retries.config.max_retries or 0,
+                backoff.jitter_ms,
+            )
+
         return await retry_with_backoff_async(
             do_request,
-            retries.config.backoff.initial_interval,
-            retries.config.backoff.max_interval,
-            retries.config.backoff.exponent,
-            retries.config.backoff.max_elapsed_time,
+            backoff.initial_interval,
+            backoff.max_interval,
+            backoff.exponent,
+            backoff.max_elapsed_time,
+            backoff.jitter_ms,
         )
 
-    return await func()
+    return await func(0)
 
 
 def retry_with_backoff(
@@ -233,13 +337,14 @@ def retry_with_backoff(
     max_interval=60000,
     exponent=1.5,
     max_elapsed_time=3600000,
+    jitter_ms=None,
 ):
     start = round(time.time() * 1000)
     retries = 0
 
     while True:
         try:
-            return func()
+            return func(retries)
         except PermanentError as exception:
             raise exception.inner
         except Exception as exception:  # pylint: disable=broad-exception-caught
@@ -250,8 +355,56 @@ def retry_with_backoff(
 
                 raise
 
+            if isinstance(exception, TemporaryError):
+                retry_after_ms = _parse_retry_after_ms_header(exception.response)
+                if retry_after_ms is not None:
+                    exception.retry_after = retry_after_ms
             sleep = _get_sleep_interval(
-                exception, initial_interval, max_interval, exponent, retries
+                exception,
+                initial_interval,
+                max_interval,
+                exponent,
+                retries,
+                jitter_ms=jitter_ms,
+            )
+            time.sleep(sleep)
+            retries += 1
+
+
+def retry_with_attempt_count_backoff(
+    func,
+    initial_interval=500,
+    max_interval=60000,
+    exponent=1.5,
+    max_retries=0,
+    jitter_ms=None,
+):
+    retries = 0
+
+    while True:
+        try:
+            return func(retries)
+        except PermanentError as exception:
+            raise exception.inner
+        except Exception as exception:  # pylint: disable=broad-exception-caught
+            if retries >= max_retries:
+                if isinstance(exception, TemporaryError):
+                    return exception.response
+
+                raise
+
+            if isinstance(exception, TemporaryError):
+                retry_after_ms = _parse_retry_after_ms_header(exception.response)
+                if retry_after_ms is not None:
+                    exception.retry_after = retry_after_ms
+            sleep = _get_sleep_interval(
+                exception,
+                initial_interval,
+                max_interval,
+                exponent,
+                retries,
+                attempt_count_backoff=True,
+                jitter_ms=jitter_ms,
             )
             time.sleep(sleep)
             retries += 1
@@ -263,13 +416,14 @@ async def retry_with_backoff_async(
     max_interval=60000,
     exponent=1.5,
     max_elapsed_time=3600000,
+    jitter_ms=None,
 ):
     start = round(time.time() * 1000)
     retries = 0
 
     while True:
         try:
-            return await func()
+            return await func(retries)
         except PermanentError as exception:
             raise exception.inner
         except Exception as exception:  # pylint: disable=broad-exception-caught
@@ -280,8 +434,56 @@ async def retry_with_backoff_async(
 
                 raise
 
+            if isinstance(exception, TemporaryError):
+                retry_after_ms = _parse_retry_after_ms_header(exception.response)
+                if retry_after_ms is not None:
+                    exception.retry_after = retry_after_ms
             sleep = _get_sleep_interval(
-                exception, initial_interval, max_interval, exponent, retries
+                exception,
+                initial_interval,
+                max_interval,
+                exponent,
+                retries,
+                jitter_ms=jitter_ms,
+            )
+            await asyncio.sleep(sleep)
+            retries += 1
+
+
+async def retry_with_attempt_count_backoff_async(
+    func,
+    initial_interval=500,
+    max_interval=60000,
+    exponent=1.5,
+    max_retries=0,
+    jitter_ms=None,
+):
+    retries = 0
+
+    while True:
+        try:
+            return await func(retries)
+        except PermanentError as exception:
+            raise exception.inner
+        except Exception as exception:  # pylint: disable=broad-exception-caught
+            if retries >= max_retries:
+                if isinstance(exception, TemporaryError):
+                    return exception.response
+
+                raise
+
+            if isinstance(exception, TemporaryError):
+                retry_after_ms = _parse_retry_after_ms_header(exception.response)
+                if retry_after_ms is not None:
+                    exception.retry_after = retry_after_ms
+            sleep = _get_sleep_interval(
+                exception,
+                initial_interval,
+                max_interval,
+                exponent,
+                retries,
+                attempt_count_backoff=True,
+                jitter_ms=jitter_ms,
             )
             await asyncio.sleep(sleep)
             retries += 1

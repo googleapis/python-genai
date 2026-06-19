@@ -24,7 +24,7 @@ from typing import Optional
 from typing_extensions import NotRequired, TypedDict
 
 
-class ModalityTokensParam(TypedDict):
+class ModalityTokensTypedDict(TypedDict):
     r"""The token count for a single response modality."""
 
     modality: NotRequired[ResponseModality]

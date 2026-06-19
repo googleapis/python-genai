@@ -161,6 +161,7 @@ StepDeltaData = Annotated[
             variants=_STEP_DELTA_DATA_VARIANTS,
             unknown_cls=UnknownStepDeltaData,
             union_name="StepDeltaData",
+            lenient=True,
         )
     ),
 ]

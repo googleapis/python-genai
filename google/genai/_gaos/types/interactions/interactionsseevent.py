@@ -95,6 +95,7 @@ InteractionSSEEvent = Annotated[
             variants=_INTERACTION_SSE_EVENT_VARIANTS,
             unknown_cls=UnknownInteractionSSEEvent,
             union_name="InteractionSSEEvent",
+            lenient=True,
         )
     ),
 ]

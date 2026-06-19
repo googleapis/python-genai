@@ -32,6 +32,7 @@ from typing import (
     Iterator,
     Literal,
     Mapping,
+    NoReturn,
     Optional,
     ParamSpec,
     Tuple,
@@ -49,6 +50,7 @@ from pydantic import BaseModel
 from typing_extensions import TypeAliasType
 
 from .._version import __response_mode_header__
+from .._hooks.types import AfterParseErrorContext
 from .eventstreaming import Stream, AsyncStream
 from .unmarshal_json_response import unmarshal_json_response
 
@@ -59,15 +61,53 @@ ResponseT = TypeVar("ResponseT", bound="_APIResponseBase[Any]")
 AsyncResponseT = TypeVar("AsyncResponseT", bound="_AsyncAPIResponseBase[Any]")
 
 ResponseMode = Literal["buffered", "raw_stream", "event_stream"]
+ResponseModeHeader = Literal["parsed", "raw", "streaming"]
 
 _DEFAULT_PARSE_KEY = object()
-_PARSED_RESPONSE_MODE = "parsed"
-_RAW_RESPONSE_MODE = "raw"
-_STREAMING_RESPONSE_MODE = "streaming"
+_PARSED_RESPONSE_MODE: ResponseModeHeader = "parsed"
+_RAW_RESPONSE_MODE: ResponseModeHeader = "raw"
+_STREAMING_RESPONSE_MODE: ResponseModeHeader = "streaming"
 
 # Internal marker header set by the raw/streaming response helpers and removed
 # before the request is sent, so it never reaches the wire.
 _RESPONSE_MODE_HEADER = __response_mode_header__.lower()
+
+
+def raise_parse_error(
+    hooks: Optional[Any],
+    hook_ctx: Optional[AfterParseErrorContext],
+    response: httpx.Response,
+    exc: Exception,
+) -> NoReturn:
+    """Raise the hook-substituted parse error.
+
+    When hooks return the same exception instance, preserve its existing cause
+    chain instead of overwriting it with `raise exc from exc`.
+    """
+    parse_error = exc
+    if hooks is not None and hook_ctx is not None:
+        parse_error = hooks.after_parse_error(hook_ctx, response, exc)
+    if parse_error is exc:
+        raise exc.with_traceback(exc.__traceback__)
+    raise parse_error from exc
+
+
+async def raise_parse_error_async(
+    async_hooks: Optional[Any],
+    hooks: Optional[Any],
+    hook_ctx: Optional[AfterParseErrorContext],
+    response: httpx.Response,
+    exc: Exception,
+) -> NoReturn:
+    """Raise the async hook-substituted parse error."""
+    parse_error = exc
+    if async_hooks is not None and hook_ctx is not None:
+        parse_error = await async_hooks.after_parse_error(hook_ctx, response, exc)
+    elif hooks is not None and hook_ctx is not None:
+        parse_error = hooks.after_parse_error(hook_ctx, response, exc)
+    if parse_error is exc:
+        raise exc.with_traceback(exc.__traceback__)
+    raise parse_error from exc
 
 
 def _unwrap_type(t: Any) -> Any:
@@ -186,12 +226,21 @@ class _APIResponseBase(Generic[T]):
         parser: Callable[[httpx.Response], T],
         mode: ResponseMode = "buffered",
         client_ref: Optional[object] = None,
+        hook_ctx: Optional[Any] = None,
+        hooks: Optional[Any] = None,
     ) -> None:
         self.http_response = raw
         self._parser = parser
         self._mode = mode
         self._client_ref = client_ref
+        self._hook_ctx = hook_ctx
+        self._hooks = hooks
         self._parsed_by_type: dict[Any, Any] = {}
+
+    def _raise_parse_error(self, exc: Exception) -> NoReturn:
+        if self._hook_ctx is None:
+            raise_parse_error(None, None, self.http_response, exc)
+        raise_parse_error(self._hooks, self._hook_ctx, self.http_response, exc)
 
     @property
     def headers(self) -> httpx.Headers:
@@ -255,15 +304,18 @@ class _APIResponseBase(Generic[T]):
             # raw_stream / event_stream wrappers leave the body unread so the
             # caller can iter_bytes/iter_lines; buffered mode eagerly reads.
             body = None
-            if to is None:
-                if mode == "buffered":
-                    self.read()
-                self._parsed_by_type[parse_key] = self._parser(self.http_response)
-            else:
-                body = self.text()
-                self._parsed_by_type[parse_key] = unmarshal_json_response(
-                    to, self.http_response, body
-                )
+            try:
+                if to is None:
+                    if mode == "buffered":
+                        self.read()
+                    self._parsed_by_type[parse_key] = self._parser(self.http_response)
+                else:
+                    body = self.text()
+                    self._parsed_by_type[parse_key] = unmarshal_json_response(
+                        to, self.http_response, body, validate=False
+                    )
+            except Exception as exc:
+                self._raise_parse_error(exc)
         return self._parsed_by_type[parse_key]
 
     def read(self) -> bytes:
@@ -395,12 +447,25 @@ class _AsyncAPIResponseBase(Generic[T]):
         parser: Callable[[httpx.Response], Awaitable[T]],
         mode: ResponseMode = "buffered",
         client_ref: Optional[object] = None,
+        hook_ctx: Optional[Any] = None,
+        hooks: Optional[Any] = None,
+        async_hooks: Optional[Any] = None,
     ) -> None:
         self.http_response = raw
         self._parser = parser
         self._mode = mode
         self._client_ref = client_ref
+        self._hook_ctx = hook_ctx
+        self._hooks = hooks
+        self._async_hooks = async_hooks
         self._parsed_by_type: dict[Any, Any] = {}
+
+    async def _raise_parse_error(self, exc: Exception) -> NoReturn:
+        if self._hook_ctx is None:
+            raise_parse_error(None, None, self.http_response, exc)
+        await raise_parse_error_async(
+            self._async_hooks, self._hooks, self._hook_ctx, self.http_response, exc
+        )
 
     @property
     def headers(self) -> httpx.Headers:
@@ -464,15 +529,20 @@ class _AsyncAPIResponseBase(Generic[T]):
             # raw_stream / event_stream wrappers leave the body unread so the
             # caller can iter_bytes/iter_lines; buffered mode eagerly reads.
             body = None
-            if to is None:
-                if mode == "buffered":
-                    await self.read()
-                self._parsed_by_type[parse_key] = await self._parser(self.http_response)
-            else:
-                body = await self.text()
-                self._parsed_by_type[parse_key] = unmarshal_json_response(
-                    to, self.http_response, body
-                )
+            try:
+                if to is None:
+                    if mode == "buffered":
+                        await self.read()
+                    self._parsed_by_type[parse_key] = await self._parser(
+                        self.http_response
+                    )
+                else:
+                    body = await self.text()
+                    self._parsed_by_type[parse_key] = unmarshal_json_response(
+                        to, self.http_response, body, validate=False
+                    )
+            except Exception as exc:
+                await self._raise_parse_error(exc)
         return self._parsed_by_type[parse_key]
 
     async def read(self) -> bytes:
@@ -616,17 +686,17 @@ def _set_response_mode(kwargs: Dict[str, Any], mode: str, header_kwarg: str) -> 
 
 def consume_response_mode(
     http_headers: Optional[Mapping[str, str]],
-) -> Tuple[str, Optional[Mapping[str, str]]]:
+) -> Tuple[ResponseModeHeader, Optional[Mapping[str, str]]]:
     """Read and remove the marker header, returning the response mode and the
     remaining headers."""
     if http_headers is None:
         return _PARSED_RESPONSE_MODE, None
-    mode = _PARSED_RESPONSE_MODE
+    mode: ResponseModeHeader = _PARSED_RESPONSE_MODE
     remaining: Dict[str, str] = {}
     for name, value in http_headers.items():
         if name.lower() == _RESPONSE_MODE_HEADER:
             if value in (_RAW_RESPONSE_MODE, _STREAMING_RESPONSE_MODE):
-                mode = value
+                mode = cast(ResponseModeHeader, value)
         else:
             remaining[name] = value
     return mode, (remaining or None)

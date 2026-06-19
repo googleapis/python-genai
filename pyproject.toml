@@ -93,6 +93,8 @@ module = "google.genai.interactions"
 disable_error_code = [
     "misc",
     "assignment",
+    # Intentionally overriding imported alias, runtime safe.
+    "no-redef",
 ]
 
 # Remove after the switch.

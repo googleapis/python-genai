@@ -36,7 +36,7 @@ from .responsemodality import ResponseModality
 from .servicetier import ServiceTier
 from .step import Step, StepParam
 from .tool import Tool, ToolParam
-from .usage import Usage, UsageParam
+from .usage import Usage, UsageTypedDict
 from .videocontent import VideoContent, VideoContentParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
 from functools import partial
@@ -122,6 +122,7 @@ InteractionAgentConfig = Annotated[
             variants=_INTERACTION_AGENT_CONFIG_VARIANTS,
             unknown_cls=UnknownInteractionAgentConfig,
             union_name="InteractionAgentConfig",
+            lenient=True,
         )
     ),
 ]
@@ -151,7 +152,7 @@ class InteractionTypedDict(TypedDict):
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
     r"""A list of tool declarations the model may call during interaction."""
-    usage: NotRequired[UsageParam]
+    usage: NotRequired[UsageTypedDict]
     r"""Statistics on the interaction request's token usage."""
     response_modalities: NotRequired[List[ResponseModality]]
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
