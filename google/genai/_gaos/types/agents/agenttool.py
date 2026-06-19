@@ -77,6 +77,7 @@ AgentTool = Annotated[
             variants=_AGENT_TOOL_VARIANTS,
             unknown_cls=UnknownAgentTool,
             union_name="AgentTool",
+            lenient=True,
         )
     ),
 ]

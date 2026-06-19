@@ -61,6 +61,7 @@ def test_client_timeout():
         server_url=mock.ANY,
         client=mock.ANY,
         timeout_ms=5000,
+        retry_config=mock.ANY,
     )
 
 
@@ -87,4 +88,27 @@ async def test_async_client_timeout():
         server_url=mock.ANY,
         async_client=mock.ANY,
         timeout_ms=5000,
+        retry_config=mock.ANY,
     )
+
+
+@pytest.mark.filterwarnings("error")
+def test_unrecognized_model_serialization():
+  from ..._gaos.types.interactions.createmodelinteraction import CreateModelInteraction
+  # This shouldn't raise a Pydantic serialization error due to UnrecognizedStr
+  obj = CreateModelInteraction(model="gemini-3.5-flash", input="hello")
+  dumped = obj.model_dump()
+  assert dumped["model"] == "gemini-3.5-flash"
+
+
+@pytest.mark.filterwarnings("error")
+def test_unrecognized_model_request_serialization():
+  from ..._gaos.models.createinteraction import CreateInteractionRequest
+  from ..._gaos.types.interactions.createmodelinteraction import CreateModelInteraction
+  body = CreateModelInteraction(model="gemini-3.5-flash", input="hello")
+  req = CreateInteractionRequest(body=body)
+  dumped = req.model_dump()
+  assert dumped["body"]["model"] == "gemini-3.5-flash"
+
+
+

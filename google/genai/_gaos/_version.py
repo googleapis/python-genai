@@ -22,8 +22,8 @@ __title__: str = "google-genai"
 __version__: str = "2.4.1-preview.5"
 __response_mode_header__: str = "x-google-genai-response-mode"
 __openapi_doc_version__: str = "v1beta"
-__gen_version__: str = "2.904.2"
-__user_agent__: str = "speakeasy-sdk/python 2.4.1-preview.5 2.904.2 v1beta google-genai"
+__gen_version__: str = "2.911.0"
+__user_agent__: str = "speakeasy-sdk/python 2.4.1-preview.5 2.911.0 v1beta google-genai"
 
 try:
     if __package__ is not None:

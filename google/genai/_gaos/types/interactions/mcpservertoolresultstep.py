@@ -57,13 +57,13 @@ class MCPServerToolResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
+    result: MCPServerToolResultStepResultUnionParam
+    r"""The output from the MCP server call. Can be simple text or rich content."""
     type: Literal["mcp_server_tool_result"]
     name: NotRequired[str]
     r"""Name of the tool which is called for this specific tool call."""
     server_name: NotRequired[str]
     r"""The name of the used MCP server."""
-    result: NotRequired[MCPServerToolResultStepResultUnionParam]
-    r"""The output from the MCP server call. Can be simple text or rich content."""
 
 
 class MCPServerToolResultStep(BaseModel):
@@ -71,6 +71,9 @@ class MCPServerToolResultStep(BaseModel):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
+
+    result: MCPServerToolResultStepResultUnion
+    r"""The output from the MCP server call. Can be simple text or rich content."""
 
     type: Annotated[
         Annotated[
@@ -86,12 +89,9 @@ class MCPServerToolResultStep(BaseModel):
     server_name: Optional[str] = None
     r"""The name of the used MCP server."""
 
-    result: Optional[MCPServerToolResultStepResultUnion] = None
-    r"""The output from the MCP server call. Can be simple text or rich content."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "server_name", "result"])
+        optional_fields = set(["name", "server_name"])
         serialized = handler(self)
         m = {}
 

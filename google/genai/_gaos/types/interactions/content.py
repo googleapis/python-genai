@@ -79,6 +79,7 @@ Content = Annotated[
             variants=_CONTENT_VARIANTS,
             unknown_cls=UnknownContent,
             union_name="Content",
+            lenient=True,
         )
     ),
 ]

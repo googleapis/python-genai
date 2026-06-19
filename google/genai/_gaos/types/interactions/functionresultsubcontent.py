@@ -58,6 +58,7 @@ FunctionResultSubcontent = Annotated[
             variants=_FUNCTION_RESULT_SUBCONTENT_VARIANTS,
             unknown_cls=UnknownFunctionResultSubcontent,
             union_name="FunctionResultSubcontent",
+            lenient=True,
         )
     ),
 ]

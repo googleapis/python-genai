@@ -22,12 +22,31 @@ from typing_extensions import Literal, Required, TypedDict
 
 from ._gaos.types.interactions import *  # noqa: F401,F403
 from ._gaos.types.interactions import __all__ as _interactions_all
+from ._gaos.models.listagents import ListAgentsRequestParam as AgentListParams
+from ._gaos.models.listwebhooks import ListWebhooksRequestParam as WebhookListParams
 from ._gaos.resources.interactions import *  # noqa: F401,F403
 from ._gaos.resources.interactions import __all__ as _resources_all
+from ._gaos.types.agents.agent import Agent, AgentParam as AgentCreateParams
+from ._gaos.types.agents.agentlistresponse import AgentListResponse
+from ._gaos.types.interactions.empty import Empty as AgentDeleteResponse
 from ._gaos.types.interactions import (
     CreateAgentInteractionParam,
     CreateModelInteractionParam,
 )
+from ._gaos.types.interactions.model import Model as ModelParam
+from ._gaos.types.webhooks.pingwebhookrequest import (
+    PingWebhookRequestParam as WebhookPingParams,
+)
+from ._gaos.types.webhooks.rotatesigningsecretrequest import (
+    RotateSigningSecretRequestParam as WebhookRotateSigningSecretParams,
+)
+from ._gaos.types.webhooks.signingsecret import SigningSecret
+from ._gaos.types.webhooks.webhook import Webhook, WebhookInputParam as WebhookCreateParams
+from ._gaos.types.webhooks.webhooklistresponse import WebhookListResponse
+from ._gaos.types.webhooks.webhookpingresponse import WebhookPingResponse
+from ._gaos.types.webhooks.webhookupdate import WebhookUpdateParam as WebhookUpdateParams
+
+WebhookDeleteResponse = AgentDeleteResponse
 
 # Legacy flat operation parameter typed dicts that generation cannot express
 # yet: the get-params dicts exclude the positional `id` path parameter, and
@@ -84,6 +103,11 @@ InteractionGetParams = Union[
 
 
 __all__ = [
+    "Agent",
+    "AgentCreateParams",
+    "AgentDeleteResponse",
+    "AgentListParams",
+    "AgentListResponse",
     "CreateAgentInteractionParamsNonStreaming",
     "CreateAgentInteractionParamsStreaming",
     "CreateModelInteractionParamsNonStreaming",
@@ -93,5 +117,16 @@ __all__ = [
     "InteractionGetParamsBase",
     "InteractionGetParamsNonStreaming",
     "InteractionGetParamsStreaming",
+    "ModelParam",
+    "SigningSecret",
+    "Webhook",
+    "WebhookCreateParams",
+    "WebhookDeleteResponse",
+    "WebhookListParams",
+    "WebhookListResponse",
+    "WebhookPingParams",
+    "WebhookPingResponse",
+    "WebhookRotateSigningSecretParams",
+    "WebhookUpdateParams",
 ]
 __all__ = __all__ + list(_interactions_all) + list(_resources_all)

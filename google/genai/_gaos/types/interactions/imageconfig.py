@@ -20,7 +20,7 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from pydantic import model_serializer
 from typing import Literal, Optional, Union
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired, TypedDict, deprecated
 
 
 ImageConfigAspectRatio = Union[
@@ -55,6 +55,9 @@ ImageConfigImageSize = Union[
 ]
 
 
+@deprecated(
+    "warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+)
 class ImageConfigParam(TypedDict):
     r"""The configuration for image interaction."""
 
@@ -62,6 +65,9 @@ class ImageConfigParam(TypedDict):
     image_size: NotRequired[ImageConfigImageSize]
 
 
+@deprecated(
+    "warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+)
 class ImageConfig(BaseModel):
     r"""The configuration for image interaction."""
 

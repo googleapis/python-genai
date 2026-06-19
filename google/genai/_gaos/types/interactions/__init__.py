@@ -189,8 +189,8 @@ if TYPE_CHECKING:
     )
     from .groundingtoolcount import (
         GroundingToolCount,
-        GroundingToolCountParam,
         GroundingToolCountType,
+        GroundingToolCountTypedDict,
     )
     from .hybridsearch import HybridSearch, HybridSearchParam
     from .imageconfig import (
@@ -272,7 +272,7 @@ if TYPE_CHECKING:
         MCPServerToolResultStepResultUnionParam,
     )
     from .mediaresolution import MediaResolution
-    from .modalitytokens import ModalityTokens, ModalityTokensParam
+    from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
     from .model import Model
     from .modeloutputstep import ModelOutputStep, ModelOutputStepParam
     from .parallelaisearchconfig import (
@@ -350,7 +350,7 @@ if TYPE_CHECKING:
         URLContextResultDeltaTypedDict,
     )
     from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
-    from .usage import Usage, UsageParam
+    from .usage import Usage, UsageTypedDict
     from .userinputstep import UserInputStep, UserInputStepParam
     from .vertexaisearchconfig import VertexAISearchConfig, VertexAISearchConfigParam
     from .videocontent import VideoContent, VideoContentMimeType, VideoContentParam
@@ -504,8 +504,8 @@ __all__ = [
     "GoogleSearchResultStepParam",
     "GoogleSearchSearchType",
     "GroundingToolCount",
-    "GroundingToolCountParam",
     "GroundingToolCountType",
+    "GroundingToolCountTypedDict",
     "HybridSearch",
     "HybridSearchParam",
     "ImageConfig",
@@ -570,7 +570,7 @@ __all__ = [
     "MCPServerToolResultStepResultUnionParam",
     "MediaResolution",
     "ModalityTokens",
-    "ModalityTokensParam",
+    "ModalityTokensTypedDict",
     "Model",
     "ModelOutputStep",
     "ModelOutputStepParam",
@@ -674,7 +674,7 @@ __all__ = [
     "UnknownThoughtSummaryContent",
     "UnknownTool",
     "Usage",
-    "UsageParam",
+    "UsageTypedDict",
     "UserInputStep",
     "UserInputStepParam",
     "VertexAISearchConfig",
@@ -845,8 +845,8 @@ _dynamic_imports: dict[str, str] = {
     "GoogleSearchResultStep": ".googlesearchresultstep",
     "GoogleSearchResultStepParam": ".googlesearchresultstep",
     "GroundingToolCount": ".groundingtoolcount",
-    "GroundingToolCountParam": ".groundingtoolcount",
     "GroundingToolCountType": ".groundingtoolcount",
+    "GroundingToolCountTypedDict": ".groundingtoolcount",
     "HybridSearch": ".hybridsearch",
     "HybridSearchParam": ".hybridsearch",
     "ImageConfig": ".imageconfig",
@@ -912,7 +912,7 @@ _dynamic_imports: dict[str, str] = {
     "MCPServerToolResultStepResultUnionParam": ".mcpservertoolresultstep",
     "MediaResolution": ".mediaresolution",
     "ModalityTokens": ".modalitytokens",
-    "ModalityTokensParam": ".modalitytokens",
+    "ModalityTokensTypedDict": ".modalitytokens",
     "Model": ".model",
     "ModelOutputStep": ".modeloutputstep",
     "ModelOutputStepParam": ".modeloutputstep",
@@ -1008,7 +1008,7 @@ _dynamic_imports: dict[str, str] = {
     "URLContextResultStep": ".urlcontextresultstep",
     "URLContextResultStepParam": ".urlcontextresultstep",
     "Usage": ".usage",
-    "UsageParam": ".usage",
+    "UsageTypedDict": ".usage",
     "UserInputStep": ".userinputstep",
     "UserInputStepParam": ".userinputstep",
     "VertexAISearchConfig": ".vertexaisearchconfig",

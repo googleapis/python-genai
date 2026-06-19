@@ -61,6 +61,7 @@ Annotation = Annotated[
             variants=_ANNOTATION_VARIANTS,
             unknown_cls=UnknownAnnotation,
             union_name="Annotation",
+            lenient=True,
         )
     ),
 ]
