@@ -23,21 +23,6 @@ from ... import client as client_lib
 pytest_plugins = ("pytest_asyncio",)
 
 
-def test_client_future_warning():
-  with mock.patch.object(
-      client_lib, "_interactions_experimental_warned", new=False
-  ):
-    client = client_lib.Client(
-        api_key="placeholder",
-        http_options={
-            "api_version": "v1alpha",
-        }
-    )
-    with pytest.warns(
-        UserWarning, match="Interactions.*experimental"
-    ):
-      _ = client.interactions
-
 
 def test_client_timeout():
   with mock.patch.object(

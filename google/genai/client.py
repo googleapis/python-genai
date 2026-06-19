@@ -51,7 +51,7 @@ from ._gaos.google_genai import (
 )
 from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
 from ._gaos.sdk import GenAI as GeminiNextGenAPI
-_interactions_experimental_warned = False
+
 _agent_experimental_warned = False
 
 
@@ -85,14 +85,6 @@ class AsyncClient:
 
   @property
   def interactions(self) -> AsyncGeminiNextGenInteractions:
-    global _interactions_experimental_warned
-    if not _interactions_experimental_warned:
-      _interactions_experimental_warned = True
-      warnings.warn(
-          'Interactions usage is experimental and may change in future versions.',
-          category=UserWarning,
-          stacklevel=1,
-      )
     if self._interactions is None:
       self._interactions = AsyncGeminiNextGenInteractions(self._api_client)
     return self._interactions
@@ -416,14 +408,6 @@ class Client:
 
   @property
   def interactions(self) -> GeminiNextGenInteractions:
-    global _interactions_experimental_warned
-    if not _interactions_experimental_warned:
-      _interactions_experimental_warned = True
-      warnings.warn(
-        'Interactions usage is experimental and may change in future versions.',
-        category=UserWarning,
-        stacklevel=2,
-      )
     if self._interactions is None:
       self._interactions = GeminiNextGenInteractions(self._api_client)
     return self._interactions

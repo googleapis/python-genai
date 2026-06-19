@@ -1493,8 +1493,6 @@ print(response.text)
 
 ## Interactions (Preview)
 
-> **Warning:** The Interactions API is in **Beta**. This is a preview of an experimental feature. Features and schemas are subject to **breaking changes**.
-
 The Interactions API is a unified interface for interacting with Gemini models and agents. It simplifies state management, tool orchestration, and long-running tasks.
 
 See the [documentation site](https://ai.google.dev/gemini-api/docs/interactions) for more details.
