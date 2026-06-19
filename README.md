@@ -1491,7 +1491,7 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-## Interactions (Preview)
+## Interactions
 
 The Interactions API is a unified interface for interacting with Gemini models and agents. It simplifies state management, tool orchestration, and long-running tasks.
 
