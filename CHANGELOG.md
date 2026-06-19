@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/googleapis/python-genai/compare/v2.9.0-rc1...v2.9.0) (2026-06-19)
+
+
+### Features
+
+* Interactions is no longer in preview. ([6119dd3](https://github.com/googleapis/python-genai/commit/6119dd379030236a59947a662a92cb53dc63cfaf))
+
 ## [2.9.0-rc1](https://github.com/googleapis/python-genai/compare/v2.9.0-rc0...v2.9.0-rc1) (2026-06-17)
 
 
