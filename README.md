@@ -529,8 +529,8 @@ Where a `types.ModelContent` is a subclass of `types.Content`, the
 from google.genai import types
 
 contents = types.Part.from_uri(
-    file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-    mime_type: 'image/jpeg',
+    file_uri='gs://generativeai-downloads/images/scones.jpg',
+    mime_type='image/jpeg',
 )
 ```
 
@@ -540,8 +540,8 @@ The SDK converts all non function call parts into a content with a `user` role.
 [
     types.UserContent(parts=[
         types.Part.from_uri(
-            file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-            mime_type: 'image/jpeg',
+            file_uri='gs://generativeai-downloads/images/scones.jpg',
+            mime_type='image/jpeg',
         )
     ])
 ]
@@ -555,8 +555,8 @@ from google.genai import types
 contents = [
     types.Part.from_text('What is this image about?'),
     types.Part.from_uri(
-        file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-        mime_type: 'image/jpeg',
+        file_uri='gs://generativeai-downloads/images/scones.jpg',
+        mime_type='image/jpeg',
     )
 ]
 ```
@@ -569,8 +569,8 @@ The SDK will convert the list of parts into a content with a `user` role
         parts=[
             types.Part.from_text('What is this image about?'),
             types.Part.from_uri(
-                file_uri: 'gs://generativeai-downloads/images/scones.jpg',
-                mime_type: 'image/jpeg',
+                file_uri='gs://generativeai-downloads/images/scones.jpg',
+                mime_type='image/jpeg',
             )
         ]
     )
