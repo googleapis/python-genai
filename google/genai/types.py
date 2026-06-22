@@ -17444,7 +17444,7 @@ InlinedEmbedContentResponseOrDict = Union[
 
 
 class BatchJobDestination(_common.BaseModel):
-  """Config for `des` parameter."""
+  """Config for `dest` parameter."""
 
   format: Optional[str] = Field(
       default=None,
@@ -17495,7 +17495,7 @@ class BatchJobDestination(_common.BaseModel):
 
 
 class BatchJobDestinationDict(TypedDict, total=False):
-  """Config for `des` parameter."""
+  """Config for `dest` parameter."""
 
   format: Optional[str]
   """Storage format of the output files. Must be one of:
@@ -19591,9 +19591,9 @@ class LiveServerSessionResumptionUpdate(_common.BaseModel):
       default=None,
       description="""Index of last message sent by client that is included in state represented by this SessionResumptionToken. Only sent when `SessionResumptionConfig.transparent` is set.
 
-Presence of this index allows users to transparently reconnect and avoid issue of losing some part of realtime audio input/video. If client wishes to temporarily disconnect (for example as result of receiving GoAway) they can do it without losing state by buffering messages sent since last `SessionResmumptionTokenUpdate`. This field will enable them to limit buffering (avoid keeping all requests in RAM).
+Presence of this index allows users to transparently reconnect and avoid issue of losing some part of realtime audio input/video. If client wishes to temporarily disconnect (for example as result of receiving GoAway) they can do it without losing state by buffering messages sent since last `SessionResumptionTokenUpdate`. This field will enable them to limit buffering (avoid keeping all requests in RAM).
 
-Note: This should not be used for when resuming a session at some time later -- in those cases partial audio and video frames arelikely not needed.""",
+Note: This should not be used for when resuming a session at some time later -- in those cases partial audio and video frames are likely not needed.""",
   )
 
 
@@ -19612,9 +19612,9 @@ class LiveServerSessionResumptionUpdateDict(TypedDict, total=False):
   last_consumed_client_message_index: Optional[int]
   """Index of last message sent by client that is included in state represented by this SessionResumptionToken. Only sent when `SessionResumptionConfig.transparent` is set.
 
-Presence of this index allows users to transparently reconnect and avoid issue of losing some part of realtime audio input/video. If client wishes to temporarily disconnect (for example as result of receiving GoAway) they can do it without losing state by buffering messages sent since last `SessionResmumptionTokenUpdate`. This field will enable them to limit buffering (avoid keeping all requests in RAM).
+Presence of this index allows users to transparently reconnect and avoid issue of losing some part of realtime audio input/video. If client wishes to temporarily disconnect (for example as result of receiving GoAway) they can do it without losing state by buffering messages sent since last `SessionResumptionTokenUpdate`. This field will enable them to limit buffering (avoid keeping all requests in RAM).
 
-Note: This should not be used for when resuming a session at some time later -- in those cases partial audio and video frames arelikely not needed."""
+Note: This should not be used for when resuming a session at some time later -- in those cases partial audio and video frames are likely not needed."""
 
 
 LiveServerSessionResumptionUpdateOrDict = Union[
@@ -21748,7 +21748,7 @@ class UserContent(Content):
   - Create a user Content object with a string:
     user_content = UserContent("Why is the sky blue?")
   - Create a user Content object with a file data Part object:
-    user_content = UserContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    user_content = UserContent(Part.from_uri(file_uri="gs://bucket/file.txt",
     mime_type="text/plain"))
   - Create a user Content object with byte data Part object:
     user_content = UserContent(Part.from_bytes(data=b"Hello, World!",
@@ -21778,7 +21778,7 @@ class ModelContent(Content):
   - Create a model Content object with a string:
     model_content = ModelContent("Why is the sky blue?")
   - Create a model Content object with a file data Part object:
-    model_content = ModelContent(Part.from_uri(file_uril="gs://bucket/file.txt",
+    model_content = ModelContent(Part.from_uri(file_uri="gs://bucket/file.txt",
     mime_type="text/plain"))
   - Create a model Content object with byte data Part object:
     model_content = ModelContent(Part.from_bytes(data=b"Hello, World!",
@@ -22284,7 +22284,7 @@ LLMBasedMetricSpecOrDict = Union[LLMBasedMetricSpec, LLMBasedMetricSpecDict]
 
 
 class CustomCodeExecutionSpec(_common.BaseModel):
-  """Specificies a metric that is computed by running user-defined Python functions remotely."""
+  """Specifies a metric that is computed by running user-defined Python functions remotely."""
 
   evaluation_function: Optional[str] = Field(
       default=None,
@@ -22298,7 +22298,7 @@ class CustomCodeExecutionSpec(_common.BaseModel):
 
 
 class CustomCodeExecutionSpecDict(TypedDict, total=False):
-  """Specificies a metric that is computed by running user-defined Python functions remotely."""
+  """Specifies a metric that is computed by running user-defined Python functions remotely."""
 
   evaluation_function: Optional[str]
   """A string representing a user-defined function for evaluation.
