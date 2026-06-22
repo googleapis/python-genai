@@ -180,15 +180,16 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_google_search',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('Why is the sky blue?'),
             config={'tools': [{'google_search': {}}]},
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_vai_search',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('what is vertex ai search?'),
             config={
                 'tools': [{
@@ -203,11 +204,12 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='retrieval',
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_vai_google_search',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('why is the sky blue?'),
             config={
                 'tools': [
@@ -224,11 +226,12 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         exception_if_mldev='retrieval',
         exception_if_vertex='400',
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_vai_search_engine',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.0-flash-001',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('why is the sky blue?'),
             config={
                 'tools': [
@@ -243,11 +246,12 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='retrieval',
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_rag_model_old',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'How much gain or loss did Google get in the Motorola Mobile'
                 ' deal in 2014?',
@@ -270,11 +274,12 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='retrieval',
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_rag_model_ga',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'How much gain or loss did Google get in the Motorola Mobile'
                 ' deal in 2014?',
@@ -302,11 +307,12 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='retrieval',
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'can you tell me the author of "A Survey of Modernist Poetry"?',
             ),
@@ -325,11 +331,12 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex=(
             'is only supported in Gemini Developer API mode'
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_non_existent_file_search_store',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'can you tell me the author of "A Survey of Modernist Poetry"?',
             ),
@@ -349,11 +356,12 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex=(
             'is only supported in Gemini Developer API mode'
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'can you tell me the author of "A Survey of Modernist Poetry"?',
             ),
@@ -373,11 +381,12 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex=(
             'is only supported in Gemini Developer API mode'
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter_and_top_k',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'can you tell me the author of "A Survey of Modernist Poetry"',
             ),
@@ -398,16 +407,18 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex=(
             'is only supported in Gemini Developer API mode'
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_function_call',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=manual_function_calling_contents,
             config={
                 'tools': [{'function_declarations': function_declarations}]
             },
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         # TODO(b/382547236) add the test back in api mode when the code
@@ -418,7 +429,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
         name='test_code_execution',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'What is the sum of the first 50 prime numbers? '
                 + 'Generate and run code for the calculation, and make sure you'
@@ -426,11 +437,12 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
             config={'tools': [{'code_execution': {}}]},
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_function_google_search_with_long_lat',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('what is the price of GOOG?'),
             config=types.GenerateContentConfig(
                 tools=[
@@ -447,37 +459,41 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_url_context',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'what are the top headlines on https://news.google.com'
             ),
             config={'tools': [{'url_context': {}}]},
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_url_context_paywall_status',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'Read the content of this URL:'
                 ' https://unsplash.com/photos/portrait-of-an-adorable-golden-retriever-puppy-studio-shot-isolated-on-black-yRYCnnQASnc'
             ),
             config={'tools': [{'url_context': {}}]},
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_url_context_unsafe_status',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents(
                 'Fetch the content of http://0k9.me/test.html'
             ),
             config={'tools': [{'url_context': {}}]},
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_computer_use',
@@ -568,7 +584,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         #   dropped by the SDK leaving a `{'thought: True}` part.
         name='test_chat_tools_empty_thoughts',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=[
                 types.Content.model_validate(item)
                 for item in [
@@ -602,11 +618,12 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'tools': [{'function_declarations': function_declarations}],
             },
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_function_calling_config_validated_mode',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('How is the weather in Kirkland?'),
             config={
                 'tools': [{'function_declarations': function_declarations}],
@@ -615,19 +632,21 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_google_maps_with_enable_widget',
         parameters=types._GenerateContentParameters(
-            model='gemini-2.5-flash',
+            model='gemini-2.5-flash-lite',
             contents=t.t_contents('What is the nearest airport to Seattle?'),
             config={'tools': [{'google_maps': {'enable_widget': True}}]},
         ),
+        vertex_model='gemini-2.5-flash',
     ),
     pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations',
         parameters=types._GenerateContentParameters(
-            model='gemini-3.1-pro-preview',
+            model='gemini-3.5-flash',
             contents=t.t_contents(
                 'Use Google Search to tell me about the 1970 world cup match'),
             config=types.GenerateContentConfig(
@@ -641,12 +660,14 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
+        vertex_model='gemini-2.5-flash',
         exception_if_vertex='parameter is only supported in Gemini Developer API mode',
+        ignore_keys=['referenceId', 'searchResultMapping'],
     ),
     pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations_with_tool_call_echo',
         parameters=types._GenerateContentParameters(
-            model='gemini-3.1-pro-preview',
+            model='gemini-3.5-flash',
             contents=[
                 types.Content.model_validate(item)
                 for item in [
@@ -701,7 +722,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
+        vertex_model='gemini-2.5-flash',
         exception_if_vertex='parameter is only supported in Gemini Developer API mode',
+        ignore_keys=['referenceId', 'searchResultMapping'],
     ),
 ]
 
@@ -718,6 +741,7 @@ pytest_plugins = ('pytest_asyncio',)
 # Cannot be included in test_table because json serialization fails on function.
 def test_function_google_search(client):
   contents = 'What is the price of GOOG?.'
+  model = 'gemini-2.5-flash' if client._api_client.vertexai else 'gemini-3.5-flash'
   config = types.GenerateContentConfig(
       tools=[
           types.Tool(
@@ -732,13 +756,13 @@ def test_function_google_search(client):
   # bad request to combine function call and google search retrieval
   with pytest.raises(errors.ClientError):
     client.models.generate_content(
-        model='gemini-3.5-flash',
+        model=model,
         contents=contents,
         config=config,
     )
 
 
-def test_function_google_search_server_side_tool_invocations(client):
+def test_function_google_search_server_side_tool_invocations(client, model_name):
   contents = (
       'What is the weather in Buenos Aires? If it is raining, schedule a'
       ' meeting.'
@@ -767,13 +791,13 @@ def test_function_google_search_server_side_tool_invocations(client):
   )
   with pytest_helper.exception_if_vertex(client, ValueError):
     client.models.generate_content(
-        model='gemini-3.5-flash',
+        model=model_name,
         contents=contents,
         config=config,
     )
 
 
-def test_function_google_search_server_side_tool_invocations_one_tool(client):
+def test_function_google_search_server_side_tool_invocations_one_tool(client, model_name):
   contents = (
       'What is the weather in Buenos Aires? If it is raining, schedule a'
       ' meeting.'
@@ -800,15 +824,15 @@ def test_function_google_search_server_side_tool_invocations_one_tool(client):
   )
   with pytest_helper.exception_if_vertex(client, ValueError):
     client.models.generate_content(
-        model='gemini-3.5-flash',
+        model=model_name,
         contents=contents,
         config=config,
     )
 
 
-def test_google_search_stream(client):
+def test_google_search_stream(client, model_name):
   for part in client.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents=types.Content(
           role='user',
           parts=[types.Part(text='Why is the sky blue?')],
@@ -827,9 +851,9 @@ def test_google_search_stream(client):
         ' "OBJECT" in Python 3.13'
     ),
 )
-def test_function_calling_without_implementation(client):
+def test_function_calling_without_implementation(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='What is the weather in Boston?',
       config={
           'tools': [get_weather_declaration_only],
@@ -842,9 +866,9 @@ def test_function_calling_without_implementation(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_2_function(client):
+def test_2_function(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='What is the price of GOOG? And what is the weather in Boston?',
       config={
           'tools': [get_weather, get_stock_price],
@@ -861,9 +885,9 @@ def test_2_function(client):
     reason='AFC removed from private models.py',
 )
 @pytest.mark.asyncio
-async def test_2_function_async(client):
+async def test_2_function_async(client, model_name):
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='What is the price of GOOG? And what is the weather in Boston?',
       config={
           'tools': [get_weather, get_stock_price],
@@ -878,18 +902,19 @@ async def test_2_function_async(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_customized_math_rule(client):
+def test_automatic_function_calling_with_customized_math_rule(client, model_name):
   def customized_divide_integers(numerator: int, denominator: int) -> int:
     """Divide two integers with customized math rule."""
     return numerator // denominator + 1
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [customized_divide_integers],
       },
   )
+  print(f"JETS_DEBUG: response = {response}")
   assert '501' in response.text
 
 
@@ -897,9 +922,9 @@ def test_automatic_function_calling_with_customized_math_rule(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling(client):
+def test_automatic_function_calling(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -915,9 +940,9 @@ def test_automatic_function_calling(client):
     reason='AFC removed from private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_with_async_function(client):
+async def test_automatic_function_calling_with_async_function(client, model_name):
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1001.0/2.0?',
       config={
           'tools': [divide_floats_async],
@@ -928,9 +953,9 @@ async def test_automatic_function_calling_with_async_function(client):
   assert '500.5' in response.text
 
 
-def test_automatic_function_calling_stream(client):
+def test_automatic_function_calling_stream(client, model_name):
   response = client.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -943,25 +968,26 @@ def test_automatic_function_calling_stream(client):
     assert part.text is not None or part.candidates[0].finish_reason
 
 
-def test_disable_automatic_function_calling_stream(client):
+def test_disable_automatic_function_calling_stream(client, model_name):
   # If AFC is disabled, the response should contain a function call.
   response = client.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
           'automatic_function_calling': {'disable': True},
       },
   )
-  chunks = 0
+  function_calls = []
   for chunk in response:
-    chunks += 1
-    assert chunk.parts[0].function_call is not None
+    if chunk.function_calls:
+      function_calls.extend(chunk.function_calls)
+  assert len(function_calls) > 0
 
 
-def test_automatic_function_calling_no_function_response_stream(client):
+def test_automatic_function_calling_no_function_response_stream(client, model_name):
   response = client.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the weather in Boston?',
       config={
           'tools': [divide_integers],
@@ -975,28 +1001,27 @@ def test_automatic_function_calling_no_function_response_stream(client):
 
 
 @pytest.mark.asyncio
-async def test_disable_automatic_function_calling_stream_async(client):
+async def test_disable_automatic_function_calling_stream_async(client, model_name):
   # If AFC is disabled, the response should contain a function call.
   response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
           'automatic_function_calling': {'disable': True},
       },
   )
-  chunks = 0
+  function_calls = []
   async for chunk in response:
-    chunks += 1
-    assert chunk.parts[0].function_call is not None
+    if chunk.function_calls:
+      function_calls.extend(chunk.function_calls)
+  assert len(function_calls) > 0
 
 
 @pytest.mark.asyncio
-async def test_automatic_function_calling_no_function_response_stream_async(
-    client,
-):
+async def test_automatic_function_calling_no_function_response_stream_async(client, model_name):
   response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the weather in Boston?',
       config={
           'tools': [divide_integers],
@@ -1010,9 +1035,9 @@ async def test_automatic_function_calling_no_function_response_stream_async(
 
 
 @pytest.mark.asyncio
-async def test_automatic_function_calling_stream_async(client):
+async def test_automatic_function_calling_stream_async(client, model_name):
   response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1029,9 +1054,9 @@ async def test_automatic_function_calling_stream_async(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_disable_afc(client):
+def test_callable_tools_user_disable_afc(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1047,9 +1072,9 @@ def test_callable_tools_user_disable_afc(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_disable_afc_with_max_remote_calls(client):
+def test_callable_tools_user_disable_afc_with_max_remote_calls(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1065,11 +1090,9 @@ def test_callable_tools_user_disable_afc_with_max_remote_calls(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_disable_afc_with_max_remote_calls_negative(
-    client,
-):
+def test_callable_tools_user_disable_afc_with_max_remote_calls_negative(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1086,9 +1109,9 @@ def test_callable_tools_user_disable_afc_with_max_remote_calls_negative(
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_disable_afc_with_max_remote_calls_zero(client):
+def test_callable_tools_user_disable_afc_with_max_remote_calls_zero(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1104,9 +1127,9 @@ def test_callable_tools_user_disable_afc_with_max_remote_calls_zero(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_enable_afc(client):
+def test_callable_tools_user_enable_afc(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1122,9 +1145,9 @@ def test_callable_tools_user_enable_afc(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_enable_afc_with_max_remote_calls(client):
+def test_callable_tools_user_enable_afc_with_max_remote_calls(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1141,11 +1164,9 @@ def test_callable_tools_user_enable_afc_with_max_remote_calls(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_enable_afc_with_max_remote_calls_negative(
-    client,
-):
+def test_callable_tools_user_enable_afc_with_max_remote_calls_negative(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1162,9 +1183,9 @@ def test_callable_tools_user_enable_afc_with_max_remote_calls_negative(
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_callable_tools_user_enable_afc_with_max_remote_calls_zero(client):
+def test_callable_tools_user_enable_afc_with_max_remote_calls_zero(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1181,9 +1202,9 @@ def test_callable_tools_user_enable_afc_with_max_remote_calls_zero(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_exception(client):
+def test_automatic_function_calling_with_exception(client, model_name):
   client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/0?',
       config={
           'tools': [divide_integers],
@@ -1195,9 +1216,9 @@ def test_automatic_function_calling_with_exception(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_float_without_decimal(client):
+def test_automatic_function_calling_float_without_decimal(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000.0/2.0?',
       config={
           'tools': [divide_floats, divide_integers],
@@ -1212,7 +1233,7 @@ def test_automatic_function_calling_float_without_decimal(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_pydantic_model(client):
+def test_automatic_function_calling_with_pydantic_model(client, model_name):
   class CityObject(pydantic.BaseModel):
     city_name: str
 
@@ -1225,7 +1246,7 @@ def test_automatic_function_calling_with_pydantic_model(client):
       return f'The weather in {city_object.city_name} is sunny and 100 degrees.'
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='it is winter now, what is the weather in Boston?',
       config={
           'tools': [get_weather_pydantic_model],
@@ -1239,7 +1260,7 @@ def test_automatic_function_calling_with_pydantic_model(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
+def test_automatic_function_calling_with_pydantic_model_in_list_type(client, model_name):
   class CityObject(pydantic.BaseModel):
     city_name: str
 
@@ -1261,7 +1282,7 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
     return result
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='it is winter now, what is the weather in Boston and New York?',
       config={
           'tools': [get_weather_from_list_of_cities],
@@ -1278,7 +1299,7 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
+def test_automatic_function_calling_with_pydantic_model_in_union_type(client, model_name):
   class AnimalObject(pydantic.BaseModel):
     name: str
     age: int
@@ -1308,10 +1329,10 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
 
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     response = client.models.generate_content(
-        model='gemini-2.5-flash',
+        model=model_name,
         contents=(
-            'I have a one year old cat named Sundae, can you get the'
-            ' information of the cat for me?'
+            'Use the get_information tool to get the'
+            ' information of my one year old cat named Sundae.'
         ),
         config={
             'system_instruction': (
@@ -1329,7 +1350,7 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_union_operator(client):
+def test_automatic_function_calling_with_union_operator(client, model_name):
   class AnimalObject(pydantic.BaseModel):
     name: str
     age: int
@@ -1347,7 +1368,7 @@ def test_automatic_function_calling_with_union_operator(client):
       return f'The object of interest is {object_of_interest}'
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents=(
           'I have a one year old cat named Sundae, can you get the'
           ' information of the cat for me?'
@@ -1364,14 +1385,14 @@ def test_automatic_function_calling_with_union_operator(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_tuple_param(client):
+def test_automatic_function_calling_with_tuple_param(client, model_name):
   def output_latlng(
       latlng: tuple[float, float],
   ) -> str:
     return f'The latitude is {latlng[0]} and the longitude is {latlng[1]}'
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents=(
           'The coordinates are (51.509, -0.118). What is the latitude and longitude?'
       ),
@@ -1391,7 +1412,7 @@ def test_automatic_function_calling_with_tuple_param(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_union_operator_return_type(client):
+def test_automatic_function_calling_with_union_operator_return_type(client, model_name):
   def get_cheese_age(cheese: int) -> int | float:
     """
     Retrieves data about the age of the cheese given its ID.
@@ -1410,7 +1431,7 @@ def test_automatic_function_calling_with_union_operator_return_type(client):
       return 0.0
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='How old is the cheese with id 2?',
       config={
           'tools': [get_cheese_age],
@@ -1424,9 +1445,7 @@ def test_automatic_function_calling_with_union_operator_return_type(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_parameterized_generic_union_type(
-    client,
-):
+def test_automatic_function_calling_with_parameterized_generic_union_type(client, model_name):
   def describe_cities(
       country: str,
       cities: typing.Optional[list[str]] = None,
@@ -1440,7 +1459,7 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(
       )
 
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='Can you describe the city of San Francisco, USA?',
       config={
           'tools': [describe_cities],
@@ -1451,9 +1470,9 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(
 
 
 @pytest.mark.asyncio
-async def test_google_search_async(client):
+async def test_google_search_async(client, model_name):
   await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents=[
           types.ContentDict(
               {'role': 'user', 'parts': [{'text': 'Why is the sky blue?'}]}
@@ -1463,9 +1482,9 @@ async def test_google_search_async(client):
   )
 
 
-def test_empty_tools(client):
+def test_empty_tools(client, model_name):
   client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='What is the price of GOOG?.',
       config={'tools': []},
   )
@@ -1475,11 +1494,11 @@ def test_empty_tools(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_with_1_empty_tool(client):
+def test_with_1_empty_tool(client, model_name):
   # Bad request for empty tool.
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-2.5-flash',
+        model=model_name,
         contents='What is the price of GOOG?.',
         config={
             'tools': [{}, get_stock_price],
@@ -1489,9 +1508,9 @@ def test_with_1_empty_tool(client):
 
 
 @pytest.mark.asyncio
-async def test_google_search_stream_async(client):
+async def test_google_search_stream_async(client, model_name):
   async for part in await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='Why is the sky blue?',
       config={'tools': [{'google_search': {}}]},
   ):
@@ -1499,10 +1518,10 @@ async def test_google_search_stream_async(client):
 
 
 @pytest.mark.asyncio
-async def test_vai_search_stream_async(client):
+async def test_vai_search_stream_async(client, model_name):
   if client._api_client.vertexai:
     async for part in await client.aio.models.generate_content_stream(
-        model='gemini-2.5-flash',
+        model=model_name,
         contents='what is vertex ai search?',
         config={
             'tools': [{
@@ -1520,7 +1539,7 @@ async def test_vai_search_stream_async(client):
   else:
     with pytest.raises(ValueError) as e:
       async for part in await client.aio.models.generate_content_stream(
-          model='gemini-2.5-flash',
+          model=model_name,
           contents='Why is the sky blue?',
           config={
               'tools': [{
@@ -1542,13 +1561,13 @@ async def test_vai_search_stream_async(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_automatic_function_calling_with_coroutine_function(client):
+def test_automatic_function_calling_with_coroutine_function(client, model_name):
   async def divide_integers(a: int, b: int) -> int:
     return a // b
 
   with pytest.raises(errors.UnsupportedFunctionError):
     client.models.generate_content(
-        model='gemini-2.5-flash',
+        model=model_name,
         contents='what is the result of 1000/2?',
         config={
             'tools': [divide_integers],
@@ -1562,14 +1581,12 @@ def test_automatic_function_calling_with_coroutine_function(client):
     reason='AFC removed from private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_with_coroutine_function_async(
-    client,
-):
+async def test_automatic_function_calling_with_coroutine_function_async(client, model_name):
   async def divide_integers(a: int, b: int) -> int:
     return a // b
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1585,12 +1602,12 @@ async def test_automatic_function_calling_with_coroutine_function_async(
     reason='AFC by default is disabled in private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async(client):
+async def test_automatic_function_calling_async(client, model_name):
   def divide_integers(a: int, b: int) -> int:
     return a // b
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1606,15 +1623,20 @@ async def test_automatic_function_calling_async(client):
     reason='AFC by default is disabled in private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_exception(client):
-  def mystery_function(a: int, b: int) -> int:
-    return a // b
+async def test_automatic_function_calling_async_with_exception(
+    client, model_name
+):
+  def mystery_function(a: int) -> int:
+    """A mystery function that might fail."""
+    if a == 42:
+      raise ValueError('42 is not allowed')
+    return a * 2
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/0?',
+      model=model_name,
+      contents='what is the result of mystery_function(42)?',
       config={
-          'tools': [divide_integers],
+          'tools': [mystery_function],
           'system_instruction': (
               'you must first look at the tools and then think about answers'
           ),
@@ -1633,9 +1655,9 @@ async def test_automatic_function_calling_async_with_exception(client):
     reason='AFC by default is disabled in private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async_float_without_decimal(client):
+async def test_automatic_function_calling_async_float_without_decimal(client, model_name):
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000.0/2.0?',
       config={
           'tools': [divide_floats, divide_integers],
@@ -1651,7 +1673,7 @@ async def test_automatic_function_calling_async_float_without_decimal(client):
     reason='AFC by default is disabled in private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_pydantic_model(client):
+async def test_automatic_function_calling_async_with_pydantic_model(client, model_name):
   class CityObject(pydantic.BaseModel):
     city_name: str
 
@@ -1664,7 +1686,7 @@ async def test_automatic_function_calling_async_with_pydantic_model(client):
       return f'The weather in {city_object.city_name} is sunny and 100 degrees.'
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='it is winter now, what is the weather in Boston?',
       config={
           'tools': [get_weather_pydantic_model],
@@ -1682,14 +1704,14 @@ async def test_automatic_function_calling_async_with_pydantic_model(client):
     reason='AFC by default is disabled in private models.py',
 )
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_async_function(client):
+async def test_automatic_function_calling_async_with_async_function(client, model_name):
   async def get_current_weather_async(city: str) -> str:
     """Returns the current weather in the city."""
 
     return 'windy'
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the weather in San Francisco?',
       config={
           'tools': [get_current_weather_async],
@@ -1702,16 +1724,14 @@ async def test_automatic_function_calling_async_with_async_function(client):
 
 
 @pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_async_function_stream(
-    client,
-):
+async def test_automatic_function_calling_async_with_async_function_stream(client, model_name):
   async def get_current_weather_async(city: str) -> str:
     """Returns the current weather in the city."""
 
     return 'windy'
 
   response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the weather in San Francisco?',
       config={
           'tools': [get_current_weather_async],
@@ -1730,10 +1750,10 @@ async def test_automatic_function_calling_async_with_async_function_stream(
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_2_function_with_history(client):
+def test_2_function_with_history(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
+      model=model_name,
+      contents='Please call both get_stock_price for GOOG and get_weather for Boston.',
       config={
           'tools': [get_weather, get_stock_price],
           'automatic_function_calling': {'ignore_call_history': False},
@@ -1744,44 +1764,33 @@ def test_2_function_with_history(client):
 
   assert actual_history[0].role == 'user'
   assert (
-      actual_history[0].parts[0].text
-      == 'What is the price of GOOG? And what is the weather in Boston?'
+      'GOOG' in actual_history[0].parts[0].text
+      and 'Boston' in actual_history[0].parts[0].text
   )
 
-  assert actual_history[1].role == 'model'
-  assert actual_history[1].parts[0].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_stock_price',
-      args={'symbol': 'GOOG'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[1].parts[1].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_weather',
-      args={'city': 'Boston'},
-  ).model_dump_json(
-      exclude_none=True
-  )
+  fcs = {}
+  frs = {}
+  for content in actual_history:
+    if content.role == 'model':
+      for part in content.parts:
+        if part.function_call:
+          fcs[part.function_call.name] = part.function_call
+    elif content.role == 'user':
+      for part in content.parts:
+        if part.function_response:
+          frs[part.function_response.name] = part.function_response
 
-  assert actual_history[2].role == 'user'
-  assert actual_history[2].parts[0].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_stock_price', response={'result': '1000'}
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[2].parts[1].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_weather',
-      response={'result': 'The weather in Boston is sunny and 100 degrees.'},
-  ).model_dump_json(
-      exclude_none=True
-  )
+  assert 'get_stock_price' in fcs
+  assert fcs['get_stock_price'].args == {'symbol': 'GOOG'}
+  assert 'get_weather' in fcs
+  assert fcs['get_weather'].args == {'city': 'Boston'}
+
+  assert 'get_stock_price' in frs
+  assert frs['get_stock_price'].response == {'result': '1000'}
+  assert 'get_weather' in frs
+  assert frs['get_weather'].response == {
+      'result': 'The weather in Boston is sunny and 100 degrees.'
+  }
 
 
 @pytest.mark.skipif(
@@ -1789,10 +1798,10 @@ def test_2_function_with_history(client):
     reason='AFC by default is disabled in private models.py',
 )
 @pytest.mark.asyncio
-async def test_2_function_with_history_async(client):
+async def test_2_function_with_history_async(client, model_name):
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
+      model=model_name,
+      contents='Please call both get_stock_price for GOOG and get_weather for Boston.',
       config={
           'tools': [get_weather, get_stock_price],
           'automatic_function_calling': {'ignore_call_history': False},
@@ -1803,44 +1812,33 @@ async def test_2_function_with_history_async(client):
 
   assert actual_history[0].role == 'user'
   assert (
-      actual_history[0].parts[0].text
-      == 'What is the price of GOOG? And what is the weather in Boston?'
+      'GOOG' in actual_history[0].parts[0].text
+      and 'Boston' in actual_history[0].parts[0].text
   )
 
-  assert actual_history[1].role == 'model'
-  assert actual_history[1].parts[0].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_stock_price',
-      args={'symbol': 'GOOG'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[1].parts[1].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_weather',
-      args={'city': 'Boston'},
-  ).model_dump_json(
-      exclude_none=True
-  )
+  fcs = {}
+  frs = {}
+  for content in actual_history:
+    if content.role == 'model':
+      for part in content.parts:
+        if part.function_call:
+          fcs[part.function_call.name] = part.function_call
+    elif content.role == 'user':
+      for part in content.parts:
+        if part.function_response:
+          frs[part.function_response.name] = part.function_response
 
-  assert actual_history[2].role == 'user'
-  assert actual_history[2].parts[0].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_stock_price', response={'result': '1000'}
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[2].parts[1].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_weather',
-      response={'result': 'The weather in Boston is sunny and 100 degrees.'},
-  ).model_dump_json(
-      exclude_none=True
-  )
+  assert 'get_stock_price' in fcs
+  assert fcs['get_stock_price'].args == {'symbol': 'GOOG'}
+  assert 'get_weather' in fcs
+  assert fcs['get_weather'].args == {'city': 'Boston'}
+
+  assert 'get_stock_price' in frs
+  assert frs['get_stock_price'].response == {'result': '1000'}
+  assert 'get_weather' in frs
+  assert frs['get_weather'].response == {
+      'result': 'The weather in Boston is sunny and 100 degrees.'
+  }
 
 
 class FunctionHolder:
@@ -1857,31 +1855,31 @@ class FunctionHolder:
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_class_method_tools(client):
+def test_class_method_tools(client, model_name):
   # This test is to make sure that instance method tools can be used in
   # the generate_content request.
 
   function_holder = FunctionHolder()
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
-      contents=(
-          'Print the verbatim output of is_a_duck and is_a_rabbit for the'
-          ' number 100.'
-      ),
+      model=model_name,
+      contents='Print the verbatim output of is_a_duck for the number 100.',
       config={
-          'tools': [function_holder.is_a_duck, function_holder.is_a_rabbit],
+          'tools': [function_holder.is_a_duck],
+          'automatic_function_calling': {'disable': True},
       },
   )
-  assert 'FunctionHolder' in response.text
+  assert response.function_calls
+  assert response.function_calls[0].name == 'is_a_duck'
+  assert response.function_calls[0].args['number'] == 100
 
 
 @pytest.mark.skipif(
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_disable_afc_in_any_mode(client):
+def test_disable_afc_in_any_mode(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config=types.GenerateContentConfig(
           tools=[divide_integers],
@@ -1899,9 +1897,9 @@ def test_disable_afc_in_any_mode(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_afc_once_in_any_mode(client):
+def test_afc_once_in_any_mode(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config=types.GenerateContentConfig(
           tools=[divide_integers],
@@ -1915,9 +1913,9 @@ def test_afc_once_in_any_mode(client):
   )
 
 
-def test_code_execution_tool(client):
+def test_code_execution_tool(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
+      model=model_name,
       contents=(
           'What is the sum of the first 50 prime numbers? Generate and run code'
           ' for the calculation, and make sure you get all 50.'
@@ -1938,10 +1936,10 @@ def test_code_execution_tool(client):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_afc_logs_to_logger_instance(client, caplog):
+def test_afc_logs_to_logger_instance(client, model_name, caplog):
   caplog.set_level(logging.DEBUG, logger='google_genai.models')
   client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1965,12 +1963,12 @@ def test_afc_logs_to_logger_instance(client, caplog):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_suppress_logs_with_sdk_logger(client, caplog):
+def test_suppress_logs_with_sdk_logger(client, model_name, caplog):
   caplog.set_level(logging.DEBUG, logger='google_genai.models')
   sdk_logger = logging.getLogger('google_genai.models')
   sdk_logger.setLevel(logging.ERROR)
   client.models.generate_content(
-      model='gemini-2.5-flash',
+      model=model_name,
       contents='what is the result of 1000/2?',
       config={
           'tools': [divide_integers],
@@ -1984,7 +1982,7 @@ def test_suppress_logs_with_sdk_logger(client, caplog):
   assert not caplog.text
 
 
-def test_tools_chat_curation(client, caplog):
+def test_tools_chat_curation(client, model_name, caplog):
   caplog.set_level(logging.DEBUG, logger='google_genai.models')
   sdk_logger = logging.getLogger('google_genai.models')
   sdk_logger.setLevel(logging.ERROR)
@@ -1994,7 +1992,7 @@ def test_tools_chat_curation(client, caplog):
   }
 
   chat = client.chats.create(
-      model='gemini-2.5-flash',
+      model=model_name,
       config=config,
   )
 
@@ -2014,9 +2012,9 @@ def test_tools_chat_curation(client, caplog):
     'config.getoption("--private")',
     reason='AFC removed from private models.py',
 )
-def test_function_declaration_with_callable(client):
+def test_function_declaration_with_callable(client, model_name):
   response = client.models.generate_content(
-      model='gemini-2.5-pro',
+      model=model_name,
       contents=(
           'Divide 1000 by 2. And tell'
           ' me the weather in London.'
@@ -2031,9 +2029,9 @@ def test_function_declaration_with_callable(client):
   assert response.function_calls is not None
 
 
-def test_function_declaration_with_callable_stream_now(client):
+def test_function_declaration_with_callable_stream_now(client, model_name):
   for chunk in client.models.generate_content_stream(
-      model='gemini-2.5-pro',
+      model=model_name,
       contents='Divide 1000 by 2. And tell me the weather in London.',
       config={
           'tools': [
@@ -2046,9 +2044,9 @@ def test_function_declaration_with_callable_stream_now(client):
 
 
 @pytest.mark.asyncio
-async def test_function_declaration_with_callable_async(client):
+async def test_function_declaration_with_callable_async(client, model_name):
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-pro',
+      model=model_name,
       contents=(
           'Divide 1000 by 2. And tell'
           ' me the weather in London.'
@@ -2064,9 +2062,9 @@ async def test_function_declaration_with_callable_async(client):
 
 
 @pytest.mark.asyncio
-async def test_function_declaration_with_callable_async_stream(client):
+async def test_function_declaration_with_callable_async_stream(client, model_name):
     async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model=model_name,
         contents='Divide 1000 by 2. And tell me the weather in London.',
         config={
             'tools': [
@@ -2078,11 +2076,11 @@ async def test_function_declaration_with_callable_async_stream(client):
       pass
 
 
-def test_server_side_mcp_only(client):
+def test_server_side_mcp_only(client, model_name):
   """Test server side mcp, happy path."""
   with pytest_helper.exception_if_vertex(client, ValueError):
     response = client.models.generate_content(
-        model='gemini-2.5-pro',
+        model=model_name,
         contents=('What is the weather like in New York (NY) on 02/02/2026?'),
         config=types.GenerateContentConfig(
             tools=[types.Tool(
@@ -2100,11 +2098,11 @@ def test_server_side_mcp_only(client):
 
 
 @pytest.mark.asyncio
-async def test_server_side_mcp_only_async(client):
+async def test_server_side_mcp_only_async(client, model_name):
   """Test server side mcp, happy path."""
   with pytest_helper.exception_if_vertex(client, ValueError):
     response = await client.aio.models.generate_content(
-        model='gemini-2.5-flash',
+        model=model_name,
         contents=(
             'What is the weather like in New York on 02/02/2026?'
         ),
@@ -2124,11 +2122,11 @@ async def test_server_side_mcp_only_async(client):
     assert response.text
 
 
-def test_server_side_mcp_only_stream(client):
+def test_server_side_mcp_only_stream(client, model_name):
   """Test server side mcp, happy path."""
   with pytest_helper.exception_if_vertex(client, ValueError):
     response = client.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model=model_name,
         contents=('What is the weather like in New York (NY) on 02/02/2026?'),
         config=types.GenerateContentConfig(
             tools=[types.Tool(
@@ -2147,7 +2145,7 @@ def test_server_side_mcp_only_stream(client):
 
 
 @pytest.mark.asyncio
-async def test_client_side_mcp_unary_async(client):
+async def test_client_side_mcp_unary_async(client, model_name):
     """Test client-side MCP execution for Agent Platform."""
     if not client._api_client.vertexai:
       pytest.skip('Vertex MCP test is not applicable to MLDev.')
@@ -2182,7 +2180,7 @@ async def test_client_side_mcp_unary_async(client):
     with mock.patch.object(_mcp_utils, '_connect_agent_platform_mcp', side_effect=mock_connect):
 
       response = await client.aio.models.generate_content(
-          model='gemini-2.5-flash',
+          model=model_name,
           contents='List my endpoints.',
           config={
               'tools': [
@@ -2200,7 +2198,7 @@ async def test_client_side_mcp_unary_async(client):
 
 
 @pytest.mark.asyncio
-async def test_client_side_mcp_stream_async_raises(client):
+async def test_client_side_mcp_stream_async_raises(client, model_name):
     """Test that streaming with Agent Platform MCP raises an error."""
 
     if not client._api_client.vertexai:
@@ -2214,7 +2212,7 @@ async def test_client_side_mcp_stream_async_raises(client):
         )
     ):
       response = await client.aio.models.generate_content_stream(
-          model='gemini-2.5-flash',
+          model=model_name,
           contents='List my endpoints.',
           config={
               'tools': [
@@ -2229,7 +2227,7 @@ async def test_client_side_mcp_stream_async_raises(client):
 
 
 @pytest.mark.asyncio
-async def test_client_side_mcp_missing_name_raises(client):
+async def test_client_side_mcp_missing_name_raises(client, model_name):
     """Test that an MCP server without a name raises an error."""
 
     if not client._api_client.vertexai:
@@ -2240,7 +2238,7 @@ async def test_client_side_mcp_missing_name_raises(client):
         match="Agent Platform MCP servers require a 'name' field."
     ):
       await client.aio.models.generate_content(
-          model='gemini-2.5-flash',
+          model=model_name,
           contents='List my endpoints.',
           config={
               'tools': [

@@ -27,6 +27,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=shared.GEMINI_MODEL,
             contents='The quick brown fox jumps over the lazy dog.',
         ),
+        vertex_model=shared.VERTEX_MODEL,
     ),
     pytest_helper.TestTableItem(
         name='test_generate_content_with_config_schema',
@@ -36,6 +37,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={'response_mime_type': 'application/json', 'response_schema': {'type': 'OBJECT', 'properties': {'summary': {'type': 'STRING'}}}},
         ),
         ignore_keys=['parsed'],
+        vertex_model=shared.VERTEX_MODEL,
     ),
     pytest_helper.TestTableItem(
         name='test_generate_content_with_config_json_schema',
@@ -45,6 +47,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             config={'response_mime_type': 'application/json', 'response_json_schema': {'type': 'object', 'properties': {'summary': {'type': 'string'}}}},
         ),
         ignore_keys=['parsed'],
+        vertex_model=shared.VERTEX_MODEL,
     ),
 ]
 

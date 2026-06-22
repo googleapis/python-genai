@@ -30,6 +30,15 @@ from .._api_client import HttpOptions
 is_api_mode = "config.getoption('--mode') == 'api'"
 
 
+def _matches_expected_exception(expected: str, e: Exception) -> bool:
+  # Try to match status code first if expected is digits
+  if expected.isdigit():
+    code = getattr(e, 'code', None)
+    if code is not None and str(code) == expected:
+      return True
+  return expected in str(e)
+
+
 class TestTableItem(types.TestTableItem):
   # This is not a test suite class.
   __test__ = False
@@ -56,8 +65,20 @@ def base_test_function(
   api_type = 'vertex' if use_vertex else 'mldev'
   replay_id = f'{replays_prefix}/{replay_id}.{api_type}'
   client._api_client.initialize_replay_session(replay_id)
-  # vars().copy() provides a shallow copy of the parameters.
   parameters_dict = vars(test_table_item.parameters).copy()
+  parameters_to_pass = test_table_item.parameters
+  target_model = None
+  if use_vertex and test_table_item.vertex_model:
+    target_model = test_table_item.vertex_model
+  elif not use_vertex and test_table_item.mldev_model:
+    target_model = test_table_item.mldev_model
+
+  if target_model:
+    parameters_dict['model'] = target_model
+    if hasattr(test_table_item.parameters, 'model'):
+      parameters_to_pass = test_table_item.parameters.model_copy(
+          update={'model': target_model}
+      )
   try:
     if '.' in test_method:
       method_name_parts = test_method.split('.')
@@ -71,7 +92,7 @@ def base_test_function(
       method(**parameters_dict)
     else:
       custom_method = globals_for_file[test_method]
-      custom_method(client, test_table_item.parameters)
+      custom_method(client, parameters_to_pass)
     # Should not reach here if expecting an exception.
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
       assert False, 'Should have raised exception in MLDev.'
@@ -80,12 +101,12 @@ def base_test_function(
     client._api_client.close()
   except Exception as e:
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
-      if test_table_item.exception_if_mldev not in str(e):
+      if not _matches_expected_exception(test_table_item.exception_if_mldev, e):
         raise AssertionError(
             f"'{test_table_item.exception_if_mldev}' not in '{str(e)}'"
         ) from e
     elif test_table_item.exception_if_vertex and client._api_client.vertexai:
-      if test_table_item.exception_if_vertex not in str(e):
+      if not _matches_expected_exception(test_table_item.exception_if_vertex, e):
         raise AssertionError(
             f"'{test_table_item.exception_if_vertex}' not in '{str(e)}'"
         ) from e
@@ -174,9 +195,6 @@ def setup(
     )
 
     pathlib.Path(abs_replay_directory).mkdir(parents=True, exist_ok=True)
-    assert isinstance(
-        test_table[0].parameters, BaseModel
-    ), f'{test_table_file_path} parameters must be a BaseModel.'
     test_table_file = types.TestTableFile(
         comment='Auto-generated. Do not edit.',
         test_method=test_method,

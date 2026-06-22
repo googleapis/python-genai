@@ -55,6 +55,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 )] * 5
             ),
         ),
+        vertex_model="gemini-2.5-flash",
     ),
 ]
 

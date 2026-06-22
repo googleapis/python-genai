@@ -28,6 +28,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=shared.GEMINI_MODEL,
             contents='The quick brown fox jumps over the lazy dog.',
         ),
+        vertex_model=shared.VERTEX_MODEL,
     ),
 ]
 

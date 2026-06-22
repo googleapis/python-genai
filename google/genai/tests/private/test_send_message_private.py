@@ -38,7 +38,7 @@ pytestmark = [
 ]
 
 
-MODEL_NAME = 'gemini-3.1-pro-preview'
+MODEL_NAME = 'gemini-3.5-flash'
 get_weather = test_generate_content_tools.get_weather
 get_stock_price = test_generate_content_tools.get_stock_price
 
