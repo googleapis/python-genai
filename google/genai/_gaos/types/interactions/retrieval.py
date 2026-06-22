@@ -30,7 +30,7 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-RetrievalType = Union[
+RetrievalRetrievalType = Union[
     Literal[
         "vertex_ai_search",
         "rag_store",
@@ -45,7 +45,7 @@ class RetrievalParam(TypedDict):
     r"""A tool that can be used by the model to retrieve files."""
 
     type: Literal["retrieval"]
-    retrieval_types: NotRequired[List[RetrievalType]]
+    retrieval_types: NotRequired[List[RetrievalRetrievalType]]
     r"""The types of file retrieval to enable."""
     vertex_ai_search_config: NotRequired[VertexAISearchConfigParam]
     r"""Used to specify configuration for VertexAISearch."""
@@ -65,7 +65,7 @@ class Retrieval(BaseModel):
         pydantic.Field(alias="type"),
     ] = "retrieval"
 
-    retrieval_types: Optional[List[RetrievalType]] = None
+    retrieval_types: Optional[List[RetrievalRetrievalType]] = None
     r"""The types of file retrieval to enable."""
 
     vertex_ai_search_config: Optional[VertexAISearchConfig] = None
