@@ -15,11 +15,12 @@ jobs:
       issues: write
 
     steps:
-    - uses: actions/stale@v5
+    - uses: actions/stale@v10
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         days-before-issue-stale: 7
         days-before-issue-close: 2
+        operations-per-run: 100
         stale-issue-label: "status:stale"
         close-issue-reason: not_planned
         any-of-labels: "status:awaiting user response"

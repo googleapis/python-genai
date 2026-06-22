@@ -14,12 +14,13 @@ jobs:
       issues: write
 
     steps:
-      - uses: actions/stale@v5
+      - uses: actions/stale@v10
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           any-of-labels: "google-contributor"
           days-before-pr-stale: 14
           days-before-pr-close: 0
+          operations-per-run: 100
           stale-pr-label: "status:stale"
           exempt-pr-labels: "override-stale"
           close-pr-message: >
