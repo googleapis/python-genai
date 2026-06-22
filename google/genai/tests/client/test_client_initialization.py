@@ -1170,6 +1170,42 @@ def test_client_ssl_context_explicit_initialization_async_args():
     assert isinstance(async_client_args["verify"], ssl.SSLContext)
 
 
+@pytest.mark.parametrize(
+    "options",
+    [
+        types.HttpOptions(client_args={"verify": False}),
+        types.HttpOptions(async_client_args={"verify": False}),
+        types.HttpOptions(
+            client_args={"verify": False},
+            async_client_args={"verify": False},
+        ),
+    ],
+)
+def test_client_ssl_context_preserves_explicit_false_httpx_verify(options):
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(options)
+  )
+
+  assert client_args["verify"] is False
+  assert async_client_args["verify"] is False
+
+
+def test_client_ssl_context_preserves_explicit_false_aiohttp_ssl():
+  options = types.HttpOptions(async_client_args={"ssl": False})
+
+  async_client_args = api_client.BaseApiClient._ensure_aiohttp_ssl_ctx(options)
+
+  assert async_client_args["ssl"] is False
+
+
+def test_client_ssl_context_preserves_explicit_false_websocket_ssl():
+  options = types.HttpOptions(async_client_args={"ssl": False})
+
+  async_client_args = api_client.BaseApiClient._ensure_websocket_ssl_ctx(options)
+
+  assert async_client_args["ssl"] is False
+
+
 def test_constructor_with_base_url_from_http_options():
   mldev_http_options = {
       "base_url": "https://placeholder-fake-url.com/",
