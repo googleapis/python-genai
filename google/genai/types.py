@@ -923,6 +923,27 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   PRIORITIZE_COST = 'PRIORITIZE_COST'
 
 
+class SafetyPolicy(_common.CaseInSensitiveEnum):
+  """Disabled safety policies for computer use."""
+
+  SAFETY_POLICY_UNSPECIFIED = 'SAFETY_POLICY_UNSPECIFIED'
+  """Unspecified safety policy. This value should not be used."""
+  FINANCIAL_TRANSACTIONS = 'FINANCIAL_TRANSACTIONS'
+  """Financial transactions safety policy."""
+  SENSITIVE_DATA_MODIFICATION = 'SENSITIVE_DATA_MODIFICATION'
+  """Sensitive data modification safety policy."""
+  COMMUNICATION_TOOL = 'COMMUNICATION_TOOL'
+  """Communication tool safety policy."""
+  ACCOUNT_CREATION = 'ACCOUNT_CREATION'
+  """Account creation safety policy."""
+  DATA_MODIFICATION = 'DATA_MODIFICATION'
+  """Data modification safety policy."""
+  USER_CONSENT_MANAGEMENT = 'USER_CONSENT_MANAGEMENT'
+  """User consent management safety policy."""
+  LEGAL_TERMS_AND_AGREEMENTS = 'LEGAL_TERMS_AND_AGREEMENTS'
+  """Legal terms and agreements safety policy."""
+
+
 class EmbeddingApiType(_common.CaseInSensitiveEnum):
   """Enum representing the Gemini Enterprise Agent Platform embedding API to use."""
 
@@ -3348,6 +3369,10 @@ class ComputerUse(_common.BaseModel):
       description="""Optional. Whether enable the prompt injection detection check on computer-use request.
       """,
   )
+  disabled_safety_policies: Optional[list[SafetyPolicy]] = Field(
+      default=None,
+      description="""Optional. Disabled safety policies for computer use.""",
+  )
 
 
 class ComputerUseDict(TypedDict, total=False):
@@ -3366,6 +3391,9 @@ class ComputerUseDict(TypedDict, total=False):
   enable_prompt_injection_detection: Optional[bool]
   """Optional. Whether enable the prompt injection detection check on computer-use request.
       """
+
+  disabled_safety_policies: Optional[list[SafetyPolicy]]
+  """Optional. Disabled safety policies for computer use."""
 
 
 ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]

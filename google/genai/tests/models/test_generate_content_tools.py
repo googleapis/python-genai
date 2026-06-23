@@ -504,6 +504,27 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='404',
     ),
     pytest_helper.TestTableItem(
+        name='test_computer_use_with_disabled_safety_policies',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=t.t_contents('Go to google and search nano banana'),
+            config={
+                'tools': [
+                    {
+                        'computer_use': {
+                            'environment': 'ENVIRONMENT_BROWSER',
+                            'disabled_safety_policies': [
+                                'FINANCIAL_TRANSACTIONS',
+                                'COMMUNICATION_TOOL',
+                            ],
+                        }
+                    }
+                ]
+            },
+        ),
+        exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
         name='test_computer_use_multi_turn',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-computer-use-preview-10-2025',
