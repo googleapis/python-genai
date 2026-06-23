@@ -23,48 +23,52 @@ from typing import Literal, Union
 
 Model = Union[
     Literal[
-        # An agentic capability model designed for direct interface interaction, allowing Gemini to perceive and navigate digital environments.
-        "gemini-2.5-computer-use-preview-10-2025",
         # Our first hybrid reasoning model which supports a 1M token context window and has thinking budgets.
         "gemini-2.5-flash",
-        # Our native image generation model, optimized for speed, flexibility, and contextual understanding. Text input and output is priced the same as 2.5 Flash.
-        "gemini-2.5-flash-image",
-        # Our smallest and most cost effective model, built for at scale usage.
-        "gemini-2.5-flash-lite",
-        # The latest model based on Gemini 2.5 Flash lite optimized for cost-efficiency, high throughput and high quality.
-        "gemini-2.5-flash-lite-preview-09-2025",
-        # Our native audio models optimized for higher quality audio outputs with better pacing, voice naturalness, verbosity, and mood.
-        "gemini-2.5-flash-native-audio-preview-12-2025",
-        # The latest model based on the 2.5 Flash model. 2.5 Flash Preview is best for large scale processing, low-latency, high volume tasks that require thinking, and agentic use cases.
-        "gemini-2.5-flash-preview-09-2025",
-        # Our 2.5 Flash text-to-speech model optimized for powerful, low-latency controllable speech generation.
-        "gemini-2.5-flash-preview-tts",
         # Our state-of-the-art multipurpose model, which excels at coding and complex reasoning tasks.
         "gemini-2.5-pro",
-        # Our 2.5 Pro text-to-speech audio model optimized for powerful, low-latency speech generation for more natural outputs and easier to steer prompts.
-        "gemini-2.5-pro-preview-tts",
+        # Gemma 4 26B A4B IT
+        "gemma-4-26b-a4b-it",
+        # Gemma 4 31B IT
+        "gemma-4-31b-it",
+        # Latest release of Gemini Flash
+        "gemini-flash-latest",
+        # Latest release of Gemini Flash-Lite
+        "gemini-flash-lite-latest",
+        # Latest release of Gemini Pro
+        "gemini-pro-latest",
+        # Our smallest and most cost effective model, built for at scale usage.
+        "gemini-2.5-flash-lite",
+        # Our native image generation model, optimized for speed, flexibility, and contextual understanding. Text input and output is priced the same as 2.5 Flash.
+        "gemini-2.5-flash-image",
         # Our most intelligent model built for speed, combining frontier intelligence with superior search and grounding.
         "gemini-3-flash-preview",
-        # State-of-the-art image generation and editing model.
-        "gemini-3-pro-image-preview",
-        # Our most intelligent model with SOTA reasoning and multimodal understanding, and powerful agentic and vibe coding capabilities.
-        "gemini-3-pro-preview",
         # Our latest SOTA reasoning model with unprecedented depth and nuance, and powerful multimodal understanding and coding capabilities.
         "gemini-3.1-pro-preview",
-        # Pro-level visual intelligence with Flash-speed efficiency and reality-grounded generation capabilities.
-        "gemini-3.1-flash-image-preview",
-        # Our most cost-efficient model, optimized for high-volume agentic tasks, translation, and simple data processing.
-        "gemini-3.1-flash-lite",
+        # Gemini 3.1 Pro Preview optimized for custom tool usage
+        "gemini-3.1-pro-preview-customtools",
         # Our most cost-efficient model, optimized for high-volume agentic tasks, translation, and simple data processing.
         "gemini-3.1-flash-lite-preview",
-        # Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
-        "gemini-3.1-flash-tts-preview",
+        # Our most cost-efficient model, optimized for high-volume agentic tasks, translation, and simple data processing.
+        "gemini-3.1-flash-lite",
+        # State-of-the-art image generation and editing model.
+        "gemini-3-pro-image-preview",
+        # Gemini 3 Pro Image
+        "gemini-3-pro-image",
+        # Gemini 3 Pro Image Preview
+        "nano-banana-pro-preview",
+        # Pro-level visual intelligence with Flash-speed efficiency and reality-grounded generation capabilities.
+        "gemini-3.1-flash-image-preview",
+        # Gemini 3.1 Flash Image.
+        "gemini-3.1-flash-image",
         # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
         "gemini-3.5-flash",
         # Our low-latency, music generation model optimized for high-fidelity audio clips and precise rhythmic control.
         "lyria-3-clip-preview",
         # Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.
         "lyria-3-pro-preview",
+        # Gemini Robotics-ER 1.6 Preview
+        "gemini-robotics-er-1.6-preview",
     ],
     UnrecognizedStr,
 ]
