@@ -20,6 +20,7 @@ from __future__ import annotations
 from .audioresponseformat import AudioResponseFormat, AudioResponseFormatParam
 from .imageresponseformat import ImageResponseFormat, ImageResponseFormatParam
 from .textresponseformat import TextResponseFormat, TextResponseFormatParam
+from .videoresponseformat import VideoResponseFormat, VideoResponseFormatParam
 from typing import Any, Dict, Union
 from typing_extensions import TypeAliasType
 
@@ -30,6 +31,7 @@ ResponseFormatParam = TypeAliasType(
         TextResponseFormatParam,
         AudioResponseFormatParam,
         ImageResponseFormatParam,
+        VideoResponseFormatParam,
         Dict[str, Any],
     ],
 )
@@ -37,5 +39,11 @@ ResponseFormatParam = TypeAliasType(
 
 ResponseFormat = TypeAliasType(
     "ResponseFormat",
-    Union[TextResponseFormat, AudioResponseFormat, ImageResponseFormat, Dict[str, Any]],
+    Union[
+        TextResponseFormat,
+        AudioResponseFormat,
+        ImageResponseFormat,
+        VideoResponseFormat,
+        Dict[str, Any],
+    ],
 )

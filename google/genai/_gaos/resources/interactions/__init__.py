@@ -95,7 +95,9 @@ from ...types.interactions.urlcontextresult import URLContextResult
 from ...types.interactions.urlcontextresultstep import URLContextResultStep
 from ...types.interactions.usage import Usage
 from ...types.interactions.userinputstep import UserInputStep
+from ...types.interactions.videoconfig import VideoConfig
 from ...types.interactions.videocontent import VideoContent
+from ...types.interactions.videoresponseformat import VideoResponseFormat
 from ...types.interactions.webhookconfig import WebhookConfig
 from . import codeexecutioncallstep
 from . import environment
@@ -108,6 +110,7 @@ from . import googlesearchresultstep
 from . import interactioncompletedevent
 from . import interactioncreatedevent
 from . import interactionstatusupdate
+from . import modeloutputstep
 from . import placecitation
 from . import stepdelta
 from . import stepstart
@@ -189,7 +192,9 @@ __all__ = [
     "URLContextResultStep",
     "Usage",
     "UserInputStep",
+    "VideoConfig",
     "VideoContent",
+    "VideoResponseFormat",
     "WebhookConfig",
     "codeexecutioncallstep",
     "environment",
@@ -202,6 +207,7 @@ __all__ = [
     "interactioncompletedevent",
     "interactioncreatedevent",
     "interactionstatusupdate",
+    "modeloutputstep",
     "placecitation",
     "stepdelta",
     "stepstart",
