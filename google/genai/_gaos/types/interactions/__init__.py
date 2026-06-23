@@ -53,7 +53,12 @@ if TYPE_CHECKING:
         CodeExecutionResultStep,
         CodeExecutionResultStepParam,
     )
-    from .computeruse import ComputerUse, ComputerUseParam, EnvironmentEnum
+    from .computeruse import (
+        ComputerUse,
+        ComputerUseParam,
+        DisabledSafetyPolicy,
+        EnvironmentEnum,
+    )
     from .content import Content, ContentParam, UnknownContent
     from .createagentinteraction import (
         CreateAgentInteraction,
@@ -414,6 +419,7 @@ __all__ = [
     "DeepResearchAgentConfig",
     "DeepResearchAgentConfigParam",
     "Disabled",
+    "DisabledSafetyPolicy",
     "DocumentContent",
     "DocumentContentMimeType",
     "DocumentContentParam",
@@ -726,6 +732,7 @@ _dynamic_imports: dict[str, str] = {
     "CodeExecutionResultStepParam": ".codeexecutionresultstep",
     "ComputerUse": ".computeruse",
     "ComputerUseParam": ".computeruse",
+    "DisabledSafetyPolicy": ".computeruse",
     "EnvironmentEnum": ".computeruse",
     "Content": ".content",
     "ContentParam": ".content",
