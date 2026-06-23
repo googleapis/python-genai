@@ -30,6 +30,7 @@ TextResponseFormatMimeType = Union[
     Literal[
         "application/json",
         "text/plain",
+        "application/xml",
     ],
     UnrecognizedStr,
 ]

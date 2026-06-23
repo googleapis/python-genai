@@ -19,17 +19,219 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
+from .groundingtoolcount import GroundingToolCount, GroundingToolCountTypedDict
+from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
 from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
+
+
+class StepStopUsageTypedDict(TypedDict):
+    r"""Cumulative model usage stats from the start of the session."""
+
+    total_input_tokens: NotRequired[int]
+    r"""Number of tokens in the prompt (context)."""
+    input_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of input token usage by modality."""
+    total_cached_tokens: NotRequired[int]
+    r"""Number of tokens in the cached part of the prompt (the cached content)."""
+    cached_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of cached token usage by modality."""
+    total_output_tokens: NotRequired[int]
+    r"""Total number of tokens across all the generated responses."""
+    output_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of output token usage by modality."""
+    total_tool_use_tokens: NotRequired[int]
+    r"""Number of tokens present in tool-use prompt(s)."""
+    tool_use_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of tool-use token usage by modality."""
+    total_thought_tokens: NotRequired[int]
+    r"""Number of tokens of thoughts for thinking models."""
+    total_tokens: NotRequired[int]
+    r"""Total token count for the interaction request (prompt + responses + other
+    internal tokens).
+    """
+    grounding_tool_count: NotRequired[List[GroundingToolCountTypedDict]]
+    r"""Grounding tool count."""
+
+
+class StepStopUsage(BaseModel):
+    r"""Cumulative model usage stats from the start of the session."""
+
+    total_input_tokens: Optional[int] = None
+    r"""Number of tokens in the prompt (context)."""
+
+    input_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of input token usage by modality."""
+
+    total_cached_tokens: Optional[int] = None
+    r"""Number of tokens in the cached part of the prompt (the cached content)."""
+
+    cached_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of cached token usage by modality."""
+
+    total_output_tokens: Optional[int] = None
+    r"""Total number of tokens across all the generated responses."""
+
+    output_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of output token usage by modality."""
+
+    total_tool_use_tokens: Optional[int] = None
+    r"""Number of tokens present in tool-use prompt(s)."""
+
+    tool_use_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of tool-use token usage by modality."""
+
+    total_thought_tokens: Optional[int] = None
+    r"""Number of tokens of thoughts for thinking models."""
+
+    total_tokens: Optional[int] = None
+    r"""Total token count for the interaction request (prompt + responses + other
+    internal tokens).
+    """
+
+    grounding_tool_count: Optional[List[GroundingToolCount]] = None
+    r"""Grounding tool count."""
+
+    @model_serializer(mode="wrap")
+    def serialize_model(self, handler):
+        optional_fields = set(
+            [
+                "total_input_tokens",
+                "input_tokens_by_modality",
+                "total_cached_tokens",
+                "cached_tokens_by_modality",
+                "total_output_tokens",
+                "output_tokens_by_modality",
+                "total_tool_use_tokens",
+                "tool_use_tokens_by_modality",
+                "total_thought_tokens",
+                "total_tokens",
+                "grounding_tool_count",
+            ]
+        )
+        serialized = handler(self)
+        m = {}
+
+        for n, f in type(self).model_fields.items():
+            k = f.alias or n
+            val = serialized.get(k, serialized.get(n))
+
+            if val != UNSET_SENTINEL:
+                if val is not None or k not in optional_fields:
+                    m[k] = val
+
+        return m
+
+
+class StepUsageTypedDict(TypedDict):
+    r"""Model usage stats for this specific step."""
+
+    total_input_tokens: NotRequired[int]
+    r"""Number of tokens in the prompt (context)."""
+    input_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of input token usage by modality."""
+    total_cached_tokens: NotRequired[int]
+    r"""Number of tokens in the cached part of the prompt (the cached content)."""
+    cached_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of cached token usage by modality."""
+    total_output_tokens: NotRequired[int]
+    r"""Total number of tokens across all the generated responses."""
+    output_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of output token usage by modality."""
+    total_tool_use_tokens: NotRequired[int]
+    r"""Number of tokens present in tool-use prompt(s)."""
+    tool_use_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of tool-use token usage by modality."""
+    total_thought_tokens: NotRequired[int]
+    r"""Number of tokens of thoughts for thinking models."""
+    total_tokens: NotRequired[int]
+    r"""Total token count for the interaction request (prompt + responses + other
+    internal tokens).
+    """
+    grounding_tool_count: NotRequired[List[GroundingToolCountTypedDict]]
+    r"""Grounding tool count."""
+
+
+class StepUsage(BaseModel):
+    r"""Model usage stats for this specific step."""
+
+    total_input_tokens: Optional[int] = None
+    r"""Number of tokens in the prompt (context)."""
+
+    input_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of input token usage by modality."""
+
+    total_cached_tokens: Optional[int] = None
+    r"""Number of tokens in the cached part of the prompt (the cached content)."""
+
+    cached_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of cached token usage by modality."""
+
+    total_output_tokens: Optional[int] = None
+    r"""Total number of tokens across all the generated responses."""
+
+    output_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of output token usage by modality."""
+
+    total_tool_use_tokens: Optional[int] = None
+    r"""Number of tokens present in tool-use prompt(s)."""
+
+    tool_use_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of tool-use token usage by modality."""
+
+    total_thought_tokens: Optional[int] = None
+    r"""Number of tokens of thoughts for thinking models."""
+
+    total_tokens: Optional[int] = None
+    r"""Total token count for the interaction request (prompt + responses + other
+    internal tokens).
+    """
+
+    grounding_tool_count: Optional[List[GroundingToolCount]] = None
+    r"""Grounding tool count."""
+
+    @model_serializer(mode="wrap")
+    def serialize_model(self, handler):
+        optional_fields = set(
+            [
+                "total_input_tokens",
+                "input_tokens_by_modality",
+                "total_cached_tokens",
+                "cached_tokens_by_modality",
+                "total_output_tokens",
+                "output_tokens_by_modality",
+                "total_tool_use_tokens",
+                "tool_use_tokens_by_modality",
+                "total_thought_tokens",
+                "total_tokens",
+                "grounding_tool_count",
+            ]
+        )
+        serialized = handler(self)
+        m = {}
+
+        for n, f in type(self).model_fields.items():
+            k = f.alias or n
+            val = serialized.get(k, serialized.get(n))
+
+            if val != UNSET_SENTINEL:
+                if val is not None or k not in optional_fields:
+                    m[k] = val
+
+        return m
 
 
 class StepStopTypedDict(TypedDict):
     index: int
     event_type: Literal["step.stop"]
+    usage: NotRequired[StepStopUsageTypedDict]
+    r"""Cumulative model usage stats from the start of the session."""
+    step_usage: NotRequired[StepUsageTypedDict]
+    r"""Model usage stats for this specific step."""
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
@@ -45,6 +247,12 @@ class StepStop(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "step.stop"
 
+    usage: Optional[StepStopUsage] = None
+    r"""Cumulative model usage stats from the start of the session."""
+
+    step_usage: Optional[StepUsage] = None
+    r"""Model usage stats for this specific step."""
+
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
@@ -54,7 +262,7 @@ class StepStop(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id", "metadata"])
+        optional_fields = set(["usage", "step_usage", "event_id", "metadata"])
         serialized = handler(self)
         m = {}
 

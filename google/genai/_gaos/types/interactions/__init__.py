@@ -305,7 +305,14 @@ if TYPE_CHECKING:
     )
     from .stepdeltametadata import StepDeltaMetadata, StepDeltaMetadataTypedDict
     from .stepstart import StepStart, StepStartTypedDict
-    from .stepstop import StepStop, StepStopTypedDict
+    from .stepstop import (
+        StepStop,
+        StepStopTypedDict,
+        StepStopUsage,
+        StepStopUsageTypedDict,
+        StepUsage,
+        StepUsageTypedDict,
+    )
     from .streammetadata import StreamMetadata, StreamMetadataTypedDict
     from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDict
     from .textcontent import TextContent, TextContentParam
@@ -621,6 +628,10 @@ __all__ = [
     "StepStartTypedDict",
     "StepStop",
     "StepStopTypedDict",
+    "StepStopUsage",
+    "StepStopUsageTypedDict",
+    "StepUsage",
+    "StepUsageTypedDict",
     "StreamMetadata",
     "StreamMetadataTypedDict",
     "TextAnnotationDelta",
@@ -963,6 +974,10 @@ _dynamic_imports: dict[str, str] = {
     "StepStartTypedDict": ".stepstart",
     "StepStop": ".stepstop",
     "StepStopTypedDict": ".stepstop",
+    "StepStopUsage": ".stepstop",
+    "StepStopUsageTypedDict": ".stepstop",
+    "StepUsage": ".stepstop",
+    "StepUsageTypedDict": ".stepstop",
     "StreamMetadata": ".streammetadata",
     "StreamMetadataTypedDict": ".streammetadata",
     "TextAnnotationDelta": ".textannotationdelta",
