@@ -40,6 +40,8 @@ except ImportError:
   mcp_types = None
   ClientSession = None
 
+from ...models import AsyncModels
+
 GOOGLE_HOMEPAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google_homepage.png')
 )
@@ -2200,35 +2202,6 @@ async def test_client_side_mcp_unary_async(client):
 
 
 @pytest.mark.asyncio
-async def test_client_side_mcp_stream_async_raises(client):
-    """Test that streaming with Agent Platform MCP raises an error."""
-
-    if not client._api_client.vertexai:
-      pytest.skip('Vertex MCP test is not applicable to MLDev.')
-
-    with pytest.raises(
-        NotImplementedError,
-        match=(
-            'MCP servers are not yet supported for streaming in the Agent'
-            ' Platform API.'
-        )
-    ):
-      response = await client.aio.models.generate_content_stream(
-          model='gemini-2.5-flash',
-          contents='List my endpoints.',
-          config={
-              'tools': [
-                  types.Tool(
-                      mcp_servers=[types.McpServer(name='endpoints')]
-                  )
-              ]
-          }
-      )
-      async for _ in response:
-        pass
-
-
-@pytest.mark.asyncio
 async def test_client_side_mcp_missing_name_raises(client):
     """Test that an MCP server without a name raises an error."""
 
@@ -2250,3 +2223,103 @@ async def test_client_side_mcp_missing_name_raises(client):
               ]
           }
       )
+
+
+@pytest.mark.asyncio
+async def test_agent_platform_mcp_stream_async_unit(client):
+    """Unit tests the Agent Platform MCP integration for streaming without the replay framework."""
+    if not client._api_client.vertexai:
+      return
+
+    if ClientSession is None:
+      pytest.skip('MCP library is not installed.')
+
+    class MockAgentPlatformSession(ClientSession):
+      def __init__(self):
+        self._read_stream = None
+        self._write_stream = None
+
+      async def list_tools(self):
+        return mcp_types.ListToolsResult(
+            tools=[
+                mcp_types.Tool(
+                    name='list_endpoints',
+                    description='Lists all serving Endpoints',
+                    inputSchema={
+                        'type': 'object',
+                        'properties': {'parent': {'type': 'string'}},
+                    },
+                )
+            ]
+        )
+
+      async def call_tool(self, name: str, arguments: dict[str, typing.Any]):
+        if name == 'list_endpoints':
+          return mcp_types.CallToolResult(
+              content=[mcp_types.TextContent(type='text', text='["endpoint-1", "endpoint-2"]')]
+          )
+
+    @contextlib.asynccontextmanager
+    async def mock_mcp_context(*args, **kwargs):
+      yield MockAgentPlatformSession()
+
+    turn_1_chunk = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    role='model',
+                    parts=[
+                        types.Part(
+                            function_call=types.FunctionCall(
+                                name='list_endpoints',
+                                args={'parent': 'projects/vertex-sdk-dev/locations/us-central1'}
+                            )
+                        )
+                    ]
+                )
+            )
+        ]
+    )
+
+    turn_2_chunk = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    role='model',
+                    parts=[types.Part(text='You have 2 endpoints.')]
+                )
+            )
+        ]
+    )
+
+    async def mock_stream_1(*args, **kwargs):
+      yield turn_1_chunk
+
+    async def mock_stream_2(*args, **kwargs):
+      yield turn_2_chunk
+
+    with mock.patch.object(_mcp_utils, '_connect_agent_platform_mcp', side_effect=mock_mcp_context) as mock_connect_mcp:
+      with mock.patch.object(AsyncModels, '_generate_content_stream', side_effect=[mock_stream_1(), mock_stream_2()]) as mock_generate_stream:
+
+        response_stream = await client.aio.models.generate_content_stream(
+            model='gemini-2.5-flash',
+            contents='List my endpoints.',
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        mcp_servers=[
+                            types.McpServer(name='endpoints')
+                        ]
+                    )
+                ]
+            )
+        )
+
+        final_text = ''
+        async for chunk in response_stream:
+          if chunk.text:
+            final_text += chunk.text
+
+        assert '2 endpoints' in final_text
+        mock_connect_mcp.assert_called_once_with(client._api_client, 'endpoints')
+        assert mock_generate_stream.call_count == 2
