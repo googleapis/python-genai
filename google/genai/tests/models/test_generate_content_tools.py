@@ -324,9 +324,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_non_existent_file_search_store',
@@ -348,9 +346,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='not exist',
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter',
@@ -372,9 +368,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter_and_top_k',
@@ -397,9 +391,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_function_call',
@@ -509,20 +501,18 @@ test_table: list[pytest_helper.TestTableItem] = [
             model='gemini-2.5-computer-use-preview-10-2025',
             contents=t.t_contents('Go to google and search nano banana'),
             config={
-                'tools': [
-                    {
-                        'computer_use': {
-                            'environment': 'ENVIRONMENT_BROWSER',
-                            'disabled_safety_policies': [
-                                'FINANCIAL_TRANSACTIONS',
-                                'COMMUNICATION_TOOL',
-                            ],
-                        }
+                'tools': [{
+                    'computer_use': {
+                        'environment': 'ENVIRONMENT_BROWSER',
+                        'disabled_safety_policies': [
+                            'FINANCIAL_TRANSACTIONS',
+                            'COMMUNICATION_TOOL',
+                        ],
                     }
-                ]
+                }]
             },
         ),
-        exception_if_vertex='404',
+        exception_if_vertex='only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_computer_use_multi_turn',
@@ -652,7 +642,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-3.1-pro-preview',
             contents=t.t_contents(
-                'Use Google Search to tell me about the 1970 world cup match'),
+                'Use Google Search to tell me about the 1970 world cup match'
+            ),
             config=types.GenerateContentConfig(
                 tools=[
                     types.Tool(
@@ -664,7 +655,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='parameter is only supported in Gemini Developer API mode',
+        exception_if_vertex=(
+            'parameter is only supported in Gemini Developer API mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations_with_tool_call_echo',
@@ -724,17 +717,25 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='parameter is only supported in Gemini Developer API mode',
+        exception_if_vertex=(
+            'parameter is only supported in Gemini Developer API mode'
+        ),
     ),
 ]
 
 
-pytestmark = pytest_helper.setup(
-    file=__file__,
-    globals_for_file=globals(),
-    test_method='models.generate_content',
-    test_table=test_table,
-)
+pytestmark = [
+    pytest_helper.setup(
+        file=__file__,
+        globals_for_file=globals(),
+        test_method='models.generate_content',
+        test_table=test_table,
+    ),
+    pytest.mark.skipif(
+        "config.getoption('--private')",
+        reason='ComputerUse on Vertex API behaves differently between public and private modules.',
+    ),
+]
 pytest_plugins = ('pytest_asyncio',)
 
 
