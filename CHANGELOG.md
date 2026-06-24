@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.10.0](https://github.com/googleapis/python-genai/compare/v2.9.0...v2.10.0) (2026-06-24)
+
+
+### Features
+
+* Add Agent Platform MCP support to async generate_content_stream ([a4772cc](https://github.com/googleapis/python-genai/commit/a4772cce433632fbf49eb029bf601480ef58a2ab))
+* Add ComputerUse.disabled_safety_policies ([732368f](https://github.com/googleapis/python-genai/commit/732368f7fd8a67c748c3cdc2b418144e1e94b4e5))
+* Add ComputerUse.disabled_safety_policies ([a359406](https://github.com/googleapis/python-genai/commit/a3594063430c33b9e8984fcf54ef3711125f5c37))
+* Add usage fields for steps ([7bb6c72](https://github.com/googleapis/python-genai/commit/7bb6c72020d99c24dede6400acd66864d2c8f056))
+* Add video generation and response format parameters. ([ec8f22b](https://github.com/googleapis/python-genai/commit/ec8f22ba9b903719b49b3c1f56e61a8ff60bc397))
+
+
+### Documentation
+
+* Fix typos across docstrings ([63ec5bb](https://github.com/googleapis/python-genai/commit/63ec5bb175869624801aef587415fe246f6618af))
+
 ## [2.9.0](https://github.com/googleapis/python-genai/compare/v2.9.0-rc1...v2.9.0) (2026-06-19)
 
 ### Major updates
