@@ -1251,7 +1251,7 @@ class BaseApiClient:
     if (
         self.vertexai
         and http_method == 'get'
-        and path.startswith('publishers/google/models')
+        and path.startswith('publishers/')
     ):
       query_vertex_base_models = True
     if (

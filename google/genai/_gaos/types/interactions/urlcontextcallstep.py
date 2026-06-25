@@ -61,11 +61,11 @@ class URLContextCallStepParam(TypedDict):
 
     id: str
     r"""Required. A unique ID for this specific tool call."""
+    arguments: ArgumentsParam
+    r"""The arguments to pass to the URL context."""
     type: Literal["url_context_call"]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
-    arguments: NotRequired[ArgumentsParam]
-    r"""The arguments to pass to the URL context."""
 
 
 class URLContextCallStep(BaseModel):
@@ -73,6 +73,9 @@ class URLContextCallStep(BaseModel):
 
     id: str
     r"""Required. A unique ID for this specific tool call."""
+
+    arguments: Arguments
+    r"""The arguments to pass to the URL context."""
 
     type: Annotated[
         Annotated[
@@ -85,12 +88,9 @@ class URLContextCallStep(BaseModel):
     signature: Optional[Base64EncodedString] = None
     r"""A signature hash for backend validation."""
 
-    arguments: Optional[Arguments] = None
-    r"""The arguments to pass to the URL context."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature", "arguments"])
+        optional_fields = set(["signature"])
         serialized = handler(self)
         m = {}
 

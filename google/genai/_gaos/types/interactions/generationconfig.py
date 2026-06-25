@@ -24,9 +24,11 @@ from .thinkinglevel import ThinkingLevel
 from .thinkingsummaries import ThinkingSummaries
 from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
 from .toolchoicetype import ToolChoiceType
+from .videoconfig import VideoConfig, VideoConfigParam
+import pydantic
 from pydantic import model_serializer
 from typing import List, Optional, Union
-from typing_extensions import NotRequired, TypeAliasType, TypedDict
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 ToolChoiceParam = TypeAliasType(
@@ -58,6 +60,8 @@ class GenerationConfigParam(TypedDict):
     r"""Configuration for speech interaction."""
     image_config: NotRequired[ImageConfigParam]
     r"""The configuration for image interaction."""
+    video_config: NotRequired[VideoConfigParam]
+    r"""Configuration options for video generation."""
     presence_penalty: NotRequired[float]
     r"""Penalizes tokens that have already appeared in the generated
     text. A positive value encourages the model to generate more diverse and
@@ -97,8 +101,16 @@ class GenerationConfig(BaseModel):
     speech_config: Optional[List[SpeechConfig]] = None
     r"""Configuration for speech interaction."""
 
-    image_config: Optional[ImageConfig] = None
+    image_config: Annotated[
+        Optional[ImageConfig],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
     r"""The configuration for image interaction."""
+
+    video_config: Optional[VideoConfig] = None
+    r"""Configuration options for video generation."""
 
     presence_penalty: Optional[float] = None
     r"""Penalizes tokens that have already appeared in the generated
@@ -128,6 +140,7 @@ class GenerationConfig(BaseModel):
                 "max_output_tokens",
                 "speech_config",
                 "image_config",
+                "video_config",
                 "presence_penalty",
                 "frequency_penalty",
                 "tool_choice",

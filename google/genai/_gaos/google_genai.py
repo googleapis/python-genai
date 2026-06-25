@@ -31,12 +31,25 @@ from ._hooks.google_genai_auth import (
     GOOGLE_GENAI_API_REVISION as _GOOGLE_GENAI_API_REVISION,
     GoogleGenAISecurityProvider,
 )
+from .agents import AsyncAgents as GeneratedAsyncAgents
+from .agents import Agents as GeneratedAgents
 from .interactions import AsyncInteractions as GeneratedAsyncInteractions
 from .interactions import Interactions as GeneratedInteractions
+from .lib.compat_errors import (
+    _AsyncRawResponseAccessorProxy,
+    _RawResponseAccessorProxy,
+    async_wrap_sdk_call,
+    is_stream,
+    wrap_async_stream_errors,
+    wrap_sdk_call,
+    wrap_stream_errors,
+)
 from .sdk import AsyncGenAI, GenAI
 from .types import interactions
 from .types.security import Security
-from .utils import eventstreaming
+from .utils import BackoffStrategy, RetryConfig, eventstreaming
+from .webhooks import AsyncWebhooks as GeneratedAsyncWebhooks
+from .webhooks import Webhooks as GeneratedWebhooks
 
 
 GOOGLE_GENAI_API_REVISION = _GOOGLE_GENAI_API_REVISION
@@ -104,6 +117,61 @@ def _get_google_genai_security(api_client: Any) -> Optional[Any]:
     return None
 
 
+_DEFAULT_MAX_RETRIES = 2
+# Default backoff shape (ms): 0.5s initial, 8s cap, base 2. Individual fields
+# are overridden by the matching `retry_options` value when set.
+_DEFAULT_INITIAL_INTERVAL_MS = 500
+_DEFAULT_MAX_INTERVAL_MS = 8000
+_DEFAULT_EXPONENT = 2
+_MAX_ELAPSED_TIME_MS = 30000
+
+
+def _translate_retry_config(http_options: Any) -> RetryConfig:
+    """Maps parent `HttpOptions.retry_options` onto a `RetryConfig`.
+
+    `attempts` becomes the retry count (an unset `attempts` falls back to the
+    default retry count). The delay-shaping options (`initial_delay`,
+    `max_delay`, `exp_base`, `jitter`) and `http_status_codes` are honored when
+    provided, each defaulting to the built-in behavior when omitted.
+    """
+    options = getattr(http_options, 'retry_options', None)
+
+    attempts = getattr(options, 'attempts', None) if options is not None else None
+    max_retries = attempts if attempts is not None else _DEFAULT_MAX_RETRIES + 1
+
+    initial_interval = _DEFAULT_INITIAL_INTERVAL_MS
+    max_interval = _DEFAULT_MAX_INTERVAL_MS
+    exponent = _DEFAULT_EXPONENT
+    jitter_ms = None
+    status_codes_override = None
+
+    if options is not None:
+        if options.initial_delay is not None:
+            initial_interval = int(options.initial_delay * 1000)
+        if options.max_delay is not None:
+            max_interval = int(options.max_delay * 1000)
+        if options.exp_base is not None:
+            exponent = options.exp_base
+        if options.jitter is not None:
+            jitter_ms = int(options.jitter * 1000)
+        if options.http_status_codes:
+            status_codes_override = [str(code) for code in options.http_status_codes]
+
+    return RetryConfig(
+        'attempt-count-backoff',
+        BackoffStrategy(
+            initial_interval,
+            max_interval,
+            exponent,
+            _MAX_ELAPSED_TIME_MS,
+            jitter_ms=jitter_ms,
+        ),
+        True,
+        max_retries=max_retries,
+        status_codes_override=status_codes_override,
+    )
+
+
 def build_google_genai_client(
     api_client: Any, api_version: Optional[str] = None
 ) -> GenAI:
@@ -116,6 +184,7 @@ def build_google_genai_client(
         server_url=get_google_genai_server_url(api_client),
         client=getattr(api_client, '_httpx_client', None),
         timeout_ms=http_options.timeout,
+        retry_config=_translate_retry_config(http_options),
     )
     return sdk
 
@@ -123,7 +192,7 @@ def build_google_genai_client(
 def build_google_genai_async_client(
     api_client: Any, api_version: Optional[str] = None
 ) -> AsyncGenAI:
-    """Builds an async generated NextGen client from the parent GenAI client."""
+    """Builds a generated NextGen client from the parent GenAI client."""
     http_options = api_client._http_options
     sdk = AsyncGenAI(
         security=_get_google_genai_security(api_client),
@@ -132,6 +201,7 @@ def build_google_genai_async_client(
         server_url=get_google_genai_server_url(api_client),
         async_client=getattr(api_client, '_async_httpx_client', None),
         timeout_ms=http_options.timeout,
+        retry_config=_translate_retry_config(http_options),
     )
     return sdk
 
@@ -142,19 +212,31 @@ class GeminiNextGenInteractions(GeneratedInteractions):
     Subclasses the generated resource so newly generated methods (and the
     raw/streaming response wrappers) are exposed automatically. Only the
     methods that need legacy input/output normalization are overridden.
+
+    Each override sits inside `if not TYPE_CHECKING:` so static type checkers
+    see the inherited generated signature (full overload sets) rather than the
+    runtime stub here.
     """
 
     def __init__(self, api_client: Any):
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
 
-    # Runtime-only overrides: type checkers see the inherited generated
-    # signatures (full overload sets) instead of hand-maintained stubs.
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+
     if not TYPE_CHECKING:
         def create(
             self,
             *,
+            request: Any = None,
             api_version: Optional[str] = None,
             extra_headers: Optional[Mapping[str, str]] = None,
             extra_query: Optional[Mapping[str, Any]] = None,
@@ -165,9 +247,29 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             interactions.Interaction,
             eventstreaming.Stream[interactions.InteractionSSEEvent],
         ]:
+            if request is not None:
+                if body:
+                    raise TypeError(_REQUEST_AND_BODY_ERROR)
+                stream = _request_stream(request)
+                response = wrap_sdk_call(
+                    super().create,
+                    request=request,
+                    api_version=api_version,
+                    extra_headers=extra_headers,
+                    extra_query=extra_query,
+                    extra_body=extra_body,
+                    timeout=timeout,
+                )
+                if stream:
+                    if is_stream(response):
+                        return wrap_stream_errors(response)
+                    return response
+                return _add_output_properties_if_interaction(response)
+
             stream = _optional_bool(body.get('stream'), default=False)
             body = _normalize_create_body(body)
-            response = super().create(
+            response = wrap_sdk_call(
+                super().create,
                 api_version=api_version,
                 **cast(Any, body),
                 extra_headers=extra_headers,
@@ -176,12 +278,12 @@ class GeminiNextGenInteractions(GeneratedInteractions):
                 timeout=timeout,
             )
             if stream:
+                if is_stream(response):
+                    return wrap_stream_errors(response)
                 return response
             return _add_output_properties_if_interaction(response)
 
 
-    # Runtime-only overrides: type checkers see the inherited generated
-    # signatures (full overload sets) instead of hand-maintained stubs.
     if not TYPE_CHECKING:
         def get(
             self,
@@ -199,7 +301,8 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             eventstreaming.Stream[interactions.InteractionSSEEvent],
         ]:
             stream_bool = bool(_optional_bool(stream, default=False))
-            response = super().get(
+            response = wrap_sdk_call(
+                super().get,
                 id=id,
                 api_version=api_version,
                 include_input=_optional_bool(include_input),
@@ -210,13 +313,16 @@ class GeminiNextGenInteractions(GeneratedInteractions):
                 timeout=timeout,
             )
             if stream_bool:
-                return cast(eventstreaming.Stream[interactions.InteractionSSEEvent], response)
+                if not is_stream(response):
+                    return response
+                return cast(
+                    eventstreaming.Stream[interactions.InteractionSSEEvent],
+                    wrap_stream_errors(response),
+                )
             return cast(
                 interactions.Interaction, _add_output_properties_if_interaction(response)
             )
 
-    # Runtime-only overrides: type checkers see the inherited generated
-    # signatures (full overload sets) instead of hand-maintained stubs.
     if not TYPE_CHECKING:
         def cancel(
             self,
@@ -230,7 +336,8 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             return cast(
                 interactions.Interaction,
                 _add_output_properties_if_interaction(
-                    super().cancel(
+                    wrap_sdk_call(
+                        super().cancel,
                         id=id,
                         api_version=api_version,
                         extra_headers=extra_headers,
@@ -240,26 +347,48 @@ class GeminiNextGenInteractions(GeneratedInteractions):
                 ),
             )
 
+    if not TYPE_CHECKING:
+        def delete(
+            self,
+            id: str,
+            *,
+            api_version: Optional[str] = None,
+            extra_headers: Optional[Mapping[str, str]] = None,
+            extra_query: Optional[Mapping[str, Any]] = None,
+            timeout: Optional[Union[float, httpx.Timeout]] = None,
+        ) -> Any:
+            return wrap_sdk_call(
+                super().delete,
+                id=id,
+                api_version=api_version,
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                timeout=timeout,
+            )
+
 
 class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
-    """Async public interactions resource backed by the NextGen client.
-
-    Subclasses the generated resource so newly generated methods (and the
-    raw/streaming response wrappers) are exposed automatically. Only the
-    methods that need legacy input/output normalization are overridden.
-    """
+    """Async public interactions resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
 
-    # Runtime-only overrides: type checkers see the inherited generated
-    # signatures (full overload sets) instead of hand-maintained stubs.
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+
     if not TYPE_CHECKING:
         async def create(
             self,
             *,
+            request: Any = None,
             api_version: Optional[str] = None,
             extra_headers: Optional[Mapping[str, str]] = None,
             extra_query: Optional[Mapping[str, Any]] = None,
@@ -270,9 +399,29 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             interactions.Interaction,
             eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
         ]:
+            if request is not None:
+                if body:
+                    raise TypeError(_REQUEST_AND_BODY_ERROR)
+                stream = _request_stream(request)
+                response = await async_wrap_sdk_call(
+                    super().create,
+                    request=request,
+                    api_version=api_version,
+                    extra_headers=extra_headers,
+                    extra_query=extra_query,
+                    extra_body=extra_body,
+                    timeout=timeout,
+                )
+                if stream:
+                    if is_stream(response):
+                        return wrap_async_stream_errors(response)
+                    return response
+                return _add_output_properties_if_interaction(response)
+
             stream = _optional_bool(body.get('stream'), default=False)
             body = _normalize_create_body(body)
-            response = await super().create(
+            response = await async_wrap_sdk_call(
+                super().create,
                 api_version=api_version,
                 **cast(Any, body),
                 extra_headers=extra_headers,
@@ -281,12 +430,12 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
                 timeout=timeout,
             )
             if stream:
+                if is_stream(response):
+                    return wrap_async_stream_errors(response)
                 return response
             return _add_output_properties_if_interaction(response)
 
 
-    # Runtime-only overrides: type checkers see the inherited generated
-    # signatures (full overload sets) instead of hand-maintained stubs.
     if not TYPE_CHECKING:
         async def get(
             self,
@@ -304,7 +453,8 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
         ]:
             stream_bool = bool(_optional_bool(stream, default=False))
-            response = await super().get(
+            response = await async_wrap_sdk_call(
+                super().get,
                 id=id,
                 api_version=api_version,
                 include_input=_optional_bool(include_input),
@@ -315,13 +465,16 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
                 timeout=timeout,
             )
             if stream_bool:
-                return cast(eventstreaming.AsyncStream[interactions.InteractionSSEEvent], response)
+                if not is_stream(response):
+                    return response
+                return cast(
+                    eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
+                    wrap_async_stream_errors(response),
+                )
             return cast(
                 interactions.Interaction, _add_output_properties_if_interaction(response)
             )
 
-    # Runtime-only overrides: type checkers see the inherited generated
-    # signatures (full overload sets) instead of hand-maintained stubs.
     if not TYPE_CHECKING:
         async def cancel(
             self,
@@ -335,7 +488,8 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             return cast(
                 interactions.Interaction,
                 _add_output_properties_if_interaction(
-                    await super().cancel(
+                    await async_wrap_sdk_call(
+                        super().cancel,
                         id=id,
                         api_version=api_version,
                         extra_headers=extra_headers,
@@ -344,6 +498,173 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
                     )
                 ),
             )
+
+    if not TYPE_CHECKING:
+        async def delete(
+            self,
+            id: str,
+            *,
+            api_version: Optional[str] = None,
+            extra_headers: Optional[Mapping[str, str]] = None,
+            extra_query: Optional[Mapping[str, Any]] = None,
+            timeout: Optional[Union[float, httpx.Timeout]] = None,
+        ) -> Any:
+            return await async_wrap_sdk_call(
+                super().delete,
+                id=id,
+                api_version=api_version,
+                extra_headers=extra_headers,
+                extra_query=extra_query,
+                timeout=timeout,
+            )
+
+
+class GeminiNextGenWebhooks(GeneratedWebhooks):
+    """Public webhooks resource backed by the NextGen client.
+
+    Subclasses the generated resource so every public method is wrapped in
+    `wrap_sdk_call`, translating per-operation `GenAiError` raises into the
+    status-code `APIError` hierarchy exposed at the
+    `google.genai._interactions` import surface.
+    """
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def list(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().list, *args, **kwargs)
+
+        def get(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().get, *args, **kwargs)
+
+        def update(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().update, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+        def rotate_signing_secret(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().rotate_signing_secret, *args, **kwargs)
+
+        def ping(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().ping, *args, **kwargs)
+
+
+class AsyncGeminiNextGenWebhooks(GeneratedAsyncWebhooks):
+    """Async public webhooks resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_async_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def list(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().list, *args, **kwargs)
+
+        async def get(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().get, *args, **kwargs)
+
+        async def update(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().update, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+        async def rotate_signing_secret(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(
+                super().rotate_signing_secret, *args, **kwargs
+            )
+
+        async def ping(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().ping, *args, **kwargs)
+
+
+class GeminiNextGenAgents(GeneratedAgents):
+    """Public agents resource backed by the NextGen client.
+
+    Subclasses the generated resource so every public method is wrapped in
+    `wrap_sdk_call`, translating per-operation `GenAiError` raises into the
+    status-code `APIError` hierarchy exposed at the
+    `google.genai._interactions` import surface.
+    """
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def list(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().list, *args, **kwargs)
+
+        def get(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().get, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class AsyncGeminiNextGenAgents(GeneratedAsyncAgents):
+    """Async public agents resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_async_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def list(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().list, *args, **kwargs)
+
+        async def get(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().get, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
 
 
 def _add_output_properties_if_interaction(value: Any) -> Any:
@@ -467,7 +788,33 @@ def _get_value(value: Any, name: str) -> Any:
     return getattr(value, name, None)
 
 
+# Allowed create() body keys, derived from the generated request models so the
+# set tracks the schema; output-only fields are excluded.
+_CREATE_BODY_KEYS = frozenset(
+    field.alias or name
+    for model in (
+        interactions.CreateModelInteraction,
+        interactions.CreateAgentInteraction,
+    )
+    for name, field in model.model_fields.items()
+)
+
+
+_REQUEST_AND_BODY_ERROR = (
+    'create() accepts either request=... or individual body keyword arguments, '
+    'not both.'
+)
+
+
 def _normalize_create_body(body: dict[str, Any]) -> dict[str, Any]:
+    unknown = set(body) - _CREATE_BODY_KEYS
+    if unknown:
+        raise TypeError(
+            'create() got unexpected keyword argument(s): '
+            + ', '.join(sorted(unknown))
+            + '. Use extra_body=... to send additional request body fields.'
+        )
+
     input_value = body.get('input')
     if not _is_content_list(input_value):
         return body
@@ -519,3 +866,17 @@ def _optional_str(value: Any) -> Optional[str]:
     if isinstance(value, str):
         return value
     return None
+
+
+def _request_stream(request: Any) -> bool:
+    body = (
+        request.get('body')
+        if isinstance(request, Mapping)
+        else getattr(request, 'body', None)
+    )
+    stream = (
+        body.get('stream')
+        if isinstance(body, Mapping)
+        else getattr(body, 'stream', None)
+    )
+    return bool(_optional_bool(stream, default=False))

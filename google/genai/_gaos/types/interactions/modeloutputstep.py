@@ -20,6 +20,7 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
 from .content import Content, ContentParam
+from .status import Status, StatusParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -32,6 +33,15 @@ class ModelOutputStepParam(TypedDict):
 
     type: Literal["model_output"]
     content: NotRequired[List[ContentParam]]
+    error: NotRequired[StatusParam]
+    r"""The `Status` type defines a logical error model that is suitable for
+    different programming environments, including REST APIs and RPC APIs. It is
+    used by [gRPC](https://github.com/grpc). Each `Status` message contains
+    three pieces of data: error code, error message, and error details.
+
+    You can find out more about this error model and how to work with it in the
+    [API Design Guide](https://cloud.google.com/apis/design/errors).
+    """
 
 
 class ModelOutputStep(BaseModel):
@@ -46,9 +56,19 @@ class ModelOutputStep(BaseModel):
 
     content: Optional[List[Content]] = None
 
+    error: Optional[Status] = None
+    r"""The `Status` type defines a logical error model that is suitable for
+    different programming environments, including REST APIs and RPC APIs. It is
+    used by [gRPC](https://github.com/grpc). Each `Status` message contains
+    three pieces of data: error code, error message, and error details.
+
+    You can find out more about this error model and how to work with it in the
+    [API Design Guide](https://cloud.google.com/apis/design/errors).
+    """
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["content"])
+        optional_fields = set(["content", "error"])
         serialized = handler(self)
         m = {}
 

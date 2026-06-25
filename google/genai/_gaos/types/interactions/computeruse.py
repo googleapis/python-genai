@@ -37,6 +37,20 @@ EnvironmentEnum = Union[
 r"""The environment being operated."""
 
 
+DisabledSafetyPolicy = Union[
+    Literal[
+        "financial_transactions",
+        "sensitive_data_modification",
+        "communication_tool",
+        "account_creation",
+        "data_modification",
+        "user_consent_management",
+        "legal_terms_and_agreements",
+    ],
+    UnrecognizedStr,
+]
+
+
 class ComputerUseParam(TypedDict):
     r"""A tool that can be used by the model to interact with the computer."""
 
@@ -49,6 +63,8 @@ class ComputerUseParam(TypedDict):
     r"""Whether enable the prompt injection detection check on computer-use
     request.
     """
+    disabled_safety_policies: NotRequired[List[DisabledSafetyPolicy]]
+    r"""Optional. Disabled safety policies for computer use."""
 
 
 class ComputerUse(BaseModel):
@@ -72,6 +88,9 @@ class ComputerUse(BaseModel):
     request.
     """
 
+    disabled_safety_policies: Optional[List[DisabledSafetyPolicy]] = None
+    r"""Optional. Disabled safety policies for computer use."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
@@ -79,6 +98,7 @@ class ComputerUse(BaseModel):
                 "environment",
                 "excluded_predefined_functions",
                 "enable_prompt_injection_detection",
+                "disabled_safety_policies",
             ]
         )
         serialized = handler(self)

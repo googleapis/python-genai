@@ -29,11 +29,11 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class CodeExecutionResultStepParam(TypedDict):
     r"""Code execution result step."""
 
+    result: str
+    r"""Required. The output of the code execution."""
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
     type: Literal["code_execution_result"]
-    result: NotRequired[str]
-    r"""The output of the code execution."""
     is_error: NotRequired[bool]
     r"""Whether the code execution resulted in an error."""
     signature: NotRequired[Union[str, Base64FileInput]]
@@ -42,6 +42,9 @@ class CodeExecutionResultStepParam(TypedDict):
 
 class CodeExecutionResultStep(BaseModel):
     r"""Code execution result step."""
+
+    result: str
+    r"""Required. The output of the code execution."""
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
@@ -54,9 +57,6 @@ class CodeExecutionResultStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "code_execution_result"
 
-    result: Optional[str] = None
-    r"""The output of the code execution."""
-
     is_error: Optional[bool] = None
     r"""Whether the code execution resulted in an error."""
 
@@ -65,7 +65,7 @@ class CodeExecutionResultStep(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["result", "is_error", "signature"])
+        optional_fields = set(["is_error", "signature"])
         serialized = handler(self)
         m = {}
 

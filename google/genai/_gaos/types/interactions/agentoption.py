@@ -29,6 +29,8 @@ AgentOption = Union[
         "deep-research-preview-04-2026",
         # Gemini Deep Research Max Agent
         "deep-research-max-preview-04-2026",
+        # Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
+        "antigravity-preview-05-2026",
     ],
     UnrecognizedStr,
 ]

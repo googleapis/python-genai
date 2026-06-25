@@ -2925,3 +2925,19 @@ def test_instantiate_response_from_batch_json():
       parsed.candidates[0].citation_metadata.citations[0].uri
       == 'http://someurl.com'
   )
+
+
+def test_computer_use_types():
+  c = types.ComputerUse(
+      environment=types.Environment.ENVIRONMENT_MOBILE,
+      enable_prompt_injection_detection=True,
+      disabled_safety_policies=[
+          types.SafetyPolicy.FINANCIAL_TRANSACTIONS,
+          types.SafetyPolicy.COMMUNICATION_TOOL,
+      ],
+  )
+  assert c.environment == types.Environment.ENVIRONMENT_MOBILE
+  assert c.enable_prompt_injection_detection is True
+  assert len(c.disabled_safety_policies) == 2
+  assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
+

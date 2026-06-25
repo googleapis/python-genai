@@ -588,7 +588,8 @@ class Files(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
+      config: Optional parameters to set `display_name`, `mime_type`, and
+        `name`.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -630,7 +631,7 @@ class Files(_api_module.BaseModule):
         or 'x-goog-upload-url' not in response.sdk_http_response.headers
     ):
       raise KeyError(
-          'Failed to create file. Upload URL did not returned from the create'
+          'Failed to create file. Upload URL was not returned from the create'
           ' file request.'
       )
     upload_url = response.sdk_http_response.headers['x-goog-upload-url']
@@ -1207,7 +1208,8 @@ class AsyncFiles(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
+      config: Optional parameters to set `display_name`, `mime_type`, and
+        `name`.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -1251,7 +1253,7 @@ class AsyncFiles(_api_module.BaseModule):
         )
     ):
       raise KeyError(
-          'Failed to create file. Upload URL did not returned from the create'
+          'Failed to create file. Upload URL was not returned from the create'
           ' file request.'
       )
     elif 'x-goog-upload-url' in response.sdk_http_response.headers:
@@ -1282,7 +1284,7 @@ class AsyncFiles(_api_module.BaseModule):
   ) -> bytes:
     """Downloads a file's data from the file service.
 
-    The Gemini Enterprise Agent Platform implementation of the API foes not
+    The Gemini Enterprise Agent Platform implementation of the API does not
     include the file service.
 
     Files created by `upload` can't be downloaded. You can tell which files are

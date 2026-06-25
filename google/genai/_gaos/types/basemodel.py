@@ -190,7 +190,7 @@ class UnrecognizedStr(str):
             ]),
             strict_schema=core_schema.none_schema(),  # Always fails in strict mode
             serialization=core_schema.plain_serializer_function_ser_schema(
-                lambda v: str(v)
+                str
             ),
         )
 
@@ -211,6 +211,6 @@ class UnrecognizedInt(int):
             ]),
             strict_schema=core_schema.none_schema(),  # Always fails in strict mode
             serialization=core_schema.plain_serializer_function_ser_schema(
-                lambda v: int(v)
+                int
             ),
         )

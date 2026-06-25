@@ -25,11 +25,14 @@ from .types import (
     AfterSuccessHook,
     AfterErrorContext,
     AfterErrorHook,
+    AfterParseErrorContext,
+    AfterParseErrorHook,
     Hooks,
 )
 from .registration import init_hooks
 from .google_genai_auth import GoogleGenAIAuthHook
-from typing import List, Optional, Tuple
+from ..lib.compat_errors import CompatErrorHook
+from typing import cast, List, Optional, Tuple
 from ..sdkconfiguration import SDKConfiguration
 
 
@@ -39,8 +42,13 @@ class SDKHooks(Hooks):
         self.before_request_hooks: List[BeforeRequestHook] = []
         self.after_success_hooks: List[AfterSuccessHook] = []
         self.after_error_hooks: List[AfterErrorHook] = []
+        self.after_parse_error_hooks: List[AfterParseErrorHook] = []
         init_hooks(self)
         self.register_before_request_hook(GoogleGenAIAuthHook())
+        self.register_after_error_hook(cast(AfterErrorHook, CompatErrorHook()))
+        self.register_after_parse_error_hook(
+            cast(AfterParseErrorHook, CompatErrorHook())
+        )
 
     def register_sdk_init_hook(self, hook: SDKInitHook) -> None:
         self.sdk_init_hooks.append(hook)
@@ -53,6 +61,9 @@ class SDKHooks(Hooks):
 
     def register_after_error_hook(self, hook: AfterErrorHook) -> None:
         self.after_error_hooks.append(hook)
+
+    def register_after_parse_error_hook(self, hook: AfterParseErrorHook) -> None:
+        self.after_parse_error_hooks.append(hook)
 
     def sdk_init(self, config: SDKConfiguration) -> SDKConfiguration:
         for hook in self.sdk_init_hooks:
@@ -92,3 +103,13 @@ class SDKHooks(Hooks):
                 raise result
             response, error = result
         return response, error
+
+    def after_parse_error(
+        self,
+        hook_ctx: AfterParseErrorContext,
+        response: httpx.Response,
+        error: Exception,
+    ) -> Exception:
+        for hook in self.after_parse_error_hooks:
+            error = hook.after_parse_error(hook_ctx, response, error)
+        return error

@@ -33,17 +33,20 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class CodeExecutionCallStepParam(TypedDict):
     r"""Code execution call step."""
 
+    arguments: CodeExecutionCallArgumentsParam
+    r"""The arguments to pass to the code execution."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
     type: Literal["code_execution_call"]
-    arguments: NotRequired[CodeExecutionCallArgumentsParam]
-    r"""The arguments to pass to the code execution."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
 
 
 class CodeExecutionCallStep(BaseModel):
     r"""Code execution call step."""
+
+    arguments: CodeExecutionCallArguments
+    r"""The arguments to pass to the code execution."""
 
     id: str
     r"""Required. A unique ID for this specific tool call."""
@@ -56,15 +59,12 @@ class CodeExecutionCallStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "code_execution_call"
 
-    arguments: Optional[CodeExecutionCallArguments] = None
-    r"""The arguments to pass to the code execution."""
-
     signature: Optional[Base64EncodedString] = None
     r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["arguments", "signature"])
+        optional_fields = set(["signature"])
         serialized = handler(self)
         m = {}
 

@@ -58,6 +58,7 @@ ThoughtSummaryContent = Annotated[
             variants=_THOUGHT_SUMMARY_CONTENT_VARIANTS,
             unknown_cls=UnknownThoughtSummaryContent,
             union_name="ThoughtSummaryContent",
+            lenient=True,
         )
     ),
 ]
