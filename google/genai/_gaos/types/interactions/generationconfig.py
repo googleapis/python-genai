@@ -62,16 +62,6 @@ class GenerationConfigParam(TypedDict):
     r"""The configuration for image interaction."""
     video_config: NotRequired[VideoConfigParam]
     r"""Configuration options for video generation."""
-    presence_penalty: NotRequired[float]
-    r"""Penalizes tokens that have already appeared in the generated
-    text. A positive value encourages the model to generate more diverse and
-    less repetitive text. Valid values can range from [-2.0, 2.0].
-    """
-    frequency_penalty: NotRequired[float]
-    r"""Penalizes tokens based on their frequency in the generated text.
-    A positive value helps to reduce the repetition of words and phrases.
-    Valid values can range from [-2.0, 2.0].
-    """
     tool_choice: NotRequired[ToolChoiceParam]
     r"""The tool choice configuration."""
 
@@ -112,18 +102,6 @@ class GenerationConfig(BaseModel):
     video_config: Optional[VideoConfig] = None
     r"""Configuration options for video generation."""
 
-    presence_penalty: Optional[float] = None
-    r"""Penalizes tokens that have already appeared in the generated
-    text. A positive value encourages the model to generate more diverse and
-    less repetitive text. Valid values can range from [-2.0, 2.0].
-    """
-
-    frequency_penalty: Optional[float] = None
-    r"""Penalizes tokens based on their frequency in the generated text.
-    A positive value helps to reduce the repetition of words and phrases.
-    Valid values can range from [-2.0, 2.0].
-    """
-
     tool_choice: Optional[ToolChoice] = None
     r"""The tool choice configuration."""
 
@@ -141,8 +119,6 @@ class GenerationConfig(BaseModel):
                 "speech_config",
                 "image_config",
                 "video_config",
-                "presence_penalty",
-                "frequency_penalty",
                 "tool_choice",
             ]
         )
