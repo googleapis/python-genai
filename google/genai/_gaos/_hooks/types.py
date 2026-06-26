@@ -19,7 +19,7 @@
 from ..sdkconfiguration import SDKConfiguration
 from abc import ABC, abstractmethod
 import httpx
-from typing import Any, Callable, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 
 class ResponseContext:
@@ -41,6 +41,8 @@ class HookContext:
     operation_id: str
     oauth2_scopes: Optional[List[str]] = None
     security_source: Optional[Union[Any, Callable[[], Any]]] = None
+    tags: Optional[List[str]] = None
+    extensions: Optional[Dict[str, Any]] = None
     response: ResponseContext
 
     def __init__(
@@ -50,6 +52,8 @@ class HookContext:
         operation_id: str,
         oauth2_scopes: Optional[List[str]],
         security_source: Optional[Union[Any, Callable[[], Any]]],
+        tags: Optional[List[str]],
+        extensions: Optional[Dict[str, Any]],
         response: ResponseContext,
     ):
         self.config = config
@@ -57,6 +61,8 @@ class HookContext:
         self.operation_id = operation_id
         self.oauth2_scopes = oauth2_scopes
         self.security_source = security_source
+        self.tags = tags
+        self.extensions = extensions
         self.response = response
 
 
@@ -68,6 +74,8 @@ class BeforeRequestContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
             response=hook_ctx.response,
         )
 
@@ -80,6 +88,8 @@ class AfterSuccessContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
             response=hook_ctx.response,
         )
 
@@ -92,6 +102,8 @@ class AfterErrorContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
             response=hook_ctx.response,
         )
 
@@ -108,6 +120,8 @@ class AfterParseErrorContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
             response=hook_ctx.response,
         )
 

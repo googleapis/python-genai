@@ -477,8 +477,11 @@ class Interactions(BaseSDK):
             if utils.match_response(http_res, "200", "text/event-stream"):
                 return Stream(
                     http_res,
-                    lambda raw: utils.unmarshal_json(
-                        raw, interactions.InteractionSSEStreamEvent
+                    lambda raw: unmarshal_json_response(
+                        interactions.InteractionSSEStreamEvent,
+                        http_res,
+                        raw,
+                        validate=False,
                     ).data,
                     sentinel="[DONE]",
                     client_ref=self,
@@ -527,6 +530,146 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "simple",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "input": "Hello, how are you?"\n  }\'\n',
+                    },
+                    {
+                        "label": "simple",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Hello, how are you?",\n)\nprint(interaction.output_text)\n',
+                    },
+                    {
+                        "label": "simple",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Hello, how are you?',\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "multi_turn",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "input": [\n      { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n      { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n      { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n  }\'\n',
+                    },
+                    {
+                        "label": "multi_turn",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.5-flash",\n    input=[\n        { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n        { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n        { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n)\nprint(response.output_text)\n',
+                    },
+                    {
+                        "label": "multi_turn",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: [\n        { type: 'user_input', content: [{ type: 'text', text: 'Hello' }] },\n        { type: 'model_output', content: [{ type: 'text', text: 'Hi there! How can I help you today?' }] },\n        { type: 'user_input', content: [{ type: 'text', text: 'What is the capital of France?' }] }\n    ]\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "multimodal_image",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "input": [\n      {\n        "type": "text",\n        "text": "What is in this picture?"\n      },\n      {\n        "type": "image",\n        "data": "BASE64_ENCODED_IMAGE",\n        "mime_type": "image/png"\n      }\n    ]\n  }\'\n',
+                    },
+                    {
+                        "label": "multimodal_image",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.5-flash",\n    input=[\n      { "type": "text", "text": "What is in this picture?" },\n      { "type": "image", "data": "BASE64_ENCODED_IMAGE", "mime_type": "image/png" }\n    ]\n)\nprint(response.output_text)\n',
+                    },
+                    {
+                        "label": "multimodal_image",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: [\n      { type: 'text', text: 'What is in this picture?' },\n      { type: 'image', data: 'BASE64_ENCODED_IMAGE', mime_type: 'image/png' }\n    ]\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "function_calling",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "tools": [\n      {\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n          "type": "object",\n          "properties": {\n            "location": {\n              "type": "string",\n              "description": "The city and state, e.g. San Francisco, CA"\n            }\n          },\n          "required": [\n            "location"\n          ]\n        }\n      }\n    ],\n    "input": "What is the weather like in Boston, MA?"\n  }\'\n',
+                    },
+                    {
+                        "label": "function_calling",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.5-flash",\n    tools=[{\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n            "type": "object",\n            "properties": {\n                "location": {\n                    "type": "string",\n                    "description": "The city and state, e.g. San Francisco, CA"\n                }\n            },\n            "required": ["location"]\n        }\n    }],\n    input="What is the weather like in Boston, MA?"\n)\nprint(response.steps[-1])\n',
+                    },
+                    {
+                        "label": "function_calling",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    tools: [{\n        type: 'function',\n        name: 'get_weather',\n        description: 'Get the current weather in a given location',\n        parameters: {\n            type: 'object',\n            properties: {\n                location: {\n                    type: 'string',\n                    description: 'The city and state, e.g. San Francisco, CA'\n                }\n            },\n            required: ['location']\n        }\n    }],\n    input: 'What is the weather like in Boston, MA?'\n});\nconsole.log(interaction.steps.at(-1));\n",
+                    },
+                    {
+                        "label": "deep_research",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "deep-research-pro-preview-12-2025",\n    "input": "Find a cure to cancer",\n    "background": true\n  }\'\n',
+                    },
+                    {
+                        "label": "deep_research",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="deep-research-pro-preview-12-2025",\n    input="find a cure to cancer",\n    background=True,\n)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "deep_research",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'deep-research-pro-preview-12-2025',\n    input: 'find a cure to cancer',\n    background: true,\n});\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "antigravity",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    "environment": "remote"\n  }\'\n',
+                    },
+                    {
+                        "label": "antigravity",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    environment="remote",\n)\nprint(interaction.output_text)\n',
+                    },
+                    {
+                        "label": "antigravity",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Read Hacker News, summarize the top 5 stories, and save results as a markdown file.',\n    environment: 'remote',\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "reuse_env",
+                        "lang": "sh",
+                        "source": '# Step 1: Create an interaction with a fresh remote environment.\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a hello world script at /workspace/hello.py.",\n    "environment": "remote"\n  }\')\nINTERACTION_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d "{\n    \\"agent\\": \\"antigravity-preview-05-2026\\",\n    \\"input\\": \\"Modify the script to accept a name argument and greet the user.\\",\n    \\"environment\\": \\"$ENV_ID\\",\n    \\"previous_interaction_id\\": \\"$INTERACTION_ID\\"\n  }"\n',
+                    },
+                    {
+                        "label": "reuse_env",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Step 1: Create an interaction with a fresh remote environment.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a hello world script at /workspace/hello.py.",\n    environment="remote",\n)\nprint(f"Environment ID: {interaction.environment_id}")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ninteraction_2 = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Modify the script to accept a name argument and greet the user.",\n    environment=interaction.environment_id,\n    previous_interaction_id=interaction.id,\n)\nprint(interaction_2.output_text)\n',
+                    },
+                    {
+                        "label": "reuse_env",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create an interaction with a fresh remote environment.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a hello world script at /workspace/hello.py.',\n    environment: 'remote',\n});\nconsole.log(`Environment ID: ${interaction.environment_id}`);\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nconst interaction2 = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Modify the script to accept a name argument and greet the user.',\n    environment: interaction.environment_id,\n    previous_interaction_id: interaction.id,\n});\nconsole.log(interaction2.output_text);\n",
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "List all files under /workspace and summarize what you find.",\n    "environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "repository",\n          "source": "https://github.com/octocat/Spoon-Knife",\n          "target": "/workspace/repo"\n        },\n        {\n          "type": "inline",\n          "content": "Focus on Python files only.",\n          "target": "/workspace/notes.txt"\n        }\n      ]\n    }\n  }\'\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="List all files under /workspace and summarize what you find.",\n    environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "repository",\n                "source": "https://github.com/octocat/Spoon-Knife",\n                "target": "/workspace/repo",\n            },\n            {\n                "type": "inline",\n                "content": "Focus on Python files only.",\n                "target": "/workspace/notes.txt",\n            },\n        ],\n    },\n)\nprint(interaction.output_text)\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'List all files under /workspace and summarize what you find.',\n    environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'repository',\n                source: 'https://github.com/octocat/Spoon-Knife',\n                target: '/workspace/repo',\n            },\n            {\n                type: 'inline',\n                content: 'Focus on Python files only.',\n                target: '/workspace/notes.txt',\n            },\n        ],\n    },\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "custom_agent",
+                        "lang": "sh",
+                        "source": '# Step 1: Create a custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "code-reviewer",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [{\n        "type": "repository",\n        "source": "https://github.com/octocat/Spoon-Knife",\n        "target": "/workspace/repo"\n      }]\n    }\n  }\'\n\n# Step 2: Use the custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "code-reviewer",\n    "input": "Review the latest changes in /workspace/repo/src and file a summary.",\n    "environment": "remote"\n  }\'\n',
+                    },
+                    {
+                        "label": "custom_agent",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Create a custom agent.\nagent_id = f"code-reviewer-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    base_environment={\n        "type": "remote",\n        "sources": [{\n            "type": "repository",\n            "source": "https://github.com/octocat/Spoon-Knife",\n            "target": "/workspace/repo",\n        }],\n    },\n)\n\n# Step 2: Use the custom agent.\nresult = client.interactions.create(\n    agent=agent_id,\n    input="Review the latest changes in /workspace/repo/src and file a summary.",\n    environment="remote",\n)\nprint(result.output_text)\n\n# [cleanup]\nclient.agents.delete(agent_id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "custom_agent",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create a custom agent.\nconst agentId = `code-reviewer-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.',\n    base_environment: {\n        type: 'remote',\n        sources: [{\n            type: 'repository',\n            source: 'https://github.com/octocat/Spoon-Knife',\n            target: '/workspace/repo',\n        }],\n    },\n});\n\n// Step 2: Use the custom agent.\nconst result = await ai.interactions.create({\n    agent: agentId,\n    input: 'Review the latest changes in /workspace/repo/src and file a summary.',\n    environment: 'remote',\n});\nconsole.log(result.output_text);\n\n// [cleanup]\nawait ai.agents.delete(agentId);\n// [/cleanup]\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -538,6 +681,17 @@ class Interactions(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -748,8 +902,11 @@ class Interactions(BaseSDK):
             if utils.match_response(http_res, "200", "text/event-stream"):
                 return Stream(
                     http_res,
-                    lambda raw: utils.unmarshal_json(
-                        raw, interactions.InteractionSSEStreamEvent
+                    lambda raw: unmarshal_json_response(
+                        interactions.InteractionSSEStreamEvent,
+                        http_res,
+                        raw,
+                        validate=False,
                     ).data,
                     sentinel="[DONE]",
                     client_ref=self,
@@ -802,6 +959,26 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.5-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -812,6 +989,17 @@ class Interactions(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -954,6 +1142,26 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "delete",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.5-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -964,6 +1172,17 @@ class Interactions(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1112,6 +1331,26 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "cancel",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.5-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1122,6 +1361,17 @@ class Interactions(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1631,8 +1881,11 @@ class AsyncInteractions(AsyncBaseSDK):
             if utils.match_response(http_res, "200", "text/event-stream"):
                 return AsyncStream(
                     http_res,
-                    lambda raw: utils.unmarshal_json(
-                        raw, interactions.InteractionSSEStreamEvent
+                    lambda raw: unmarshal_json_response(
+                        interactions.InteractionSSEStreamEvent,
+                        http_res,
+                        raw,
+                        validate=False,
                     ).data,
                     sentinel="[DONE]",
                     client_ref=self,
@@ -1681,6 +1934,146 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "simple",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "input": "Hello, how are you?"\n  }\'\n',
+                    },
+                    {
+                        "label": "simple",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Hello, how are you?",\n)\nprint(interaction.output_text)\n',
+                    },
+                    {
+                        "label": "simple",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Hello, how are you?',\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "multi_turn",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "input": [\n      { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n      { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n      { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n  }\'\n',
+                    },
+                    {
+                        "label": "multi_turn",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.5-flash",\n    input=[\n        { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n        { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n        { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n)\nprint(response.output_text)\n',
+                    },
+                    {
+                        "label": "multi_turn",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: [\n        { type: 'user_input', content: [{ type: 'text', text: 'Hello' }] },\n        { type: 'model_output', content: [{ type: 'text', text: 'Hi there! How can I help you today?' }] },\n        { type: 'user_input', content: [{ type: 'text', text: 'What is the capital of France?' }] }\n    ]\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "multimodal_image",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "input": [\n      {\n        "type": "text",\n        "text": "What is in this picture?"\n      },\n      {\n        "type": "image",\n        "data": "BASE64_ENCODED_IMAGE",\n        "mime_type": "image/png"\n      }\n    ]\n  }\'\n',
+                    },
+                    {
+                        "label": "multimodal_image",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.5-flash",\n    input=[\n      { "type": "text", "text": "What is in this picture?" },\n      { "type": "image", "data": "BASE64_ENCODED_IMAGE", "mime_type": "image/png" }\n    ]\n)\nprint(response.output_text)\n',
+                    },
+                    {
+                        "label": "multimodal_image",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: [\n      { type: 'text', text: 'What is in this picture?' },\n      { type: 'image', data: 'BASE64_ENCODED_IMAGE', mime_type: 'image/png' }\n    ]\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "function_calling",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "model": "gemini-3.5-flash",\n    "tools": [\n      {\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n          "type": "object",\n          "properties": {\n            "location": {\n              "type": "string",\n              "description": "The city and state, e.g. San Francisco, CA"\n            }\n          },\n          "required": [\n            "location"\n          ]\n        }\n      }\n    ],\n    "input": "What is the weather like in Boston, MA?"\n  }\'\n',
+                    },
+                    {
+                        "label": "function_calling",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.5-flash",\n    tools=[{\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n            "type": "object",\n            "properties": {\n                "location": {\n                    "type": "string",\n                    "description": "The city and state, e.g. San Francisco, CA"\n                }\n            },\n            "required": ["location"]\n        }\n    }],\n    input="What is the weather like in Boston, MA?"\n)\nprint(response.steps[-1])\n',
+                    },
+                    {
+                        "label": "function_calling",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    tools: [{\n        type: 'function',\n        name: 'get_weather',\n        description: 'Get the current weather in a given location',\n        parameters: {\n            type: 'object',\n            properties: {\n                location: {\n                    type: 'string',\n                    description: 'The city and state, e.g. San Francisco, CA'\n                }\n            },\n            required: ['location']\n        }\n    }],\n    input: 'What is the weather like in Boston, MA?'\n});\nconsole.log(interaction.steps.at(-1));\n",
+                    },
+                    {
+                        "label": "deep_research",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "deep-research-pro-preview-12-2025",\n    "input": "Find a cure to cancer",\n    "background": true\n  }\'\n',
+                    },
+                    {
+                        "label": "deep_research",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="deep-research-pro-preview-12-2025",\n    input="find a cure to cancer",\n    background=True,\n)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "deep_research",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'deep-research-pro-preview-12-2025',\n    input: 'find a cure to cancer',\n    background: true,\n});\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "antigravity",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    "environment": "remote"\n  }\'\n',
+                    },
+                    {
+                        "label": "antigravity",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    environment="remote",\n)\nprint(interaction.output_text)\n',
+                    },
+                    {
+                        "label": "antigravity",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Read Hacker News, summarize the top 5 stories, and save results as a markdown file.',\n    environment: 'remote',\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "reuse_env",
+                        "lang": "sh",
+                        "source": '# Step 1: Create an interaction with a fresh remote environment.\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a hello world script at /workspace/hello.py.",\n    "environment": "remote"\n  }\')\nINTERACTION_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d "{\n    \\"agent\\": \\"antigravity-preview-05-2026\\",\n    \\"input\\": \\"Modify the script to accept a name argument and greet the user.\\",\n    \\"environment\\": \\"$ENV_ID\\",\n    \\"previous_interaction_id\\": \\"$INTERACTION_ID\\"\n  }"\n',
+                    },
+                    {
+                        "label": "reuse_env",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Step 1: Create an interaction with a fresh remote environment.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a hello world script at /workspace/hello.py.",\n    environment="remote",\n)\nprint(f"Environment ID: {interaction.environment_id}")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ninteraction_2 = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Modify the script to accept a name argument and greet the user.",\n    environment=interaction.environment_id,\n    previous_interaction_id=interaction.id,\n)\nprint(interaction_2.output_text)\n',
+                    },
+                    {
+                        "label": "reuse_env",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create an interaction with a fresh remote environment.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a hello world script at /workspace/hello.py.',\n    environment: 'remote',\n});\nconsole.log(`Environment ID: ${interaction.environment_id}`);\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nconst interaction2 = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Modify the script to accept a name argument and greet the user.',\n    environment: interaction.environment_id,\n    previous_interaction_id: interaction.id,\n});\nconsole.log(interaction2.output_text);\n",
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "List all files under /workspace and summarize what you find.",\n    "environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "repository",\n          "source": "https://github.com/octocat/Spoon-Knife",\n          "target": "/workspace/repo"\n        },\n        {\n          "type": "inline",\n          "content": "Focus on Python files only.",\n          "target": "/workspace/notes.txt"\n        }\n      ]\n    }\n  }\'\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="List all files under /workspace and summarize what you find.",\n    environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "repository",\n                "source": "https://github.com/octocat/Spoon-Knife",\n                "target": "/workspace/repo",\n            },\n            {\n                "type": "inline",\n                "content": "Focus on Python files only.",\n                "target": "/workspace/notes.txt",\n            },\n        ],\n    },\n)\nprint(interaction.output_text)\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'List all files under /workspace and summarize what you find.',\n    environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'repository',\n                source: 'https://github.com/octocat/Spoon-Knife',\n                target: '/workspace/repo',\n            },\n            {\n                type: 'inline',\n                content: 'Focus on Python files only.',\n                target: '/workspace/notes.txt',\n            },\n        ],\n    },\n});\nconsole.log(interaction.output_text);\n",
+                    },
+                    {
+                        "label": "custom_agent",
+                        "lang": "sh",
+                        "source": '# Step 1: Create a custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "code-reviewer",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [{\n        "type": "repository",\n        "source": "https://github.com/octocat/Spoon-Knife",\n        "target": "/workspace/repo"\n      }]\n    }\n  }\'\n\n# Step 2: Use the custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "code-reviewer",\n    "input": "Review the latest changes in /workspace/repo/src and file a summary.",\n    "environment": "remote"\n  }\'\n',
+                    },
+                    {
+                        "label": "custom_agent",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Create a custom agent.\nagent_id = f"code-reviewer-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    base_environment={\n        "type": "remote",\n        "sources": [{\n            "type": "repository",\n            "source": "https://github.com/octocat/Spoon-Knife",\n            "target": "/workspace/repo",\n        }],\n    },\n)\n\n# Step 2: Use the custom agent.\nresult = client.interactions.create(\n    agent=agent_id,\n    input="Review the latest changes in /workspace/repo/src and file a summary.",\n    environment="remote",\n)\nprint(result.output_text)\n\n# [cleanup]\nclient.agents.delete(agent_id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "custom_agent",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create a custom agent.\nconst agentId = `code-reviewer-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.',\n    base_environment: {\n        type: 'remote',\n        sources: [{\n            type: 'repository',\n            source: 'https://github.com/octocat/Spoon-Knife',\n            target: '/workspace/repo',\n        }],\n    },\n});\n\n// Step 2: Use the custom agent.\nconst result = await ai.interactions.create({\n    agent: agentId,\n    input: 'Review the latest changes in /workspace/repo/src and file a summary.',\n    environment: 'remote',\n});\nconsole.log(result.output_text);\n\n// [cleanup]\nawait ai.agents.delete(agentId);\n// [/cleanup]\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1692,6 +2085,18 @@ class AsyncInteractions(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1904,8 +2309,11 @@ class AsyncInteractions(AsyncBaseSDK):
             if utils.match_response(http_res, "200", "text/event-stream"):
                 return AsyncStream(
                     http_res,
-                    lambda raw: utils.unmarshal_json(
-                        raw, interactions.InteractionSSEStreamEvent
+                    lambda raw: unmarshal_json_response(
+                        interactions.InteractionSSEStreamEvent,
+                        http_res,
+                        raw,
+                        validate=False,
                     ).data,
                     sentinel="[DONE]",
                     client_ref=self,
@@ -1958,6 +2366,26 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.5-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1968,6 +2396,18 @@ class AsyncInteractions(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -2112,6 +2552,26 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "delete",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.5-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2122,6 +2582,18 @@ class AsyncInteractions(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -2272,6 +2744,26 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "cancel",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.5-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.5-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.5-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2282,6 +2774,18 @@ class AsyncInteractions(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"

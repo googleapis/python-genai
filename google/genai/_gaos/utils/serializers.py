@@ -154,13 +154,18 @@ def construct_unvalidated(value: Any, typ: Any, _depth: int = 0) -> Any:
     try:
         return unmarshal(value, typ, coerce_iterables=True)
     except Exception:
-        pass
-    return _construct_lenient(value, typ, _depth)
+        try:
+            return _construct_lenient(value, typ, _depth)
+        except Exception:
+            return value
 
 
 def _construct_lenient(value: Any, typ: Any, depth: int) -> Any:
     if depth > _CONSTRUCT_UNVALIDATED_MAX_DEPTH:
         return value
+
+    if value is None:
+        return None
 
     typ = _resolve_type_alias(typ)
     origin = get_origin(typ)
@@ -171,11 +176,6 @@ def _construct_lenient(value: Any, typ: Any, depth: int) -> Any:
 
     if is_union(origin):
         variants = [arg for arg in get_args(typ) if arg is not type(None)]
-        for variant in variants:
-            try:
-                return unmarshal(value, variant, coerce_iterables=True)
-            except Exception:
-                continue
         last_err = None
         for variant in variants:
             try:
@@ -183,8 +183,6 @@ def _construct_lenient(value: Any, typ: Any, depth: int) -> Any:
             except Exception as e:  # noqa: BLE001
                 last_err = e
                 continue
-        if value is None and type(None) in get_args(typ):
-            return None
         if last_err is not None:
             raise last_err
         return value
