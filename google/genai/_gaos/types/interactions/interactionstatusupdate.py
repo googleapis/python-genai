@@ -19,7 +19,6 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils import validate_const
-from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -49,7 +48,6 @@ class InteractionStatusUpdateTypedDict(TypedDict):
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
-    metadata: NotRequired[StreamMetadataTypedDict]
 
 
 class InteractionStatusUpdate(BaseModel):
@@ -70,11 +68,9 @@ class InteractionStatusUpdate(BaseModel):
     this event.
     """
 
-    metadata: Optional[StreamMetadata] = None
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id", "metadata"])
+        optional_fields = set(["event_id"])
         serialized = handler(self)
         m = {}
 
