@@ -43,11 +43,11 @@ from . import types
 logger = logging.getLogger('google_genai._transformers')
 
 if sys.version_info >= (3, 10):
-  VersionedUnionType = builtin_types.UnionType
+  VersionedUnionType = (builtin_types.UnionType, type(Union[int, str]))
   _UNION_TYPES = (typing.Union, builtin_types.UnionType)
   from typing import TypeGuard
 else:
-  VersionedUnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
+  VersionedUnionType = (type(Union[int, str]),)
   _UNION_TYPES = (typing.Union,)
   from typing_extensions import TypeGuard
 
