@@ -302,4 +302,20 @@ class UnknownApiResponseError(ValueError):
   """Raised when the response from the API cannot be parsed as JSON."""
   pass
 
+
+class FileProcessingError(Exception):
+  """Error related to file processing in the API.
+
+  This exception is raised when a file fails to reach the ACTIVE state
+  required for using it in content generation requests.
+  """
+
+  def __init__(
+      self, message: str, response_json: Optional[dict[str, Any]] = None
+  ) -> None:
+    self.message = message
+    self.details = response_json or {}
+    super().__init__(message)
+
+
 ExperimentalWarning = _common.ExperimentalWarning
