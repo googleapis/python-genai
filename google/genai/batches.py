@@ -238,6 +238,17 @@ def _BatchJobSource_from_vertex(
   return to_object
 
 
+def _BatchJobSource_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['fileName']) is not None:
+    setv(to_object, ['file_name'], getv(from_object, ['fileName']))
+
+  return to_object
+
+
 def _BatchJobSource_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -365,6 +376,15 @@ def _BatchJob_from_mldev(
 
   if getv(from_object, ['metadata', 'model']) is not None:
     setv(to_object, ['model'], getv(from_object, ['metadata', 'model']))
+
+  if getv(from_object, ['metadata', 'inputConfig']) is not None:
+    setv(
+        to_object,
+        ['src'],
+        _BatchJobSource_from_mldev(
+            getv(from_object, ['metadata', 'inputConfig']), to_object
+        ),
+    )
 
   if getv(from_object, ['metadata', 'output']) is not None:
     setv(
