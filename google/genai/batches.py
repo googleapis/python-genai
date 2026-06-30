@@ -177,6 +177,15 @@ def _BatchJobDestination_to_vertex(
         getv(from_object, ['bigquery_uri']),
     )
 
+  if getv(from_object, ['vertex_dataset']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetDestination'],
+        _VertexMultimodalDatasetDestination_to_vertex(
+            getv(from_object, ['vertex_dataset']), to_object
+        ),
+    )
+
   if getv(from_object, ['file_name']) is not None:
     raise ValueError(
         'file_name parameter is only supported in Gemini Developer API mode,'
@@ -193,15 +202,6 @@ def _BatchJobDestination_to_vertex(
     raise ValueError(
         'inlined_embed_content_responses parameter is only supported in Gemini'
         ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  if getv(from_object, ['vertex_dataset']) is not None:
-    setv(
-        to_object,
-        ['vertexMultimodalDatasetDestination'],
-        _VertexMultimodalDatasetDestination_to_vertex(
-            getv(from_object, ['vertex_dataset']), to_object
-        ),
     )
 
   return to_object
@@ -262,6 +262,12 @@ def _BatchJobSource_to_mldev(
         ' Platform mode, not in Gemini Developer API mode.'
     )
 
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    raise ValueError(
+        'vertex_dataset_name parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
   if getv(from_object, ['file_name']) is not None:
     setv(to_object, ['fileName'], getv(from_object, ['file_name']))
 
@@ -273,12 +279,6 @@ def _BatchJobSource_to_mldev(
             _InlinedRequest_to_mldev(api_client, item, to_object)
             for item in getv(from_object, ['inlined_requests'])
         ],
-    )
-
-  if getv(from_object, ['vertex_dataset_name']) is not None:
-    raise ValueError(
-        'vertex_dataset_name parameter is only supported in Gemini Enterprise'
-        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -302,6 +302,13 @@ def _BatchJobSource_to_vertex(
         getv(from_object, ['bigquery_uri']),
     )
 
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetSource', 'datasetName'],
+        getv(from_object, ['vertex_dataset_name']),
+    )
+
   if getv(from_object, ['file_name']) is not None:
     raise ValueError(
         'file_name parameter is only supported in Gemini Developer API mode,'
@@ -312,13 +319,6 @@ def _BatchJobSource_to_vertex(
     raise ValueError(
         'inlined_requests parameter is only supported in Gemini Developer API'
         ' mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  if getv(from_object, ['vertex_dataset_name']) is not None:
-    setv(
-        to_object,
-        ['vertexMultimodalDatasetSource', 'datasetName'],
-        getv(from_object, ['vertex_dataset_name']),
     )
 
   return to_object
@@ -432,13 +432,13 @@ def _BatchJob_from_vertex(
         ),
     )
 
+  if getv(from_object, ['outputInfo']) is not None:
+    setv(to_object, ['output_info'], getv(from_object, ['outputInfo']))
+
   if getv(from_object, ['completionStats']) is not None:
     setv(
         to_object, ['completion_stats'], getv(from_object, ['completionStats'])
     )
-
-  if getv(from_object, ['outputInfo']) is not None:
-    setv(to_object, ['output_info'], getv(from_object, ['outputInfo']))
 
   return to_object
 
@@ -857,6 +857,7 @@ def _EmbedContentConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
   if getv(from_object, ['task_type']) is not None:
     setv(
         parent_object,
@@ -947,11 +948,11 @@ def _FunctionCall_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['id']) is not None:
-    setv(to_object, ['id'], getv(from_object, ['id']))
-
   if getv(from_object, ['args']) is not None:
     setv(to_object, ['args'], getv(from_object, ['args']))
+
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
 
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['name'], getv(from_object, ['name']))
@@ -1001,6 +1002,9 @@ def _GenerateContentConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['service_tier']) is not None:
+    setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
@@ -1179,9 +1183,6 @@ def _GenerateContentConfig_to_mldev(
         ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
-  if getv(from_object, ['service_tier']) is not None:
-    setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
-
   return to_object
 
 
@@ -1278,9 +1279,6 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['search_types']) is not None:
-    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
-
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
         'blocking_confidence parameter is only supported in Gemini Enterprise'
@@ -1292,6 +1290,9 @@ def _GoogleSearch_to_mldev(
         'exclude_domains parameter is only supported in Gemini Enterprise Agent'
         ' Platform mode, not in Gemini Developer API mode.'
     )
+
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
@@ -1318,12 +1319,6 @@ def _ImageConfig_to_mldev(
         ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
-  if getv(from_object, ['prominent_people']) is not None:
-    raise ValueError(
-        'prominent_people parameter is only supported in Gemini Enterprise'
-        ' Agent Platform mode, not in Gemini Developer API mode.'
-    )
-
   if getv(from_object, ['output_mime_type']) is not None:
     raise ValueError(
         'output_mime_type parameter is only supported in Gemini Enterprise'
@@ -1339,6 +1334,12 @@ def _ImageConfig_to_mldev(
   if getv(from_object, ['image_output_options']) is not None:
     raise ValueError(
         'image_output_options parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['prominent_people']) is not None:
+    raise ValueError(
+        'prominent_people parameter is only supported in Gemini Enterprise'
         ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
@@ -1543,6 +1544,12 @@ def _Part_to_mldev(
         to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
     )
 
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
   if getv(from_object, ['code_execution_result']) is not None:
     setv(
         to_object,
@@ -1597,12 +1604,6 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
-  if getv(from_object, ['tool_call']) is not None:
-    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
-
-  if getv(from_object, ['tool_response']) is not None:
-    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
-
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
 
@@ -1634,11 +1635,6 @@ def _ToolConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['retrieval_config']) is not None:
-    setv(
-        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
-    )
-
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
@@ -1646,6 +1642,11 @@ def _ToolConfig_to_mldev(
         _FunctionCallingConfig_to_mldev(
             getv(from_object, ['function_calling_config']), to_object
         ),
+    )
+
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
     )
 
   if getv(from_object, ['include_server_side_tool_invocations']) is not None:
@@ -1669,19 +1670,6 @@ def _Tool_to_mldev(
         ' Platform mode, not in Gemini Developer API mode.'
     )
 
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
-  if getv(from_object, ['file_search']) is not None:
-    setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
-
-  if getv(from_object, ['google_search']) is not None:
-    setv(
-        to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
-    )
-
   if getv(from_object, ['google_maps']) is not None:
     setv(
         to_object,
@@ -1689,8 +1677,18 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['enterprise_web_search']) is not None:
     raise ValueError(
@@ -1703,6 +1701,13 @@ def _Tool_to_mldev(
         to_object,
         ['functionDeclarations'],
         [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_search_retrieval']) is not None:
@@ -1721,12 +1726,8 @@ def _Tool_to_mldev(
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
-  if getv(from_object, ['mcp_servers']) is not None:
-    setv(
-        to_object,
-        ['mcpServers'],
-        [item for item in getv(from_object, ['mcp_servers'])],
-    )
+  if getv(from_object, ['file_search']) is not None:
+    setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
   return to_object
 
