@@ -291,7 +291,20 @@ if TYPE_CHECKING:
     from .ranking import Ranking, RankingParam
     from .responseformat import ResponseFormat, ResponseFormatParam
     from .responsemodality import ResponseModality
-    from .retrieval import Retrieval, RetrievalParam, RetrievalType
+    from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
+    from .retrievalcallarguments import (
+        RetrievalCallArguments,
+        RetrievalCallArgumentsTypedDict,
+    )
+    from .retrievalcalldelta import (
+        RetrievalCallDelta,
+        RetrievalCallDeltaRetrievalType,
+        RetrievalCallDeltaTypedDict,
+    )
+    from .retrievalresultdelta import (
+        RetrievalResultDelta,
+        RetrievalResultDeltaTypedDict,
+    )
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
     from .servicetier import ServiceTier
     from .source import Source, SourceParam, SourceType
@@ -337,15 +350,10 @@ if TYPE_CHECKING:
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
         URLContextCallArguments,
-        URLContextCallArgumentsTypedDict,
+        URLContextCallArgumentsParam,
     )
     from .urlcontextcalldelta import URLContextCallDelta, URLContextCallDeltaTypedDict
-    from .urlcontextcallstep import (
-        Arguments,
-        ArgumentsParam,
-        URLContextCallStep,
-        URLContextCallStepParam,
-    )
+    from .urlcontextcallstep import URLContextCallStep, URLContextCallStepParam
     from .urlcontextresult import (
         URLContextResult,
         URLContextResultParam,
@@ -380,10 +388,8 @@ __all__ = [
     "AllowlistParam",
     "Annotation",
     "AnnotationParam",
-    "Arguments",
     "ArgumentsDelta",
     "ArgumentsDeltaTypedDict",
-    "ArgumentsParam",
     "AudioContent",
     "AudioContentMimeType",
     "AudioContentParam",
@@ -607,8 +613,15 @@ __all__ = [
     "ResponseFormatParam",
     "ResponseModality",
     "Retrieval",
+    "RetrievalCallArguments",
+    "RetrievalCallArgumentsTypedDict",
+    "RetrievalCallDelta",
+    "RetrievalCallDeltaRetrievalType",
+    "RetrievalCallDeltaTypedDict",
     "RetrievalParam",
-    "RetrievalType",
+    "RetrievalResultDelta",
+    "RetrievalResultDeltaTypedDict",
+    "RetrievalRetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
     "ServiceTier",
@@ -668,7 +681,7 @@ __all__ = [
     "URLCitationParam",
     "URLContext",
     "URLContextCallArguments",
-    "URLContextCallArgumentsTypedDict",
+    "URLContextCallArgumentsParam",
     "URLContextCallDelta",
     "URLContextCallDeltaTypedDict",
     "URLContextCallStep",
@@ -957,7 +970,14 @@ _dynamic_imports: dict[str, str] = {
     "ResponseModality": ".responsemodality",
     "Retrieval": ".retrieval",
     "RetrievalParam": ".retrieval",
-    "RetrievalType": ".retrieval",
+    "RetrievalRetrievalType": ".retrieval",
+    "RetrievalCallArguments": ".retrievalcallarguments",
+    "RetrievalCallArgumentsTypedDict": ".retrievalcallarguments",
+    "RetrievalCallDelta": ".retrievalcalldelta",
+    "RetrievalCallDeltaRetrievalType": ".retrievalcalldelta",
+    "RetrievalCallDeltaTypedDict": ".retrievalcalldelta",
+    "RetrievalResultDelta": ".retrievalresultdelta",
+    "RetrievalResultDeltaTypedDict": ".retrievalresultdelta",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
     "ServiceTier": ".servicetier",
@@ -1019,11 +1039,9 @@ _dynamic_imports: dict[str, str] = {
     "URLContext": ".urlcontext",
     "URLContextParam": ".urlcontext",
     "URLContextCallArguments": ".urlcontextcallarguments",
-    "URLContextCallArgumentsTypedDict": ".urlcontextcallarguments",
+    "URLContextCallArgumentsParam": ".urlcontextcallarguments",
     "URLContextCallDelta": ".urlcontextcalldelta",
     "URLContextCallDeltaTypedDict": ".urlcontextcalldelta",
-    "Arguments": ".urlcontextcallstep",
-    "ArgumentsParam": ".urlcontextcallstep",
     "URLContextCallStep": ".urlcontextcallstep",
     "URLContextCallStepParam": ".urlcontextcallstep",
     "URLContextResult": ".urlcontextresult",
