@@ -77,7 +77,7 @@ class _BasePager(Generic[T]):
   def page(self) -> list[T]:
     """Returns a subset of the entire list of items.
 
-    For the number of items returned, see `pageSize()`.
+    For the number of items returned, see `page_size`.
 
     Usage:
 
