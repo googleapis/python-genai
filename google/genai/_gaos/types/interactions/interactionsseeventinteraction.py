@@ -20,7 +20,7 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from .servicetier import ServiceTier
 from .step import Step, StepParam
-from .usage import Usage, UsageParam
+from .usage import Usage, UsageTypedDict
 from pydantic import model_serializer
 from typing import List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypedDict
@@ -62,7 +62,7 @@ class InteractionSseEventInteractionTypedDict(TypedDict):
     updated: NotRequired[str]
     r"""Output only. The time at which the response was last updated in ISO 8601 format."""
     service_tier: NotRequired[ServiceTier]
-    usage: NotRequired[UsageParam]
+    usage: NotRequired[UsageTypedDict]
     r"""Statistics on the interaction request's token usage."""
     steps: NotRequired[List[StepParam]]
     r"""Output only. The steps that make up the interaction, if included in this event."""

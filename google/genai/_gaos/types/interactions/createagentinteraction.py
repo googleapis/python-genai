@@ -30,7 +30,6 @@ from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
 from .servicetier import ServiceTier
 from .tool import Tool, ToolParam
-from .usage import Usage, UsageParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
 import pydantic
 from pydantic import Field, model_serializer
@@ -93,8 +92,6 @@ class CreateAgentInteractionParam(TypedDict):
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
     r"""A list of tool declarations the model may call during interaction."""
-    usage: NotRequired[UsageParam]
-    r"""Statistics on the interaction request's token usage."""
     response_modalities: NotRequired[List[ResponseModality]]
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
     response_mime_type: NotRequired[str]
@@ -136,9 +133,6 @@ class CreateAgentInteraction(BaseModel):
     tools: Optional[List[Tool]] = None
     r"""A list of tool declarations the model may call during interaction."""
 
-    usage: Optional[Usage] = None
-    r"""Statistics on the interaction request's token usage."""
-
     response_modalities: Optional[List[ResponseModality]] = None
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
@@ -176,7 +170,6 @@ class CreateAgentInteraction(BaseModel):
                 "background",
                 "system_instruction",
                 "tools",
-                "usage",
                 "response_modalities",
                 "response_mime_type",
                 "previous_interaction_id",

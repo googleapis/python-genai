@@ -34,6 +34,19 @@ def _AudioTranscriptionConfig_to_mldev(
         ' Platform mode, not in Gemini Developer API mode.'
     )
 
+  if getv(from_object, ['language_auto']) is not None:
+    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
+
+  if getv(from_object, ['language_hints']) is not None:
+    setv(to_object, ['languageHints'], getv(from_object, ['language_hints']))
+
+  if getv(from_object, ['adaptation_phrases']) is not None:
+    setv(
+        to_object,
+        ['adaptationPhrases'],
+        getv(from_object, ['adaptation_phrases']),
+    )
+
   return to_object
 
 

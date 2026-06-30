@@ -59,6 +59,8 @@ Model = Union[
         "gemini-3.1-flash-lite-preview",
         # Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
         "gemini-3.1-flash-tts-preview",
+        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        "gemini-3.5-flash",
         # Our low-latency, music generation model optimized for high-fidelity audio clips and precise rhythmic control.
         "lyria-3-clip-preview",
         # Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.

@@ -19,7 +19,20 @@
 from ..sdkconfiguration import SDKConfiguration
 from abc import ABC, abstractmethod
 import httpx
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
+
+
+class ResponseContext:
+    mode: Literal["parsed", "raw", "streaming"]
+    execution: Literal["sync", "async"]
+
+    def __init__(
+        self,
+        mode: Literal["parsed", "raw", "streaming"] = "parsed",
+        execution: Literal["sync", "async"] = "sync",
+    ):
+        self.mode = mode
+        self.execution = execution
 
 
 class HookContext:
@@ -28,6 +41,9 @@ class HookContext:
     operation_id: str
     oauth2_scopes: Optional[List[str]] = None
     security_source: Optional[Union[Any, Callable[[], Any]]] = None
+    tags: Optional[List[str]] = None
+    extensions: Optional[Dict[str, Any]] = None
+    response: ResponseContext
 
     def __init__(
         self,
@@ -36,12 +52,18 @@ class HookContext:
         operation_id: str,
         oauth2_scopes: Optional[List[str]],
         security_source: Optional[Union[Any, Callable[[], Any]]],
+        tags: Optional[List[str]],
+        extensions: Optional[Dict[str, Any]],
+        response: ResponseContext,
     ):
         self.config = config
         self.base_url = base_url
         self.operation_id = operation_id
         self.oauth2_scopes = oauth2_scopes
         self.security_source = security_source
+        self.tags = tags
+        self.extensions = extensions
+        self.response = response
 
 
 class BeforeRequestContext(HookContext):
@@ -52,6 +74,9 @@ class BeforeRequestContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
+            response=hook_ctx.response,
         )
 
 
@@ -63,6 +88,9 @@ class AfterSuccessContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
+            response=hook_ctx.response,
         )
 
 
@@ -74,6 +102,27 @@ class AfterErrorContext(HookContext):
             hook_ctx.operation_id,
             hook_ctx.oauth2_scopes,
             hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
+            response=hook_ctx.response,
+        )
+
+
+class AfterParseErrorContext(HookContext):
+    """Context for `AfterParseErrorHook`. Triggers when response parsing raises
+    an exception while decoding the body.
+    """
+
+    def __init__(self, hook_ctx: HookContext):
+        super().__init__(
+            hook_ctx.config,
+            hook_ctx.base_url,
+            hook_ctx.operation_id,
+            hook_ctx.oauth2_scopes,
+            hook_ctx.security_source,
+            hook_ctx.tags,
+            hook_ctx.extensions,
+            response=hook_ctx.response,
         )
 
 
@@ -110,6 +159,17 @@ class AfterErrorHook(ABC):
         pass
 
 
+class AfterParseErrorHook(ABC):
+    @abstractmethod
+    def after_parse_error(
+        self,
+        hook_ctx: AfterParseErrorContext,
+        response: httpx.Response,
+        error: Exception,
+    ) -> Exception:
+        pass
+
+
 class Hooks(ABC):
     @abstractmethod
     def register_sdk_init_hook(self, hook: SDKInitHook):
@@ -125,4 +185,8 @@ class Hooks(ABC):
 
     @abstractmethod
     def register_after_error_hook(self, hook: AfterErrorHook):
+        pass
+
+    @abstractmethod
+    def register_after_parse_error_hook(self, hook: AfterParseErrorHook):
         pass

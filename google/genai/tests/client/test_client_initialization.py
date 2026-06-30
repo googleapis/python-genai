@@ -1427,7 +1427,8 @@ async def test_get_async_auth_lock_basic_functionality():
 
   lock = await client._api_client._get_async_auth_lock()
   assert isinstance(lock, asyncio.Lock)
-  assert client._api_client._async_auth_lock is lock
+  loop = asyncio.get_running_loop()
+  assert client._api_client._async_auth_locks[loop] is lock
 
 
 @pytest.mark.asyncio
@@ -1657,29 +1658,33 @@ async def test_get_async_auth_lock_doesnt_block_other_operations():
 @pytest.mark.asyncio
 async def test_get_async_auth_lock_creation_lock_lifecycle():
   """Tests the creation lock lifecycle and cleanup."""
+  import threading
+
   client = Client(
       vertexai=True, project="fake_project_id", location="fake-location"
   )
 
-  # Initially, both locks should be None
-  assert client._api_client._async_auth_lock is None
-  assert client._api_client._async_auth_lock_creation_lock is None
+  # Initially, dict should be empty, sync lock should exist
+  assert not client._api_client._async_auth_locks
+  assert client._api_client._sync_auth_lock is not None
+  assert isinstance(client._api_client._sync_auth_lock, type(threading.Lock()))
 
-  # After first call, both should exist
+  # After first call, lock should exist in dict for current loop
   lock1 = await client._api_client._get_async_auth_lock()
-  assert client._api_client._async_auth_lock is not None
-  assert client._api_client._async_auth_lock_creation_lock is not None
+  loop = asyncio.get_running_loop()
+  assert loop in client._api_client._async_auth_locks
+  assert client._api_client._async_auth_locks[loop] is lock1
   assert isinstance(lock1, asyncio.Lock)
 
-  # Creation lock should be different from the auth lock
-  creation_lock = client._api_client._async_auth_lock_creation_lock
-  assert creation_lock is not lock1
-  assert isinstance(creation_lock, asyncio.Lock)
+  # Sync lock should remain the same
+  sync_lock = client._api_client._sync_auth_lock
+  assert sync_lock is not lock1
 
-  # Subsequent calls should reuse both locks
+  # Subsequent calls should reuse the lock
   lock2 = await client._api_client._get_async_auth_lock()
   assert lock2 is lock1
-  assert client._api_client._async_auth_lock_creation_lock is creation_lock
+  assert client._api_client._async_auth_locks[loop] is lock1
+  assert client._api_client._sync_auth_lock is sync_lock
 
 
 @pytest.mark.asyncio
@@ -1840,22 +1845,22 @@ async def test_get_async_auth_lock_memory_efficiency():
       vertexai=True, project="fake_project_id", location="fake-location"
   )
   initial_lock = await client._api_client._get_async_auth_lock()
-  initial_creation_lock = client._api_client._async_auth_lock_creation_lock
+  initial_sync_lock = client._api_client._sync_auth_lock
 
   # Run many operations
   for _ in range(100):
     lock = await client._api_client._get_async_auth_lock()
     assert lock is initial_lock
-    assert (
-        client._api_client._async_auth_lock_creation_lock
-        is initial_creation_lock
-    )
+    assert client._api_client._sync_auth_lock is initial_sync_lock
+    assert len(client._api_client._async_auth_locks) == 1
+
   # Verify no new objects were created
   final_lock = await client._api_client._get_async_auth_lock()
-  final_creation_lock = client._api_client._async_auth_lock_creation_lock
+  final_sync_lock = client._api_client._sync_auth_lock
 
   assert final_lock is initial_lock
-  assert final_creation_lock is initial_creation_lock
+  assert final_sync_lock is initial_sync_lock
+  assert len(client._api_client._async_auth_locks) == 1
 
 
 @requires_aiohttp

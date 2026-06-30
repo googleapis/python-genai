@@ -52,9 +52,9 @@ from typing_extensions import Annotated, TypeAliasType
 StepParam = TypeAliasType(
     "StepParam",
     Union[
-        ModelOutputStepParam,
         UserInputStepParam,
         FileSearchCallStepParam,
+        ModelOutputStepParam,
         ThoughtStepParam,
         FileSearchResultStepParam,
         CodeExecutionCallStepParam,
@@ -133,6 +133,7 @@ Step = Annotated[
             variants=_STEP_VARIANTS,
             unknown_cls=UnknownStep,
             union_name="Step",
+            lenient=True,
         )
     ),
 ]

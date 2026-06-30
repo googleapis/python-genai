@@ -34,7 +34,7 @@ GroundingToolCountType = Union[
 r"""The grounding tool type associated with the count."""
 
 
-class GroundingToolCountParam(TypedDict):
+class GroundingToolCountTypedDict(TypedDict):
     r"""The number of grounding tool counts."""
 
     type: NotRequired[GroundingToolCountType]

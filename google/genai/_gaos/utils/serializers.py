@@ -147,6 +147,119 @@ def unmarshal(val, typ: Any, coerce_iterables: bool = True) -> Any:
     return m.body  # type: ignore
 
 
+_CONSTRUCT_UNVALIDATED_MAX_DEPTH = 64
+
+
+def construct_unvalidated(value: Any, typ: Any, _depth: int = 0) -> Any:
+    try:
+        return unmarshal(value, typ, coerce_iterables=True)
+    except Exception:
+        try:
+            return _construct_lenient(value, typ, _depth)
+        except Exception:
+            return value
+
+
+def _construct_lenient(value: Any, typ: Any, depth: int) -> Any:
+    if depth > _CONSTRUCT_UNVALIDATED_MAX_DEPTH:
+        return value
+
+    if value is None:
+        return None
+
+    typ = _resolve_type_alias(typ)
+    origin = get_origin(typ)
+
+    if _is_annotated_type(origin):
+        args = get_args(typ)
+        return _construct_lenient(value, args[0], depth) if args else value
+
+    if is_union(origin):
+        variants = [arg for arg in get_args(typ) if arg is not type(None)]
+        last_err = None
+        for variant in variants:
+            try:
+                return _construct_lenient(value, variant, depth)
+            except Exception as e:  # noqa: BLE001
+                last_err = e
+                continue
+        if last_err is not None:
+            raise last_err
+        return value
+
+    if _is_list_type(typ):
+        if not isinstance(value, list):
+            raise TypeError(f"expected list for {typ!r}, got {type(value)!r}")
+        item_type = get_args(typ)[0] if get_args(typ) else Any
+        return [construct_unvalidated(item, item_type, depth + 1) for item in value]
+
+    if _is_mapping_type(typ):
+        if not isinstance(value, Mapping):
+            raise TypeError(f"expected mapping for {typ!r}, got {type(value)!r}")
+        value_type = get_args(typ)[1] if len(get_args(typ)) > 1 else Any
+        return {
+            key: construct_unvalidated(item, value_type, depth + 1)
+            for key, item in value.items()
+        }
+
+    if _is_pydantic_model_type(typ):
+        if not isinstance(value, Mapping):
+            raise TypeError(f"expected mapping for {typ!r}, got {type(value)!r}")
+        return _construct_model_lenient(value, typ, depth)
+
+    return value
+
+
+def _construct_model_lenient(value: Mapping, typ: Any, depth: int) -> Any:
+    fields: Dict[str, Any] = {}
+    consumed = set()
+    for name, field in typ.model_fields.items():
+        wire_key = None
+        if field.alias is not None and field.alias in value:
+            wire_key = field.alias
+        elif name in value:
+            wire_key = name
+
+        annotation = field.rebuild_annotation()
+        if wire_key is not None:
+            consumed.add(wire_key)
+            fields[name] = construct_unvalidated(value[wire_key], annotation, depth + 1)
+        elif field.is_required():
+            fields[name] = _default_for_required(annotation, depth)
+        else:
+            fields[name] = field.get_default(call_default_factory=True)
+
+    for key, item in value.items():
+        if key not in consumed and key not in fields:
+            fields[key] = item
+
+    return typ.model_construct(**fields)
+
+
+def _default_for_required(typ: Any, depth: int) -> Any:
+    typ = _resolve_type_alias(typ)
+    origin = get_origin(typ)
+
+    if _is_annotated_type(origin):
+        args = get_args(typ)
+        return _default_for_required(args[0], depth) if args else None
+
+    if is_union(origin):
+        if type(None) in get_args(typ):
+            return None
+        for variant in get_args(typ):
+            try:
+                return _default_for_required(variant, depth)
+            except Exception:  # noqa: BLE001
+                continue
+        return None
+
+    if depth <= _CONSTRUCT_UNVALIDATED_MAX_DEPTH and _is_pydantic_model_type(typ):
+        return _construct_model_lenient({}, typ, depth + 1)
+
+    return None
+
+
 def marshal_json(val, typ):
     if is_nullable(typ) and val is None:
         return "null"

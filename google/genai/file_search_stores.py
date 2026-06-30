@@ -803,7 +803,8 @@ class FileSearchStores(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type`, and others.
+      config: Optional parameters to set `display_name`, `mime_type`, and
+        others.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -839,7 +840,7 @@ class FileSearchStores(_api_module.BaseModule):
         )
     ):
       raise KeyError(
-          'Failed to upload file to file search store. Upload URL did not'
+          'Failed to upload file to file search store. Upload URL was not'
           ' returned from the upload request.'
       )
     elif 'x-goog-upload-url' in response.sdk_http_response.headers:
@@ -1432,7 +1433,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type` and others.
+      config: Optional parameters to set `display_name`, `mime_type` and others.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -1468,7 +1469,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
         )
     ):
       raise KeyError(
-          'Failed to upload file to file search store. Upload URL did not'
+          'Failed to upload file to file search store. Upload URL was not'
           ' returned from the upload request.'
       )
     elif 'x-goog-upload-url' in response.sdk_http_response.headers:

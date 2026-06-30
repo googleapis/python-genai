@@ -39,19 +39,19 @@ import warnings
 
 from . import _common
 
-from ._gaos.agents import Agents as GeminiNextGenAgents
-from ._gaos.agents import AsyncAgents as AsyncGeminiNextGenAgents
 from ._gaos.google_genai import (
+    AsyncGeminiNextGenAgents,
     AsyncGeminiNextGenInteractions,
+    AsyncGeminiNextGenWebhooks,
+    GeminiNextGenAgents,
     GeminiNextGenInteractions,
+    GeminiNextGenWebhooks,
     build_google_genai_async_client,
     build_google_genai_client,
 )
 from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
 from ._gaos.sdk import GenAI as GeminiNextGenAPI
-from ._gaos.webhooks import AsyncWebhooks as AsyncGeminiNextGenWebhooks
-from ._gaos.webhooks import Webhooks as GeminiNextGenWebhooks
-_interactions_experimental_warned = False
+
 _agent_experimental_warned = False
 
 
@@ -85,14 +85,6 @@ class AsyncClient:
 
   @property
   def interactions(self) -> AsyncGeminiNextGenInteractions:
-    global _interactions_experimental_warned
-    if not _interactions_experimental_warned:
-      _interactions_experimental_warned = True
-      warnings.warn(
-          'Interactions usage is experimental and may change in future versions.',
-          category=UserWarning,
-          stacklevel=1,
-      )
     if self._interactions is None:
       self._interactions = AsyncGeminiNextGenInteractions(self._api_client)
     return self._interactions
@@ -100,7 +92,7 @@ class AsyncClient:
   @property
   def webhooks(self) -> AsyncGeminiNextGenWebhooks:
     if self._webhooks is None:
-      self._webhooks = self._nextgen_client.webhooks
+      self._webhooks = AsyncGeminiNextGenWebhooks(self._api_client)
     return self._webhooks
 
   @property
@@ -114,7 +106,7 @@ class AsyncClient:
           stacklevel=1,
       )
     if self._agents is None:
-      self._agents = self._nextgen_client.agents
+      self._agents = AsyncGeminiNextGenAgents(self._api_client)
     return self._agents
 
   @property
@@ -416,14 +408,6 @@ class Client:
 
   @property
   def interactions(self) -> GeminiNextGenInteractions:
-    global _interactions_experimental_warned
-    if not _interactions_experimental_warned:
-      _interactions_experimental_warned = True
-      warnings.warn(
-        'Interactions usage is experimental and may change in future versions.',
-        category=UserWarning,
-        stacklevel=2,
-      )
     if self._interactions is None:
       self._interactions = GeminiNextGenInteractions(self._api_client)
     return self._interactions
@@ -431,7 +415,7 @@ class Client:
   @property
   def webhooks(self) -> GeminiNextGenWebhooks:
     if self._webhooks is None:
-      self._webhooks = self._nextgen_client.webhooks
+      self._webhooks = GeminiNextGenWebhooks(self._api_client)
     return self._webhooks
 
   @property
@@ -445,7 +429,7 @@ class Client:
         stacklevel=2,
       )
     if self._agents is None:
-      self._agents = self._nextgen_client.agents
+      self._agents = GeminiNextGenAgents(self._api_client)
     return self._agents
 
   @property
@@ -532,4 +516,3 @@ class Client:
       self.close()
     except Exception:
       pass
-

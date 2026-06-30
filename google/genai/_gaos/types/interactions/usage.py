@@ -18,31 +18,31 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from .groundingtoolcount import GroundingToolCount, GroundingToolCountParam
-from .modalitytokens import ModalityTokens, ModalityTokensParam
+from .groundingtoolcount import GroundingToolCount, GroundingToolCountTypedDict
+from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
 from pydantic import model_serializer
 from typing import List, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
-class UsageParam(TypedDict):
+class UsageTypedDict(TypedDict):
     r"""Statistics on the interaction request's token usage."""
 
     total_input_tokens: NotRequired[int]
     r"""Number of tokens in the prompt (context)."""
-    input_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
+    input_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of input token usage by modality."""
     total_cached_tokens: NotRequired[int]
     r"""Number of tokens in the cached part of the prompt (the cached content)."""
-    cached_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
+    cached_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of cached token usage by modality."""
     total_output_tokens: NotRequired[int]
     r"""Total number of tokens across all the generated responses."""
-    output_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
+    output_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of output token usage by modality."""
     total_tool_use_tokens: NotRequired[int]
     r"""Number of tokens present in tool-use prompt(s)."""
-    tool_use_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
+    tool_use_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of tool-use token usage by modality."""
     total_thought_tokens: NotRequired[int]
     r"""Number of tokens of thoughts for thinking models."""
@@ -50,7 +50,7 @@ class UsageParam(TypedDict):
     r"""Total token count for the interaction request (prompt + responses + other
     internal tokens).
     """
-    grounding_tool_count: NotRequired[List[GroundingToolCountParam]]
+    grounding_tool_count: NotRequired[List[GroundingToolCountTypedDict]]
     r"""Grounding tool count."""
 
 
