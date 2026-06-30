@@ -73,7 +73,7 @@ class MockAIOHTTPResponse(aiohttp.ClientResponse):
     self.content.readline.side_effect = self._async_read_line
     self.release = MagicMock()
 
-  async def _async_read_line(self) -> bytes:
+  async def _async_read_line(self, **kwargs) -> bytes:
     if self._read_pos >= len(self._read_data):
       return b""  # End of stream
 
@@ -137,7 +137,7 @@ async def test_httpx_simple_lines(responses: api_client.HttpResponse):
 
 @pytest.mark.asyncio
 async def test_httpx_data_prefix(responses: api_client.HttpResponse):
-  lines = ["data: { 'message': 'hello' }", "data: { 'status': 'ok' }"]
+  lines = ["data: { 'message': 'hello' }", "", "data: { 'status': 'ok' }"]
   mock_response = MockHTTPXResponse(lines)
   responses.response_stream = mock_response
 
@@ -147,6 +147,39 @@ async def test_httpx_data_prefix(responses: api_client.HttpResponse):
   mock_response.aiter_lines.assert_called_once()
   mock_response.aclose.assert_called_once()
 
+@pytest.mark.asyncio
+async def test_httpx_multiline_data(responses: api_client.HttpResponse) -> None:
+  lines = [
+      "data: {",
+      "data:   'message': 'hello'",
+      "data: }",
+      "",
+  ]
+  mock_response = MockHTTPXResponse(lines)
+  responses.response_stream = mock_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert results == ["{\n  'message': 'hello'\n}"]
+  mock_response.aiter_lines.assert_called_once()
+  mock_response.aclose.assert_called_once()
+
+
+def test_httpx_multiline_data_sync(responses: api_client.HttpResponse) -> None:
+  lines = [
+      "data: {",
+      "data:   'message': 'hello'",
+      "data: }",
+      "",
+  ]
+  mock_response = MagicMock(spec=httpx.Response)
+  mock_response.iter_lines.return_value = iter(lines)
+  responses.response_stream = mock_response
+
+  results = list(responses._iter_response_stream())
+
+  assert results == ["{\n  'message': 'hello'\n}"]
+
 
 @pytest.mark.asyncio
 async def test_httpx_multiple_json_chunk(responses: api_client.HttpResponse):
@@ -154,6 +187,7 @@ async def test_httpx_multiple_json_chunk(responses: api_client.HttpResponse):
       '{ "id": 1 }',
       "",
       'data: { "id": 2 }',
+      "",
       'data: { "id": 3 }',
   ]
   mock_response = MockHTTPXResponse(lines)
@@ -206,7 +240,7 @@ async def test_aiohttp_simple_lines(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == lines
-  mock_response.content.readline.assert_any_call()
+  mock_response.content.readline.assert_called()
   mock_response.release.assert_called_once()
 
 
@@ -214,7 +248,7 @@ async def test_aiohttp_simple_lines(responses: api_client.HttpResponse):
 @pytest.mark.asyncio
 async def test_aiohttp_data_prefix(responses: api_client.HttpResponse):
   api_client.has_aiohttp = True  # Force aiohttp
-  lines = ["data: { 'message': 'hello' }", "data: { 'status': 'ok' }"]
+  lines = ["data: { 'message': 'hello' }", "", "data: { 'status': 'ok' }"]
   # Use the mock class that pretends to be aiohttp.ClientResponse
   mock_response = MockAIOHTTPResponse(lines)
   responses.response_stream = mock_response
@@ -222,7 +256,7 @@ async def test_aiohttp_data_prefix(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == ["{ 'message': 'hello' }", "{ 'status': 'ok' }"]
-  mock_response.content.readline.assert_any_call()
+  mock_response.content.readline.assert_called()
   mock_response.release.assert_called_once()
 
 
@@ -234,6 +268,7 @@ async def test_aiohttp_multiple_json_chunks(responses: api_client.HttpResponse):
       '{ "id": 1 }',
       "",  # empty line to check robustness
       'data: { "id": 2 }',
+      "",
       'data: { "id": 3 }',
   ]
   # Use the mock class that pretends to be aiohttp.ClientResponse
@@ -243,7 +278,7 @@ async def test_aiohttp_multiple_json_chunks(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == ['{ "id": 1 }', '{ "id": 2 }', '{ "id": 3 }']
-  mock_response.content.readline.assert_any_call()
+  mock_response.content.readline.assert_called()
   mock_response.release.assert_called_once()
 
 
@@ -261,7 +296,88 @@ async def test_aiohttp_incomplete_json_at_end(
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == ['{ "partial": "data"']
-  mock_response.content.readline.assert_any_call()
+  mock_response.content.readline.assert_called()
+  mock_response.release.assert_called_once()
+
+
+class MockAIOHTTPResponseWithLineLimits(aiohttp.ClientResponse):
+  """Mock that enforces aiohttp's real readline limits.
+
+  Real aiohttp StreamReader raises LineTooLong when a line exceeds
+  `_high_water` (= limit * 2) bytes. The default limit is 2**16, so lines
+  over 131072 bytes fail unless `max_line_length` is explicitly passed.
+  """
+
+  DEFAULT_HIGH_WATER = 2**16 * 2  # 131072, same as aiohttp default
+
+  def __init__(self, lines: List[str]):
+    self.content = MagicMock()
+    self.content.readline = AsyncMock()
+    self._read_data = b"\n".join(line.encode("utf-8") for line in lines) + b"\n"
+    self._read_pos = 0
+    self.content.readline.side_effect = self._async_read_line
+    self.release = MagicMock()
+
+  async def _async_read_line(
+      self, *, max_line_length=None
+  ) -> bytes:
+    if self._read_pos >= len(self._read_data):
+      return b""
+
+    newline_pos = self._read_data.find(b"\n", self._read_pos)
+    if newline_pos == -1:
+      line = self._read_data[self._read_pos:]
+      self._read_pos = len(self._read_data)
+    else:
+      line = self._read_data[self._read_pos:newline_pos + 1]
+      self._read_pos = newline_pos + 1
+
+    # Enforce limit like real aiohttp StreamReader.readuntil does
+    limit = max_line_length or self.DEFAULT_HIGH_WATER
+    if len(line) > limit:
+      from aiohttp.http_exceptions import LineTooLong
+      raise LineTooLong(line[:100] + b"...", limit)
+
+    return line
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_aiohttp_large_sse_line_with_thought_signature(
+    responses: api_client.HttpResponse,
+):
+  """Verifies large SSE lines (e.g. thoughtSignature) don't hit LineTooLong.
+
+  aiohttp's StreamReader.readline() enforces a maximum line length based on
+  the session's read_bufsize (default: 2**16), which gives a _high_water limit
+  of 131072 bytes. Thinking models can return a thoughtSignature field large
+  enough to push a single SSE data: line past this limit, causing LineTooLong.
+
+  The fix passes max_line_length=READ_BUFFER_SIZE (4MB) explicitly on the
+  readline() call in _aiter_response_stream(), overriding the limit at the
+  call site regardless of how the underlying aiohttp session was configured.
+
+  This test verifies the fix by using a mock that enforces the real aiohttp
+  readline limit and confirms a 150KB line is streamed successfully.
+  """
+  api_client.has_aiohttp = True
+
+  # Build a single SSE line larger than aiohttp's default limit (131072)
+  large_thought_sig = "A" * 150_000  # > 131072 bytes
+  large_sse_payload = (
+      f'{{"candidates": [{{"content": {{"parts": [{{"text": "",'
+      f'"thoughtSignature": "{large_thought_sig}"}}]}}}}]}}'
+  )
+  lines = [f"data: {large_sse_payload}", ""]
+
+  mock_response = MockAIOHTTPResponseWithLineLimits(lines)
+  responses.response_stream = mock_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert len(results) == 1
+  assert "thoughtSignature" in results[0]
+  assert large_thought_sig in results[0]
   mock_response.release.assert_called_once()
 
 

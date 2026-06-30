@@ -13,4 +13,4 @@
 # limitations under the License.
 #
 
-
+GEMINI_MODEL = 'gemini-3.1-pro-preview'  # Gemini only

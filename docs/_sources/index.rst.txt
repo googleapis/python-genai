@@ -1236,8 +1236,9 @@ Local Count Tokens
 ^^^^^^^^^^^^^^^^^^
 
 .. code:: python
+    from google.genai import local_tokenizer
 
-    tokenizer = genai.LocalTokenizer(model_name='gemini-2.5-flash')
+    tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
     result = tokenizer.count_tokens("What is your name?")
 
 
@@ -1245,8 +1246,9 @@ Local Compute Tokens
 ^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
+    from google.genai import local_tokenizer
 
-    tokenizer = genai.LocalTokenizer(model_name='gemini-2.5-flash')
+    tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
     result = tokenizer.compute_tokens("What is your name?")
 
 
@@ -1398,7 +1400,7 @@ Generate Videos (Image to Video)
     from google.genai import types
 
     # Read local image (uses mimetypes.guess_type to infer mime type)
-    image = types.Image.from_file("local/path/file.png")
+    image = types.Image.from_file(location="local/path/file.png")
 
     # Create operation
     operation = client.models.generate_videos(

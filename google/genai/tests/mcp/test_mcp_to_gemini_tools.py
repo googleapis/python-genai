@@ -13,8 +13,15 @@
 # limitations under the License.
 #
 
+import contextlib
+from unittest import mock
+
+import pytest
+
 from ... import _mcp_utils
 from ... import types
+from ..._api_client import BaseApiClient
+
 
 try:
   from mcp import types as mcp_types
@@ -189,3 +196,176 @@ def test_properties_conversion():
           ],
       ),
   ]
+
+
+def test_defs_conversion():
+    """Test conversion of MCP tools with shared definitions ($defs)."""
+    mcp_tools = [
+        mcp_types.Tool(
+            name='create_endpoint',
+            description='Creates an endpoint',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'machine_spec': {'$ref': '#/$defs/MachineSpec'}
+                },
+                '$defs': {
+                    'MachineSpec': {
+                        'type': 'object',
+                        'properties': {'machine_type': {'type': 'string'}}
+                    }
+                }
+            },
+        ),
+    ]
+
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+
+    schema = result[0].function_declarations[0].parameters_json_schema
+    assert '$defs' in schema
+    assert 'MachineSpec' in schema['$defs']
+
+
+def test_create_endpoint_one_of_conversion():
+    """Test oneOf translation for Vertex create_endpoint resource selection."""
+
+    mcp_tools = [
+        mcp_types.Tool(
+            name='create_endpoint',
+            description='Creates a Vertex AI Endpoint resource.',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'endpoint': {
+                        'type': 'object',
+                        'oneOf': [
+                            {'title': 'dedicated_resources', 'type': 'object'},
+                            {'title': 'automatic_resources', 'type': 'object'},
+                        ],
+                    }
+                },
+            },
+        ),
+    ]
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+    endpoint_schema = schema['properties']['endpoint']
+
+    assert 'oneOf' in endpoint_schema
+    assert len(endpoint_schema['oneOf']) == 2
+
+
+def test_update_endpoint_labels_conversion():
+    """Test additionalProperties translation for Vertex resource labels."""
+
+    mcp_tools = [
+        mcp_types.Tool(
+            name='update_endpoint',
+            description='Updates a Vertex AI Endpoint resource.',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'endpoint': {
+                        'type': 'object',
+                        'properties': {
+                            'labels': {
+                                'type': 'object',
+                                'additionalProperties': {'type': 'string'}
+                            }
+                        }
+                    }
+                }
+            },
+        ),
+    ]
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+    labels_schema = schema['properties']['endpoint']['properties']['labels']
+
+    assert 'additionalProperties' in labels_schema
+
+
+def test_agent_platform_preserves_unknown_fields():
+    """Test that Agent Platform translation passes all schema fields directly
+    to the backend.
+    """
+    mcp_tools = [
+        mcp_types.Tool(
+            name='tool',
+            description='tool-description',
+            inputSchema={
+                'type': 'object',
+                'properties': {},
+                # A new unknown field
+                'some_new_future_field': 'value',
+            },
+        ),
+    ]
+
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+
+    # Verify the entire schema is passed through intact, including the unknown field
+    assert 'some_new_future_field' in schema
+    assert schema['some_new_future_field'] == 'value'
+
+
+@pytest.mark.asyncio
+@mock.patch('httpx.AsyncClient')
+@mock.patch.object(_mcp_utils, 'streamable_http_client')
+@mock.patch.object(_mcp_utils, 'McpClientSession')
+@mock.patch('google.auth.default')
+async def test_connect_agent_platform_mcp_url_and_headers(
+    mock_auth_default, mock_session_cls, mock_streamable, mock_create_http
+):
+    """Tests that _mcp_utils._connect_agent_platform_mcp builds the correct
+    regional URL and injects auth headers.
+    """
+
+    mock_creds = mock.Mock()
+    mock_creds.token = 'fake-oauth-token'
+    mock_auth_default.return_value = (mock_creds, 'fake-project')
+
+    @contextlib.asynccontextmanager
+    async def mock_streamable_ctx(*args, **kwargs):
+      yield (mock.Mock(), mock.Mock(), mock.Mock())
+
+    mock_streamable.side_effect = mock_streamable_ctx
+
+    @contextlib.asynccontextmanager
+    async def mock_session_ctx(*args, **kwargs):
+      session_instance = mock.AsyncMock()
+      yield session_instance
+
+    mock_session_cls.side_effect = mock_session_ctx
+
+    mock_http_client_instance = mock.AsyncMock()
+    mock_http_client_instance.__aenter__.return_value = (
+        mock_http_client_instance
+    )
+    mock_http_client_instance.__aexit__.return_value = None
+    mock_create_http.return_value = mock_http_client_instance
+
+    api_client = BaseApiClient(
+      vertexai=True,
+      project='test-project-123',
+      location='europe-west4'
+    )
+
+    async with _mcp_utils._connect_agent_platform_mcp(
+        api_client, 'endpoints'
+    ) as session:
+      session.initialize.assert_awaited_once()
+
+    mock_streamable.assert_called_once()
+    assert (
+        mock_streamable.call_args.kwargs['url']
+        == 'https://europe-west4-aiplatform.googleapis.com/mcp/endpoints'
+    )
+
+    mock_create_http.assert_called_once()
+    called_headers = mock_create_http.call_args.kwargs['headers']
+
+    assert called_headers['Authorization'] == 'Bearer fake-oauth-token'
+    assert called_headers['X-Goog-User-Project'] == 'test-project-123'
+    assert 'mcp_used' in called_headers.get('x-goog-api-client', '')

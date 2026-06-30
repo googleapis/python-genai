@@ -562,6 +562,10 @@ def test_chat_stream_with_empty_content(
   assert not chat.get_history(curated=True)
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC logic in private is re-written',
+)
 def test_chat_with_afc_history(mock_generate_content_afc_history):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)

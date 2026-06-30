@@ -41,14 +41,14 @@ def test_interactions_paths(mock_auth_default, client):
         expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
     with mock.patch.object(HTTPClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('GET', ''))
+        mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.get(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}?stream=false'
 
         mock_send.reset_mock()
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.cancel(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
@@ -78,14 +78,14 @@ async def test_async_interactions_paths(mock_auth_default, client):
         expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('GET', ''))
+        mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         await client.aio.interactions.get(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+        assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}?stream=false'
 
         mock_send.reset_mock()
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         await client.aio.interactions.cancel(id=interaction_id)
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]

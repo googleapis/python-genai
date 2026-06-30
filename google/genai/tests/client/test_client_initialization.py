@@ -20,8 +20,8 @@ import asyncio
 import concurrent.futures
 import logging
 import os
-import requests
 import ssl
+import sys
 from unittest import mock
 
 import certifi
@@ -29,14 +29,17 @@ import google.auth
 from google.auth import credentials
 import httpx
 import pytest
+import requests
 
 from ... import _api_client as api_client
 from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+
 try:
   import aiohttp
+
   AIOHTTP_NOT_INSTALLED = False
 except ImportError:
   AIOHTTP_NOT_INSTALLED = True
@@ -331,6 +334,84 @@ def test_vertexai_from_env_true(monkeypatch):
   assert client.models._api_client.location == location
 
 
+def test_enterprise_constructor_true():
+  client = Client(
+      enterprise=True, project="fake_project_id", location="fake-location"
+  )
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_constructor_false():
+  client = Client(enterprise=False, api_key="fake_api_key")
+  assert not client.models._api_client.vertexai
+
+
+def test_enterprise_constructor_conflict():
+  with pytest.raises(
+      ValueError,
+      match=(
+          "enterprise and vertexai flags have conflicting values, please set"
+          " enterprise value only."
+      ),
+  ):
+    Client(enterprise=True, vertexai=False)
+
+
+def test_enterprise_env_true(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "true")
+  client = Client(project="fake_project_id", location="fake-location")
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_env_false(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "false")
+  client = Client(api_key="fake_api_key")
+  assert not client.models._api_client.vertexai
+
+
+def test_enterprise_env_conflict_warning(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "true")
+  monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "false")
+
+  with pytest.warns(
+      UserWarning,
+      match=(
+          "Warning: Both GOOGLE_GENAI_USE_ENTERPRISE and"
+          " GOOGLE_GENAI_USE_VERTEXAI are set with conflicting values. The"
+          " value of GOOGLE_GENAI_USE_ENTERPRISE will be used."
+      ),
+  ):
+    # In BaseApiClient, resolving this warning.
+    client = Client(project="fake_project_id", location="fake-location")
+
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_constructor_precedence(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "false")
+  client = Client(
+      enterprise=True, project="fake_project_id", location="fake-location"
+  )
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_precedence_over_vertexai_constructor():
+  client = Client(
+      enterprise=True,
+      vertexai=True,
+      project="fake_project_id",
+      location="fake-location",
+  )
+  assert client.models._api_client.vertexai
+
+
+def test_enterprise_env_precedence_over_vertexai_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_USE_ENTERPRISE", "false")
+  monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "true")
+  client = Client(api_key="fake_api_key")
+  assert not client.models._api_client.vertexai
+
+
 def test_vertexai_from_constructor():
   project_id = "fake_project_id"
   location = "fake-location"
@@ -373,7 +454,9 @@ def test_vertexai_constructor_empty_base_url_override(monkeypatch):
   monkeypatch.setattr(google.auth, "default", mock_auth_default)
   # Including a base_url override skips the check for having proj/location or
   # api_key set.
-  client = Client(vertexai=True, http_options={"base_url": "https://override.com/"})
+  client = Client(
+      vertexai=True, http_options={"base_url": "https://override.com/"}
+  )
   assert client.models._api_client.location is None
 
 
@@ -461,7 +544,7 @@ def test_vertexai_default_location_to_global_with_vertexai_base_url(
     m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
     client = Client(
         vertexai=True,
-        http_options={'base_url': 'https://fake-url.googleapis.com'},
+        http_options={"base_url": "https://fake-url.googleapis.com"},
     )
     # Implicit project takes precedence over implicit api_key
     assert client.models._api_client.location == "global"
@@ -479,7 +562,7 @@ def test_vertexai_default_location_to_global_with_arbitrary_base_url(
     m.setenv("GOOGLE_CLOUD_PROJECT", project_id)
     client = Client(
         vertexai=True,
-        http_options={'base_url': 'https://fake-url.com'},
+        http_options={"base_url": "https://fake-url.com"},
     )
     # Implicit project takes precedence over implicit api_key
     assert not client.models._api_client.location
@@ -516,6 +599,59 @@ def test_vertexai_no_default_location_when_location_explicitly_set(monkeypatch):
     assert client.models._api_client.project == project_id
 
 
+def test_vertexai_location_us_routing(monkeypatch):
+  # Verify that location='us' correctly routes to the us.rep endpoint
+  project_id = "fake_project_id"
+  location = "us"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.us.rep.googleapis.com/"
+    )
+
+
+def test_vertexai_location_eu_routing(monkeypatch):
+  # Verify that location='eu' correctly routes to the eu.rep endpoint
+  project_id = "fake_project_id"
+  location = "eu"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(vertexai=True, project=project_id, location=location)
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://aiplatform.eu.rep.googleapis.com/"
+    )
+
+
+def test_vertexai_location_us_routing_base_url_override(monkeypatch):
+  # Verify that base_url override takes precedence over location='us' routing
+  project_id = "fake_project_id"
+  location = "us"
+
+  with monkeypatch.context() as m:
+    m.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
+    client = Client(
+        vertexai=True,
+        project=project_id,
+        location=location,
+        http_options={"base_url": "https://my-custom-url.com/"},
+    )
+    assert client.models._api_client.location == location
+    assert client.models._api_client.project == project_id
+    assert (
+        client.models._api_client.get_read_only_http_options()["base_url"]
+        == "https://my-custom-url.com/"
+    )
+
+
 def test_vertexai_no_default_location_when_env_location_set(monkeypatch):
   # Verify that location is NOT defaulted to global when set via environment
   project_id = "fake_project_id"
@@ -549,10 +685,7 @@ def test_vertexai_explicit_credentials(monkeypatch):
   monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "fake-location")
   monkeypatch.setenv("GOOGLE_API_KEY", "env_api_key")
 
-  client = Client(
-      vertexai=True,
-      credentials=creds
-  )
+  client = Client(vertexai=True, credentials=creds)
 
   assert client.models._api_client.vertexai
   assert client.models._api_client.project
@@ -1294,7 +1427,8 @@ async def test_get_async_auth_lock_basic_functionality():
 
   lock = await client._api_client._get_async_auth_lock()
   assert isinstance(lock, asyncio.Lock)
-  assert client._api_client._async_auth_lock is lock
+  loop = asyncio.get_running_loop()
+  assert client._api_client._async_auth_locks[loop] is lock
 
 
 @pytest.mark.asyncio
@@ -1346,7 +1480,9 @@ def test_threaded_generate_content_locking(monkeypatch):
     )
     mock_request = mock.Mock(return_value=mock_http_response)
     monkeypatch.setattr(
-       google.auth.transport.requests.AuthorizedSession, "request", mock_request
+        google.auth.transport.requests.AuthorizedSession,
+        "request",
+        mock_request,
     )
   else:
     # Non-cloud environment w/o certificates uses httpx.Response
@@ -1374,7 +1510,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_not_called()
-  assert mock_request.call_count == 10
+  assert len(mock_request.call_args_list) == 10
 
   # 2. Test credential refreshing in multiple threads
   mock_creds.expired = True
@@ -1390,7 +1526,7 @@ def test_threaded_generate_content_locking(monkeypatch):
 
   mock_auth_default.assert_called_once()
   mock_refresh.assert_called_once()
-  assert mock_request.call_count == 20
+  assert len(mock_request.call_args_list) == 20
 
 
 @pytest.mark.asyncio
@@ -1522,29 +1658,33 @@ async def test_get_async_auth_lock_doesnt_block_other_operations():
 @pytest.mark.asyncio
 async def test_get_async_auth_lock_creation_lock_lifecycle():
   """Tests the creation lock lifecycle and cleanup."""
+  import threading
+
   client = Client(
       vertexai=True, project="fake_project_id", location="fake-location"
   )
 
-  # Initially, both locks should be None
-  assert client._api_client._async_auth_lock is None
-  assert client._api_client._async_auth_lock_creation_lock is None
+  # Initially, dict should be empty, sync lock should exist
+  assert not client._api_client._async_auth_locks
+  assert client._api_client._sync_auth_lock is not None
+  assert isinstance(client._api_client._sync_auth_lock, type(threading.Lock()))
 
-  # After first call, both should exist
+  # After first call, lock should exist in dict for current loop
   lock1 = await client._api_client._get_async_auth_lock()
-  assert client._api_client._async_auth_lock is not None
-  assert client._api_client._async_auth_lock_creation_lock is not None
+  loop = asyncio.get_running_loop()
+  assert loop in client._api_client._async_auth_locks
+  assert client._api_client._async_auth_locks[loop] is lock1
   assert isinstance(lock1, asyncio.Lock)
 
-  # Creation lock should be different from the auth lock
-  creation_lock = client._api_client._async_auth_lock_creation_lock
-  assert creation_lock is not lock1
-  assert isinstance(creation_lock, asyncio.Lock)
+  # Sync lock should remain the same
+  sync_lock = client._api_client._sync_auth_lock
+  assert sync_lock is not lock1
 
-  # Subsequent calls should reuse both locks
+  # Subsequent calls should reuse the lock
   lock2 = await client._api_client._get_async_auth_lock()
   assert lock2 is lock1
-  assert client._api_client._async_auth_lock_creation_lock is creation_lock
+  assert client._api_client._async_auth_locks[loop] is lock1
+  assert client._api_client._sync_auth_lock is sync_lock
 
 
 @pytest.mark.asyncio
@@ -1705,22 +1845,22 @@ async def test_get_async_auth_lock_memory_efficiency():
       vertexai=True, project="fake_project_id", location="fake-location"
   )
   initial_lock = await client._api_client._get_async_auth_lock()
-  initial_creation_lock = client._api_client._async_auth_lock_creation_lock
+  initial_sync_lock = client._api_client._sync_auth_lock
 
   # Run many operations
   for _ in range(100):
     lock = await client._api_client._get_async_auth_lock()
     assert lock is initial_lock
-    assert (
-        client._api_client._async_auth_lock_creation_lock
-        is initial_creation_lock
-    )
+    assert client._api_client._sync_auth_lock is initial_sync_lock
+    assert len(client._api_client._async_auth_locks) == 1
+
   # Verify no new objects were created
   final_lock = await client._api_client._get_async_auth_lock()
-  final_creation_lock = client._api_client._async_auth_lock_creation_lock
+  final_sync_lock = client._api_client._sync_auth_lock
 
   assert final_lock is initial_lock
-  assert final_creation_lock is initial_creation_lock
+  assert final_sync_lock is initial_sync_lock
+  assert len(client._api_client._async_auth_locks) == 1
 
 
 @requires_aiohttp
@@ -1736,3 +1876,56 @@ async def test_get_aiohttp_session():
   assert initial_session is not None
   session = await client._api_client._get_aiohttp_session()
   assert session is initial_session
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_async_mtls_uses_refreshable_credentials(monkeypatch):
+  """Tests that _RefreshableAsyncCredentials is used in async mTLS path."""
+  from google.genai import _api_client
+
+  # Mock AsyncAuthorizedSession and google.auth.aio modules
+  mock_session = mock.MagicMock()
+  mock_auth_aio = mock.MagicMock()
+  monkeypatch.setitem(sys.modules, "google.auth.aio", mock_auth_aio)
+  monkeypatch.setitem(
+      sys.modules, "google.auth.aio.credentials", mock_auth_aio.credentials
+  )
+  monkeypatch.setitem(
+      sys.modules, "google.auth.aio.transport", mock_auth_aio.transport
+  )
+  monkeypatch.setitem(
+      sys.modules,
+      "google.auth.aio.transport.sessions",
+      mock_auth_aio.transport.sessions,
+  )
+  mock_auth_aio.transport.sessions.AsyncAuthorizedSession = mock_session
+  mock_auth_aio.credentials.Credentials = mock.MagicMock
+
+  # Mock credentials
+  mock_creds = mock.MagicMock()
+  mock_creds.expired = False
+  mock_creds.token = "initial_token"
+  monkeypatch.setattr(
+      google.auth, "default", lambda scopes=None: (mock_creds, "fake-project")
+  )
+
+  client = Client(vertexai=True, project="fake-project")
+  client._api_client._credentials = mock_creds
+
+  # Ensure _use_google_auth_async returns True
+  with mock.patch.object(
+      client._api_client, "_use_google_auth_async", return_value=True
+  ):
+    # Trigger session creation
+    await client._api_client._get_aiohttp_session()
+
+    # Verify AsyncAuthorizedSession was called with _RefreshableAsyncCredentials
+    assert mock_session.call_count == 1
+    passed_creds = mock_session.call_args[0][0]
+    assert type(passed_creds).__name__ == "_RefreshableAsyncCredentials"
+
+    # Verify valid property
+    assert passed_creds.valid == True
+    mock_creds.expired = True
+    assert passed_creds.valid == False

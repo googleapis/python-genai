@@ -34,7 +34,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.files')
 
 
@@ -191,7 +190,8 @@ class Files(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ListFilesParameters_to_mldev(parameter_model)
@@ -225,7 +225,22 @@ class Files(_api_module.BaseModule):
       response_dict = _ListFilesResponse_from_mldev(response_dict)
 
     return_value = types.ListFilesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -247,7 +262,8 @@ class Files(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateFileParameters_to_mldev(parameter_model)
@@ -290,7 +306,22 @@ class Files(_api_module.BaseModule):
       response_dict = _CreateFileResponse_from_mldev(response_dict)
 
     return_value = types.CreateFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -324,7 +355,8 @@ class Files(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _GetFileParameters_to_mldev(parameter_model)
@@ -355,7 +387,22 @@ class Files(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.File._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -388,7 +435,8 @@ class Files(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _DeleteFileParameters_to_mldev(parameter_model)
@@ -424,7 +472,22 @@ class Files(_api_module.BaseModule):
       response_dict = _DeleteFileResponse_from_mldev(response_dict)
 
     return_value = types.DeleteFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -446,7 +509,8 @@ class Files(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
@@ -489,7 +553,22 @@ class Files(_api_module.BaseModule):
       response_dict = _RegisterFilesResponse_from_mldev(response_dict)
 
     return_value = types.RegisterFilesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -509,7 +588,8 @@ class Files(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
+      config: Optional parameters to set `display_name`, `mime_type`, and
+        `name`.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -551,7 +631,7 @@ class Files(_api_module.BaseModule):
         or 'x-goog-upload-url' not in response.sdk_http_response.headers
     ):
       raise KeyError(
-          'Failed to create file. Upload URL did not returned from the create'
+          'Failed to create file. Upload URL was not returned from the create'
           ' file request.'
       )
     upload_url = response.sdk_http_response.headers['x-goog-upload-url']
@@ -726,7 +806,8 @@ class AsyncFiles(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ListFilesParameters_to_mldev(parameter_model)
@@ -762,7 +843,22 @@ class AsyncFiles(_api_module.BaseModule):
       response_dict = _ListFilesResponse_from_mldev(response_dict)
 
     return_value = types.ListFilesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -784,7 +880,8 @@ class AsyncFiles(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateFileParameters_to_mldev(parameter_model)
@@ -827,7 +924,22 @@ class AsyncFiles(_api_module.BaseModule):
       response_dict = _CreateFileResponse_from_mldev(response_dict)
 
     return_value = types.CreateFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -861,7 +973,8 @@ class AsyncFiles(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _GetFileParameters_to_mldev(parameter_model)
@@ -894,7 +1007,22 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.File._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -927,7 +1055,8 @@ class AsyncFiles(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _DeleteFileParameters_to_mldev(parameter_model)
@@ -963,7 +1092,22 @@ class AsyncFiles(_api_module.BaseModule):
       response_dict = _DeleteFileResponse_from_mldev(response_dict)
 
     return_value = types.DeleteFileResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -985,7 +1129,8 @@ class AsyncFiles(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
@@ -1028,7 +1173,22 @@ class AsyncFiles(_api_module.BaseModule):
       response_dict = _RegisterFilesResponse_from_mldev(response_dict)
 
     return_value = types.RegisterFilesResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1048,7 +1208,8 @@ class AsyncFiles(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type`, and `name`.
+      config: Optional parameters to set `display_name`, `mime_type`, and
+        `name`.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -1092,7 +1253,7 @@ class AsyncFiles(_api_module.BaseModule):
         )
     ):
       raise KeyError(
-          'Failed to create file. Upload URL did not returned from the create'
+          'Failed to create file. Upload URL was not returned from the create'
           ' file request.'
       )
     elif 'x-goog-upload-url' in response.sdk_http_response.headers:
@@ -1123,7 +1284,8 @@ class AsyncFiles(_api_module.BaseModule):
   ) -> bytes:
     """Downloads a file's data from the file service.
 
-    The Vertex-AI implementation of the API foes not include the file service.
+    The Gemini Enterprise Agent Platform implementation of the API does not
+    include the file service.
 
     Files created by `upload` can't be downloaded. You can tell which files are
     downloadable by checking the `download_uri` property.

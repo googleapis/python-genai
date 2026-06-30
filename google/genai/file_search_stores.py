@@ -26,18 +26,20 @@ from urllib.parse import urlencode
 from . import _api_module
 from . import _common
 from . import _extra_utils
+from . import _transformers as t
 from . import types
+from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from ._operations_converters import _UploadToFileSearchStoreOperation_from_mldev
 from .documents import AsyncDocuments, Documents
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.filesearchstores')
 
 
 def _CreateFileSearchStoreConfig_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -46,17 +48,25 @@ def _CreateFileSearchStoreConfig_to_mldev(
   if getv(from_object, ['display_name']) is not None:
     setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
 
+  if getv(from_object, ['embedding_model']) is not None:
+    setv(
+        parent_object,
+        ['embeddingModel'],
+        t.t_model(api_client, getv(from_object, ['embedding_model'])),
+    )
+
   return to_object
 
 
 def _CreateFileSearchStoreParameters_to_mldev(
+    api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['config']) is not None:
     _CreateFileSearchStoreConfig_to_mldev(
-        getv(from_object, ['config']), to_object
+        api_client, getv(from_object, ['config']), to_object
     )
 
   return to_object
@@ -338,10 +348,13 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _CreateFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _CreateFileSearchStoreParameters_to_mldev(
+          self._api_client, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'fileSearchStores'.format_map(request_url_dict)
@@ -371,7 +384,22 @@ class FileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.FileSearchStore._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -403,7 +431,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _GetFileSearchStoreParameters_to_mldev(parameter_model)
@@ -434,7 +463,22 @@ class FileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.FileSearchStore._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -466,7 +510,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _DeleteFileSearchStoreParameters_to_mldev(parameter_model)
@@ -492,9 +537,7 @@ class FileSearchStores(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = self._api_client.request(
-        'delete', path, request_dict, http_options
-    )
+    self._api_client.request('delete', path, request_dict, http_options)
 
   def _list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
@@ -506,7 +549,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ListFileSearchStoresParameters_to_mldev(parameter_model)
@@ -540,7 +584,22 @@ class FileSearchStores(_api_module.BaseModule):
       response_dict = _ListFileSearchStoresResponse_from_mldev(response_dict)
 
     return_value = types.ListFileSearchStoresResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -560,7 +619,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _UploadToFileSearchStoreParameters_to_mldev(
@@ -613,7 +673,22 @@ class FileSearchStores(_api_module.BaseModule):
 
     return_value = (
         types.UploadToFileSearchStoreResumableResponse._from_response(
-            response=response_dict, kwargs=parameter_model.model_dump()
+            response=response_dict,
+            kwargs={
+                'config': {
+                    'response_schema': getattr(
+                        parameter_model.config, 'response_schema', None
+                    ),
+                    'response_json_schema': getattr(
+                        parameter_model.config, 'response_json_schema', None
+                    ),
+                    'include_all_fields': getattr(
+                        parameter_model.config, 'include_all_fields', None
+                    ),
+                }
+            }
+            if getattr(parameter_model, 'config', None)
+            else {},
         )
     )
 
@@ -651,7 +726,8 @@ class FileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ImportFileParameters_to_mldev(parameter_model)
@@ -689,7 +765,22 @@ class FileSearchStores(_api_module.BaseModule):
       response_dict = _ImportFileOperation_from_mldev(response_dict)
 
     return_value = types.ImportFileOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -712,7 +803,8 @@ class FileSearchStores(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type`, and others.
+      config: Optional parameters to set `display_name`, `mime_type`, and
+        others.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -748,7 +840,7 @@ class FileSearchStores(_api_module.BaseModule):
         )
     ):
       raise KeyError(
-          'Failed to upload file to file search store. Upload URL did not'
+          'Failed to upload file to file search store. Upload URL was not'
           ' returned from the upload request.'
       )
     elif 'x-goog-upload-url' in response.sdk_http_response.headers:
@@ -770,6 +862,58 @@ class FileSearchStores(_api_module.BaseModule):
     return types.UploadToFileSearchStoreOperation._from_response(
         response=response_dict, kwargs={}
     )
+
+  def download_media(
+      self,
+      *,
+      media_id: str,
+      config: Optional[types.DownloadMediaConfigOrDict] = None,
+  ) -> bytes:
+    """Downloads media using a Media ID.
+
+    The media_id has the format:
+      fileSearchStores/<store>/media/<blob_id>
+
+    This is mapped to the DownloadMedia RPC which expects:
+      GET /{name=fileSearchStores/*/media/*}
+
+    Args:
+      media_id: The Media ID from grounding metadata.
+      config: Optional configuration for the download.
+
+    Returns:
+      bytes: The media data.
+    """
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+
+    clean_id = media_id.lstrip('/')
+    if '/media/' not in clean_id:
+      raise ValueError(
+          f'Invalid media_id format: {media_id!r}. '
+          'Expected format: fileSearchStores/<store>/media/<blob_id>'
+      )
+
+    path = f'{clean_id}?alt=media'
+
+    config_model = None
+    if config:
+      if isinstance(config, dict):
+        config_model = types.DownloadMediaConfig(**config)
+      else:
+        config_model = config
+
+    http_options = None
+    if config_model and getv(config_model, ['http_options']) is not None:
+      http_options = getv(config_model, ['http_options'])
+
+    data = self._api_client.download_file(
+        path,
+        http_options=http_options,
+    )
+    return data
 
   def list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None
@@ -828,10 +972,13 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _CreateFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _CreateFileSearchStoreParameters_to_mldev(
+          self._api_client, parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'fileSearchStores'.format_map(request_url_dict)
@@ -861,7 +1008,22 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.FileSearchStore._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -893,7 +1055,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _GetFileSearchStoreParameters_to_mldev(parameter_model)
@@ -926,7 +1089,22 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.FileSearchStore._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -958,7 +1136,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _DeleteFileSearchStoreParameters_to_mldev(parameter_model)
@@ -984,7 +1163,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = await self._api_client.async_request(
+    await self._api_client.async_request(
         'delete', path, request_dict, http_options
     )
 
@@ -998,7 +1177,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ListFileSearchStoresParameters_to_mldev(parameter_model)
@@ -1034,7 +1214,22 @@ class AsyncFileSearchStores(_api_module.BaseModule):
       response_dict = _ListFileSearchStoresResponse_from_mldev(response_dict)
 
     return_value = types.ListFileSearchStoresResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1054,7 +1249,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _UploadToFileSearchStoreParameters_to_mldev(
@@ -1107,7 +1303,22 @@ class AsyncFileSearchStores(_api_module.BaseModule):
 
     return_value = (
         types.UploadToFileSearchStoreResumableResponse._from_response(
-            response=response_dict, kwargs=parameter_model.model_dump()
+            response=response_dict,
+            kwargs={
+                'config': {
+                    'response_schema': getattr(
+                        parameter_model.config, 'response_schema', None
+                    ),
+                    'response_json_schema': getattr(
+                        parameter_model.config, 'response_json_schema', None
+                    ),
+                    'include_all_fields': getattr(
+                        parameter_model.config, 'include_all_fields', None
+                    ),
+                }
+            }
+            if getattr(parameter_model, 'config', None)
+            else {},
         )
     )
 
@@ -1145,7 +1356,8 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _ImportFileParameters_to_mldev(parameter_model)
@@ -1183,7 +1395,22 @@ class AsyncFileSearchStores(_api_module.BaseModule):
       response_dict = _ImportFileOperation_from_mldev(response_dict)
 
     return_value = types.ImportFileOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1206,7 +1433,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
         binary mode. In other words, do not use non-blocking mode or text mode.
         The given stream must be seekable, that is, it must be able to call
         `seek()` on 'path'.
-      config: Optional parameters to set `diplay_name`, `mime_type` and others.
+      config: Optional parameters to set `display_name`, `mime_type` and others.
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -1242,7 +1469,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
         )
     ):
       raise KeyError(
-          'Failed to upload file to file search store. Upload URL did not'
+          'Failed to upload file to file search store. Upload URL was not'
           ' returned from the upload request.'
       )
     elif 'x-goog-upload-url' in response.sdk_http_response.headers:
@@ -1264,6 +1491,58 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     return types.UploadToFileSearchStoreOperation._from_response(
         response=response_dict, kwargs={}
     )
+
+  async def download_media(
+      self,
+      *,
+      media_id: str,
+      config: Optional[types.DownloadMediaConfigOrDict] = None,
+  ) -> bytes:
+    """Downloads media using a Media ID.
+
+    The media_id has the format:
+      fileSearchStores/<store>/media/<blob_id>
+
+    This is mapped to the DownloadMedia RPC which expects:
+      GET /{name=fileSearchStores/*/media/*}
+
+    Args:
+      media_id: The Media ID from grounding metadata.
+      config: Optional configuration for the download.
+
+    Returns:
+      bytes: The media data.
+    """
+    if self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in the Gemini Developer client.'
+      )
+
+    clean_id = media_id.lstrip('/')
+    if '/media/' not in clean_id:
+      raise ValueError(
+          f'Invalid media_id format: {media_id!r}. '
+          'Expected format: fileSearchStores/<store>/media/<blob_id>'
+      )
+
+    path = f'{clean_id}?alt=media'
+
+    config_model = None
+    if config:
+      if isinstance(config, dict):
+        config_model = types.DownloadMediaConfig(**config)
+      else:
+        config_model = config
+
+    http_options = None
+    if config_model and getv(config_model, ['http_options']) is not None:
+      http_options = getv(config_model, ['http_options'])
+
+    data = await self._api_client.async_download_file(
+        path,
+        http_options=http_options,
+    )
+    return data
 
   async def list(
       self, *, config: Optional[types.ListFileSearchStoresConfigOrDict] = None

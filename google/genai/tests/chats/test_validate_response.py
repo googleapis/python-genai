@@ -14,8 +14,10 @@
 #
 
 
+from ... import chats
 from ... import types
-from ...chats import _validate_response
+
+_validate_response = chats._validate_response
 
 
 def test_validate_response_default_response():

@@ -1193,12 +1193,9 @@ async def test_bidi_setup_to_api_with_tools_function_behavior(vertexai):
   }
   config = types.LiveConnectConfig(**config_dict)
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        mock_api_client(vertexai=vertexai), model='test_model', config=config
-    )
-  if vertexai:
-    return
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config
+  )
 
   assert (
       result['setup']['tools'][0]['functionDeclarations'][0]['behavior']
@@ -1611,6 +1608,55 @@ async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
     return
 
   assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_translation_config(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+
+  # Test 1: Config defined using dict representation.
+  config_dict = {
+      'translation_config': {
+          'echo_target_language': True,
+          'target_language_code': 'es',
+      },
+  }
+
+  with pytest_helper.exception_if_vertex(api_client, ValueError):
+    result = await get_connect_message(
+        api_client=api_client, model='test_model', config=config_dict
+    )
+
+  if not vertexai:
+    expected_result = {
+        'setup': {
+            'model': 'models/test_model',
+            'generationConfig': {
+                'translationConfig': {
+                    'echo_target_language': True,
+                    'target_language_code': 'es',
+                },
+            },
+        }
+    }
+    assert result == expected_result
+
+  # Test 2: Config defined using types.LiveConnectConfig.
+  config = types.LiveConnectConfig(
+      translation_config=types.TranslationConfig(
+          echo_target_language=True,
+          target_language_code='es',
+      )
+  )
+
+  with pytest_helper.exception_if_vertex(api_client, ValueError):
+    result = await get_connect_message(
+        api_client=api_client, model='test_model', config=config
+    )
+
+  if not vertexai:
+    assert result == expected_result
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -2153,4 +2199,107 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
   assert 'x-goog-api-key' in capture['headers'], "x-goog-api-key is missing from headers"
   assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
   assert 'BidiGenerateContent' in capture['uri']
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_setup_complete_with_voice_consent_signature(
+    vertexai,
+):
+  mock_ws = AsyncMock()
+  mock_ws.send = AsyncMock()
+  mock_ws.recv = AsyncMock(
+      return_value=(
+          b'{"setupComplete": {"sessionId": "test_session_id",'
+          b' "voiceConsentSignature": {"signature": "test_sig_abc123"}}}'
+      )
+  )
+  mock_ws.close = AsyncMock()
+
+  mock_google_auth_default = Mock(return_value=(None, None))
+  mock_creds = Mock(token='test_token')
+  mock_google_auth_default.return_value = (mock_creds, None)
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    yield mock_ws
+
+  @patch('google.auth.default', new=mock_google_auth_default)
+  @patch.object(live, 'ws_connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(mock_api_client(vertexai=vertexai))
+    async with live_module.connect(model='test_model') as session:
+      assert session.setup_complete is not None
+      assert session.setup_complete.session_id == 'test_session_id'
+      assert session.setup_complete.voice_consent_signature is not None
+      assert (
+          session.setup_complete.voice_consent_signature.signature
+          == 'test_sig_abc123'
+      )
+
+  await _test_connect()
+
+
+@pytest.mark.parametrize('vertexai', [False])
+@pytest.mark.asyncio
+async def test_bidi_setup_replicated_voice_config_with_consent(vertexai):
+  config = types.LiveConnectConfig(
+      response_modalities=['AUDIO'],
+      speech_config=types.SpeechConfig(
+          voice_config=types.VoiceConfig(
+              replicated_voice_config=types.ReplicatedVoiceConfig(
+                  mime_type='audio/wav',
+                  voice_sample_audio=b'fake_audio_data',
+                  consent_audio=b'fake_consent_data',
+              )
+          )
+      ),
+  )
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config
+  )
+
+  setup = result.get('setup', {})
+  gen_config = setup.get('generationConfig', {})
+  speech_config = gen_config.get('speechConfig', {})
+  voice_config = speech_config.get('voice_config', {})
+  replicated = voice_config.get('replicated_voice_config', {})
+
+  assert replicated.get('mime_type') == 'audio/wav'
+  assert replicated.get('voice_sample_audio') is not None
+  assert replicated.get('consent_audio') is not None
+
+  config_with_sig = types.LiveConnectConfig(
+      response_modalities=['AUDIO'],
+      speech_config=types.SpeechConfig(
+          voice_config=types.VoiceConfig(
+              replicated_voice_config=types.ReplicatedVoiceConfig(
+                  mime_type='audio/wav',
+                  voice_sample_audio=b'fake_audio_data',
+                  voice_consent_signature=types.VoiceConsentSignature(
+                      signature='test_sig_abc123'
+                  ),
+              )
+          )
+      ),
+  )
+  result_with_sig = await get_connect_message(
+      mock_api_client(vertexai=vertexai),
+      model='test_model',
+      config=config_with_sig,
+  )
+
+  setup_sig = result_with_sig.get('setup', {})
+  gen_config_sig = setup_sig.get('generationConfig', {})
+  speech_config_sig = gen_config_sig.get('speechConfig', {})
+  voice_config_sig = speech_config_sig.get('voice_config', {})
+  replicated_sig = voice_config_sig.get('replicated_voice_config', {})
+
+  assert replicated_sig.get('mime_type') == 'audio/wav'
+  assert replicated_sig.get('voice_sample_audio') is not None
+  assert replicated_sig.get('voice_consent_signature') is not None
+  assert (
+      replicated_sig['voice_consent_signature'].get('signature')
+      == 'test_sig_abc123'
+  )
 

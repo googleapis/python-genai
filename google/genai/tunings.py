@@ -28,7 +28,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.tunings')
 
 
@@ -138,6 +137,133 @@ def _CancelTuningJobResponse_from_vertex(
   return to_object
 
 
+def _CodeExecutionResult_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['outcome']) is not None:
+    setv(to_object, ['outcome'], getv(from_object, ['outcome']))
+
+  if getv(from_object, ['output']) is not None:
+    setv(to_object, ['output'], getv(from_object, ['output']))
+
+  if getv(from_object, ['id']) is not None:
+    raise ValueError(
+        'id parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
+def _CompositeReinforcementTuningRewardConfigWeightedRewardConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['rewardConfig']) is not None:
+    setv(
+        to_object,
+        ['reward_config'],
+        _SingleReinforcementTuningRewardConfig_from_vertex(
+            getv(from_object, ['rewardConfig']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['weight']) is not None:
+    setv(to_object, ['weight'], getv(from_object, ['weight']))
+
+  return to_object
+
+
+def _CompositeReinforcementTuningRewardConfigWeightedRewardConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['reward_config']) is not None:
+    setv(
+        to_object,
+        ['rewardConfig'],
+        _SingleReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['reward_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['weight']) is not None:
+    setv(to_object, ['weight'], getv(from_object, ['weight']))
+
+  return to_object
+
+
+def _CompositeReinforcementTuningRewardConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weightedRewardConfigs']) is not None:
+    setv(
+        to_object,
+        ['weighted_reward_configs'],
+        [
+            _CompositeReinforcementTuningRewardConfigWeightedRewardConfig_from_vertex(
+                item, to_object, root_object
+            )
+            for item in getv(from_object, ['weightedRewardConfigs'])
+        ],
+    )
+
+  return to_object
+
+
+def _CompositeReinforcementTuningRewardConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['weighted_reward_configs']) is not None:
+    setv(
+        to_object,
+        ['weightedRewardConfigs'],
+        [
+            _CompositeReinforcementTuningRewardConfigWeightedRewardConfig_to_vertex(
+                item, to_object, root_object
+            )
+            for item in getv(from_object, ['weighted_reward_configs'])
+        ],
+    )
+
+  return to_object
+
+
+def _Content_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
 def _CreateTuningJobConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -147,7 +273,8 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['validation_dataset']) is not None:
     raise ValueError(
-        'validation_dataset parameter is not supported in Gemini API.'
+        'validation_dataset parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
@@ -158,7 +285,10 @@ def _CreateTuningJobConfig_to_mldev(
     )
 
   if getv(from_object, ['description']) is not None:
-    raise ValueError('description parameter is not supported in Gemini API.')
+    raise ValueError(
+        'description parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['epoch_count']) is not None:
     setv(
@@ -176,24 +306,32 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['export_last_checkpoint_only']) is not None:
     raise ValueError(
-        'export_last_checkpoint_only parameter is not supported in Gemini API.'
+        'export_last_checkpoint_only parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['pre_tuned_model_checkpoint_id']) is not None:
     raise ValueError(
-        'pre_tuned_model_checkpoint_id parameter is not supported in Gemini'
-        ' API.'
+        'pre_tuned_model_checkpoint_id parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['adapter_size']) is not None:
-    raise ValueError('adapter_size parameter is not supported in Gemini API.')
+    raise ValueError(
+        'adapter_size parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['tuning_mode']) is not None:
-    raise ValueError('tuning_mode parameter is not supported in Gemini API.')
+    raise ValueError(
+        'tuning_mode parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['custom_base_model']) is not None:
     raise ValueError(
-        'custom_base_model parameter is not supported in Gemini API.'
+        'custom_base_model parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['batch_size']) is not None:
@@ -212,36 +350,98 @@ def _CreateTuningJobConfig_to_mldev(
 
   if getv(from_object, ['evaluation_config']) is not None:
     raise ValueError(
-        'evaluation_config parameter is not supported in Gemini API.'
+        'evaluation_config parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    raise ValueError(
+        'labels parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['beta']) is not None:
-    raise ValueError('beta parameter is not supported in Gemini API.')
+    raise ValueError(
+        'beta parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['base_teacher_model']) is not None:
     raise ValueError(
-        'base_teacher_model parameter is not supported in Gemini API.'
+        'base_teacher_model parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['tuned_teacher_model_source']) is not None:
     raise ValueError(
-        'tuned_teacher_model_source parameter is not supported in Gemini API.'
+        'tuned_teacher_model_source parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['sft_loss_weight_multiplier']) is not None:
     raise ValueError(
-        'sft_loss_weight_multiplier parameter is not supported in Gemini API.'
+        'sft_loss_weight_multiplier parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['output_uri']) is not None:
-    raise ValueError('output_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'output_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['encryption_spec']) is not None:
     raise ValueError(
-        'encryption_spec parameter is not supported in Gemini API.'
+        'encryption_spec parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['reward_config']) is not None:
+    raise ValueError(
+        'reward_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['composite_reward_config']) is not None:
+    raise ValueError(
+        'composite_reward_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['samples_per_prompt']) is not None:
+    raise ValueError(
+        'samples_per_prompt parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['evaluate_interval']) is not None:
+    raise ValueError(
+        'evaluate_interval parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['checkpoint_interval']) is not None:
+    raise ValueError(
+        'checkpoint_interval parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    raise ValueError(
+        'max_output_tokens parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['thinking_level']) is not None:
+    raise ValueError(
+        'thinking_level parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['validation_dataset_uri']) is not None:
+    raise ValueError(
+        'validation_dataset_uri parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -284,6 +484,15 @@ def _CreateTuningJobConfig_to_vertex(
               getv(from_object, ['validation_dataset']), to_object, root_object
           ),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['validation_dataset']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec'],
+          _TuningValidationDataset_to_vertex(
+              getv(from_object, ['validation_dataset']), to_object, root_object
+          ),
+      )
 
   if getv(from_object, ['tuned_model_display_name']) is not None:
     setv(
@@ -319,6 +528,13 @@ def _CreateTuningJobConfig_to_vertex(
           ['distillationSpec', 'hyperParameters', 'epochCount'],
           getv(from_object, ['epoch_count']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['epoch_count']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'hyperParameters', 'epochCount'],
+          getv(from_object, ['epoch_count']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -346,6 +562,17 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['distillationSpec', 'hyperParameters', 'learningRateMultiplier'],
+          getv(from_object, ['learning_rate_multiplier']),
+      )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['learning_rate_multiplier']) is not None:
+      setv(
+          parent_object,
+          [
+              'reinforcementTuningSpec',
+              'hyperParameters',
+              'learningRateMultiplier',
+          ],
           getv(from_object, ['learning_rate_multiplier']),
       )
 
@@ -398,6 +625,13 @@ def _CreateTuningJobConfig_to_vertex(
           ['distillationSpec', 'hyperParameters', 'adapterSize'],
           getv(from_object, ['adapter_size']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['adapter_size']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'hyperParameters', 'adapterSize'],
+          getv(from_object, ['adapter_size']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -407,6 +641,13 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['supervisedTuningSpec', 'tuningMode'],
+          getv(from_object, ['tuning_mode']),
+      )
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['tuning_mode']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'tuningMode'],
           getv(from_object, ['tuning_mode']),
       )
 
@@ -427,6 +668,20 @@ def _CreateTuningJobConfig_to_vertex(
           ['supervisedTuningSpec', 'hyperParameters', 'batchSize'],
           getv(from_object, ['batch_size']),
       )
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['batch_size']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'batchSize'],
+          getv(from_object, ['batch_size']),
+      )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['batch_size']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'hyperParameters', 'batchSize'],
+          getv(from_object, ['batch_size']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -436,6 +691,13 @@ def _CreateTuningJobConfig_to_vertex(
       setv(
           parent_object,
           ['supervisedTuningSpec', 'hyperParameters', 'learningRate'],
+          getv(from_object, ['learning_rate']),
+      )
+  elif discriminator == 'DISTILLATION':
+    if getv(from_object, ['learning_rate']) is not None:
+      setv(
+          parent_object,
+          ['distillationSpec', 'hyperParameters', 'learningRate'],
           getv(from_object, ['learning_rate']),
       )
 
@@ -511,6 +773,68 @@ def _CreateTuningJobConfig_to_vertex(
         getv(from_object, ['encryption_spec']),
     )
 
+  if getv(from_object, ['reward_config']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'singleRewardConfig'],
+        _SingleReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['reward_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['composite_reward_config']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'compositeRewardConfig'],
+        _CompositeReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['composite_reward_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
+  if getv(from_object, ['samples_per_prompt']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'samplesPerPrompt'],
+        getv(from_object, ['samples_per_prompt']),
+    )
+
+  if getv(from_object, ['evaluate_interval']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'evaluateInterval'],
+        getv(from_object, ['evaluate_interval']),
+    )
+
+  if getv(from_object, ['checkpoint_interval']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'checkpointInterval'],
+        getv(from_object, ['checkpoint_interval']),
+    )
+
+  if getv(from_object, ['max_output_tokens']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'maxOutputTokens'],
+        getv(from_object, ['max_output_tokens']),
+    )
+
+  if getv(from_object, ['thinking_level']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'hyperParameters', 'thinkingLevel'],
+        getv(from_object, ['thinking_level']),
+    )
+
+  if getv(from_object, ['validation_dataset_uri']) is not None:
+    setv(
+        parent_object,
+        ['reinforcementTuningSpec', 'validationDatasetUri'],
+        getv(from_object, ['validation_dataset_uri']),
+    )
+
   return to_object
 
 
@@ -560,6 +884,155 @@ def _CreateTuningJobParametersPrivate_to_vertex(
     _CreateTuningJobConfig_to_vertex(
         getv(from_object, ['config']), to_object, root_object
     )
+
+  return to_object
+
+
+def _DistillationHyperParameters_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['adapterSize']) is not None:
+    setv(to_object, ['adapter_size'], getv(from_object, ['adapterSize']))
+
+  if getv(from_object, ['epochCount']) is not None:
+    setv(to_object, ['epoch_count'], getv(from_object, ['epochCount']))
+
+  if getv(from_object, ['learningRateMultiplier']) is not None:
+    setv(
+        to_object,
+        ['learning_rate_multiplier'],
+        getv(from_object, ['learningRateMultiplier']),
+    )
+
+  if getv(from_object, ['generationConfig']) is not None:
+    setv(
+        to_object,
+        ['generation_config'],
+        _GenerationConfig_from_vertex(
+            getv(from_object, ['generationConfig']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['learningRate']) is not None:
+    setv(to_object, ['learning_rate'], getv(from_object, ['learningRate']))
+
+  if getv(from_object, ['batchSize']) is not None:
+    setv(to_object, ['batch_size'], getv(from_object, ['batchSize']))
+
+  return to_object
+
+
+def _DistillationSamplingSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['baseTeacherModel']) is not None:
+    setv(
+        to_object,
+        ['base_teacher_model'],
+        getv(from_object, ['baseTeacherModel']),
+    )
+
+  if getv(from_object, ['tunedTeacherModelSource']) is not None:
+    setv(
+        to_object,
+        ['tuned_teacher_model_source'],
+        getv(from_object, ['tunedTeacherModelSource']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['promptDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['prompt_dataset_uri'],
+        getv(from_object, ['promptDatasetUri']),
+    )
+
+  if getv(from_object, ['hyperparameters']) is not None:
+    setv(
+        to_object,
+        ['hyperparameters'],
+        _DistillationHyperParameters_from_vertex(
+            getv(from_object, ['hyperparameters']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _DistillationSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['promptDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['prompt_dataset_uri'],
+        getv(from_object, ['promptDatasetUri']),
+    )
+
+  if getv(from_object, ['baseTeacherModel']) is not None:
+    setv(
+        to_object,
+        ['base_teacher_model'],
+        getv(from_object, ['baseTeacherModel']),
+    )
+
+  if getv(from_object, ['hyperParameters']) is not None:
+    setv(
+        to_object,
+        ['hyper_parameters'],
+        _DistillationHyperParameters_from_vertex(
+            getv(from_object, ['hyperParameters']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['pipelineRootDirectory']) is not None:
+    setv(
+        to_object,
+        ['pipeline_root_directory'],
+        getv(from_object, ['pipelineRootDirectory']),
+    )
+
+  if getv(from_object, ['studentModel']) is not None:
+    setv(to_object, ['student_model'], getv(from_object, ['studentModel']))
+
+  if getv(from_object, ['trainingDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['training_dataset_uri'],
+        getv(from_object, ['trainingDatasetUri']),
+    )
+
+  if getv(from_object, ['tunedTeacherModelSource']) is not None:
+    setv(
+        to_object,
+        ['tuned_teacher_model_source'],
+        getv(from_object, ['tunedTeacherModelSource']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['tuningMode']) is not None:
+    setv(to_object, ['tuning_mode'], getv(from_object, ['tuningMode']))
 
   return to_object
 
@@ -629,6 +1102,27 @@ def _EvaluationConfig_to_vertex(
             to_object,
             root_object,
         ),
+    )
+
+  return to_object
+
+
+def _ExecutableCode_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['code']) is not None:
+    setv(to_object, ['code'], getv(from_object, ['code']))
+
+  if getv(from_object, ['language']) is not None:
+    setv(to_object, ['language'], getv(from_object, ['language']))
+
+  if getv(from_object, ['id']) is not None:
+    raise ValueError(
+        'id parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -832,7 +1326,13 @@ def _GenerationConfig_to_vertex(
     setv(to_object, ['seed'], getv(from_object, ['seed']))
 
   if getv(from_object, ['speech_config']) is not None:
-    setv(to_object, ['speechConfig'], getv(from_object, ['speech_config']))
+    setv(
+        to_object,
+        ['speechConfig'],
+        _SpeechConfig_to_vertex(
+            getv(from_object, ['speech_config']), to_object, root_object
+        ),
+    )
 
   if getv(from_object, ['stop_sequences']) is not None:
     setv(to_object, ['stopSequences'], getv(from_object, ['stop_sequences']))
@@ -851,7 +1351,8 @@ def _GenerationConfig_to_vertex(
 
   if getv(from_object, ['enable_enhanced_civic_answers']) is not None:
     raise ValueError(
-        'enable_enhanced_civic_answers parameter is not supported in Vertex AI.'
+        'enable_enhanced_civic_answers parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -881,31 +1382,6 @@ def _GetTuningJobParameters_to_vertex(
   return to_object
 
 
-def _ListTuningJobsConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  if getv(from_object, ['filter']) is not None:
-    setv(parent_object, ['_query', 'filter'], getv(from_object, ['filter']))
-
-  return to_object
-
-
 def _ListTuningJobsConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -931,20 +1407,6 @@ def _ListTuningJobsConfig_to_vertex(
   return to_object
 
 
-def _ListTuningJobsParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    _ListTuningJobsConfig_to_mldev(
-        getv(from_object, ['config']), to_object, root_object
-    )
-
-  return to_object
-
-
 def _ListTuningJobsParameters_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -954,33 +1416,6 @@ def _ListTuningJobsParameters_to_vertex(
   if getv(from_object, ['config']) is not None:
     _ListTuningJobsConfig_to_vertex(
         getv(from_object, ['config']), to_object, root_object
-    )
-
-  return to_object
-
-
-def _ListTuningJobsResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['tunedModels']) is not None:
-    setv(
-        to_object,
-        ['tuning_jobs'],
-        [
-            _TuningJob_from_mldev(item, to_object, root_object)
-            for item in getv(from_object, ['tunedModels'])
-        ],
     )
 
   return to_object
@@ -1013,6 +1448,454 @@ def _ListTuningJobsResponse_from_vertex(
   return to_object
 
 
+def _MultiSpeakerVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker_voice_configs']) is not None:
+    setv(
+        to_object,
+        ['speakerVoiceConfigs'],
+        [
+            _SpeakerVoiceConfig_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['speaker_voice_configs'])
+        ],
+    )
+
+  return to_object
+
+
+def _Part_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        _CodeExecutionResult_to_vertex(
+            getv(from_object, ['code_execution_result']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(
+        to_object,
+        ['executableCode'],
+        _ExecutableCode_to_vertex(
+            getv(from_object, ['executable_code']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['tool_call']) is not None:
+    raise ValueError(
+        'tool_call parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['tool_response']) is not None:
+    raise ValueError(
+        'tool_response parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['part_metadata']) is not None:
+    raise ValueError(
+        'part_metadata parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
+def _ReinforcementTuningAutoraterScorer_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['autoraterConfig']) is not None:
+    setv(
+        to_object,
+        ['autorater_config'],
+        _AutoraterConfig_from_vertex(
+            getv(from_object, ['autoraterConfig']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['autoraterPrompt']) is not None:
+    setv(
+        to_object, ['autorater_prompt'], getv(from_object, ['autoraterPrompt'])
+    )
+
+  if getv(from_object, ['autoraterResponseParseConfig']) is not None:
+    setv(
+        to_object,
+        ['autorater_response_parse_config'],
+        getv(from_object, ['autoraterResponseParseConfig']),
+    )
+
+  if getv(from_object, ['parsedResponseConversionScorer']) is not None:
+    setv(
+        to_object,
+        ['parsed_response_conversion_scorer'],
+        getv(from_object, ['parsedResponseConversionScorer']),
+    )
+
+  if getv(from_object, ['exactMatchScorer']) is not None:
+    setv(
+        to_object,
+        ['exact_match_scorer'],
+        getv(from_object, ['exactMatchScorer']),
+    )
+
+  return to_object
+
+
+def _ReinforcementTuningAutoraterScorer_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['autorater_config']) is not None:
+    setv(
+        to_object,
+        ['autoraterConfig'],
+        _AutoraterConfig_to_vertex(
+            getv(from_object, ['autorater_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['autorater_prompt']) is not None:
+    setv(
+        to_object, ['autoraterPrompt'], getv(from_object, ['autorater_prompt'])
+    )
+
+  if getv(from_object, ['autorater_response_parse_config']) is not None:
+    setv(
+        to_object,
+        ['autoraterResponseParseConfig'],
+        getv(from_object, ['autorater_response_parse_config']),
+    )
+
+  if getv(from_object, ['parsed_response_conversion_scorer']) is not None:
+    setv(
+        to_object,
+        ['parsedResponseConversionScorer'],
+        getv(from_object, ['parsed_response_conversion_scorer']),
+    )
+
+  if getv(from_object, ['exact_match_scorer']) is not None:
+    setv(
+        to_object,
+        ['exactMatchScorer'],
+        getv(from_object, ['exact_match_scorer']),
+    )
+
+  return to_object
+
+
+def _ReinforcementTuningExample_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['contents']) is not None:
+    setv(
+        to_object,
+        ['contents'],
+        [
+            _Content_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['contents'])
+        ],
+    )
+
+  if getv(from_object, ['references']) is not None:
+    setv(to_object, ['references'], getv(from_object, ['references']))
+
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        to_object,
+        ['systemInstruction'],
+        _Content_to_vertex(
+            getv(from_object, ['system_instruction']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _ReinforcementTuningSpec_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['compositeRewardConfig']) is not None:
+    setv(
+        to_object,
+        ['composite_reward_config'],
+        _CompositeReinforcementTuningRewardConfig_from_vertex(
+            getv(from_object, ['compositeRewardConfig']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['trainingDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['training_dataset_uri'],
+        getv(from_object, ['trainingDatasetUri']),
+    )
+
+  if getv(from_object, ['validationDatasetUri']) is not None:
+    setv(
+        to_object,
+        ['validation_dataset_uri'],
+        getv(from_object, ['validationDatasetUri']),
+    )
+
+  if getv(from_object, ['hyperParameters']) is not None:
+    setv(
+        to_object, ['hyper_parameters'], getv(from_object, ['hyperParameters'])
+    )
+
+  if getv(from_object, ['singleRewardConfig']) is not None:
+    setv(
+        to_object,
+        ['single_reward_config'],
+        _SingleReinforcementTuningRewardConfig_from_vertex(
+            getv(from_object, ['singleRewardConfig']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _ReplicatedVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['mime_type']) is not None:
+    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  if getv(from_object, ['voice_sample_audio']) is not None:
+    setv(
+        to_object,
+        ['voiceSampleAudio'],
+        getv(from_object, ['voice_sample_audio']),
+    )
+
+  if getv(from_object, ['consent_audio']) is not None:
+    raise ValueError(
+        'consent_audio parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['voice_consent_signature']) is not None:
+    raise ValueError(
+        'voice_consent_signature parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
+def _SingleReinforcementTuningRewardConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['autoraterScorer']) is not None:
+    setv(
+        to_object,
+        ['autorater_scorer'],
+        _ReinforcementTuningAutoraterScorer_from_vertex(
+            getv(from_object, ['autoraterScorer']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['rewardName']) is not None:
+    setv(to_object, ['reward_name'], getv(from_object, ['rewardName']))
+
+  if getv(from_object, ['parseResponseConfig']) is not None:
+    setv(
+        to_object,
+        ['parse_response_config'],
+        getv(from_object, ['parseResponseConfig']),
+    )
+
+  if getv(from_object, ['codeExecutionRewardScorer']) is not None:
+    setv(
+        to_object,
+        ['code_execution_reward_scorer'],
+        getv(from_object, ['codeExecutionRewardScorer']),
+    )
+
+  if getv(from_object, ['stringMatchRewardScorer']) is not None:
+    setv(
+        to_object,
+        ['string_match_reward_scorer'],
+        getv(from_object, ['stringMatchRewardScorer']),
+    )
+
+  if getv(from_object, ['cloudRunRewardScorer']) is not None:
+    setv(
+        to_object,
+        ['cloud_run_reward_scorer'],
+        getv(from_object, ['cloudRunRewardScorer']),
+    )
+
+  return to_object
+
+
+def _SingleReinforcementTuningRewardConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['autorater_scorer']) is not None:
+    setv(
+        to_object,
+        ['autoraterScorer'],
+        _ReinforcementTuningAutoraterScorer_to_vertex(
+            getv(from_object, ['autorater_scorer']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['reward_name']) is not None:
+    setv(to_object, ['rewardName'], getv(from_object, ['reward_name']))
+
+  if getv(from_object, ['parse_response_config']) is not None:
+    setv(
+        to_object,
+        ['parseResponseConfig'],
+        getv(from_object, ['parse_response_config']),
+    )
+
+  if getv(from_object, ['code_execution_reward_scorer']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionRewardScorer'],
+        getv(from_object, ['code_execution_reward_scorer']),
+    )
+
+  if getv(from_object, ['string_match_reward_scorer']) is not None:
+    setv(
+        to_object,
+        ['stringMatchRewardScorer'],
+        getv(from_object, ['string_match_reward_scorer']),
+    )
+
+  if getv(from_object, ['cloud_run_reward_scorer']) is not None:
+    setv(
+        to_object,
+        ['cloudRunRewardScorer'],
+        getv(from_object, ['cloud_run_reward_scorer']),
+    )
+
+  return to_object
+
+
+def _SpeakerVoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['speaker']) is not None:
+    setv(to_object, ['speaker'], getv(from_object, ['speaker']))
+
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(
+            getv(from_object, ['voice_config']), to_object, root_object
+        ),
+    )
+
+  return to_object
+
+
+def _SpeechConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['voice_config']) is not None:
+    setv(
+        to_object,
+        ['voiceConfig'],
+        _VoiceConfig_to_vertex(
+            getv(from_object, ['voice_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['language_code']) is not None:
+    setv(to_object, ['languageCode'], getv(from_object, ['language_code']))
+
+  if getv(from_object, ['multi_speaker_voice_config']) is not None:
+    setv(
+        to_object,
+        ['multiSpeakerVoiceConfig'],
+        _MultiSpeakerVoiceConfig_to_vertex(
+            getv(from_object, ['multi_speaker_voice_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
+  return to_object
+
+
 def _TunedModel_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1035,11 +1918,15 @@ def _TuningDataset_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'gcs_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['vertex_dataset_resource']) is not None:
     raise ValueError(
-        'vertex_dataset_resource parameter is not supported in Gemini API.'
+        'vertex_dataset_resource parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['examples']) is not None:
@@ -1083,6 +1970,13 @@ def _TuningDataset_to_vertex(
           ['distillationSpec', 'promptDatasetUri'],
           getv(from_object, ['gcs_uri']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['gcs_uri']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'trainingDatasetUri'],
+          getv(from_object, ['gcs_uri']),
+      )
 
   discriminator = getv(root_object, ['config', 'method'])
   if discriminator is None:
@@ -1108,9 +2002,19 @@ def _TuningDataset_to_vertex(
           ['distillationSpec', 'promptDatasetUri'],
           getv(from_object, ['vertex_dataset_resource']),
       )
+  elif discriminator == 'REINFORCEMENT_TUNING':
+    if getv(from_object, ['vertex_dataset_resource']) is not None:
+      setv(
+          parent_object,
+          ['reinforcementTuningSpec', 'trainingDatasetUri'],
+          getv(from_object, ['vertex_dataset_resource']),
+      )
 
   if getv(from_object, ['examples']) is not None:
-    raise ValueError('examples parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'examples parameter is only supported in Gemini Developer API mode, not'
+        ' in Gemini Enterprise Agent Platform mode.'
+    )
 
   return to_object
 
@@ -1240,7 +2144,20 @@ def _TuningJob_from_vertex(
     setv(
         to_object,
         ['distillation_spec'],
-        getv(from_object, ['distillationSpec']),
+        _DistillationSpec_from_vertex(
+            getv(from_object, ['distillationSpec']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['reinforcementTuningSpec']) is not None:
+    setv(
+        to_object,
+        ['reinforcement_tuning_spec'],
+        _ReinforcementTuningSpec_from_vertex(
+            getv(from_object, ['reinforcementTuningSpec']),
+            to_object,
+            root_object,
+        ),
     )
 
   if getv(from_object, ['tuningDataStats']) is not None:
@@ -1314,18 +2231,29 @@ def _TuningJob_from_vertex(
   if getv(from_object, ['veoTuningSpec']) is not None:
     setv(to_object, ['veo_tuning_spec'], getv(from_object, ['veoTuningSpec']))
 
-  if getv(from_object, ['distillationSamplingSpec']) is not None:
-    setv(
-        to_object,
-        ['distillation_sampling_spec'],
-        getv(from_object, ['distillationSamplingSpec']),
-    )
-
   if getv(from_object, ['tuningJobMetadata']) is not None:
     setv(
         to_object,
         ['tuning_job_metadata'],
         getv(from_object, ['tuningJobMetadata']),
+    )
+
+  if getv(from_object, ['veoLoraTuningSpec']) is not None:
+    setv(
+        to_object,
+        ['veo_lora_tuning_spec'],
+        getv(from_object, ['veoLoraTuningSpec']),
+    )
+
+  if getv(from_object, ['distillationSamplingSpec']) is not None:
+    setv(
+        to_object,
+        ['distillation_sampling_spec'],
+        _DistillationSamplingSpec_from_vertex(
+            getv(from_object, ['distillationSamplingSpec']),
+            to_object,
+            root_object,
+        ),
     )
 
   return to_object
@@ -1371,6 +2299,110 @@ def _TuningValidationDataset_to_vertex(
         to_object,
         ['validationDatasetUri'],
         getv(from_object, ['vertex_dataset_resource']),
+    )
+
+  return to_object
+
+
+def _ValidateRewardParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parent']) is not None:
+    setv(to_object, ['_url', 'parent'], getv(from_object, ['parent']))
+
+  if getv(from_object, ['sample_response']) is not None:
+    setv(
+        to_object,
+        ['sampleResponse'],
+        _Content_to_vertex(
+            getv(from_object, ['sample_response']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['example']) is not None:
+    setv(
+        to_object,
+        ['example'],
+        _ReinforcementTuningExample_to_vertex(
+            getv(from_object, ['example']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['single_reward_config']) is not None:
+    setv(
+        to_object,
+        ['singleRewardConfig'],
+        _SingleReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['single_reward_config']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['composite_reward_config']) is not None:
+    setv(
+        to_object,
+        ['compositeRewardConfig'],
+        _CompositeReinforcementTuningRewardConfig_to_vertex(
+            getv(from_object, ['composite_reward_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
+  return to_object
+
+
+def _ValidateRewardResponse_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['overallReward']) is not None:
+    setv(to_object, ['overall_reward'], getv(from_object, ['overallReward']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  if getv(from_object, ['rewardInfoDetails']) is not None:
+    setv(
+        to_object,
+        ['reward_info_details'],
+        {k: v for k, v in getv(from_object, ['rewardInfoDetails']).items()},
+    )
+
+  return to_object
+
+
+def _VoiceConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['replicated_voice_config']) is not None:
+    setv(
+        to_object,
+        ['replicatedVoiceConfig'],
+        _ReplicatedVoiceConfig_to_vertex(
+            getv(from_object, ['replicated_voice_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
+  if getv(from_object, ['prebuilt_voice_config']) is not None:
+    setv(
+        to_object,
+        ['prebuiltVoiceConfig'],
+        getv(from_object, ['prebuilt_voice_config']),
     )
 
   return to_object
@@ -1449,7 +2481,22 @@ class Tunings(_api_module.BaseModule):
       )
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1465,8 +2512,12 @@ class Tunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
       request_dict = _ListTuningJobsParameters_to_vertex(
           parameter_model, None, parameter_model
       )
@@ -1475,15 +2526,7 @@ class Tunings(_api_module.BaseModule):
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
-    else:
-      request_dict = _ListTuningJobsParameters_to_mldev(
-          parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -1509,13 +2552,23 @@ class Tunings(_api_module.BaseModule):
           response_dict, None, parameter_model
       )
 
-    if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(
-          response_dict, None, parameter_model
-      )
-
     return_value = types.ListTuningJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1593,7 +2646,22 @@ class Tunings(_api_module.BaseModule):
       )
 
     return_value = types.CancelTuningJobResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1629,7 +2697,10 @@ class Tunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
           parameter_model, None, parameter_model
@@ -1668,7 +2739,22 @@ class Tunings(_api_module.BaseModule):
       )
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1705,7 +2791,8 @@ class Tunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_mldev(
@@ -1745,7 +2832,139 @@ class Tunings(_api_module.BaseModule):
       )
 
     return_value = types.TuningOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  def validate_reward(
+      self,
+      *,
+      parent: str,
+      sample_response: types.ContentOrDict,
+      example: types.ReinforcementTuningExampleOrDict,
+      single_reward_config: Optional[
+          types.SingleReinforcementTuningRewardConfigOrDict
+      ] = None,
+      composite_reward_config: Optional[
+          types.CompositeReinforcementTuningRewardConfigOrDict
+      ] = None,
+      config: Optional[types.ValidateRewardConfigOrDict] = None,
+  ) -> types.ValidateRewardResponse:
+    """Validates a reinforcement tuning reward configuration.
+
+    Allows users to validate a reinforcement tuning reward configuration
+    against a sample response and example before creating a reinforcement
+    tuning job, so that they can iterate on the reward configuration without
+    having to create a tuning job each time.
+
+    Args:
+      parent: The resource name of the Location to validate the reward in, e.g.
+        `projects/{project}/locations/{location}`.
+      sample_response: The sample response for validating the reward
+        configuration.
+      example: The example to validate the reward configuration.
+      single_reward_config: Single reward function configuration for
+        reinforcement tuning. Mutually exclusive with composite_reward_config.
+      composite_reward_config: Composite reward function configuration for
+        reinforcement tuning. Mutually exclusive with single_reward_config.
+      config: Optional parameters for the request.
+
+    Returns:
+      A ValidateRewardResponse with the computed reward(s).
+    """
+
+    parameter_model = types._ValidateRewardParameters(
+        parent=parent,
+        sample_response=sample_response,
+        example=example,
+        single_reward_config=single_reward_config,
+        composite_reward_config=composite_reward_config,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
+      request_dict = _ValidateRewardParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = (
+            '{parent}/tuningJobs:validateReinforcementTuningReward'.format_map(
+                request_url_dict
+            )
+        )
+      else:
+        path = '{parent}/tuningJobs:validateReinforcementTuningReward'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _ValidateRewardResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
+
+    return_value = types.ValidateRewardResponse._from_response(
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1957,7 +3176,22 @@ class AsyncTunings(_api_module.BaseModule):
       )
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1973,8 +3207,12 @@ class AsyncTunings(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
       request_dict = _ListTuningJobsParameters_to_vertex(
           parameter_model, None, parameter_model
       )
@@ -1983,15 +3221,7 @@ class AsyncTunings(_api_module.BaseModule):
         path = 'tuningJobs'.format_map(request_url_dict)
       else:
         path = 'tuningJobs'
-    else:
-      request_dict = _ListTuningJobsParameters_to_mldev(
-          parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = 'tunedModels'.format_map(request_url_dict)
-      else:
-        path = 'tunedModels'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -2019,13 +3249,23 @@ class AsyncTunings(_api_module.BaseModule):
           response_dict, None, parameter_model
       )
 
-    if not self._api_client.vertexai:
-      response_dict = _ListTuningJobsResponse_from_mldev(
-          response_dict, None, parameter_model
-      )
-
     return_value = types.ListTuningJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2103,7 +3343,22 @@ class AsyncTunings(_api_module.BaseModule):
       )
 
     return_value = types.CancelTuningJobResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2139,7 +3394,10 @@ class AsyncTunings(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_vertex(
           parameter_model, None, parameter_model
@@ -2178,7 +3436,22 @@ class AsyncTunings(_api_module.BaseModule):
       )
 
     return_value = types.TuningJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2215,7 +3488,8 @@ class AsyncTunings(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateTuningJobParametersPrivate_to_mldev(
@@ -2255,7 +3529,139 @@ class AsyncTunings(_api_module.BaseModule):
       )
 
     return_value = types.TuningOperation._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
+    )
+    return_value.sdk_http_response = types.HttpResponse(
+        headers=response.headers
+    )
+    self._api_client._verify_response(return_value)
+    return return_value
+
+  async def validate_reward(
+      self,
+      *,
+      parent: str,
+      sample_response: types.ContentOrDict,
+      example: types.ReinforcementTuningExampleOrDict,
+      single_reward_config: Optional[
+          types.SingleReinforcementTuningRewardConfigOrDict
+      ] = None,
+      composite_reward_config: Optional[
+          types.CompositeReinforcementTuningRewardConfigOrDict
+      ] = None,
+      config: Optional[types.ValidateRewardConfigOrDict] = None,
+  ) -> types.ValidateRewardResponse:
+    """Validates a reinforcement tuning reward configuration.
+
+    Allows users to validate a reinforcement tuning reward configuration
+    against a sample response and example before creating a reinforcement
+    tuning job, so that they can iterate on the reward configuration without
+    having to create a tuning job each time.
+
+    Args:
+      parent: The resource name of the Location to validate the reward in, e.g.
+        `projects/{project}/locations/{location}`.
+      sample_response: The sample response for validating the reward
+        configuration.
+      example: The example to validate the reward configuration.
+      single_reward_config: Single reward function configuration for
+        reinforcement tuning. Mutually exclusive with composite_reward_config.
+      composite_reward_config: Composite reward function configuration for
+        reinforcement tuning. Mutually exclusive with single_reward_config.
+      config: Optional parameters for the request.
+
+    Returns:
+      A ValidateRewardResponse with the computed reward(s).
+    """
+
+    parameter_model = types._ValidateRewardParameters(
+        parent=parent,
+        sample_response=sample_response,
+        example=example,
+        single_reward_config=single_reward_config,
+        composite_reward_config=composite_reward_config,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
+      request_dict = _ValidateRewardParameters_to_vertex(
+          parameter_model, None, parameter_model
+      )
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = (
+            '{parent}/tuningJobs:validateReinforcementTuningReward'.format_map(
+                request_url_dict
+            )
+        )
+      else:
+        path = '{parent}/tuningJobs:validateReinforcementTuningReward'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'post', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    if self._api_client.vertexai:
+      response_dict = _ValidateRewardResponse_from_vertex(
+          response_dict, None, parameter_model
+      )
+
+    return_value = types.ValidateRewardResponse._from_response(
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2471,7 +3877,7 @@ class _IpythonUtils:
   def _display_link(
       text: str, url: str, icon: Optional[str] = 'open_in_new'
   ) -> None:
-    """Creates and displays the link to open the Vertex resource.
+    """Creates and displays the link to open the Gemini Enterprise Agent Platform resource.
 
     Args:
       text: The text displayed on the clickable button.
@@ -2521,11 +3927,12 @@ class _IpythonUtils:
 
   @staticmethod
   def display_experiment_button(experiment: str, project: str) -> None:
-    """Function to generate a link bound to the Vertex experiment.
+    """Function to generate a link bound to the Gemini Enterprise Agent Platform experiment.
 
     Args:
-      experiment: The Vertex experiment name. Example format:
-        projects/{project_id}/locations/{location}/metadataStores/default/contexts/{experiment_name}
+      experiment: The Gemini Enterprise Agent Platform experiment name. Example
+        format:
+          projects/{project_id}/locations/{location}/metadataStores/default/contexts/{experiment_name}
       project: The project (alphanumeric) name.
     """
     if (
@@ -2551,10 +3958,11 @@ class _IpythonUtils:
 
   @staticmethod
   def display_model_tuning_button(tuning_job_resource: str) -> None:
-    """Function to generate a link bound to the Vertex model tuning job.
+    """Function to generate a link bound to the Gemini Enterprise Agent Platform model tuning job.
 
     Args:
-      tuning_job_resource: The Vertex tuning job name. Example format:
+      tuning_job_resource: The Gemini Enterprise Agent Platform tuning job name.
+        Example format:
         projects/{project_id}/locations/{location}/tuningJobs/{tuning_job_id}
     """
     if not _IpythonUtils.is_ipython_available():

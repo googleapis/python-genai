@@ -46,6 +46,7 @@ import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport import mtls
 from google.auth.transport.requests import AuthorizedSession
+from google.auth import exceptions as auth_exceptions
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -81,7 +82,6 @@ except ImportError:
 
 if TYPE_CHECKING:
   from multidict import CIMultiDictProxy
-  from google.auth.aio.transport.sessions import AsyncAuthorizedSession
 
 
 logger = logging.getLogger('google_genai._api_client')
@@ -90,6 +90,8 @@ READ_BUFFER_SIZE = 2**22
 MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
+
+_MULTI_REGIONAL_LOCATIONS = {'us', 'eu'}
 
 
 class EphemeralTokenAPIKeyError(ValueError):
@@ -122,17 +124,26 @@ def append_library_version_headers(headers: dict[str, str]) -> None:
   version_header_value = f'{library_label} {language_label}'
   if (
       'user-agent' in headers
-      and version_header_value not in headers['user-agent']
+      and library_label not in headers['user-agent']
   ):
     headers['user-agent'] = f'{version_header_value} ' + headers['user-agent']
+  elif 'user-agent' in headers and language_label not in headers['user-agent']:
+    headers['user-agent'] = f'{headers["user-agent"]} {language_label}'
   elif 'user-agent' not in headers:
     headers['user-agent'] = version_header_value
   if (
       'x-goog-api-client' in headers
-      and version_header_value not in headers['x-goog-api-client']
+      and library_label not in headers['x-goog-api-client']
   ):
     headers['x-goog-api-client'] = (
         f'{version_header_value} ' + headers['x-goog-api-client']
+    )
+  elif (
+      'x-goog-api-client' in headers
+      and language_label not in headers['x-goog-api-client']
+  ):
+    headers['x-goog-api-client'] = (
+        f"{headers['x-goog-api-client']} {language_label}"
     )
   elif 'x-goog-api-client' not in headers:
     headers['x-goog-api-client'] = version_header_value
@@ -338,18 +349,22 @@ class HttpResponse:
 
     chunk = ''
     balance = 0
+    data_buffer: list[str] = []
     if isinstance(self.response_stream, httpx.Response):
       response_stream = self.response_stream.iter_lines()
     else:
       response_stream = self.response_stream.iter_lines(decode_unicode=True)
     for line in response_stream:
       if not line:
+        if data_buffer:
+          yield '\n'.join(data_buffer)
+          data_buffer = []
         continue
 
       # In streaming mode, the response of JSON is prefixed with "data: " which
       # we must strip before parsing.
       if line.startswith('data: '):
-        yield line[len('data: '):]
+        data_buffer.append(line[len('data: '):])
         continue
 
       # When API returns an error message, it comes line by line. So we buffer
@@ -369,6 +384,8 @@ class HttpResponse:
     # If there is any remaining chunk, yield it.
     if chunk:
       yield chunk
+    if data_buffer:
+      yield '\n'.join(data_buffer)
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
@@ -384,16 +401,20 @@ class HttpResponse:
 
     chunk = ''
     balance = 0
+    data_buffer: list[str] = []
     # httpx.Response has a dedicated async line iterator.
     if isinstance(self.response_stream, httpx.Response):
       try:
         async for line in self.response_stream.aiter_lines():
           if not line:
+            if data_buffer:
+              yield '\n'.join(data_buffer)
+              data_buffer = []
             continue
           # In streaming mode, the response of JSON is prefixed with "data: "
           # which we must strip before parsing.
           if line.startswith('data: '):
-            yield line[len('data: '):]
+            data_buffer.append(line[len('data: '):])
             continue
 
           # When API returns an error message, it comes line by line. So we buffer
@@ -412,6 +433,8 @@ class HttpResponse:
         # If there is any remaining chunk, yield it.
         if chunk:
           yield chunk
+        if data_buffer:
+          yield '\n'.join(data_buffer)
       finally:
         # Close the response and release the connection.
         await self.response_stream.aclose()
@@ -423,18 +446,28 @@ class HttpResponse:
       try:
         while True:
           # Read a line from the stream. This returns bytes.
-          line_bytes = await self.response_stream.content.readline()
+          try:
+            line_bytes = await self.response_stream.content.readline(
+                max_line_length=READ_BUFFER_SIZE
+            )
+          except TypeError:
+            # Ensure backwards compatibility with older versions of
+            # aiohttp that do not support max_line_length.
+            line_bytes = await self.response_stream.content.readline()
           if not line_bytes:
             break
           # Decode the bytes and remove trailing whitespace and newlines.
           line = line_bytes.decode('utf-8').rstrip()
           if not line:
+            if data_buffer:
+              yield '\n'.join(data_buffer)
+              data_buffer = []
             continue
 
           # In streaming mode, the response of JSON is prefixed with "data: "
           # which we must strip before parsing.
           if line.startswith('data: '):
-            yield line[len('data: '):]
+            data_buffer.append(line[len('data: '):])
             continue
 
           # When API returns an error message, it comes line by line. So we
@@ -453,6 +486,8 @@ class HttpResponse:
         # If there is any remaining chunk, yield it.
         if chunk:
           yield chunk
+        if data_buffer:
+          yield '\n'.join(data_buffer)
       finally:
         # Release the connection back to the pool for potential reuse.
         self.response_stream.release()
@@ -504,7 +539,8 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   stop = tenacity.stop_after_attempt(options.attempts or _RETRY_ATTEMPTS)
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
-      lambda e: isinstance(e, errors.APIError) and e.code in retriable_codes,
+      lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
+      or isinstance(e, (httpx.TimeoutException, httpx.ConnectError)),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=options.initial_delay or _RETRY_INITIAL_DELAY,
@@ -577,11 +613,32 @@ class BaseApiClient:
     self.vertexai = vertexai
     self.custom_base_url = None
     if self.vertexai is None:
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', '0').lower() in [
-          'true',
-          '1',
-      ]:
-        self.vertexai = True
+      env_enterprise_str = os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE', None)
+      env_vertexai_str = os.environ.get('GOOGLE_GENAI_USE_VERTEXAI', None)
+
+      env_enterprise = None
+      if env_enterprise_str is not None:
+        env_enterprise = env_enterprise_str.lower() in ['true', '1']
+
+      env_vertexai = None
+      if env_vertexai_str is not None:
+        env_vertexai = env_vertexai_str.lower() in ['true', '1']
+
+      if (
+          env_enterprise is not None
+          and env_vertexai is not None
+          and env_enterprise != env_vertexai
+      ):
+        warnings.warn(
+            'Warning: Both GOOGLE_GENAI_USE_ENTERPRISE and'
+            ' GOOGLE_GENAI_USE_VERTEXAI are set with conflicting values. The'
+            ' value of GOOGLE_GENAI_USE_ENTERPRISE will be used.'
+        )
+
+      if env_enterprise is not None:
+        self.vertexai = env_enterprise
+      elif env_vertexai is not None:
+        self.vertexai = env_vertexai
 
     # Validate explicitly set initializer values.
     if (project or location) and api_key:
@@ -630,8 +687,7 @@ class BaseApiClient:
     # credentials. This is crucial for thread safety when multiple coroutines
     # might be accessing the credentials at the same time.
     self._sync_auth_lock = threading.Lock()
-    self._async_auth_lock: Optional[asyncio.Lock] = None
-    self._async_auth_lock_creation_lock: Optional[asyncio.Lock] = None
+    self._async_auth_locks: dict[asyncio.AbstractEventLoop, asyncio.Lock] = {}
 
     # Handle when to use Vertex AI in express mode (api key).
     # Explicit initializer arguments are already validated above.
@@ -703,6 +759,13 @@ class BaseApiClient:
       ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
       elif (
+          self.location in _MULTI_REGIONAL_LOCATIONS
+          and not self.custom_base_url
+      ):
+        self._http_options.base_url = (
+            f'https://aiplatform.{self.location}.rep.googleapis.com/'
+        )
+      elif (
           self.custom_base_url
           and not self.custom_base_url.endswith('.googleapis.com')
       ) and not ((project and location) or api_key):
@@ -767,14 +830,11 @@ class BaseApiClient:
     else:
       self._async_httpx_client = AsyncHttpxClient(**async_client_args)
 
-    # Initialize the aiohttp client session.
-    self._aiohttp_session: Optional[aiohttp.ClientSession] = None
+    # Initialize the aiohttp client sessions.
+    self._aiohttp_sessions: dict[Any, Any] = {}
     if self._use_aiohttp():
       try:
         import aiohttp  # pylint: disable=g-import-not-at-top
-
-        if self._http_options.aiohttp_client:
-          self._aiohttp_session = self._http_options.aiohttp_client
         # Do it once at the genai.Client level. Share among all requests.
         self._async_client_session_request_args = (
             self._ensure_aiohttp_ssl_ctx(self._http_options)
@@ -809,77 +869,147 @@ class BaseApiClient:
 
   def _use_google_auth_async(self) -> bool:
     try:
-      from google.auth.aio.credentials import StaticCredentials
-      from google.auth.aio.transport.sessions import AsyncAuthorizedSession
-    except ImportError:
-      return False
+      import importlib
+      # Use dynamic import to avoid mypy issues in environments where it's missing.
+      aio_creds_module = importlib.import_module('google.auth.aio.credentials')
+      _ = aio_creds_module.Credentials
+      has_google_auth_aio = True
+    except (ImportError, AttributeError):
+      has_google_auth_aio = False
+
     return bool(
         has_aiohttp
+        and has_google_auth_aio
         and self.vertexai
+        and hasattr(mtls, 'should_use_client_cert')
         and mtls.should_use_client_cert()  # type: ignore[no-untyped-call]
         and mtls.has_default_client_cert_source()  # type: ignore[no-untyped-call]
         and not self._http_options.httpx_async_client
     )
 
+  def _is_session_closed(self, session: Any) -> bool:
+    """Returns True if the session is closed."""
+    if hasattr(session, 'closed'):
+      return bool(session.closed)
+    # For AsyncAuthorizedSession
+    if hasattr(session, '_auth_request') and hasattr(
+        session._auth_request, '_closed'
+    ):
+      return bool(session._auth_request._closed)
+    return False
+
+  @property
+  def _aiohttp_session(
+      self,
+  ) -> Optional[Any]:
+    """Returns the aiohttp client session for the current loop (for backward compatibility)."""
+    if self._http_options.aiohttp_client:
+      return self._http_options.aiohttp_client
+    try:
+      loop = asyncio.get_running_loop()
+      return self._aiohttp_sessions.get(loop)
+    except RuntimeError:
+      return None
+
   async def _get_aiohttp_session(
       self,
-  ) -> Union['aiohttp.ClientSession', 'AsyncAuthorizedSession']:
+  ) -> Any:
     """Returns the aiohttp client session."""
+    if self._http_options.aiohttp_client:
+      return self._http_options.aiohttp_client
 
-    if self._aiohttp_session is None and self._use_google_auth_async():
-      try:
-        from google.auth.aio.credentials import StaticCredentials
-        from google.auth.aio.transport.sessions import AsyncAuthorizedSession
+    loop = asyncio.get_running_loop()
 
-        async_creds = StaticCredentials(token=self._access_token())  # type: ignore[no-untyped-call]
-        self._aiohttp_session = AsyncAuthorizedSession(async_creds)  # type: ignore[no-untyped-call]
-        return self._aiohttp_session
-      except ImportError:
-        pass
+    with self._sync_auth_lock:
+      session = self._aiohttp_sessions.get(loop)
+      if session is not None and self._is_session_closed(session):
+        session = None
 
-    if not self._use_google_auth_async() and (
-        self._aiohttp_session is None
-        or self._aiohttp_session.closed
-        or self._aiohttp_session._loop.is_closed()
-    ):  # pylint: disable=protected-access
-      # Initialize the aiohttp client session if it's not set up or closed.
-      class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+    if session is None:
+      if self._use_google_auth_async():
+        try:
+          import importlib
+          # Use dynamic import to avoid mypy issues in environments where it's missing.
+          AsyncCredentials = importlib.import_module('google.auth.aio.credentials').Credentials
+          AsyncAuthorizedSession = importlib.import_module('google.auth.aio.transport.sessions').AsyncAuthorizedSession
 
-        def __del__(self, _warnings: Any = warnings) -> None:
-          if not self.closed:
+          class _RefreshableAsyncCredentials(AsyncCredentials):  # type: ignore[misc, valid-type]
+            """Adapter to use the client's sync credentials in an AsyncAuthorizedSession."""
+
+            def __init__(self, client: 'BaseApiClient'):
+              super().__init__()  # type: ignore[no-untyped-call]
+              self._client = client
+
+            async def before_request(
+                self,
+                request: Any,
+                method: str,
+                url: str,
+                headers: dict[str, str],
+            ) -> None:
+              token = await self._client._async_access_token()
+              headers['Authorization'] = f'Bearer {token}'
+              if (
+                  self._client._credentials
+                  and self._client._credentials.quota_project_id
+              ):
+                headers['x-goog-user-project'] = (
+                    self._client._credentials.quota_project_id
+                )
+
+            @property
+            def valid(self) -> bool:
+              if not self._client._credentials:
+                return False
+              return not self._client._credentials.expired
+
+          session = AsyncAuthorizedSession(_RefreshableAsyncCredentials(self))  # type: ignore[no-untyped-call,assignment]
+        except ImportError:
+          pass
+      else:
+        # Initialize the aiohttp client session if it's not set up.
+        class AiohttpClientSession(aiohttp.ClientSession):  # type: ignore[misc]
+
+          def __del__(self, _warnings: Any = warnings) -> None:
+            if not self.closed:
+              context = {
+                  'client_session': self,
+                  'message': 'Unclosed client session',
+              }
+              if self._source_traceback is not None:
+                context['source_traceback'] = self._source_traceback
+              # Remove this self._loop.call_exception_handler(context)
+
+        class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+
+          def __del__(self, _warnings: Any = warnings) -> None:
+            if self._closed:
+              return
+            if not self._conns:
+              return
+            conns = [repr(c) for c in self._conns.values()]
+            # After v3.13.2, it may change to self._close_immediately()
+            self._close()
             context = {
-                'client_session': self,
-                'message': 'Unclosed client session',
+                'connector': self,
+                'connections': conns,
+                'message': 'Unclosed connector',
             }
             if self._source_traceback is not None:
               context['source_traceback'] = self._source_traceback
             # Remove this self._loop.call_exception_handler(context)
 
-      class AiohttpTCPConnector(aiohttp.TCPConnector):  # type: ignore[misc]
+        session = AiohttpClientSession(
+            connector=AiohttpTCPConnector(limit=0),
+            trust_env=True,
+            read_bufsize=READ_BUFFER_SIZE,
+        )
 
-        def __del__(self, _warnings: Any = warnings) -> None:
-          if self._closed:
-            return
-          if not self._conns:
-            return
-          conns = [repr(c) for c in self._conns.values()]
-          # After v3.13.2, it may change to self._close_immediately()
-          self._close()
-          context = {
-              'connector': self,
-              'connections': conns,
-              'message': 'Unclosed connector',
-          }
-          if self._source_traceback is not None:
-            context['source_traceback'] = self._source_traceback
-          # Remove this self._loop.call_exception_handler(context)
-      self._aiohttp_session = AiohttpClientSession(
-          connector=AiohttpTCPConnector(limit=0),
-          trust_env=True,
-          read_bufsize=READ_BUFFER_SIZE,
-      )
+      if session:
+        with self._sync_auth_lock:
+          self._aiohttp_sessions[loop] = session
 
-    return self._aiohttp_session
+    return session  # type: ignore[return-value]
 
   @staticmethod
   def _ensure_httpx_ssl_ctx(
@@ -932,9 +1062,11 @@ class BaseApiClient:
       Returns:
         The client args with the SSL context included.
       """
-      if not args or not args.get(verify):
-        args = (args or {}).copy()
+      args = (args or {}).copy()
+      if not args.get(verify):
         args[verify] = ctx
+      if 'timeout' not in args:
+        args['timeout'] = None
       # Drop the args that isn't used by the httpx client.
       copied_args = args.copy()
       for key in copied_args.copy():
@@ -1090,26 +1222,14 @@ class BaseApiClient:
     """Lazily initializes and returns an asyncio.Lock for async authentication.
 
     This method ensures that a single `asyncio.Lock` instance is created and
-    shared among all asynchronous operations that require authentication,
-    preventing race conditions when accessing or refreshing credentials.
-
-    The lock is created on the first call to this method. An internal async lock
-    is used to protect the creation of the main authentication lock to ensure
-    it's a singleton within the client instance.
-
-    Returns:
-        The asyncio.Lock instance for asynchronous authentication operations.
+    shared among all asynchronous operations that require authentication
+    within the same event loop.
     """
-    if self._async_auth_lock is None:
-      # Create async creation lock if needed
-      if self._async_auth_lock_creation_lock is None:
-        self._async_auth_lock_creation_lock = asyncio.Lock()
-
-      async with self._async_auth_lock_creation_lock:
-        if self._async_auth_lock is None:
-          self._async_auth_lock = asyncio.Lock()
-
-    return self._async_auth_lock
+    loop = asyncio.get_running_loop()
+    with self._sync_auth_lock:
+      if loop not in self._async_auth_locks:
+        self._async_auth_locks[loop] = asyncio.Lock()
+      return self._async_auth_locks[loop]
 
   async def _async_access_token(self) -> Union[str, Any]:
     """Retrieves the access token for the credentials asynchronously."""
@@ -1163,7 +1283,7 @@ class BaseApiClient:
     if (
         self.vertexai
         and http_method == 'get'
-        and path.startswith('publishers/google/models')
+        and path.startswith('publishers/')
     ):
       query_vertex_base_models = True
     if (
@@ -1344,14 +1464,14 @@ class BaseApiClient:
 
     if stream:
       if self._use_aiohttp():
-        self._aiohttp_session = await self._get_aiohttp_session()
+        session = await self._get_aiohttp_session()  # type: ignore[assignment]
         url = http_request.url
         if self._use_google_auth_async():
           client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
-          await self._aiohttp_session.configure_mtls_channel(  # type: ignore[union-attr]
+          await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if self._aiohttp_session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
+          if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
             if 'sandbox' in url:
               url = url.replace(
                   'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
@@ -1359,7 +1479,7 @@ class BaseApiClient:
             else:
               url = url.replace('googleapis.com', 'mtls.googleapis.com')
         try:
-          response = await self._aiohttp_session.request(
+          response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1372,6 +1492,7 @@ class BaseApiClient:
             aiohttp.ClientConnectorDNSError,
             aiohttp.ClientOSError,
             aiohttp.ServerDisconnectedError,
+            auth_exceptions.TransportError,
         ) as e:
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
@@ -1380,8 +1501,8 @@ class BaseApiClient:
               self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
           # Instantiate a new session with the updated SSL context.
-          self._aiohttp_session = await self._get_aiohttp_session()
-          response = await self._aiohttp_session.request(
+          session = await self._get_aiohttp_session()  # type: ignore[assignment]
+          response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1413,14 +1534,14 @@ class BaseApiClient:
         return HttpResponse(client_response.headers, client_response)
     else:
       if self._use_aiohttp():
-        self._aiohttp_session = await self._get_aiohttp_session()
+        session = await self._get_aiohttp_session()  # type: ignore[assignment]
         url = http_request.url
         if self._use_google_auth_async():
           client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
-          await self._aiohttp_session.configure_mtls_channel(  # type: ignore[union-attr]
+          await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if self._aiohttp_session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
+          if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
             if 'sandbox' in url:
               url = url.replace(
                   'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
@@ -1428,7 +1549,7 @@ class BaseApiClient:
             else:
               url = url.replace('googleapis.com', 'mtls.googleapis.com')
         try:
-          response = await self._aiohttp_session.request(
+          response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1449,6 +1570,7 @@ class BaseApiClient:
             aiohttp.ClientConnectorDNSError,
             aiohttp.ClientOSError,
             aiohttp.ServerDisconnectedError,
+            auth_exceptions.TransportError,
         ) as e:
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
@@ -1457,8 +1579,8 @@ class BaseApiClient:
               self._ensure_aiohttp_ssl_ctx(self._http_options)
           )
           # Instantiate a new session with the updated SSL context.
-          self._aiohttp_session = await self._get_aiohttp_session()
-          response = await self._aiohttp_session.request(
+          session = await self._get_aiohttp_session()  # type: ignore[assignment]
+          response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
               headers=http_request.headers,
@@ -1853,7 +1975,7 @@ class BaseApiClient:
 
     # Upload the file in chunks
     if self._use_aiohttp():  # pylint: disable=g-import-not-at-top
-      self._aiohttp_session = await self._get_aiohttp_session()
+      session = await self._get_aiohttp_session()  # type: ignore[assignment]
       while True:
         if isinstance(file, io.IOBase):
           file_chunk = file.read(CHUNK_SIZE)
@@ -1895,7 +2017,7 @@ class BaseApiClient:
         retry_count = 0
         response = None
         while retry_count < MAX_RETRY_COUNT:
-          response = await self._aiohttp_session.request(
+          response = await session.request(  # type: ignore[union-attr]
               method='POST',
               url=upload_url,
               data=file_chunk,
@@ -2045,8 +2167,8 @@ class BaseApiClient:
         data = http_request.data
 
     if self._use_aiohttp():
-      self._aiohttp_session = await self._get_aiohttp_session()
-      response = await self._aiohttp_session.request(
+      session = await self._get_aiohttp_session()  # type: ignore[assignment]
+      response = await session.request(  # type: ignore[union-attr]
           method=http_request.method,
           url=http_request.url,
           headers=http_request.headers,
@@ -2094,8 +2216,20 @@ class BaseApiClient:
     # close the client when the object is garbage collected.
     if not self._http_options.httpx_async_client:
       await self._async_httpx_client.aclose()  # type: ignore[union-attr]
-    if self._aiohttp_session and not self._http_options.aiohttp_client:
-      await self._aiohttp_session.close()
+    if self._aiohttp_sessions and not self._http_options.aiohttp_client:
+      try:
+        current_loop = asyncio.get_running_loop()
+      except RuntimeError:
+        current_loop = None
+
+      for loop, session in list(self._aiohttp_sessions.items()):
+        if loop == current_loop:
+          await session.close()
+        elif loop.is_running():
+          try:
+            asyncio.run_coroutine_threadsafe(session.close(), loop)
+          except RuntimeError:
+            pass  # Handle case where the loop was closed during the call
 
   def __del__(self) -> None:
     """Closes the API client when the object is garbage collected.

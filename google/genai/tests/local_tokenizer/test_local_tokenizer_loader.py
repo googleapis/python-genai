@@ -47,7 +47,7 @@ FAKE_MODEL_CONTENT = sentencepiece_model_pb2.ModelProto(
     ]
 ).SerializeToString()
 
-GEMMA2_HASH = "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2"
+GEMMA3_HASH = "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c"
 
 
 class TestGetTokenizerName(unittest.TestCase):
@@ -56,6 +56,18 @@ class TestGetTokenizerName(unittest.TestCase):
     self.assertEqual(loader.get_tokenizer_name("gemini-2.5-pro"), "gemma3")
     self.assertEqual(
         loader.get_tokenizer_name("gemini-2.5-pro-preview-06-05"), "gemma3"
+    )
+
+  def test_get_tokenizer_name_huggingface(self):
+    self.assertEqual(loader.get_tokenizer_name("gemini-3.5-flash"), "gemma4")
+    self.assertEqual(
+        loader.get_tokenizer_name("gemini-3.1-flash-lite"), "gemma4"
+    )
+    self.assertEqual(
+        loader.get_tokenizer_name("gemini-3.1-pro-preview"), "gemma4"
+    )
+    self.assertEqual(
+        loader.get_tokenizer_name("gemini-4-flash-preview"), "gemma4"
     )
 
   def test_get_tokenizer_name_unsupported(self):
@@ -105,9 +117,9 @@ class TestLoaderFunctions(unittest.TestCase):
   ):
     mock_exists.return_value = False  # Don't use cache
     self._setup_get_mock(mock_get)
-    mock_sha256.return_value.hexdigest.return_value = GEMMA2_HASH
+    mock_sha256.return_value.hexdigest.return_value = GEMMA3_HASH
 
-    proto = loader.load_model_proto("gemma2")
+    proto = loader.load_model_proto("gemma3")
 
     self.assertIsInstance(proto, sentencepiece_model_pb2.ModelProto)
     self.assertEqual(len(proto.pieces), 4)
@@ -128,9 +140,9 @@ class TestLoaderFunctions(unittest.TestCase):
   ):
     mock_exists.return_value = True  # Use cache
     mock_open_func.return_value.read.return_value = FAKE_MODEL_CONTENT
-    mock_sha256.return_value.hexdigest.return_value = GEMMA2_HASH
+    mock_sha256.return_value.hexdigest.return_value = GEMMA3_HASH
 
-    proto = loader.load_model_proto("gemma2")
+    proto = loader.load_model_proto("gemma3")
 
     self.assertIsInstance(proto, sentencepiece_model_pb2.ModelProto)
     mock_get.assert_not_called()
@@ -154,10 +166,10 @@ class TestLoaderFunctions(unittest.TestCase):
     # First hash for corrupted cache, second for good download
     mock_sha256.side_effect = [
         MagicMock(hexdigest=MagicMock(return_value="wrong_hash")),
-        MagicMock(hexdigest=MagicMock(return_value=GEMMA2_HASH)),
+        MagicMock(hexdigest=MagicMock(return_value=GEMMA3_HASH)),
     ]
 
-    proto = loader.load_model_proto("gemma2")
+    proto = loader.load_model_proto("gemma3")
 
     self.assertIsInstance(proto, sentencepiece_model_pb2.ModelProto)
     mock_remove.assert_called_once()
@@ -180,7 +192,7 @@ class TestLoaderFunctions(unittest.TestCase):
     with self.assertRaisesRegex(
         ValueError, "Downloaded model file is corrupted"
     ):
-      loader.load_model_proto("gemma2")
+      loader.load_model_proto("gemma3")
 
   def test_load_model_proto_unsupported(self, *args):
     with self.assertRaisesRegex(
@@ -200,9 +212,9 @@ class TestLoaderFunctions(unittest.TestCase):
   ):
     mock_exists.return_value = False
     self._setup_get_mock(mock_get)
-    mock_sha256.return_value.hexdigest.return_value = GEMMA2_HASH
+    mock_sha256.return_value.hexdigest.return_value = GEMMA3_HASH
 
-    processor = loader.get_sentencepiece("gemma2")
+    processor = loader.get_sentencepiece("gemma3")
 
     self.assertIsInstance(processor, spm.SentencePieceProcessor)
     mock_get.assert_called_once()
@@ -225,11 +237,13 @@ class TestLoaderFunctions(unittest.TestCase):
   ):
     mock_exists.return_value = False
     self._setup_get_mock(mock_get)
-    mock_sha256.return_value.hexdigest.return_value = GEMMA2_HASH
+    mock_sha256.return_value.hexdigest.return_value = GEMMA3_HASH
 
     # Call twice
-    loader.get_sentencepiece("gemma2")
-    loader.get_sentencepiece("gemma2")
+    loader.get_sentencepiece("gemma3")
+    loader.get_sentencepiece("gemma3")
 
     # Should only be loaded once due to lru_cache
     mock_get.assert_called_once()
+
+
