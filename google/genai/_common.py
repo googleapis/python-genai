@@ -417,12 +417,16 @@ def _pretty_repr(
     if not items:
       return f'{cls_name}()'
     return f'{cls_name}(\n' + ',\n'.join(items) + f'\n{indent})'
+  elif isinstance(obj, enum.Enum):
+    return repr(obj.value)
   elif isinstance(obj, str):
     if '\n' in obj:
       escaped = obj.replace('"""', '\\"\\"\\"')
       # Indent the multi-line string block contents
       return f'"""{escaped}"""'
     return repr(obj)
+  elif isinstance(obj, datetime.datetime):
+    return repr(obj.isoformat())
   elif isinstance(obj, bytes):
     if len(obj) > max_len:
       return f"{repr(obj[:max_len-3])[:-1]}...'"
