@@ -18,13 +18,13 @@
 
 from .... import types as genai_types
 from ... import pytest_helper
-
+from ...shared import tunings
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_tune',
         parameters=genai_types.CreateTuningJobParameters(
-            base_model='gemini-2.5-flash',
+            base_model=tunings.GEMINI_TUNABLE_MODEL,
             training_dataset=genai_types.TuningDataset(
                 gcs_uri='gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl',
             ),
@@ -32,7 +32,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 epoch_count=1,
             ),
         ),
-        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
 ]
 

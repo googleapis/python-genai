@@ -27,6 +27,21 @@ from ... import errors
 from ... import types
 from .. import pytest_helper
 
+
+import contextlib
+from unittest import mock
+import pytest
+from ... import _mcp_utils
+
+try:
+  from mcp import types as mcp_types
+  from ... import ClientSession
+except ImportError:
+  mcp_types = None
+  ClientSession = None
+
+from ...models import AsyncModels
+
 GOOGLE_HOMEPAGE_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../data/google_homepage.png')
 )
@@ -309,9 +324,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_non_existent_file_search_store',
@@ -333,9 +346,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_mldev='not exist',
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter',
@@ -357,9 +368,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_file_search_with_metadata_filter_and_top_k',
@@ -382,9 +391,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             },
         ),
-        exception_if_vertex=(
-            'is only supported in Gemini Developer API mode'
-        ),
+        exception_if_vertex='is only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_function_call',
@@ -487,6 +494,25 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex='404',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_computer_use_with_disabled_safety_policies',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-computer-use-preview-10-2025',
+            contents=t.t_contents('Go to google and search nano banana'),
+            config={
+                'tools': [{
+                    'computer_use': {
+                        'environment': 'ENVIRONMENT_BROWSER',
+                        'disabled_safety_policies': [
+                            'FINANCIAL_TRANSACTIONS',
+                            'COMMUNICATION_TOOL',
+                        ],
+                    }
+                }]
+            },
+        ),
+        exception_if_vertex='only supported in Gemini Developer API mode',
     ),
     pytest_helper.TestTableItem(
         name='test_computer_use_multi_turn',
@@ -616,7 +642,8 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model='gemini-3.1-pro-preview',
             contents=t.t_contents(
-                'Use Google Search to tell me about the 1970 world cup match'),
+                'Use Google Search to tell me about the 1970 world cup match'
+            ),
             config=types.GenerateContentConfig(
                 tools=[
                     types.Tool(
@@ -628,7 +655,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='parameter is only supported in Gemini Developer API mode',
+        exception_if_vertex=(
+            'parameter is only supported in Gemini Developer API mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations_with_tool_call_echo',
@@ -688,17 +717,25 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_vertex='parameter is only supported in Gemini Developer API mode',
+        exception_if_vertex=(
+            'parameter is only supported in Gemini Developer API mode'
+        ),
     ),
 ]
 
 
-pytestmark = pytest_helper.setup(
-    file=__file__,
-    globals_for_file=globals(),
-    test_method='models.generate_content',
-    test_table=test_table,
-)
+pytestmark = [
+    pytest_helper.setup(
+        file=__file__,
+        globals_for_file=globals(),
+        test_method='models.generate_content',
+        test_table=test_table,
+    ),
+    pytest.mark.skipif(
+        "config.getoption('--private')",
+        reason='ComputerUse on Vertex API behaves differently between public and private modules.',
+    ),
+]
 pytest_plugins = ('pytest_asyncio',)
 
 
@@ -825,6 +862,10 @@ def test_function_calling_without_implementation(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_2_function(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -839,6 +880,10 @@ def test_2_function(client):
   assert 'sunny' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 @pytest.mark.asyncio
 async def test_2_function_async(client):
   response = await client.aio.models.generate_content(
@@ -853,7 +898,10 @@ async def test_2_function_async(client):
   assert 'Boston' in response.text
   assert 'sunny' in response.text
 
-
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_customized_math_rule(client):
   def customized_divide_integers(numerator: int, denominator: int) -> int:
     """Divide two integers with customized math rule."""
@@ -869,6 +917,10 @@ def test_automatic_function_calling_with_customized_math_rule(client):
   assert '501' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -882,6 +934,10 @@ def test_automatic_function_calling(client):
   assert '500' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_with_async_function(client):
   response = await client.aio.models.generate_content(
@@ -993,6 +1049,10 @@ async def test_automatic_function_calling_stream_async(client):
     assert chunk.text is not None or chunk.candidates[0].finish_reason
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_disable_afc(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1007,6 +1067,10 @@ def test_callable_tools_user_disable_afc(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_disable_afc_with_max_remote_calls(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1021,7 +1085,10 @@ def test_callable_tools_user_disable_afc_with_max_remote_calls(client):
       },
   )
 
-
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_disable_afc_with_max_remote_calls_negative(
     client,
 ):
@@ -1039,6 +1106,10 @@ def test_callable_tools_user_disable_afc_with_max_remote_calls_negative(
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_disable_afc_with_max_remote_calls_zero(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1053,7 +1124,10 @@ def test_callable_tools_user_disable_afc_with_max_remote_calls_zero(client):
       },
   )
 
-
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_enable_afc(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1068,6 +1142,10 @@ def test_callable_tools_user_enable_afc(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_enable_afc_with_max_remote_calls(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1083,6 +1161,10 @@ def test_callable_tools_user_enable_afc_with_max_remote_calls(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_enable_afc_with_max_remote_calls_negative(
     client,
 ):
@@ -1100,6 +1182,10 @@ def test_callable_tools_user_enable_afc_with_max_remote_calls_negative(
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_callable_tools_user_enable_afc_with_max_remote_calls_zero(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1115,6 +1201,10 @@ def test_callable_tools_user_enable_afc_with_max_remote_calls_zero(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_exception(client):
   client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1125,7 +1215,10 @@ def test_automatic_function_calling_with_exception(client):
       },
   )
 
-
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_float_without_decimal(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1139,6 +1232,10 @@ def test_automatic_function_calling_float_without_decimal(client):
   assert '500.0' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_pydantic_model(client):
   class CityObject(pydantic.BaseModel):
     city_name: str
@@ -1162,7 +1259,10 @@ def test_automatic_function_calling_with_pydantic_model(client):
 
   assert 'cold' in response.text and 'Boston' in response.text
 
-
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
   class CityObject(pydantic.BaseModel):
     city_name: str
@@ -1198,6 +1298,10 @@ def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
 
 
 # TODO(b/397404656): modify this test to pass in api mode
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
   class AnimalObject(pydantic.BaseModel):
     name: str
@@ -1245,6 +1349,10 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
     assert 'cat' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_union_operator(client):
   class AnimalObject(pydantic.BaseModel):
     name: str
@@ -1276,6 +1384,10 @@ def test_automatic_function_calling_with_union_operator(client):
   assert response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_tuple_param(client):
   def output_latlng(
       latlng: tuple[float, float],
@@ -1298,6 +1410,10 @@ def test_automatic_function_calling_with_tuple_param(client):
 @pytest.mark.skipif(
     sys.version_info < (3, 10),
     reason='| is only supported in Python 3.10 and above.',
+)
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
 )
 def test_automatic_function_calling_with_union_operator_return_type(client):
   def get_cheese_age(cheese: int) -> int | float:
@@ -1328,6 +1444,10 @@ def test_automatic_function_calling_with_union_operator_return_type(client):
   assert '3' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_parameterized_generic_union_type(
     client,
 ):
@@ -1375,6 +1495,10 @@ def test_empty_tools(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_with_1_empty_tool(client):
   # Bad request for empty tool.
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
@@ -1438,6 +1562,10 @@ async def test_vai_search_stream_async(client):
     assert 'retrieval' in str(e)
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_automatic_function_calling_with_coroutine_function(client):
   async def divide_integers(a: int, b: int) -> int:
     return a // b
@@ -1453,6 +1581,10 @@ def test_automatic_function_calling_with_coroutine_function(client):
     )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_with_coroutine_function_async(
     client,
@@ -1472,6 +1604,10 @@ async def test_automatic_function_calling_with_coroutine_function_async(
   assert '500' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async(client):
   def divide_integers(a: int, b: int) -> int:
@@ -1489,6 +1625,10 @@ async def test_automatic_function_calling_async(client):
   assert '500' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_with_exception(client):
   def mystery_function(a: int, b: int) -> int:
@@ -1512,6 +1652,10 @@ async def test_automatic_function_calling_async_with_exception(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_float_without_decimal(client):
   response = await client.aio.models.generate_content(
@@ -1526,6 +1670,10 @@ async def test_automatic_function_calling_async_float_without_decimal(client):
   assert '500.0' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_with_pydantic_model(client):
   class CityObject(pydantic.BaseModel):
@@ -1553,6 +1701,10 @@ async def test_automatic_function_calling_async_with_pydantic_model(client):
     assert 'cold' in response.text and 'Boston' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_automatic_function_calling_async_with_async_function(client):
   async def get_current_weather_async(city: str) -> str:
@@ -1598,6 +1750,10 @@ async def test_automatic_function_calling_async_with_async_function_stream(
       assert chunk.parts[0].function_call.args['city'] == 'San Francisco'
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_2_function_with_history(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1652,6 +1808,10 @@ def test_2_function_with_history(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_2_function_with_history_async(client):
   response = await client.aio.models.generate_content(
@@ -1717,6 +1877,10 @@ class FunctionHolder:
     return self.NAME + 'says isEven: ' + str(number % 2 == 0)
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_class_method_tools(client):
   # This test is to make sure that instance method tools can be used in
   # the generate_content request.
@@ -1735,6 +1899,10 @@ def test_class_method_tools(client):
   assert 'FunctionHolder' in response.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_disable_afc_in_any_mode(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1751,6 +1919,10 @@ def test_disable_afc_in_any_mode(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_afc_once_in_any_mode(client):
   response = client.models.generate_content(
       model='gemini-2.5-flash',
@@ -1786,6 +1958,10 @@ def test_code_execution_tool(client):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_afc_logs_to_logger_instance(client, caplog):
   caplog.set_level(logging.DEBUG, logger='google_genai.models')
   client.models.generate_content(
@@ -1809,6 +1985,10 @@ def test_afc_logs_to_logger_instance(client, caplog):
   assert 'Reached max remote calls' in caplog.text
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_suppress_logs_with_sdk_logger(client, caplog):
   caplog.set_level(logging.DEBUG, logger='google_genai.models')
   sdk_logger = logging.getLogger('google_genai.models')
@@ -1854,6 +2034,10 @@ def test_tools_chat_curation(client, caplog):
   assert len(history) == 4
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC removed from private models.py',
+)
 def test_function_declaration_with_callable(client):
   response = client.models.generate_content(
       model='gemini-2.5-pro',
@@ -1870,6 +2054,7 @@ def test_function_declaration_with_callable(client):
   )
   assert response.function_calls is not None
 
+
 def test_function_declaration_with_callable_stream_now(client):
   for chunk in client.models.generate_content_stream(
       model='gemini-2.5-pro',
@@ -1882,6 +2067,7 @@ def test_function_declaration_with_callable_stream_now(client):
       },
   ):
     pass
+
 
 @pytest.mark.asyncio
 async def test_function_declaration_with_callable_async(client):
@@ -1915,6 +2101,7 @@ async def test_function_declaration_with_callable_async_stream(client):
     ):
       pass
 
+
 def test_server_side_mcp_only(client):
   """Test server side mcp, happy path."""
   with pytest_helper.exception_if_vertex(client, ValueError):
@@ -1934,6 +2121,7 @@ def test_server_side_mcp_only(client):
         )
     )
     assert response.text
+
 
 @pytest.mark.asyncio
 async def test_server_side_mcp_only_async(client):
@@ -1959,6 +2147,7 @@ async def test_server_side_mcp_only_async(client):
     )
     assert response.text
 
+
 def test_server_side_mcp_only_stream(client):
   """Test server side mcp, happy path."""
   with pytest_helper.exception_if_vertex(client, ValueError):
@@ -1979,3 +2168,180 @@ def test_server_side_mcp_only_stream(client):
     )
     for chunk in response:
       pass
+
+
+@pytest.mark.asyncio
+async def test_client_side_mcp_unary_async(client):
+    """Test client-side MCP execution for Agent Platform."""
+    if not client._api_client.vertexai:
+      pytest.skip('Vertex MCP test is not applicable to MLDev.')
+
+    if mcp_types is None:
+      pytest.skip('MCP library is not installed.')
+
+    # Need to mock this since MCP bypasses the replay client recorder
+    mock_session = mock.AsyncMock(spec=ClientSession)
+    mock_session.list_tools.return_value = mcp_types.ListToolsResult(
+        tools=[
+            mcp_types.Tool(
+                name='list_endpoints',
+                description='Lists endpoints',
+                inputSchema={'type': 'object', 'properties': {}}
+            )
+        ]
+    )
+
+    mock_session.call_tool.return_value = mcp_types.CallToolResult(
+        content=[
+            mcp_types.TextContent(
+                type='text', text='Endpoint list: [my-endpoint-123]'
+            )
+        ]
+    )
+
+    @contextlib.asynccontextmanager
+    async def mock_connect(*args, **kwargs):
+      yield mock_session
+
+    with mock.patch.object(_mcp_utils, '_connect_agent_platform_mcp', side_effect=mock_connect):
+
+      response = await client.aio.models.generate_content(
+          model='gemini-2.5-flash',
+          contents='List my endpoints.',
+          config={
+              'tools': [
+                  types.Tool(
+                      mcp_servers=[types.McpServer(name='endpoints')]
+                  )
+              ],
+              'automatic_function_calling': {'disable': False}
+          }
+      )
+
+    assert response.text is not None
+    assert mock_session.list_tools.called
+    assert mock_session.call_tool.called
+
+
+@pytest.mark.asyncio
+async def test_client_side_mcp_missing_name_raises(client):
+    """Test that an MCP server without a name raises an error."""
+
+    if not client._api_client.vertexai:
+      pytest.skip('Vertex MCP test is not applicable to MLDev.')
+
+    with pytest.raises(
+        ValueError,
+        match="Agent Platform MCP servers require a 'name' field."
+    ):
+      await client.aio.models.generate_content(
+          model='gemini-2.5-flash',
+          contents='List my endpoints.',
+          config={
+              'tools': [
+                  types.Tool(
+                      mcp_servers=[types.McpServer(name=None)]
+                  )
+              ]
+          }
+      )
+
+
+@pytest.mark.asyncio
+async def test_agent_platform_mcp_stream_async_unit(client):
+    """Unit tests the Agent Platform MCP integration for streaming without the replay framework."""
+    if not client._api_client.vertexai:
+      return
+
+    if ClientSession is None:
+      pytest.skip('MCP library is not installed.')
+
+    class MockAgentPlatformSession(ClientSession):
+      def __init__(self):
+        self._read_stream = None
+        self._write_stream = None
+
+      async def list_tools(self):
+        return mcp_types.ListToolsResult(
+            tools=[
+                mcp_types.Tool(
+                    name='list_endpoints',
+                    description='Lists all serving Endpoints',
+                    inputSchema={
+                        'type': 'object',
+                        'properties': {'parent': {'type': 'string'}},
+                    },
+                )
+            ]
+        )
+
+      async def call_tool(self, name: str, arguments: dict[str, typing.Any]):
+        if name == 'list_endpoints':
+          return mcp_types.CallToolResult(
+              content=[mcp_types.TextContent(type='text', text='["endpoint-1", "endpoint-2"]')]
+          )
+
+    @contextlib.asynccontextmanager
+    async def mock_mcp_context(*args, **kwargs):
+      yield MockAgentPlatformSession()
+
+    turn_1_chunk = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    role='model',
+                    parts=[
+                        types.Part(
+                            function_call=types.FunctionCall(
+                                name='list_endpoints',
+                                args={'parent': 'projects/vertex-sdk-dev/locations/us-central1'}
+                            )
+                        )
+                    ]
+                )
+            )
+        ]
+    )
+
+    turn_2_chunk = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(
+                    role='model',
+                    parts=[types.Part(text='You have 2 endpoints.')]
+                )
+            )
+        ]
+    )
+
+    async def mock_stream_1(*args, **kwargs):
+      yield turn_1_chunk
+
+    async def mock_stream_2(*args, **kwargs):
+      yield turn_2_chunk
+
+    with mock.patch.object(_mcp_utils, '_connect_agent_platform_mcp', side_effect=mock_mcp_context) as mock_connect_mcp:
+      with mock.patch.object(AsyncModels, '_generate_content_stream', side_effect=[mock_stream_1(), mock_stream_2()]) as mock_generate_stream:
+
+        response_stream = await client.aio.models.generate_content_stream(
+            model='gemini-2.5-flash',
+            contents='List my endpoints.',
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        mcp_servers=[
+                            types.McpServer(name='endpoints')
+                        ]
+                    )
+                ]
+            )
+        )
+
+        final_text = ''
+        async for chunk in response_stream:
+          if chunk.text:
+            final_text += chunk.text
+
+        assert '2 endpoints' in final_text
+        mock_connect_mcp.assert_called_once_with(client._api_client, 'endpoints')
+        assert mock_generate_stream.call_count == 2

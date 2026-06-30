@@ -11,6 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-
-
+# GEMINI_TUNABLE_MODEL = 'gemini-3.1-flash-lite'
+GEMINI_TUNABLE_MODEL = 'gemini-2.5-pro'

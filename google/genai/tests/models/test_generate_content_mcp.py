@@ -105,6 +105,10 @@ async def test_mcp_tools_with_custom_headers_async(client):
   }
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='AFC by default is disabled in private models.py',
+)
 @pytest.mark.asyncio
 async def test_mcp_tools_subsequent_calls_async(client):
   class MockMcpClientSession(McpClientSession):

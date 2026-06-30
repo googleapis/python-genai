@@ -6,14 +6,20 @@
 
 --------
 **Documentation:** https://googleapis.github.io/python-genai/
-
 -----
 
 Google Gen AI Python SDK provides an interface for developers to integrate
-Google's generative models into their Python applications. It supports the
-[Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
+Google's generative models into their Python applications. It supports
+the [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
 [Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
+
+> [!WARNING]
+> **Upcoming Breaking Change to Automatic Function Calling (AFC):**
+> We will introduce a breaking change to the Automatic Function Calling (AFC)
+> feature in the next major version. Specifically, users will not be able to
+> invoke AFC from direct calls to `Models.generate_content` or its stream and
+> async variants. Instead, users should invoke AFC from `chats` modules.
 
 ## Agent Skills
 
@@ -1485,9 +1491,7 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
-## Interactions (Preview)
-
-> **Warning:** The Interactions API is in **Beta**. This is a preview of an experimental feature. Features and schemas are subject to **breaking changes**.
+## Interactions
 
 The Interactions API is a unified interface for interacting with Gemini models and agents. It simplifies state management, tool orchestration, and long-running tasks.
 

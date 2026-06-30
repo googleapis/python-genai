@@ -17,6 +17,8 @@ from collections.abc import Iterator
 import sys
 from typing import AsyncIterator, Awaitable, Optional, Union, get_args
 
+
+from . import _extra_utils
 from . import _transformers as t
 from . import types
 from .models import AsyncModels, Models
@@ -113,7 +115,7 @@ class _BaseChat:
       history: list[ContentOrDict],
   ):
     self._model = model
-    self._config = config
+    self._config = _extra_utils.get_usage_header(config, usage="chat")
     content_models = []
     for content in history:
       if not isinstance(content, Content):
@@ -249,10 +251,14 @@ class Chat(_BaseChat):
           f" {types.PartUnionDict}, got {type(message)}"
       )
     input_content = t.t_content(message)
+    method_config = config if config else self._config
+    method_config = _extra_utils.get_usage_header(
+        method_config, usage="chat"
+    )
     response = self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-        config=config if config else self._config,
+        config=method_config,
     )
     model_output = (
         [response.candidates[0].content]
@@ -306,11 +312,15 @@ class Chat(_BaseChat):
     finish_reason = None
     is_valid = True
     chunk = None
+    method_config = config if config else self._config
+    method_config = _extra_utils.get_usage_header(
+        method_config, usage="chat"
+    )
     if isinstance(self._modules, Models):
       for chunk in self._modules.generate_content_stream(
           model=self._model,
           contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-          config=config if config else self._config,
+          config=method_config,
       ):
         if not _validate_response(chunk):
           is_valid = False
@@ -411,10 +421,14 @@ class AsyncChat(_BaseChat):
           f" {types.PartUnionDict}, got {type(message)}"
       )
     input_content = t.t_content(message)
+    method_config = config if config else self._config
+    method_config = _extra_utils.get_usage_header(
+        method_config, usage="chat"
+    )
     response = await self._modules.generate_content(
         model=self._model,
         contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-        config=config if config else self._config,
+        config=method_config,
     )
     model_output = (
         [response.candidates[0].content]
@@ -465,6 +479,11 @@ class AsyncChat(_BaseChat):
       )
     input_content = t.t_content(message)
 
+    method_config = config if config else self._config
+    method_config = _extra_utils.get_usage_header(
+        method_config, usage="chat"
+    )
+
     async def async_generator():  # type: ignore[no-untyped-def]
       output_contents = []
       finish_reason = None
@@ -473,7 +492,7 @@ class AsyncChat(_BaseChat):
       async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
           model=self._model,
           contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-          config=config if config else self._config,
+          config=method_config,
       ):
         if not _validate_response(chunk):
           is_valid = False

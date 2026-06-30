@@ -18,7 +18,7 @@ import functools
 import hashlib
 import os
 import tempfile
-from typing import Optional, cast
+from typing import Any, Optional, cast
 import uuid
 
 import requests  # type: ignore
@@ -45,6 +45,19 @@ _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES = {
     "gemini-2.0-flash-001": "gemma3",
     "gemini-2.0-flash-lite-001": "gemma3",
     "gemini-3-pro-preview": "gemma3",
+    "gemini-3-flash-preview": "gemma3",
+}
+
+# https://github.com/google/gemma_pytorch stop supporting gemma 4 moving forward.
+_GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES = {
+    "gemini-3.5-flash": "gemma4",
+    "gemini-3.1-flash-lite": "gemma4",
+    "gemini-3.1-pro-preview": "gemma4",
+    "gemini-4-flash-preview": "gemma4",
+}
+
+GEMMA_TOKENIZER_TO_MODEL_NAMES = {
+    "gemma4": "google/gemma-4-E4B-it",
 }
 
 
@@ -54,14 +67,7 @@ class _TokenizerConfig:
   model_hash: str
 
 
-# TODO: update gemma3 tokenizer
 _TOKENIZERS = {
-    "gemma2": _TokenizerConfig(
-        model_url="https://raw.githubusercontent.com/google/gemma_pytorch/33b652c465537c6158f9a472ea5700e5e770ad3f/tokenizer/tokenizer.model",
-        model_hash=(
-            "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2"
-        ),
-    ),
     "gemma3": _TokenizerConfig(
         model_url="https://raw.githubusercontent.com/google/gemma_pytorch/014acb7ac4563a5f77c76d7ff98f31b568c16508/tokenizer/gemma3_cleaned_262144_v2.spiece.model",
         model_hash=(
@@ -177,7 +183,7 @@ def _load_model_proto_bytes(tokenizer_name: str) -> bytes:
   """Loads model proto bytes from the given tokenizer name."""
   if tokenizer_name not in _TOKENIZERS:
     raise ValueError(
-        f"Tokenizer {tokenizer_name} is not supported."
+        f"Tokenizer {tokenizer_name} is not supported. "
         f"Supported tokenizers: {list(_TOKENIZERS.keys())}"
     )
   return _load(
@@ -202,9 +208,28 @@ def get_tokenizer_name(model_name: str) -> str:
     return _GEMINI_MODELS_TO_TOKENIZER_NAMES[model_name]
   if model_name in _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES.keys():
     return _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES[model_name]
+  if model_name in _GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES.keys():
+    return _GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES[model_name]
   raise ValueError(
       f"Model {model_name} is not supported. Supported models: {', '.join(_GEMINI_MODELS_TO_TOKENIZER_NAMES.keys())}, {', '.join(_GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES.keys())}.\n"  # pylint: disable=line-too-long
   )
+
+
+def get_huggingface_tokenizer(tokenizer_name: str) -> Any:
+  """Loads huggingface tokenizer from the given tokenizer name."""
+  # Load the processor which includes the tokenizer
+  try:
+    from transformers import AutoProcessor
+  except ImportError:
+    raise ImportError(
+        "Please install transformers to use huggingface tokenizer: pip install"
+        " transformers"
+    ) from ImportError
+  processor = AutoProcessor.from_pretrained(  # type: ignore[no-untyped-call]
+      GEMMA_TOKENIZER_TO_MODEL_NAMES[tokenizer_name]
+  )
+  # Access the underlying tokenizer if needed
+  return processor.tokenizer
 
 
 @functools.lru_cache()

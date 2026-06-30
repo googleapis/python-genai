@@ -34,6 +34,19 @@ def _AudioTranscriptionConfig_to_mldev(
         ' Platform mode, not in Gemini Developer API mode.'
     )
 
+  if getv(from_object, ['language_auto']) is not None:
+    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
+
+  if getv(from_object, ['language_hints']) is not None:
+    setv(to_object, ['languageHints'], getv(from_object, ['language_hints']))
+
+  if getv(from_object, ['adaptation_phrases']) is not None:
+    setv(
+        to_object,
+        ['adaptationPhrases'],
+        getv(from_object, ['adaptation_phrases']),
+    )
+
   return to_object
 
 
@@ -119,6 +132,37 @@ def _CodeExecutionResult_to_vertex(
     raise ValueError(
         'id parameter is only supported in Gemini Developer API mode, not in'
         ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
+def _ComputerUse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  if getv(from_object, ['excluded_predefined_functions']) is not None:
+    setv(
+        to_object,
+        ['excludedPredefinedFunctions'],
+        getv(from_object, ['excluded_predefined_functions']),
+    )
+
+  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
+    setv(
+        to_object,
+        ['enablePromptInjectionDetection'],
+        getv(from_object, ['enable_prompt_injection_detection']),
+    )
+
+  if getv(from_object, ['disabled_safety_policies']) is not None:
+    raise ValueError(
+        'disabled_safety_policies parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -774,10 +818,7 @@ def _LiveClientSetup_to_vertex(
     )
 
   if getv(from_object, ['history_config']) is not None:
-    raise ValueError(
-        'history_config parameter is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
-    )
+    setv(to_object, ['historyConfig'], getv(from_object, ['history_config']))
 
   if getv(from_object, ['avatar_config']) is not None:
     setv(to_object, ['avatarConfig'], getv(from_object, ['avatar_config']))
@@ -973,11 +1014,11 @@ def _LiveConnectConfig_to_mldev(
         ],
     )
 
-  if getv(from_object, ['stream_translation_config']) is not None:
+  if getv(from_object, ['translation_config']) is not None:
     setv(
         parent_object,
-        ['setup', 'generationConfig', 'streamTranslationConfig'],
-        getv(from_object, ['stream_translation_config']),
+        ['setup', 'generationConfig', 'translationConfig'],
+        getv(from_object, ['translation_config']),
     )
 
   return to_object
@@ -1141,9 +1182,10 @@ def _LiveConnectConfig_to_vertex(
     )
 
   if getv(from_object, ['history_config']) is not None:
-    raise ValueError(
-        'history_config parameter is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    setv(
+        parent_object,
+        ['setup', 'historyConfig'],
+        getv(from_object, ['history_config']),
     )
 
   if getv(from_object, ['avatar_config']) is not None:
@@ -1160,10 +1202,10 @@ def _LiveConnectConfig_to_vertex(
         [item for item in getv(from_object, ['safety_settings'])],
     )
 
-  if getv(from_object, ['stream_translation_config']) is not None:
+  if getv(from_object, ['translation_config']) is not None:
     raise ValueError(
-        'stream_translation_config parameter is only supported in Gemini'
-        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+        'translation_config parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1518,6 +1560,26 @@ def _LiveServerMessage_from_vertex(
         _VoiceActivity_from_vertex(
             getv(from_object, ['voiceActivity']), to_object
         ),
+    )
+
+  return to_object
+
+
+def _McpServer_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    raise ValueError(
+        'name parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['streamable_http_transport']) is not None:
+    raise ValueError(
+        'streamable_http_transport parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1892,7 +1954,11 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+    setv(
+        to_object,
+        ['computerUse'],
+        _ComputerUse_to_vertex(getv(from_object, ['computer_use']), to_object),
+    )
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
@@ -1941,9 +2007,13 @@ def _Tool_to_vertex(
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
 
   if getv(from_object, ['mcp_servers']) is not None:
-    raise ValueError(
-        'mcp_servers parameter is only supported in Gemini Developer API mode,'
-        ' not in Gemini Enterprise Agent Platform mode.'
+    setv(
+        to_object,
+        ['mcpServers'],
+        [
+            _McpServer_to_vertex(item, to_object)
+            for item in getv(from_object, ['mcp_servers'])
+        ],
     )
 
   return to_object
@@ -2036,6 +2106,9 @@ def _VoiceActivity_from_mldev(
   if getv(from_object, ['type']) is not None:
     setv(to_object, ['voice_activity_type'], getv(from_object, ['type']))
 
+  if getv(from_object, ['audioOffset']) is not None:
+    setv(to_object, ['audio_offset'], getv(from_object, ['audioOffset']))
+
   return to_object
 
 
@@ -2046,6 +2119,9 @@ def _VoiceActivity_from_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['type']) is not None:
     setv(to_object, ['voice_activity_type'], getv(from_object, ['type']))
+
+  if getv(from_object, ['audioOffset']) is not None:
+    setv(to_object, ['audio_offset'], getv(from_object, ['audioOffset']))
 
   return to_object
 

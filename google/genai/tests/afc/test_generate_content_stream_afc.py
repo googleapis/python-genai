@@ -21,6 +21,14 @@ from ... import models
 from ... import types
 
 
+pytestmark = [
+    pytest.mark.skipif(
+        "config.getoption('--private')",
+        reason="AFC logic in private SDK is re-written",
+    ),
+]
+
+
 TEST_NO_AFC_PART = types.Part(
     text=(
         'Okay, here is the weather in San Francisco'

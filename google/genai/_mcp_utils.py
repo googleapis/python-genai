@@ -225,7 +225,15 @@ async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typ
       else:
         msg = f"{type(exc).__name__}: {str(exc)}"
         if hasattr(exc, "response") and exc.response is not None:
-          msg += f" (HTTP {exc.response.status_code}: {exc.response.text})"
+          status = getattr(
+              exc.response,
+              "status_code",
+              getattr(exc.response, "status", "Unknown"),
+          )
+          text = getattr(exc.response, "text", str(exc.response))
+          if callable(text):
+            text = str(exc.response)
+          msg += f" (HTTP {status}: {text})"
         error_messages.append(msg)
 
     if type(eg).__name__ in ("ExceptionGroup", "BaseExceptionGroup") or hasattr(
