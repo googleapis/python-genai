@@ -19,8 +19,8 @@ import asyncio
 import inspect
 import io
 import logging
-import sys
 import typing
+from types import UnionType
 from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
 import mimetypes
 import os
@@ -33,11 +33,6 @@ from . import errors
 from . import types
 from ._adapters import McpToGenAiToolAdapter
 
-
-if sys.version_info >= (3, 10):
-  from types import UnionType
-else:
-  UnionType = typing._UnionGenericAlias  # type: ignore[attr-defined]
 
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
