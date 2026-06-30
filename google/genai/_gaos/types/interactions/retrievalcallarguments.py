@@ -23,22 +23,22 @@ from typing import List, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
-class URLContextCallArgumentsParam(TypedDict):
-    r"""The arguments to pass to the URL context."""
+class RetrievalCallArgumentsTypedDict(TypedDict):
+    r"""The arguments to pass to Retrieval tools."""
 
-    urls: NotRequired[List[str]]
-    r"""The URLs to fetch."""
+    queries: NotRequired[List[str]]
+    r"""Queries for Retrieval information."""
 
 
-class URLContextCallArguments(BaseModel):
-    r"""The arguments to pass to the URL context."""
+class RetrievalCallArguments(BaseModel):
+    r"""The arguments to pass to Retrieval tools."""
 
-    urls: Optional[List[str]] = None
-    r"""The URLs to fetch."""
+    queries: Optional[List[str]] = None
+    r"""Queries for Retrieval information."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["urls"])
+        optional_fields = set(["queries"])
         serialized = handler(self)
         m = {}
 
