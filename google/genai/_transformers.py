@@ -834,7 +834,10 @@ def process_schema(
   visited_dicts_path.remove(id(schema))
 
 def _process_enum(
-    enum: EnumMeta, client: Optional[_api_client.BaseApiClient]
+    enum: EnumMeta,
+    client: Optional[_api_client.BaseApiClient],
+    *,
+    order_properties: bool = True,
 ) -> types.Schema:
   is_integer_enum = False
 
@@ -857,7 +860,7 @@ def _process_enum(
     placeholder: enum_to_process  # type: ignore[valid-type]
 
   enum_schema = Placeholder.model_json_schema()
-  process_schema(enum_schema, client)
+  process_schema(enum_schema, client, order_properties=order_properties)
   enum_schema = enum_schema['properties']['placeholder']
   return types.Schema.model_validate(enum_schema)
 
@@ -874,21 +877,23 @@ def _is_type_dict_str_any(
 def t_schema(
     client: Optional[_api_client.BaseApiClient],
     origin: Union[types.SchemaUnionDict, Any],
+    *,
+    order_properties: bool = True,
 ) -> Optional[types.Schema]:
   if not origin:
     return None
   if isinstance(origin, dict) and _is_type_dict_str_any(origin):
-    process_schema(origin, client)
+    process_schema(origin, client, order_properties=order_properties)
     return types.Schema.model_validate(origin)
   if isinstance(origin, EnumMeta):
-    return _process_enum(origin, client)
+    return _process_enum(origin, client, order_properties=order_properties)
   if is_duck_type_of(origin, types.Schema):
     if dict(origin) == dict(types.Schema()):  # type: ignore [arg-type]
       # response_schema value was coerced to an empty Schema instance because
       # it did not adhere to the Schema field annotation
       _raise_for_unsupported_schema_type(origin)
     schema = origin.model_dump(exclude_unset=True)  # type: ignore[union-attr]
-    process_schema(schema, client)
+    process_schema(schema, client, order_properties=order_properties)
     return types.Schema.model_validate(schema)
 
   if (
@@ -899,7 +904,7 @@ def t_schema(
       and issubclass(origin, pydantic.BaseModel)
   ):
     schema = origin.model_json_schema()
-    process_schema(schema, client)
+    process_schema(schema, client, order_properties=order_properties)
     return types.Schema.model_validate(schema)
   elif (
       isinstance(origin, GenericAlias)
@@ -912,7 +917,7 @@ def t_schema(
       placeholder: origin  # type: ignore[valid-type]
 
     schema = Placeholder.model_json_schema()
-    process_schema(schema, client)
+    process_schema(schema, client, order_properties=order_properties)
     schema = schema['properties']['placeholder']
     return types.Schema.model_validate(schema)
 
