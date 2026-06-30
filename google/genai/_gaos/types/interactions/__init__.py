@@ -53,6 +53,17 @@ if TYPE_CHECKING:
         CodeExecutionResultStep,
         CodeExecutionResultStepParam,
     )
+    from .codemenderagentconfig import (
+        CodeMenderAgentConfig,
+        CodeMenderAgentConfigParam,
+        FindRequest,
+        FindRequestParam,
+        FixRequest,
+        FixRequestParam,
+        Mode,
+        SessionConfig,
+        SessionConfigParam,
+    )
     from .computeruse import (
         ComputerUse,
         ComputerUseParam,
@@ -113,6 +124,7 @@ if TYPE_CHECKING:
     from .errorevent import ErrorEvent, ErrorEventTypedDict
     from .exaaisearchconfig import ExaAISearchConfig, ExaAISearchConfigParam
     from .filecitation import FileCitation, FileCitationParam
+    from .filecontent import FileContent, FileContentParam
     from .filesearch import FileSearch, FileSearchParam
     from .filesearchcalldelta import FileSearchCallDelta, FileSearchCallDeltaTypedDict
     from .filesearchcallstep import FileSearchCallStep, FileSearchCallStepParam
@@ -406,6 +418,8 @@ __all__ = [
     "CodeExecutionResultDeltaTypedDict",
     "CodeExecutionResultStep",
     "CodeExecutionResultStepParam",
+    "CodeMenderAgentConfig",
+    "CodeMenderAgentConfigParam",
     "ComputerUse",
     "ComputerUseParam",
     "Content",
@@ -451,6 +465,8 @@ __all__ = [
     "ExaAISearchConfigParam",
     "FileCitation",
     "FileCitationParam",
+    "FileContent",
+    "FileContentParam",
     "FileSearch",
     "FileSearchCallDelta",
     "FileSearchCallDeltaTypedDict",
@@ -465,6 +481,10 @@ __all__ = [
     "FileSearchResultTypedDict",
     "Filter",
     "FilterParam",
+    "FindRequest",
+    "FindRequestParam",
+    "FixRequest",
+    "FixRequestParam",
     "Function",
     "FunctionCallStep",
     "FunctionCallStepParam",
@@ -585,6 +605,7 @@ __all__ = [
     "MediaResolution",
     "ModalityTokens",
     "ModalityTokensTypedDict",
+    "Mode",
     "Model",
     "ModelOutputStep",
     "ModelOutputStepParam",
@@ -612,6 +633,8 @@ __all__ = [
     "ReviewSnippet",
     "ReviewSnippetParam",
     "ServiceTier",
+    "SessionConfig",
+    "SessionConfigParam",
     "Source",
     "SourceParam",
     "SourceType",
@@ -747,6 +770,15 @@ _dynamic_imports: dict[str, str] = {
     "CodeExecutionResultDeltaTypedDict": ".codeexecutionresultdelta",
     "CodeExecutionResultStep": ".codeexecutionresultstep",
     "CodeExecutionResultStepParam": ".codeexecutionresultstep",
+    "CodeMenderAgentConfig": ".codemenderagentconfig",
+    "CodeMenderAgentConfigParam": ".codemenderagentconfig",
+    "FindRequest": ".codemenderagentconfig",
+    "FindRequestParam": ".codemenderagentconfig",
+    "FixRequest": ".codemenderagentconfig",
+    "FixRequestParam": ".codemenderagentconfig",
+    "Mode": ".codemenderagentconfig",
+    "SessionConfig": ".codemenderagentconfig",
+    "SessionConfigParam": ".codemenderagentconfig",
     "ComputerUse": ".computeruse",
     "ComputerUseParam": ".computeruse",
     "DisabledSafetyPolicy": ".computeruse",
@@ -799,6 +831,8 @@ _dynamic_imports: dict[str, str] = {
     "ExaAISearchConfigParam": ".exaaisearchconfig",
     "FileCitation": ".filecitation",
     "FileCitationParam": ".filecitation",
+    "FileContent": ".filecontent",
+    "FileContentParam": ".filecontent",
     "FileSearch": ".filesearch",
     "FileSearchParam": ".filesearch",
     "FileSearchCallDelta": ".filesearchcalldelta",
