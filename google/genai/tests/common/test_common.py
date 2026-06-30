@@ -677,6 +677,18 @@ However, we can talk about the **leading contenders** and what they are generall
   assert repr(obj) == expected
 
 
+def test_generate_content_usage_metadata_service_tier():
+  response = types.GenerateContentResponse.model_validate({
+      'usageMetadata': {
+          'promptTokenCount': 1,
+          'totalTokenCount': 1,
+          'serviceTier': 'priority',
+      }
+  })
+
+  assert response.usage_metadata.service_tier == types.ServiceTier.PRIORITY
+
+
 def test_move_value_by_path():
   """Test move_value_by_path function with array wildcard notation."""
   data = {
