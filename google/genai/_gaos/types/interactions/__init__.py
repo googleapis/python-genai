@@ -293,6 +293,13 @@ if TYPE_CHECKING:
     from .responsemodality import ResponseModality
     from .retrieval import Retrieval, RetrievalParam, RetrievalType
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
+    from .safetysetting import (
+        Method,
+        SafetySetting,
+        SafetySettingParam,
+        SafetySettingType,
+        Threshold,
+    )
     from .servicetier import ServiceTier
     from .source import Source, SourceParam, SourceType
     from .speechconfig import SpeechConfig, SpeechConfigParam
@@ -583,6 +590,7 @@ __all__ = [
     "MCPServerToolResultStepResultUnion",
     "MCPServerToolResultStepResultUnionParam",
     "MediaResolution",
+    "Method",
     "ModalityTokens",
     "ModalityTokensTypedDict",
     "Model",
@@ -611,6 +619,9 @@ __all__ = [
     "RetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
+    "SafetySetting",
+    "SafetySettingParam",
+    "SafetySettingType",
     "ServiceTier",
     "Source",
     "SourceParam",
@@ -653,6 +664,7 @@ __all__ = [
     "ThoughtSummaryContentParam",
     "ThoughtSummaryDelta",
     "ThoughtSummaryDeltaTypedDict",
+    "Threshold",
     "Tool",
     "ToolChoice",
     "ToolChoiceConfig",
@@ -960,6 +972,11 @@ _dynamic_imports: dict[str, str] = {
     "RetrievalType": ".retrieval",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
+    "Method": ".safetysetting",
+    "SafetySetting": ".safetysetting",
+    "SafetySettingParam": ".safetysetting",
+    "SafetySettingType": ".safetysetting",
+    "Threshold": ".safetysetting",
     "ServiceTier": ".servicetier",
     "Source": ".source",
     "SourceParam": ".source",

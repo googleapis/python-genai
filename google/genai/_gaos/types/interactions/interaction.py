@@ -33,6 +33,7 @@ from .interactionsinput import InteractionsInput, InteractionsInputParam
 from .model import Model
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
+from .safetysetting import SafetySetting, SafetySettingParam
 from .servicetier import ServiceTier
 from .step import Step, StepParam
 from .tool import Tool, ToolParam
@@ -43,7 +44,7 @@ from functools import partial
 import pydantic
 from pydantic import ConfigDict, model_serializer, model_validator
 from pydantic.functional_validators import BeforeValidator
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
@@ -181,6 +182,10 @@ class InteractionTypedDict(TypedDict):
     """
     agent_config: NotRequired[InteractionAgentConfigTypedDict]
     r"""Configuration parameters for the agent interaction."""
+    safety_settings: NotRequired[List[SafetySettingParam]]
+    r"""Safety settings for the interaction."""
+    labels: NotRequired[Dict[str, str]]
+    r"""The labels with user-defined metadata for the request."""
     input: NotRequired[InteractionsInputParam]
     r"""The input for the interaction."""
     output_text: NotRequired[str]
@@ -277,6 +282,12 @@ class Interaction(BaseModel):
     agent_config: Optional[InteractionAgentConfig] = None
     r"""Configuration parameters for the agent interaction."""
 
+    safety_settings: Optional[List[SafetySetting]] = None
+    r"""Safety settings for the interaction."""
+
+    labels: Optional[Dict[str, str]] = None
+    r"""The labels with user-defined metadata for the request."""
+
     input: Optional[InteractionsInput] = None
     r"""The input for the interaction."""
 
@@ -319,6 +330,8 @@ class Interaction(BaseModel):
                 "generation_config",
                 "cached_content",
                 "agent_config",
+                "safety_settings",
+                "labels",
                 "input",
                 "output_text",
                 "output_image",

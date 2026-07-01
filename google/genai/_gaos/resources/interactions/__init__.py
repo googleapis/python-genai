@@ -107,6 +107,7 @@ from . import googlemapsresult
 from . import googlemapsresultstep
 from . import googlesearchcallstep
 from . import googlesearchresultstep
+from . import interaction
 from . import interactioncompletedevent
 from . import interactioncreatedevent
 from . import interactionstatusupdate
@@ -204,6 +205,7 @@ __all__ = [
     "googlemapsresultstep",
     "googlesearchcallstep",
     "googlesearchresultstep",
+    "interaction",
     "interactioncompletedevent",
     "interactioncreatedevent",
     "interactionstatusupdate",
