@@ -1058,6 +1058,31 @@ def test_json_schema_fields(client):
   assert response.parsed != None
 
 
+@pytest.mark.parametrize('schema_key', ['response_schema', 'response_json_schema'])
+def test_schema_parse_keeps_response_for_oversized_json_integer(
+    schema_key, use_vertex, replays_prefix, http_options
+):
+  get_int_max_str_digits = getattr(sys, 'get_int_max_str_digits', None)
+  if get_int_max_str_digits is None:
+    pytest.skip('Python runtime has no int string digit limit')
+  digit_limit = get_int_max_str_digits()
+  if digit_limit == 0:
+    pytest.skip('int string digit limit is disabled')
+
+  response_text = '{"count": ' + '1' * (digit_limit + 1) + '}'
+  response = types.GenerateContentResponse._from_response(
+      response={
+          'candidates': [
+              {'content': {'parts': [{'text': response_text}]}}
+          ],
+      },
+      kwargs={'config': {schema_key: {'type': 'object'}}},
+  )
+
+  assert response.text == response_text
+  assert response.parsed is None
+
+
 def test_pydantic_schema_orders_properties(client):
   class Restaurant(BaseModel):
     name: str
