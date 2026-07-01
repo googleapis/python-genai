@@ -21,6 +21,7 @@ from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils.unions import parse_open_union
 from .agentoption import AgentOption
 from .audiocontent import AudioContent, AudioContentParam
+from .codemenderagentconfig import CodeMenderAgentConfig, CodeMenderAgentConfigParam
 from .deepresearchagentconfig import (
     DeepResearchAgentConfig,
     DeepResearchAgentConfigParam,
@@ -89,7 +90,11 @@ r"""The environment configuration for the interaction. Can be an object specifyi
 
 InteractionAgentConfigTypedDict = TypeAliasType(
     "InteractionAgentConfigTypedDict",
-    Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam],
+    Union[
+        DynamicAgentConfigParam,
+        DeepResearchAgentConfigParam,
+        CodeMenderAgentConfigParam,
+    ],
 )
 r"""Configuration parameters for the agent interaction."""
 
@@ -107,11 +112,17 @@ class UnknownInteractionAgentConfig(BaseModel):
 _INTERACTION_AGENT_CONFIG_VARIANTS: dict[str, Any] = {
     "dynamic": DynamicAgentConfig,
     "deep-research": DeepResearchAgentConfig,
+    "code-mender": CodeMenderAgentConfig,
 }
 
 
 InteractionAgentConfig = Annotated[
-    Union[DynamicAgentConfig, DeepResearchAgentConfig, UnknownInteractionAgentConfig],
+    Union[
+        DynamicAgentConfig,
+        DeepResearchAgentConfig,
+        CodeMenderAgentConfig,
+        UnknownInteractionAgentConfig,
+    ],
     BeforeValidator(
         partial(
             parse_open_union,
