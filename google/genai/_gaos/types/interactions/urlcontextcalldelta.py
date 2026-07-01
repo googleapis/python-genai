@@ -21,7 +21,7 @@ from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
 from .urlcontextcallarguments import (
     URLContextCallArguments,
-    URLContextCallArgumentsTypedDict,
+    URLContextCallArgumentsParam,
 )
 import pydantic
 from pydantic import model_serializer
@@ -31,7 +31,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class URLContextCallDeltaTypedDict(TypedDict):
-    arguments: URLContextCallArgumentsTypedDict
+    arguments: URLContextCallArgumentsParam
     r"""The arguments to pass to the URL context."""
     type: Literal["url_context_call"]
     signature: NotRequired[str]
