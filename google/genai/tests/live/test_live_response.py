@@ -161,3 +161,40 @@ async def test_receive_server_content_with_turn_reason(mock_websocket, vertexai)
   assert result.server_content.turn_complete is True
   assert result.server_content.turn_complete_reason == types.TurnCompleteReason.NEED_MORE_INPUT
   assert result.server_content.waiting_for_input is True
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_receive_continues_after_turn_complete(mock_websocket, vertexai):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+
+  first_turn_complete = types.LiveServerMessage(
+      server_content=types.LiveServerContent(turn_complete=True)
+  )
+  second_turn_message = types.LiveServerMessage(
+      server_content=types.LiveServerContent(
+          model_turn=types.Content(parts=[types.Part(text='second turn')])
+      )
+  )
+  second_turn_complete = types.LiveServerMessage(
+      server_content=types.LiveServerContent(turn_complete=True)
+  )
+
+  session._receive = AsyncMock(
+      side_effect=[
+          first_turn_complete,
+          second_turn_message,
+          second_turn_complete,
+          None,
+      ]
+  )
+
+  messages = [message async for message in session.receive()]
+
+  assert messages == [
+      first_turn_complete,
+      second_turn_message,
+      second_turn_complete,
+  ]
