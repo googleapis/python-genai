@@ -247,6 +247,12 @@ def test_gemini_embedding_2_content_combination(client):
   assert response.embeddings is not None
   assert len(response.embeddings) == 1
   assert len(response.embeddings[0].values) == 100
+  if client._api_client.vertexai:
+    statistics = response.embeddings[0].statistics
+    assert statistics is not None
+    assert statistics.token_count is not None
+    assert statistics.tokens_details is not None
+    assert len(statistics.tokens_details) > 0
 
 
 @pytest.mark.asyncio

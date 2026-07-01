@@ -8564,6 +8564,11 @@ class ContentEmbeddingStatistics(_common.BaseModel):
       description="""Gemini Enterprise Agent Platform only. Number of tokens of the input text.
       """,
   )
+  tokens_details: Optional[list[ModalityTokenCount]] = Field(
+      default=None,
+      description="""Gemini Enterprise Agent Platform only. List of modalities and their token count for the input content.
+      """,
+  )
 
 
 class ContentEmbeddingStatisticsDict(TypedDict, total=False):
@@ -8576,6 +8581,10 @@ class ContentEmbeddingStatisticsDict(TypedDict, total=False):
 
   token_count: Optional[float]
   """Gemini Enterprise Agent Platform only. Number of tokens of the input text.
+      """
+
+  tokens_details: Optional[list[ModalityTokenCountDict]]
+  """Gemini Enterprise Agent Platform only. List of modalities and their token count for the input content.
       """
 
 
