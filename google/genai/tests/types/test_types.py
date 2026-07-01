@@ -18,6 +18,7 @@ import copy
 import json
 import sys
 import typing
+from enum import IntEnum
 from typing import Optional, assert_never
 import PIL.Image
 import pydantic
@@ -2540,6 +2541,43 @@ def test_function_with_tuple_contains_unevaluated_items():
 
   assert actual_schema_mldev.parameters_json_schema == expected_parameters_json_schema
   assert actual_schema_vertex.parameters_json_schema == expected_parameters_json_schema
+
+
+def test_function_with_int_enum_parameter():
+
+  class DaysEnum(IntEnum):
+    ONE = 1
+    FIVE = 5
+    TEN = 10
+
+  def func_under_test(days: DaysEnum) -> str:
+    """test IntEnum parameter."""
+    return ''
+
+  expected_schema = types.FunctionDeclaration(
+      name='func_under_test',
+      parameters=types.Schema(
+          type='OBJECT',
+          properties={
+              'days': types.Schema(
+                  type='INTEGER',
+                  enum=['1', '5', '10'],
+              ),
+          },
+          required=['days'],
+      ),
+      description='test IntEnum parameter.',
+  )
+
+  actual_schema_mldev = types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  actual_schema_vertex = types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
+
+  assert actual_schema_mldev == expected_schema
+  assert actual_schema_vertex == expected_schema
 
 
 def test_function_gemini_api(monkeypatch):
