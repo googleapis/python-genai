@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.11.0](https://github.com/googleapis/python-genai/compare/v2.10.0...v2.11.0) (2026-07-02)
+
+
+### Features
+
+* Add environment_id in network config ([df5f13a](https://github.com/googleapis/python-genai/commit/df5f13a9decc1f01f102aba1b953f2a4c6e350d6))
+
+
+### Bug Fixes
+
+* Event loop mismatch in GenAI SDK ([10df4b1](https://github.com/googleapis/python-genai/commit/10df4b1eeb54140ca56e011d3bc21862f6d594d0))
+
 ## [2.10.0](https://github.com/googleapis/python-genai/compare/v2.9.0...v2.10.0) (2026-06-24)
 
 
