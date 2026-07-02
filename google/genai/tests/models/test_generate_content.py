@@ -23,8 +23,10 @@ import pytest
 import json
 import logging
 import sys
+from ... import _api_client
 from ... import _transformers as t
 from ... import errors
+from ... import models as models_module
 from ... import types
 from .. import pytest_helper
 from enum import Enum
@@ -567,7 +569,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'service_tier': 'FLEX',
             },
         ),
-        exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
         name='test_service_tier_lower',
@@ -578,7 +579,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'service_tier': 'flex',
             },
         ),
-        exception_if_vertex='400',
     ),
 ]
 
@@ -2583,3 +2583,40 @@ def test_response_json_schema_with_one_of(client):
   assert resource_config['size'] == 10
   assert 'tier' not in resource_config
   assert set(resource_config.keys()) == {'size'}
+
+
+def test_vertex_service_tier_uses_headers_not_body(
+    use_vertex, replays_prefix, http_options
+):
+  api_client = _api_client.BaseApiClient(
+      vertexai=True, project='test-project', location='global'
+  )
+  models = models_module.Models(api_client)
+  captured_request = {}
+
+  def fake_request(method, path, request_dict, http_options):
+    captured_request['method'] = method
+    captured_request['path'] = path
+    captured_request['request_dict'] = request_dict
+    captured_request['http_options'] = http_options
+    response = _api_client.HttpResponse(headers={})
+    response.body = '{}'
+    return response
+
+  api_client.request = fake_request
+
+  models.generate_content(
+      model='gemini-3-flash-preview',
+      contents='hello',
+      config=types.GenerateContentConfig(
+          service_tier=types.ServiceTier.PRIORITY,
+          http_options=types.HttpOptions(headers={'X-Custom-Header': 'yes'}),
+      ),
+  )
+
+  assert 'serviceTier' not in captured_request['request_dict']
+  assert captured_request['http_options'].headers == {
+      'X-Custom-Header': 'yes',
+      'X-Vertex-AI-LLM-Request-Type': 'shared',
+      'X-Vertex-AI-LLM-Shared-Request-Type': 'priority',
+  }

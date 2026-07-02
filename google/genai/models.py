@@ -36,6 +36,44 @@ from .pagers import AsyncPager, Pager
 
 logger = logging.getLogger('google_genai.models')
 
+_VERTEX_REQUEST_TYPE_HEADER = 'X-Vertex-AI-LLM-Request-Type'
+_VERTEX_SHARED_REQUEST_TYPE_HEADER = 'X-Vertex-AI-LLM-Shared-Request-Type'
+
+
+def _apply_vertex_service_tier_headers(
+    service_tier: Any,
+    request_dict: dict[str, Any],
+    http_options: Optional[types.HttpOptions],
+) -> Optional[types.HttpOptions]:
+  if service_tier is None:
+    return http_options
+
+  request_dict.pop('serviceTier', None)
+  service_tier_value = getattr(service_tier, 'value', service_tier)
+  service_tier_value = str(service_tier_value).lower()
+  if service_tier_value in ('', 'unspecified'):
+    return http_options
+
+  if isinstance(http_options, types.HttpOptions):
+    patched_http_options = http_options.model_copy(deep=True)
+  elif http_options is not None:
+    patched_http_options = types.HttpOptions.model_validate(http_options)
+  else:
+    patched_http_options = types.HttpOptions()
+
+  headers = dict(patched_http_options.headers or {})
+  if service_tier_value == 'standard':
+    headers[_VERTEX_REQUEST_TYPE_HEADER] = 'shared'
+    headers.pop(_VERTEX_SHARED_REQUEST_TYPE_HEADER, None)
+  elif service_tier_value in ('flex', 'priority'):
+    headers[_VERTEX_REQUEST_TYPE_HEADER] = 'shared'
+    headers[_VERTEX_SHARED_REQUEST_TYPE_HEADER] = service_tier_value
+  else:
+    return http_options
+
+  patched_http_options.headers = headers
+  return patched_http_options
+
 
 def _PersonGeneration_to_mldev_enum_validate(enum_value: Any) -> None:
   if enum_value in set(['ALLOW_ALL']):
@@ -4947,6 +4985,10 @@ class Models(_api_module.BaseModule):
         and parameter_model.config.http_options is not None
     ):
       http_options = parameter_model.config.http_options
+    if self._api_client.vertexai and parameter_model.config is not None:
+      http_options = _apply_vertex_service_tier_headers(
+          parameter_model.config.service_tier, request_dict, http_options
+      )
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -5047,6 +5089,10 @@ class Models(_api_module.BaseModule):
         and parameter_model.config.http_options is not None
     ):
       http_options = parameter_model.config.http_options
+    if self._api_client.vertexai and parameter_model.config is not None:
+      http_options = _apply_vertex_service_tier_headers(
+          parameter_model.config.service_tier, request_dict, http_options
+      )
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -7146,6 +7192,10 @@ class AsyncModels(_api_module.BaseModule):
         and parameter_model.config.http_options is not None
     ):
       http_options = parameter_model.config.http_options
+    if self._api_client.vertexai and parameter_model.config is not None:
+      http_options = _apply_vertex_service_tier_headers(
+          parameter_model.config.service_tier, request_dict, http_options
+      )
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
@@ -7246,6 +7296,10 @@ class AsyncModels(_api_module.BaseModule):
         and parameter_model.config.http_options is not None
     ):
       http_options = parameter_model.config.http_options
+    if self._api_client.vertexai and parameter_model.config is not None:
+      http_options = _apply_vertex_service_tier_headers(
+          parameter_model.config.service_tier, request_dict, http_options
+      )
 
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
