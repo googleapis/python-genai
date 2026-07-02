@@ -18,6 +18,7 @@
 import base64
 from collections.abc import Iterable, Mapping
 from enum import Enum, EnumMeta
+from functools import partial as _partial
 import inspect
 import io
 import logging
@@ -959,7 +960,7 @@ def t_tool(
 ) -> Optional[Union[types.Tool, Any]]:
   if not origin:
     return None
-  if inspect.isfunction(origin) or inspect.ismethod(origin):
+  if inspect.isfunction(origin) or inspect.ismethod(origin) or isinstance(origin, _partial):
     return types.Tool(
         function_declarations=[
             types.FunctionDeclaration.from_callable(
