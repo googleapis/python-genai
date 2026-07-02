@@ -92,8 +92,26 @@ def test_patch_http_options_appends_version_headers():
       timeout=10000,
   )
   patched = _api_client.patch_http_options(original_options, patch_options)
-  assert 'user-agent' in patched.headers
+  assert 'User-Agent' in patched.headers
   assert 'x-goog-api-client' in patched.headers
+
+
+def test_patch_http_options_canonicalizes_user_agent_header():
+  original_options = types.HttpOptions(
+      headers={
+          'user-agent': 'lower-agent',
+          'User-Agent': 'custom-agent',
+      }
+  )
+  patched = _api_client.patch_http_options(
+      original_options,
+      types.HttpOptions(),
+  )
+
+  assert 'User-Agent' in patched.headers
+  assert 'user-agent' not in patched.headers
+  assert patched.headers['User-Agent'].endswith('custom-agent')
+  assert 'lower-agent' not in patched.headers['User-Agent']
 
 
 def test_setting_timeout_populates_server_timeout_header():
