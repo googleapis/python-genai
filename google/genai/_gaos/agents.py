@@ -166,6 +166,56 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "create",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
+                    },
+                    {
+                        "label": "create",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"research-assistant-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    description="A helpful research assistant.",\n    system_instruction="You are a helpful research assistant.",\n    base_environment="remote",\n    tools=[{"type": "google_search"}],\n)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "create",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `research-assistant-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A helpful research assistant.',\n    system_instruction: 'You are a helpful research assistant.',\n    base_environment: 'remote',\n    tools: [{ type: 'google_search' }],\n});\nif (!agent.id) {\n    throw new Error('Agent creation failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"data-analyst-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Always include visualizations and export results as PDF.",\n    base_environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "inline",\n                "target": ".agents/AGENTS.md",\n                "content": "Always use matplotlib for charts. Include a summary table in every report.",\n            },\n            {\n                "type": "repository",\n                "source": "https://github.com/my-org/analysis-templates",\n                "target": "/workspace/templates",\n            },\n        ],\n    },\n)\nprint(f"Created agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Always include visualizations and export results as PDF.',\n    base_environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'inline',\n                target: '.agents/AGENTS.md',\n                content: 'Always use matplotlib for charts. Include a summary table in every report.',\n            },\n            {\n                type: 'repository',\n                source: 'https://github.com/my-org/analysis-templates',\n                target: '/workspace/templates',\n            },\n        ],\n    },\n});\nconsole.log(`Created agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                    {
+                        "label": "fork_from_env",
+                        "lang": "sh",
+                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
+                    },
+                    {
+                        "label": "fork_from_env",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Set up the environment interactively.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a basic Hello World template to /workspace/template.py.",\n    environment="remote",\n)\n\n# Step 2: Fork that environment into a named agent.\nagent_id = f"my-data-analyst-{uuid.uuid4().hex[:8]}"\nagent = client.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Use the template at /workspace/template.py for all reports.",\n    base_environment=interaction.environment_id,\n)\nprint(f"Forked agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "fork_from_env",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Set up the environment interactively.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a basic Hello World template to /workspace/template.py.',\n    environment: 'remote',\n});\n\n// Step 2: Fork that environment into a named agent.\nconst agentId = `my-data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Use the template at /workspace/template.py for all reports.',\n    base_environment: interaction.environment_id,\n});\nconsole.log(`Forked agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -176,6 +226,17 @@ class Agents(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -309,6 +370,26 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "list",
+                        "lang": "sh",
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "list",
+                        "lang": "python",
+                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.agents.list()\nfor agent in response.agents or []:\n    print(agent.id)\n",
+                    },
+                    {
+                        "label": "list",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agents = await ai.agents.list();\nfor (const agent of (agents.agents ?? [])) {\n    console.log(agent.id);\n}\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -319,6 +400,17 @@ class Agents(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -444,6 +536,26 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to retrieve.\nagent_id = f"test-agent-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="A test agent.",\n    base_environment="remote",\n)\n\nagent = client.agents.get(agent_id)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to retrieve.\nconst agentId = `test-agent-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'A test agent.',\n    base_environment: 'remote',\n});\n\nconst agent = await ai.agents.get(agentId);\nif (!agent.id) {\n    throw new Error('Agent retrieval failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -454,6 +566,17 @@ class Agents(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -581,6 +704,26 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "delete",
+                        "lang": "sh",
+                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to delete.\nagent_id = f"delete-test-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="Temporary agent for deletion.",\n    base_environment="remote",\n)\n\nclient.agents.delete(agent_id)\nprint("Agent deleted successfully.")\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to delete.\nconst agentId = `delete-test-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'Temporary agent for deletion.',\n    base_environment: 'remote',\n});\n\nawait ai.agents.delete(agentId);\nconsole.log('Agent deleted successfully.');\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -591,6 +734,17 @@ class Agents(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -787,6 +941,56 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "create",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
+                    },
+                    {
+                        "label": "create",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"research-assistant-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    description="A helpful research assistant.",\n    system_instruction="You are a helpful research assistant.",\n    base_environment="remote",\n    tools=[{"type": "google_search"}],\n)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "create",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `research-assistant-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A helpful research assistant.',\n    system_instruction: 'You are a helpful research assistant.',\n    base_environment: 'remote',\n    tools: [{ type: 'google_search' }],\n});\nif (!agent.id) {\n    throw new Error('Agent creation failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "sh",
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"data-analyst-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Always include visualizations and export results as PDF.",\n    base_environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "inline",\n                "target": ".agents/AGENTS.md",\n                "content": "Always use matplotlib for charts. Include a summary table in every report.",\n            },\n            {\n                "type": "repository",\n                "source": "https://github.com/my-org/analysis-templates",\n                "target": "/workspace/templates",\n            },\n        ],\n    },\n)\nprint(f"Created agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "with_sources",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Always include visualizations and export results as PDF.',\n    base_environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'inline',\n                target: '.agents/AGENTS.md',\n                content: 'Always use matplotlib for charts. Include a summary table in every report.',\n            },\n            {\n                type: 'repository',\n                source: 'https://github.com/my-org/analysis-templates',\n                target: '/workspace/templates',\n            },\n        ],\n    },\n});\nconsole.log(`Created agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                    {
+                        "label": "fork_from_env",
+                        "lang": "sh",
+                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
+                    },
+                    {
+                        "label": "fork_from_env",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Set up the environment interactively.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a basic Hello World template to /workspace/template.py.",\n    environment="remote",\n)\n\n# Step 2: Fork that environment into a named agent.\nagent_id = f"my-data-analyst-{uuid.uuid4().hex[:8]}"\nagent = client.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Use the template at /workspace/template.py for all reports.",\n    base_environment=interaction.environment_id,\n)\nprint(f"Forked agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "fork_from_env",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Set up the environment interactively.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a basic Hello World template to /workspace/template.py.',\n    environment: 'remote',\n});\n\n// Step 2: Fork that environment into a named agent.\nconst agentId = `my-data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Use the template at /workspace/template.py for all reports.',\n    base_environment: interaction.environment_id,\n});\nconsole.log(`Forked agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -797,6 +1001,18 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -932,6 +1148,26 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "list",
+                        "lang": "sh",
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "list",
+                        "lang": "python",
+                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.agents.list()\nfor agent in response.agents or []:\n    print(agent.id)\n",
+                    },
+                    {
+                        "label": "list",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agents = await ai.agents.list();\nfor (const agent of (agents.agents ?? [])) {\n    console.log(agent.id);\n}\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -942,6 +1178,18 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1069,6 +1317,26 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to retrieve.\nagent_id = f"test-agent-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="A test agent.",\n    base_environment="remote",\n)\n\nagent = client.agents.get(agent_id)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to retrieve.\nconst agentId = `test-agent-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'A test agent.',\n    base_environment: 'remote',\n});\n\nconst agent = await ai.agents.get(agentId);\nif (!agent.id) {\n    throw new Error('Agent retrieval failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1079,6 +1347,18 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1208,6 +1488,26 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "delete",
+                        "lang": "sh",
+                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "python",
+                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to delete.\nagent_id = f"delete-test-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="Temporary agent for deletion.",\n    base_environment="remote",\n)\n\nclient.agents.delete(agent_id)\nprint("Agent deleted successfully.")\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to delete.\nconst agentId = `delete-test-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'Temporary agent for deletion.',\n    base_environment: 'remote',\n});\n\nawait ai.agents.delete(agentId);\nconsole.log('Agent deleted successfully.');\n",
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1218,6 +1518,18 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"

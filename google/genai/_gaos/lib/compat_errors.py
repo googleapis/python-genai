@@ -422,7 +422,7 @@ def _wrap_response_parse(response: Any) -> Any:
     return response
 
 
-def _wrap_async_response_parse(response: Any) -> Any:
+async def _wrap_async_response_parse(response: Any) -> Any:
     """Async variant of `_wrap_response_parse`."""
     original_parse = response.parse
 
@@ -471,7 +471,7 @@ class _AsyncStreamingContextManagerProxy:
         except _WRAP_EXCEPTIONS as exc:
             raise wrap_sdk_error(exc) from exc
         if hasattr(response, "parse"):
-            response = _wrap_async_response_parse(response)
+            response = await _wrap_async_response_parse(response)
         return response
 
     async def __aexit__(self, *exc_info: Any) -> Any:
@@ -551,7 +551,7 @@ class _AsyncRawResponseAccessorProxy:
                     except _WRAP_EXCEPTIONS as exc:
                         raise wrap_sdk_error(exc) from exc
                     if hasattr(response, "parse"):
-                        return _wrap_async_response_parse(response)
+                        return await _wrap_async_response_parse(response)
                     return response
 
                 return _await_and_wrap()

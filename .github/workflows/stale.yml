@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+      pull-requests: write
 
     steps:
     - uses: actions/stale@v10
@@ -20,8 +21,11 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         days-before-issue-stale: 7
         days-before-issue-close: 2
+        days-before-pr-stale: 14
+        days-before-pr-close: 2
         operations-per-run: 100
         stale-issue-label: "status:stale"
+        stale-pr-label: "status:stale"
         close-issue-reason: not_planned
         any-of-labels: "status:awaiting user response"
         remove-stale-when-updated: true
@@ -31,5 +35,11 @@ jobs:
         close-issue-message: >
           This issue was closed because it has been inactive for 9 days.
           Please post a new issue if you need further assistance. Thanks!
+        stale-pr-message: >
+          This pull request has been marked as stale because it has been inactive for 14 days with no activity. It will be closed in 2 days if no further activity occurs.
+        close-pr-message: >
+          This pull request was closed because it has been inactive for 16 days.
+          Please reopen or submit a new PR if you need further assistance. Thanks!
         # Label that can be assigned to issues to exclude them from being marked as stale
         exempt-issue-labels: 'override-stale'
+        exempt-pr-labels: 'override-stale'

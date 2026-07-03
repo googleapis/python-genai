@@ -199,19 +199,6 @@ class Type(_common.CaseInSensitiveEnum):
   """Null type"""
 
 
-class Environment(_common.CaseInSensitiveEnum):
-  """The environment being operated."""
-
-  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
-  """Defaults to browser."""
-  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
-  """Operates in a web browser."""
-  ENVIRONMENT_MOBILE = 'ENVIRONMENT_MOBILE'
-  """Operates in a mobile environment."""
-  ENVIRONMENT_DESKTOP = 'ENVIRONMENT_DESKTOP'
-  """Operates in a desktop environment."""
-
-
 class AuthType(_common.CaseInSensitiveEnum):
   """Type of auth scheme. This enum is not supported in Gemini API."""
 
@@ -258,6 +245,40 @@ class ApiSpec(_common.CaseInSensitiveEnum):
   """Simple search API spec."""
   ELASTIC_SEARCH = 'ELASTIC_SEARCH'
   """Elastic search API spec."""
+
+
+class Environment(_common.CaseInSensitiveEnum):
+  """The environment being operated."""
+
+  ENVIRONMENT_UNSPECIFIED = 'ENVIRONMENT_UNSPECIFIED'
+  """Defaults to browser."""
+  ENVIRONMENT_BROWSER = 'ENVIRONMENT_BROWSER'
+  """Operates in a web browser."""
+  ENVIRONMENT_MOBILE = 'ENVIRONMENT_MOBILE'
+  """Operates in a mobile environment."""
+  ENVIRONMENT_DESKTOP = 'ENVIRONMENT_DESKTOP'
+  """Operates in a desktop environment."""
+
+
+class SafetyPolicy(_common.CaseInSensitiveEnum):
+  """SafetyPolicy"""
+
+  SAFETY_POLICY_UNSPECIFIED = 'SAFETY_POLICY_UNSPECIFIED'
+  """Unspecified safety policy."""
+  FINANCIAL_TRANSACTIONS = 'FINANCIAL_TRANSACTIONS'
+  """Safety policy for financial transactions."""
+  SENSITIVE_DATA_MODIFICATION = 'SENSITIVE_DATA_MODIFICATION'
+  """Safety policy for sensitive data modification."""
+  COMMUNICATION_TOOL = 'COMMUNICATION_TOOL'
+  """Safety policy for communication tools (e.g. Gmail, Chat, Meet)."""
+  ACCOUNT_CREATION = 'ACCOUNT_CREATION'
+  """Safety policy for account creation."""
+  DATA_MODIFICATION = 'DATA_MODIFICATION'
+  """Safety policy for data modification."""
+  USER_CONSENT_MANAGEMENT = 'USER_CONSENT_MANAGEMENT'
+  """Safety policy for user consent management."""
+  LEGAL_TERMS_AND_AGREEMENTS = 'LEGAL_TERMS_AND_AGREEMENTS'
+  """Safety policy for legal terms and agreements."""
 
 
 class PhishBlockThreshold(_common.CaseInSensitiveEnum):
@@ -3329,48 +3350,6 @@ ModelSelectionConfigOrDict = Union[
 ]
 
 
-class ComputerUse(_common.BaseModel):
-  """Tool to support computer use."""
-
-  environment: Optional[Environment] = Field(
-      default=None, description="""Required. The environment being operated."""
-  )
-  excluded_predefined_functions: Optional[list[str]] = Field(
-      default=None,
-      description="""By default, predefined functions are included in the final model call.
-    Some of them can be explicitly excluded from being automatically included.
-    This can serve two purposes:
-      1. Using a more restricted / different action space.
-      2. Improving the definitions / instructions of predefined functions.""",
-  )
-  enable_prompt_injection_detection: Optional[bool] = Field(
-      default=None,
-      description="""Optional. Whether enable the prompt injection detection check on computer-use request.
-      """,
-  )
-
-
-class ComputerUseDict(TypedDict, total=False):
-  """Tool to support computer use."""
-
-  environment: Optional[Environment]
-  """Required. The environment being operated."""
-
-  excluded_predefined_functions: Optional[list[str]]
-  """By default, predefined functions are included in the final model call.
-    Some of them can be explicitly excluded from being automatically included.
-    This can serve two purposes:
-      1. Using a more restricted / different action space.
-      2. Improving the definitions / instructions of predefined functions."""
-
-  enable_prompt_injection_detection: Optional[bool]
-  """Optional. Whether enable the prompt injection detection check on computer-use request.
-      """
-
-
-ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
-
-
 class ApiKeyConfig(_common.BaseModel):
   """Config for authentication with API key.
 
@@ -4201,6 +4180,45 @@ class RetrievalDict(TypedDict, total=False):
 RetrievalOrDict = Union[Retrieval, RetrievalDict]
 
 
+class ComputerUse(_common.BaseModel):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment] = Field(
+      default=None, description="""Required. The environment being operated."""
+  )
+  excluded_predefined_functions: Optional[list[str]] = Field(
+      default=None,
+      description="""Optional. By default, [predefined functions](https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions) are included in the final model call. Some of them can be explicitly excluded from being automatically included. This can serve two purposes: 1. Using a more restricted / different action space. 2. Improving the definitions / instructions of predefined functions.""",
+  )
+  enable_prompt_injection_detection: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Enables the prompt injection detection check on computer-use request.""",
+  )
+  disabled_safety_policies: Optional[list[SafetyPolicy]] = Field(
+      default=None,
+      description="""Optional. Disabled safety policies for computer use. This field is not supported in Vertex AI.""",
+  )
+
+
+class ComputerUseDict(TypedDict, total=False):
+  """Tool to support computer use."""
+
+  environment: Optional[Environment]
+  """Required. The environment being operated."""
+
+  excluded_predefined_functions: Optional[list[str]]
+  """Optional. By default, [predefined functions](https://cloud.google.com/vertex-ai/generative-ai/docs/computer-use#supported-actions) are included in the final model call. Some of them can be explicitly excluded from being automatically included. This can serve two purposes: 1. Using a more restricted / different action space. 2. Improving the definitions / instructions of predefined functions."""
+
+  enable_prompt_injection_detection: Optional[bool]
+  """Optional. Enables the prompt injection detection check on computer-use request."""
+
+  disabled_safety_policies: Optional[list[SafetyPolicy]]
+  """Optional. Disabled safety policies for computer use. This field is not supported in Vertex AI."""
+
+
+ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
+
+
 class FileSearch(_common.BaseModel):
   """The FileSearch tool that retrieves knowledge from Semantic Retrieval corpora.
 
@@ -4899,9 +4917,7 @@ class Tool(_common.BaseModel):
   )
   computer_use: Optional[ComputerUse] = Field(
       default=None,
-      description="""Optional. Tool to support the model interacting directly with the
-      computer. If enabled, it automatically populates computer-use specific
-      Function Declarations.""",
+      description="""Optional. Tool to support the model interacting directly with the computer. If enabled, it automatically populates computer-use specific Function Declarations.""",
   )
   file_search: Optional[FileSearch] = Field(
       default=None,
@@ -4953,9 +4969,7 @@ class ToolDict(TypedDict, total=False):
   """Optional. Retrieval tool type. System will always execute the provided retrieval tool(s) to get external knowledge to answer the prompt. Retrieval results are presented to the model for generation. This field is not supported in Gemini API."""
 
   computer_use: Optional[ComputerUseDict]
-  """Optional. Tool to support the model interacting directly with the
-      computer. If enabled, it automatically populates computer-use specific
-      Function Declarations."""
+  """Optional. Tool to support the model interacting directly with the computer. If enabled, it automatically populates computer-use specific Function Declarations."""
 
   file_search: Optional[FileSearchDict]
   """Optional. FileSearch tool type. Tool to retrieve knowledge from Semantic Retrieval corpora. This field is not supported in Vertex AI."""
