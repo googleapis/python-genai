@@ -832,6 +832,7 @@ class BaseApiClient:
 
     # Initialize the aiohttp client sessions.
     self._aiohttp_sessions: dict[Any, Any] = {}
+    self._async_client_session_request_args: dict[str, Any] = {}
     if self._use_aiohttp():
       try:
         import aiohttp  # pylint: disable=g-import-not-at-top
@@ -1393,7 +1394,11 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls and 'googleapis.com' in url:
+      if (
+          self._authorized_session._is_mtls
+          and 'googleapis.com' in url
+          and self.location not in ['us', 'eu']  # mtls is not supported in multi-regions
+      ):
         if 'sandbox' in url:
           url = url.replace(
               'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
@@ -1471,7 +1476,11 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
+          if (
+              session._is_mtls  # type: ignore[union-attr]
+              and 'googleapis.com' in url
+              and self.location not in ['us', 'eu']  # mtls is not supported in multi-regions
+          ):
             if 'sandbox' in url:
               url = url.replace(
                   'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
@@ -1541,7 +1550,11 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
+          if (
+              session._is_mtls  # type: ignore[union-attr]
+              and 'googleapis.com' in url
+              and self.location not in ['us', 'eu']  # mtls is not supported in multi-regions
+          ):
             if 'sandbox' in url:
               url = url.replace(
                   'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
