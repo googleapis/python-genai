@@ -29,6 +29,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class StepStartTypedDict(TypedDict):
+    r"""Payload.event_type"""
+
     index: int
     step: StepParam
     r"""A step in the interaction."""
@@ -41,6 +43,8 @@ class StepStartTypedDict(TypedDict):
 
 
 class StepStart(BaseModel):
+    r"""Payload.event_type"""
+
     index: int
 
     step: Step

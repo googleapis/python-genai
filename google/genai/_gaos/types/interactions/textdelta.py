@@ -26,11 +26,15 @@ from typing_extensions import Annotated, TypedDict
 
 
 class TextDeltaTypedDict(TypedDict):
+    r"""StepDeltaData.type"""
+
     text: str
     type: Literal["text"]
 
 
 class TextDelta(BaseModel):
+    r"""StepDeltaData.type"""
+
     text: str
 
     type: Annotated[

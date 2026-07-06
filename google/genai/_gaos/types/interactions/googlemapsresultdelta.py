@@ -28,6 +28,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class GoogleMapsResultDeltaTypedDict(TypedDict):
+    r"""ToolResultDelta.type"""
+
     type: Literal["google_maps_result"]
     result: NotRequired[List[GoogleMapsResultParam]]
     r"""The results of the Google Maps."""
@@ -36,6 +38,8 @@ class GoogleMapsResultDeltaTypedDict(TypedDict):
 
 
 class GoogleMapsResultDelta(BaseModel):
+    r"""ToolResultDelta.type"""
+
     type: Annotated[
         Annotated[
             Literal["google_maps_result"],

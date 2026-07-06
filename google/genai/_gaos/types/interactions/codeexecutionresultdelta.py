@@ -27,6 +27,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class CodeExecutionResultDeltaTypedDict(TypedDict):
+    r"""ToolResultDelta.type"""
+
     result: str
     type: Literal["code_execution_result"]
     is_error: NotRequired[bool]
@@ -35,6 +37,8 @@ class CodeExecutionResultDeltaTypedDict(TypedDict):
 
 
 class CodeExecutionResultDelta(BaseModel):
+    r"""ToolResultDelta.type"""
+
     result: str
 
     type: Annotated[

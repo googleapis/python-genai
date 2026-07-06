@@ -28,6 +28,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class GoogleSearchResultDeltaTypedDict(TypedDict):
+    r"""ToolResultDelta.type"""
+
     result: List[GoogleSearchResultParam]
     type: Literal["google_search_result"]
     is_error: NotRequired[bool]
@@ -36,6 +38,8 @@ class GoogleSearchResultDeltaTypedDict(TypedDict):
 
 
 class GoogleSearchResultDelta(BaseModel):
+    r"""ToolResultDelta.type"""
+
     result: List[GoogleSearchResult]
 
     type: Annotated[

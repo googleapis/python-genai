@@ -28,6 +28,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class URLContextResultDeltaTypedDict(TypedDict):
+    r"""ToolResultDelta.type"""
+
     result: List[URLContextResultParam]
     type: Literal["url_context_result"]
     is_error: NotRequired[bool]
@@ -36,6 +38,8 @@ class URLContextResultDeltaTypedDict(TypedDict):
 
 
 class URLContextResultDelta(BaseModel):
+    r"""ToolResultDelta.type"""
+
     result: List[URLContextResult]
 
     type: Annotated[

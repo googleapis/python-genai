@@ -29,6 +29,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class StepDeltaTypedDict(TypedDict):
+    r"""Payload.event_type"""
+
     index: int
     delta: StepDeltaDataTypedDict
     event_type: Literal["step.delta"]
@@ -41,6 +43,8 @@ class StepDeltaTypedDict(TypedDict):
 
 
 class StepDelta(BaseModel):
+    r"""Payload.event_type"""
+
     index: int
 
     delta: StepDeltaData

@@ -29,6 +29,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class StepStopTypedDict(TypedDict):
+    r"""Payload.event_type"""
+
     index: int
     event_type: Literal["step.stop"]
     usage: NotRequired[UsageTypedDict]
@@ -43,6 +45,8 @@ class StepStopTypedDict(TypedDict):
 
 
 class StepStop(BaseModel):
+    r"""Payload.event_type"""
+
     index: int
 
     event_type: Annotated[

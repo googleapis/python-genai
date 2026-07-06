@@ -28,6 +28,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class FileSearchResultDeltaTypedDict(TypedDict):
+    r"""ToolResultDelta.type"""
+
     result: List[FileSearchResultTypedDict]
     type: Literal["file_search_result"]
     signature: NotRequired[str]
@@ -35,6 +37,8 @@ class FileSearchResultDeltaTypedDict(TypedDict):
 
 
 class FileSearchResultDelta(BaseModel):
+    r"""ToolResultDelta.type"""
+
     result: List[FileSearchResult]
 
     type: Annotated[
