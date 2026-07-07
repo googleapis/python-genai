@@ -2977,19 +2977,6 @@ def _GenerationConfig_to_vertex(
         ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
-  if getv(from_object, ['response_format']) is not None:
-    setv(
-        to_object,
-        ['responseFormat'],
-        [item for item in getv(from_object, ['response_format'])],
-    )
-
-  if getv(from_object, ['translation_config']) is not None:
-    raise ValueError(
-        'translation_config parameter is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
   return to_object
 
 
@@ -4405,12 +4392,6 @@ def _Tool_to_mldev(
         [item for item in getv(from_object, ['mcp_servers'])],
     )
 
-  if getv(from_object, ['exa_ai_search']) is not None:
-    raise ValueError(
-        'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
   return to_object
 
 
@@ -4487,9 +4468,6 @@ def _Tool_to_vertex(
             for item in getv(from_object, ['mcp_servers'])
         ],
     )
-
-  if getv(from_object, ['exa_ai_search']) is not None:
-    setv(to_object, ['exaAiSearch'], getv(from_object, ['exa_ai_search']))
 
   return to_object
 

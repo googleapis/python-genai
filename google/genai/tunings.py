@@ -1235,13 +1235,6 @@ def _GenerationConfig_from_vertex(
   if getv(from_object, ['topP']) is not None:
     setv(to_object, ['top_p'], getv(from_object, ['topP']))
 
-  if getv(from_object, ['responseFormat']) is not None:
-    setv(
-        to_object,
-        ['response_format'],
-        [item for item in getv(from_object, ['responseFormat'])],
-    )
-
   return to_object
 
 
@@ -1361,19 +1354,6 @@ def _GenerationConfig_to_vertex(
     raise ValueError(
         'enable_enhanced_civic_answers parameter is only supported in Gemini'
         ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  if getv(from_object, ['response_format']) is not None:
-    setv(
-        to_object,
-        ['responseFormat'],
-        [item for item in getv(from_object, ['response_format'])],
-    )
-
-  if getv(from_object, ['translation_config']) is not None:
-    raise ValueError(
-        'translation_config parameter is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
