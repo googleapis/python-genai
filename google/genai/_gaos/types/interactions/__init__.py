@@ -23,7 +23,12 @@ from ...utils.dynamic_imports import lazy_getattr, lazy_dir
 if TYPE_CHECKING:
     from .agentoption import AgentOption
     from .allowedtools import AllowedTools, AllowedToolsParam
-    from .allowlistentry import AllowlistEntry, AllowlistEntryParam
+    from .allowlistentry import (
+        AllowlistEntry,
+        AllowlistEntryParam,
+        Transform,
+        TransformParam,
+    )
     from .annotation import Annotation, AnnotationParam, UnknownAnnotation
     from .argumentsdelta import ArgumentsDelta, ArgumentsDeltaTypedDict
     from .audiocontent import AudioContent, AudioContentMimeType, AudioContentParam
@@ -673,6 +678,8 @@ __all__ = [
     "ToolChoiceParam",
     "ToolChoiceType",
     "ToolParam",
+    "Transform",
+    "TransformParam",
     "Turn",
     "TurnContent",
     "TurnContentParam",
@@ -732,6 +739,8 @@ _dynamic_imports: dict[str, str] = {
     "AllowedToolsParam": ".allowedtools",
     "AllowlistEntry": ".allowlistentry",
     "AllowlistEntryParam": ".allowlistentry",
+    "Transform": ".allowlistentry",
+    "TransformParam": ".allowlistentry",
     "Annotation": ".annotation",
     "AnnotationParam": ".annotation",
     "UnknownAnnotation": ".annotation",
