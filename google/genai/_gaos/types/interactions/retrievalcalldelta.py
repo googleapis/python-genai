@@ -49,11 +49,11 @@ class RetrievalCallDeltaTypedDict(TypedDict):
 
     arguments: RetrievalCallArgumentsTypedDict
     r"""The arguments to pass to Retrieval tools."""
-    type: Literal["retrieval_call"]
     retrieval_type: NotRequired[RetrievalCallDeltaRetrievalType]
     r"""The type of retrieval tools."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["retrieval_call"]
 
 
 class RetrievalCallDelta(BaseModel):
@@ -64,18 +64,18 @@ class RetrievalCallDelta(BaseModel):
     arguments: RetrievalCallArguments
     r"""The arguments to pass to Retrieval tools."""
 
+    retrieval_type: Optional[RetrievalCallDeltaRetrievalType] = None
+    r"""The type of retrieval tools."""
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["retrieval_call"], AfterValidator(validate_const("retrieval_call"))
         ],
         pydantic.Field(alias="type"),
     ] = "retrieval_call"
-
-    retrieval_type: Optional[RetrievalCallDeltaRetrievalType] = None
-    r"""The type of retrieval tools."""
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

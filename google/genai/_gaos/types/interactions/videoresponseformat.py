@@ -26,16 +26,6 @@ from typing import Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-VideoResponseFormatDelivery = Union[
-    Literal[
-        "inline",
-        "uri",
-    ],
-    UnrecognizedStr,
-]
-r"""The delivery mode for the video output."""
-
-
 VideoResponseFormatAspectRatio = Union[
     Literal[
         "16:9",
@@ -46,47 +36,57 @@ VideoResponseFormatAspectRatio = Union[
 r"""The aspect ratio for the video output."""
 
 
+VideoResponseFormatDelivery = Union[
+    Literal[
+        "inline",
+        "uri",
+    ],
+    UnrecognizedStr,
+]
+r"""The delivery mode for the video output."""
+
+
 class VideoResponseFormatParam(TypedDict):
     r"""Configuration for video output format."""
 
-    type: Literal["video"]
+    aspect_ratio: NotRequired[VideoResponseFormatAspectRatio]
+    r"""The aspect ratio for the video output."""
     delivery: NotRequired[VideoResponseFormatDelivery]
     r"""The delivery mode for the video output."""
+    duration: NotRequired[str]
+    r"""The duration for the video output."""
     gcs_uri: NotRequired[str]
     r"""The GCS URI to store the video output. Required for Vertex if delivery mode
     is URI.
     """
-    aspect_ratio: NotRequired[VideoResponseFormatAspectRatio]
-    r"""The aspect ratio for the video output."""
-    duration: NotRequired[str]
-    r"""The duration for the video output."""
+    type: Literal["video"]
 
 
 class VideoResponseFormat(BaseModel):
     r"""Configuration for video output format."""
 
-    type: Annotated[
-        Annotated[Literal["video"], AfterValidator(validate_const("video"))],
-        pydantic.Field(alias="type"),
-    ] = "video"
+    aspect_ratio: Optional[VideoResponseFormatAspectRatio] = None
+    r"""The aspect ratio for the video output."""
 
     delivery: Optional[VideoResponseFormatDelivery] = None
     r"""The delivery mode for the video output."""
+
+    duration: Optional[str] = None
+    r"""The duration for the video output."""
 
     gcs_uri: Optional[str] = None
     r"""The GCS URI to store the video output. Required for Vertex if delivery mode
     is URI.
     """
 
-    aspect_ratio: Optional[VideoResponseFormatAspectRatio] = None
-    r"""The aspect ratio for the video output."""
-
-    duration: Optional[str] = None
-    r"""The duration for the video output."""
+    type: Annotated[
+        Annotated[Literal["video"], AfterValidator(validate_const("video"))],
+        pydantic.Field(alias="type"),
+    ] = "video"
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["delivery", "gcs_uri", "aspect_ratio", "duration"])
+        optional_fields = set(["aspect_ratio", "delivery", "duration", "gcs_uri"])
         serialized = handler(self)
         m = {}
 

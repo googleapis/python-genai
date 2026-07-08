@@ -40,18 +40,18 @@ class Agents(BaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
-        id: Optional[str] = None,
         base_agent: Optional[str] = None,
-        system_instruction: Optional[str] = None,
+        base_environment: Optional[
+            Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
+        ] = None,
         description: Optional[str] = None,
+        id: Optional[str] = None,
+        system_instruction: Optional[str] = None,
         tools: Optional[
             Union[
                 Iterable[agents_agenttool.AgentTool],
                 Iterable[agents_agenttool.AgentToolParam],
             ]
-        ] = None,
-        base_environment: Optional[
-            Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
         ] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
@@ -61,12 +61,12 @@ class Agents(BaseSDK):
         r"""Creates a new Agent (Typed version for SDK).
 
         :param api_version: Which version of the API to use.
-        :param id: The unique identifier for the agent.
         :param base_agent: The base agent to extend.
-        :param system_instruction: System instruction for the agent.
-        :param description: Agent description for developers to quickly read and understand.
-        :param tools: The tools available to the agent.
         :param base_environment: The environment configuration for the agent.
+        :param description: Agent description for developers to quickly read and understand.
+        :param id: The unique identifier for the agent.
+        :param system_instruction: System instruction for the agent.
+        :param tools: The tools available to the agent.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -89,14 +89,14 @@ class Agents(BaseSDK):
         request = models.CreateAgentRequest(
             api_version=api_version,
             body=agents.Agent(
-                id=id,
                 base_agent=base_agent,
-                system_instruction=system_instruction,
-                description=description,
-                tools=utils.get_pydantic_model(tools, Optional[List[agents.AgentTool]]),
                 base_environment=utils.get_pydantic_model(
                     base_environment, Optional[agents.BaseEnvironment]
                 ),
+                description=description,
+                id=id,
+                system_instruction=system_instruction,
+                tools=utils.get_pydantic_model(tools, Optional[List[agents.AgentTool]]),
             ),
         )
 
@@ -815,18 +815,18 @@ class AsyncAgents(AsyncBaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
-        id: Optional[str] = None,
         base_agent: Optional[str] = None,
-        system_instruction: Optional[str] = None,
+        base_environment: Optional[
+            Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
+        ] = None,
         description: Optional[str] = None,
+        id: Optional[str] = None,
+        system_instruction: Optional[str] = None,
         tools: Optional[
             Union[
                 Iterable[agents_agenttool.AgentTool],
                 Iterable[agents_agenttool.AgentToolParam],
             ]
-        ] = None,
-        base_environment: Optional[
-            Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
         ] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
@@ -836,12 +836,12 @@ class AsyncAgents(AsyncBaseSDK):
         r"""Creates a new Agent (Typed version for SDK).
 
         :param api_version: Which version of the API to use.
-        :param id: The unique identifier for the agent.
         :param base_agent: The base agent to extend.
-        :param system_instruction: System instruction for the agent.
-        :param description: Agent description for developers to quickly read and understand.
-        :param tools: The tools available to the agent.
         :param base_environment: The environment configuration for the agent.
+        :param description: Agent description for developers to quickly read and understand.
+        :param id: The unique identifier for the agent.
+        :param system_instruction: System instruction for the agent.
+        :param tools: The tools available to the agent.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -864,14 +864,14 @@ class AsyncAgents(AsyncBaseSDK):
         request = models.CreateAgentRequest(
             api_version=api_version,
             body=agents.Agent(
-                id=id,
                 base_agent=base_agent,
-                system_instruction=system_instruction,
-                description=description,
-                tools=utils.get_pydantic_model(tools, Optional[List[agents.AgentTool]]),
                 base_environment=utils.get_pydantic_model(
                     base_environment, Optional[agents.BaseEnvironment]
                 ),
+                description=description,
+                id=id,
+                system_instruction=system_instruction,
+                tools=utils.get_pydantic_model(tools, Optional[List[agents.AgentTool]]),
             ),
         )
 

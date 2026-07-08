@@ -39,22 +39,17 @@ r"""The MIME type of the text output."""
 class TextResponseFormatParam(TypedDict):
     r"""Configuration for text output format."""
 
-    type: Literal["text"]
     mime_type: NotRequired[TextResponseFormatMimeType]
     r"""The MIME type of the text output."""
     schema_: NotRequired[Dict[str, Any]]
     r"""The JSON schema that the output should conform to. Only applicable when
     mime_type is application/json.
     """
+    type: Literal["text"]
 
 
 class TextResponseFormat(BaseModel):
     r"""Configuration for text output format."""
-
-    type: Annotated[
-        Annotated[Literal["text"], AfterValidator(validate_const("text"))],
-        pydantic.Field(alias="type"),
-    ] = "text"
 
     mime_type: Optional[TextResponseFormatMimeType] = None
     r"""The MIME type of the text output."""
@@ -63,6 +58,11 @@ class TextResponseFormat(BaseModel):
     r"""The JSON schema that the output should conform to. Only applicable when
     mime_type is application/json.
     """
+
+    type: Annotated[
+        Annotated[Literal["text"], AfterValidator(validate_const("text"))],
+        pydantic.Field(alias="type"),
+    ] = "text"
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

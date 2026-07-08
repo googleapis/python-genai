@@ -28,12 +28,12 @@ class ReviewSnippetParam(TypedDict):
     the features of a specific place in Google Maps.
     """
 
+    review_id: NotRequired[str]
+    r"""The ID of the review snippet."""
     title: NotRequired[str]
     r"""Title of the review."""
     url: NotRequired[str]
     r"""A link that corresponds to the user review on Google Maps."""
-    review_id: NotRequired[str]
-    r"""The ID of the review snippet."""
 
 
 class ReviewSnippet(BaseModel):
@@ -41,18 +41,18 @@ class ReviewSnippet(BaseModel):
     the features of a specific place in Google Maps.
     """
 
+    review_id: Optional[str] = None
+    r"""The ID of the review snippet."""
+
     title: Optional[str] = None
     r"""Title of the review."""
 
     url: Optional[str] = None
     r"""A link that corresponds to the user review on Google Maps."""
 
-    review_id: Optional[str] = None
-    r"""The ID of the review snippet."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["title", "url", "review_id"])
+        optional_fields = set(["review_id", "title", "url"])
         serialized = handler(self)
         m = {}
 

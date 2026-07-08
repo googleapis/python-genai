@@ -33,14 +33,17 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class URLContextCallDeltaTypedDict(TypedDict):
     arguments: URLContextCallArgumentsParam
     r"""The arguments to pass to the URL context."""
-    type: Literal["url_context_call"]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["url_context_call"]
 
 
 class URLContextCallDelta(BaseModel):
     arguments: URLContextCallArguments
     r"""The arguments to pass to the URL context."""
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -49,9 +52,6 @@ class URLContextCallDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "url_context_call"
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

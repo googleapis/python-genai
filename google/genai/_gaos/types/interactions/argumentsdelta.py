@@ -27,11 +27,13 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class ArgumentsDeltaTypedDict(TypedDict):
-    type: Literal["arguments_delta"]
     arguments: NotRequired[str]
+    type: Literal["arguments_delta"]
 
 
 class ArgumentsDelta(BaseModel):
+    arguments: Optional[str] = None
+
     type: Annotated[
         Annotated[
             Literal["arguments_delta"],
@@ -39,8 +41,6 @@ class ArgumentsDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "arguments_delta"
-
-    arguments: Optional[str] = None
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

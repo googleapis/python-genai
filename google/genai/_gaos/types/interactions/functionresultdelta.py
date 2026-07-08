@@ -54,9 +54,9 @@ class FunctionResultDeltaTypedDict(TypedDict):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
     result: FunctionResultDeltaResultUnionTypedDict
-    type: Literal["function_result"]
-    name: NotRequired[str]
     is_error: NotRequired[bool]
+    name: NotRequired[str]
+    type: Literal["function_result"]
 
 
 class FunctionResultDelta(BaseModel):
@@ -64,6 +64,10 @@ class FunctionResultDelta(BaseModel):
     r"""Required. ID to match the ID from the function call block."""
 
     result: FunctionResultDeltaResultUnion
+
+    is_error: Optional[bool] = None
+
+    name: Optional[str] = None
 
     type: Annotated[
         Annotated[
@@ -73,13 +77,9 @@ class FunctionResultDelta(BaseModel):
         pydantic.Field(alias="type"),
     ] = "function_result"
 
-    name: Optional[str] = None
-
-    is_error: Optional[bool] = None
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "is_error"])
+        optional_fields = set(["is_error", "name"])
         serialized = handler(self)
         m = {}
 

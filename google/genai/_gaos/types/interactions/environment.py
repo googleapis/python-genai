@@ -49,25 +49,18 @@ r"""Network configuration for the environment."""
 class EnvironmentParam(TypedDict):
     r"""Configuration for a custom environment."""
 
-    type: Literal["remote"]
-    sources: NotRequired[List[SourceParam]]
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
     network: NotRequired[NetworkParam]
     r"""Network configuration for the environment."""
+    sources: NotRequired[List[SourceParam]]
+    type: Literal["remote"]
 
 
 class Environment(BaseModel):
     r"""Configuration for a custom environment."""
-
-    type: Annotated[
-        Annotated[Literal["remote"], AfterValidator(validate_const("remote"))],
-        pydantic.Field(alias="type"),
-    ] = "remote"
-
-    sources: Optional[List[Source]] = None
 
     environment_id: Optional[str] = None
     r"""Optional. The environment ID for the interaction. If specified, the request will
@@ -77,9 +70,16 @@ class Environment(BaseModel):
     network: Optional[Network] = None
     r"""Network configuration for the environment."""
 
+    sources: Optional[List[Source]] = None
+
+    type: Annotated[
+        Annotated[Literal["remote"], AfterValidator(validate_const("remote"))],
+        pydantic.Field(alias="type"),
+    ] = "remote"
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["sources", "environment_id", "network"])
+        optional_fields = set(["environment_id", "network", "sources"])
         serialized = handler(self)
         m = {}
 

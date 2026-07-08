@@ -37,9 +37,9 @@ class URLContextCallStepParam(TypedDict):
     r"""The arguments to pass to the URL context."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
-    type: Literal["url_context_call"]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["url_context_call"]
 
 
 class URLContextCallStep(BaseModel):
@@ -51,6 +51,9 @@ class URLContextCallStep(BaseModel):
     id: str
     r"""Required. A unique ID for this specific tool call."""
 
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["url_context_call"],
@@ -58,9 +61,6 @@ class URLContextCallStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "url_context_call"
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

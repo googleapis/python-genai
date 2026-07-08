@@ -30,42 +30,42 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class StepStopTypedDict(TypedDict):
     index: int
-    event_type: Literal["step.stop"]
-    usage: NotRequired[UsageTypedDict]
-    r"""Statistics on the interaction request's token usage."""
-    step_usage: NotRequired[UsageTypedDict]
-    r"""Statistics on the interaction request's token usage."""
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+    event_type: Literal["step.stop"]
     metadata: NotRequired[StreamMetadataTypedDict]
+    step_usage: NotRequired[UsageTypedDict]
+    r"""Statistics on the interaction request's token usage."""
+    usage: NotRequired[UsageTypedDict]
+    r"""Statistics on the interaction request's token usage."""
 
 
 class StepStop(BaseModel):
     index: int
-
-    event_type: Annotated[
-        Annotated[Literal["step.stop"], AfterValidator(validate_const("step.stop"))],
-        pydantic.Field(alias="event_type"),
-    ] = "step.stop"
-
-    usage: Optional[Usage] = None
-    r"""Statistics on the interaction request's token usage."""
-
-    step_usage: Optional[Usage] = None
-    r"""Statistics on the interaction request's token usage."""
 
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
 
+    event_type: Annotated[
+        Annotated[Literal["step.stop"], AfterValidator(validate_const("step.stop"))],
+        pydantic.Field(alias="event_type"),
+    ] = "step.stop"
+
     metadata: Optional[StreamMetadata] = None
+
+    step_usage: Optional[Usage] = None
+    r"""Statistics on the interaction request's token usage."""
+
+    usage: Optional[Usage] = None
+    r"""Statistics on the interaction request's token usage."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["usage", "step_usage", "event_id", "metadata"])
+        optional_fields = set(["event_id", "metadata", "step_usage", "usage"])
         serialized = handler(self)
         m = {}
 

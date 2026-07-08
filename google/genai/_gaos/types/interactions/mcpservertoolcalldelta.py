@@ -26,18 +26,18 @@ from typing_extensions import Annotated, TypedDict
 
 
 class MCPServerToolCallDeltaTypedDict(TypedDict):
+    arguments: Dict[str, Any]
     name: str
     server_name: str
-    arguments: Dict[str, Any]
     type: Literal["mcp_server_tool_call"]
 
 
 class MCPServerToolCallDelta(BaseModel):
+    arguments: Dict[str, Any]
+
     name: str
 
     server_name: str
-
-    arguments: Dict[str, Any]
 
     type: Annotated[
         Annotated[

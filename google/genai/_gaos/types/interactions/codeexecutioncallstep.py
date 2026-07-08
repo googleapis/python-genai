@@ -37,9 +37,9 @@ class CodeExecutionCallStepParam(TypedDict):
     r"""The arguments to pass to the code execution."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
-    type: Literal["code_execution_call"]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["code_execution_call"]
 
 
 class CodeExecutionCallStep(BaseModel):
@@ -51,6 +51,9 @@ class CodeExecutionCallStep(BaseModel):
     id: str
     r"""Required. A unique ID for this specific tool call."""
 
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["code_execution_call"],
@@ -58,9 +61,6 @@ class CodeExecutionCallStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "code_execution_call"
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

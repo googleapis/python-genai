@@ -32,11 +32,11 @@ class RetrievalResultDeltaTypedDict(TypedDict):
     ToolResultDelta.type
     """
 
-    type: Literal["retrieval_result"]
     is_error: NotRequired[bool]
     r"""Whether the retrieval resulted in an error."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["retrieval_result"]
 
 
 class RetrievalResultDelta(BaseModel):
@@ -45,6 +45,12 @@ class RetrievalResultDelta(BaseModel):
     ToolResultDelta.type
     """
 
+    is_error: Optional[bool] = None
+    r"""Whether the retrieval resulted in an error."""
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["retrieval_result"],
@@ -52,12 +58,6 @@ class RetrievalResultDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "retrieval_result"
-
-    is_error: Optional[bool] = None
-    r"""Whether the retrieval resulted in an error."""
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

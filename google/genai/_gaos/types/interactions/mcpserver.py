@@ -30,44 +30,44 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class MCPServerParam(TypedDict):
     r"""A MCPServer is a server that can be called by the model to perform actions."""
 
-    type: Literal["mcp_server"]
+    allowed_tools: NotRequired[List[AllowedToolsParam]]
+    r"""The allowed tools."""
+    headers: NotRequired[Dict[str, str]]
+    r"""Optional: Fields for authentication headers, timeouts, etc., if needed."""
     name: NotRequired[str]
     r"""The name of the MCPServer."""
+    type: Literal["mcp_server"]
     url: NotRequired[str]
     r"""The full URL for the MCPServer endpoint.
     Example: \"https://api.example.com/mcp\" 
     """
-    headers: NotRequired[Dict[str, str]]
-    r"""Optional: Fields for authentication headers, timeouts, etc., if needed."""
-    allowed_tools: NotRequired[List[AllowedToolsParam]]
-    r"""The allowed tools."""
 
 
 class MCPServer(BaseModel):
     r"""A MCPServer is a server that can be called by the model to perform actions."""
+
+    allowed_tools: Optional[List[AllowedTools]] = None
+    r"""The allowed tools."""
+
+    headers: Optional[Dict[str, str]] = None
+    r"""Optional: Fields for authentication headers, timeouts, etc., if needed."""
+
+    name: Optional[str] = None
+    r"""The name of the MCPServer."""
 
     type: Annotated[
         Annotated[Literal["mcp_server"], AfterValidator(validate_const("mcp_server"))],
         pydantic.Field(alias="type"),
     ] = "mcp_server"
 
-    name: Optional[str] = None
-    r"""The name of the MCPServer."""
-
     url: Optional[str] = None
     r"""The full URL for the MCPServer endpoint.
     Example: \"https://api.example.com/mcp\" 
     """
 
-    headers: Optional[Dict[str, str]] = None
-    r"""Optional: Fields for authentication headers, timeouts, etc., if needed."""
-
-    allowed_tools: Optional[List[AllowedTools]] = None
-    r"""The allowed tools."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "url", "headers", "allowed_tools"])
+        optional_fields = set(["allowed_tools", "headers", "name", "url"])
         serialized = handler(self)
         m = {}
 

@@ -30,21 +30,24 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class GoogleMapsResultStepParam(TypedDict):
     r"""Google Maps result step."""
 
-    result: List[GoogleMapsResultParam]
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    type: Literal["google_maps_result"]
+    result: List[GoogleMapsResultParam]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["google_maps_result"]
 
 
 class GoogleMapsResultStep(BaseModel):
     r"""Google Maps result step."""
 
-    result: List[GoogleMapsResult]
-
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
+
+    result: List[GoogleMapsResult]
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -53,9 +56,6 @@ class GoogleMapsResultStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "google_maps_result"
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

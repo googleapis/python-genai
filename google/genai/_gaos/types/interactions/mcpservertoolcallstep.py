@@ -28,31 +28,31 @@ from typing_extensions import Annotated, TypedDict
 class MCPServerToolCallStepParam(TypedDict):
     r"""MCPServer tool call step."""
 
-    name: str
-    r"""Required. The name of the tool which was called."""
-    server_name: str
-    r"""Required. The name of the used MCP server."""
     arguments: Dict[str, Any]
     r"""Required. The JSON object of arguments for the function."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
+    name: str
+    r"""Required. The name of the tool which was called."""
+    server_name: str
+    r"""Required. The name of the used MCP server."""
     type: Literal["mcp_server_tool_call"]
 
 
 class MCPServerToolCallStep(BaseModel):
     r"""MCPServer tool call step."""
 
-    name: str
-    r"""Required. The name of the tool which was called."""
-
-    server_name: str
-    r"""Required. The name of the used MCP server."""
-
     arguments: Dict[str, Any]
     r"""Required. The JSON object of arguments for the function."""
 
     id: str
     r"""Required. A unique ID for this specific tool call."""
+
+    name: str
+    r"""Required. The name of the tool which was called."""
+
+    server_name: str
+    r"""Required. The name of the used MCP server."""
 
     type: Annotated[
         Annotated[

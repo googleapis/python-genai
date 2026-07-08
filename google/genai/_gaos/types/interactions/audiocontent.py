@@ -55,45 +55,45 @@ r"""The mime type of the audio."""
 class AudioContentParam(TypedDict):
     r"""An audio content block."""
 
-    type: Literal["audio"]
-    data: NotRequired[Union[str, Base64FileInput]]
-    r"""The audio content."""
-    uri: NotRequired[str]
-    r"""The URI of the audio."""
-    mime_type: NotRequired[AudioContentMimeType]
-    r"""The mime type of the audio."""
     channels: NotRequired[int]
     r"""The number of audio channels."""
+    data: NotRequired[Union[str, Base64FileInput]]
+    r"""The audio content."""
+    mime_type: NotRequired[AudioContentMimeType]
+    r"""The mime type of the audio."""
     sample_rate: NotRequired[int]
     r"""The sample rate of the audio."""
+    type: Literal["audio"]
+    uri: NotRequired[str]
+    r"""The URI of the audio."""
 
 
 class AudioContent(BaseModel):
     r"""An audio content block."""
+
+    channels: Optional[int] = None
+    r"""The number of audio channels."""
+
+    data: Optional[Base64EncodedString] = None
+    r"""The audio content."""
+
+    mime_type: Optional[AudioContentMimeType] = None
+    r"""The mime type of the audio."""
+
+    sample_rate: Optional[int] = None
+    r"""The sample rate of the audio."""
 
     type: Annotated[
         Annotated[Literal["audio"], AfterValidator(validate_const("audio"))],
         pydantic.Field(alias="type"),
     ] = "audio"
 
-    data: Optional[Base64EncodedString] = None
-    r"""The audio content."""
-
     uri: Optional[str] = None
     r"""The URI of the audio."""
 
-    mime_type: Optional[AudioContentMimeType] = None
-    r"""The mime type of the audio."""
-
-    channels: Optional[int] = None
-    r"""The number of audio channels."""
-
-    sample_rate: Optional[int] = None
-    r"""The sample rate of the audio."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "uri", "mime_type", "channels", "sample_rate"])
+        optional_fields = set(["channels", "data", "mime_type", "sample_rate", "uri"])
         serialized = handler(self)
         m = {}
 

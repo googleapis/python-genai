@@ -31,9 +31,9 @@ class FileSearchCallStepParam(TypedDict):
 
     id: str
     r"""Required. A unique ID for this specific tool call."""
-    type: Literal["file_search_call"]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["file_search_call"]
 
 
 class FileSearchCallStep(BaseModel):
@@ -42,6 +42,9 @@ class FileSearchCallStep(BaseModel):
     id: str
     r"""Required. A unique ID for this specific tool call."""
 
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["file_search_call"],
@@ -49,9 +52,6 @@ class FileSearchCallStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "file_search_call"
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

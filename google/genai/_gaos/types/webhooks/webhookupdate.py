@@ -23,6 +23,14 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypedDict
 
 
+WebhookUpdateState = Literal[
+    "enabled",
+    "disabled",
+    "disabled_due_to_failed_deliveries",
+]
+r"""Optional. The state of the webhook."""
+
+
 WebhookUpdateSubscribedEvent = Union[
     Literal[
         # Batch processing finished successfully.
@@ -44,19 +52,11 @@ WebhookUpdateSubscribedEvent = Union[
 ]
 
 
-WebhookUpdateState = Literal[
-    "enabled",
-    "disabled",
-    "disabled_due_to_failed_deliveries",
-]
-r"""Optional. The state of the webhook."""
-
-
 class WebhookUpdateParam(TypedDict):
     name: NotRequired[str]
     r"""Optional. The user-provided name of the webhook."""
-    uri: NotRequired[str]
-    r"""Optional. The URI to which webhook events will be sent."""
+    state: NotRequired[WebhookUpdateState]
+    r"""Optional. The state of the webhook."""
     subscribed_events: NotRequired[List[WebhookUpdateSubscribedEvent]]
     r"""Optional. The events that the webhook is subscribed to.
     Available events:
@@ -68,16 +68,16 @@ class WebhookUpdateParam(TypedDict):
     - interaction.failed
     - video.generated
     """
-    state: NotRequired[WebhookUpdateState]
-    r"""Optional. The state of the webhook."""
+    uri: NotRequired[str]
+    r"""Optional. The URI to which webhook events will be sent."""
 
 
 class WebhookUpdate(BaseModel):
     name: Optional[str] = None
     r"""Optional. The user-provided name of the webhook."""
 
-    uri: Optional[str] = None
-    r"""Optional. The URI to which webhook events will be sent."""
+    state: Optional[WebhookUpdateState] = None
+    r"""Optional. The state of the webhook."""
 
     subscribed_events: Optional[List[WebhookUpdateSubscribedEvent]] = None
     r"""Optional. The events that the webhook is subscribed to.
@@ -91,12 +91,12 @@ class WebhookUpdate(BaseModel):
     - video.generated
     """
 
-    state: Optional[WebhookUpdateState] = None
-    r"""Optional. The state of the webhook."""
+    uri: Optional[str] = None
+    r"""Optional. The URI to which webhook events will be sent."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "uri", "subscribed_events", "state"])
+        optional_fields = set(["name", "state", "subscribed_events", "uri"])
         serialized = handler(self)
         m = {}
 

@@ -29,17 +29,26 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class FileSearchParam(TypedDict):
     r"""A tool that can be used by the model to search files."""
 
-    type: Literal["file_search"]
     file_search_store_names: NotRequired[List[str]]
     r"""The file search store names to search."""
-    top_k: NotRequired[int]
-    r"""The number of semantic retrieval chunks to retrieve."""
     metadata_filter: NotRequired[str]
     r"""Metadata filter to apply to the semantic retrieval documents and chunks."""
+    top_k: NotRequired[int]
+    r"""The number of semantic retrieval chunks to retrieve."""
+    type: Literal["file_search"]
 
 
 class FileSearch(BaseModel):
     r"""A tool that can be used by the model to search files."""
+
+    file_search_store_names: Optional[List[str]] = None
+    r"""The file search store names to search."""
+
+    metadata_filter: Optional[str] = None
+    r"""Metadata filter to apply to the semantic retrieval documents and chunks."""
+
+    top_k: Optional[int] = None
+    r"""The number of semantic retrieval chunks to retrieve."""
 
     type: Annotated[
         Annotated[
@@ -48,18 +57,9 @@ class FileSearch(BaseModel):
         pydantic.Field(alias="type"),
     ] = "file_search"
 
-    file_search_store_names: Optional[List[str]] = None
-    r"""The file search store names to search."""
-
-    top_k: Optional[int] = None
-    r"""The number of semantic retrieval chunks to retrieve."""
-
-    metadata_filter: Optional[str] = None
-    r"""Metadata filter to apply to the semantic retrieval documents and chunks."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["file_search_store_names", "top_k", "metadata_filter"])
+        optional_fields = set(["file_search_store_names", "metadata_filter", "top_k"])
         serialized = handler(self)
         m = {}
 

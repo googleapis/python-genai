@@ -31,12 +31,12 @@ class RagStoreConfigParam(TypedDict):
 
     rag_resources: NotRequired[List[RagResourceParam]]
     r"""Optional. The representation of the rag source."""
+    rag_retrieval_config: NotRequired[RagRetrievalConfigParam]
+    r"""Specifies the context retrieval config."""
     similarity_top_k: NotRequired[int]
     r"""Optional. Number of top k results to return from the selected corpora."""
     vector_distance_threshold: NotRequired[float]
     r"""Optional. Only return results with vector distance smaller than the threshold."""
-    rag_retrieval_config: NotRequired[RagRetrievalConfigParam]
-    r"""Specifies the context retrieval config."""
 
 
 class RagStoreConfig(BaseModel):
@@ -44,6 +44,9 @@ class RagStoreConfig(BaseModel):
 
     rag_resources: Optional[List[RagResource]] = None
     r"""Optional. The representation of the rag source."""
+
+    rag_retrieval_config: Optional[RagRetrievalConfig] = None
+    r"""Specifies the context retrieval config."""
 
     similarity_top_k: Annotated[
         Optional[int],
@@ -61,17 +64,14 @@ class RagStoreConfig(BaseModel):
     ] = None
     r"""Optional. Only return results with vector distance smaller than the threshold."""
 
-    rag_retrieval_config: Optional[RagRetrievalConfig] = None
-    r"""Specifies the context retrieval config."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
                 "rag_resources",
+                "rag_retrieval_config",
                 "similarity_top_k",
                 "vector_distance_threshold",
-                "rag_retrieval_config",
             ]
         )
         serialized = handler(self)

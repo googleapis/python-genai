@@ -35,14 +35,14 @@ class StatusParam(TypedDict):
 
     code: NotRequired[int]
     r"""The status code, which should be an enum value of google.rpc.Code."""
+    details: NotRequired[List[Dict[str, Any]]]
+    r"""A list of messages that carry the error details.  There is a common set of
+    message types for APIs to use.
+    """
     message: NotRequired[str]
     r"""A developer-facing error message, which should be in English. Any
     user-facing error message should be localized and sent in the
     google.rpc.Status.details field, or localized by the client.
-    """
-    details: NotRequired[List[Dict[str, Any]]]
-    r"""A list of messages that carry the error details.  There is a common set of
-    message types for APIs to use.
     """
 
 
@@ -59,20 +59,20 @@ class Status(BaseModel):
     code: Optional[int] = None
     r"""The status code, which should be an enum value of google.rpc.Code."""
 
+    details: Optional[List[Dict[str, Any]]] = None
+    r"""A list of messages that carry the error details.  There is a common set of
+    message types for APIs to use.
+    """
+
     message: Optional[str] = None
     r"""A developer-facing error message, which should be in English. Any
     user-facing error message should be localized and sent in the
     google.rpc.Status.details field, or localized by the client.
     """
 
-    details: Optional[List[Dict[str, Any]]] = None
-    r"""A list of messages that carry the error details.  There is a common set of
-    message types for APIs to use.
-    """
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["code", "message", "details"])
+        optional_fields = set(["code", "details", "message"])
         serialized = handler(self)
         m = {}
 

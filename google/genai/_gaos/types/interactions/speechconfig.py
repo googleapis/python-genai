@@ -26,19 +26,16 @@ from typing_extensions import NotRequired, TypedDict
 class SpeechConfigParam(TypedDict):
     r"""The configuration for speech interaction."""
 
-    voice: NotRequired[str]
-    r"""The voice of the speaker."""
     language: NotRequired[str]
     r"""The language of the speech."""
     speaker: NotRequired[str]
     r"""The speaker's name, it should match the speaker name given in the prompt."""
+    voice: NotRequired[str]
+    r"""The voice of the speaker."""
 
 
 class SpeechConfig(BaseModel):
     r"""The configuration for speech interaction."""
-
-    voice: Optional[str] = None
-    r"""The voice of the speaker."""
 
     language: Optional[str] = None
     r"""The language of the speech."""
@@ -46,9 +43,12 @@ class SpeechConfig(BaseModel):
     speaker: Optional[str] = None
     r"""The speaker's name, it should match the speaker name given in the prompt."""
 
+    voice: Optional[str] = None
+    r"""The voice of the speaker."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["voice", "language", "speaker"])
+        optional_fields = set(["language", "speaker", "voice"])
         serialized = handler(self)
         m = {}
 
