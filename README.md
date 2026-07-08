@@ -879,6 +879,10 @@ response = client.models.generate_content(
 
 #### Model Context Protocol (MCP) support (experimental)
 
+See below for examples of how to use MCP for the Gemini Developer API and Gemini Enterprise Agent Platform.
+
+##### MCP for Gemini Developer API
+
 Built-in [MCP](https://modelcontextprotocol.io/introduction) support is an
 experimental feature. You can pass a local MCP server as a tool directly.
 
@@ -920,6 +924,61 @@ async def run():
 
 # Start the asyncio event loop and run the main function
 asyncio.run(run())
+```
+
+##### MCP for Gemini Enterprise Agent Platform
+
+To use MCP with Agent Platform, provide the MCP tool you want to use to
+`Tool.mcp_servers` in your `generate_content` request. See
+[here](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/mcp#toolsets)
+for a list of available MCP tools.
+
+The `mcp` package is required to use Agent Platform MCP servers.
+You can install it with `pip install mcp`.
+
+```python
+import asyncio
+from google import genai
+from google.genai import types
+
+PROJECT_ID="your-gcp-project"
+LOCATION="your-location"
+
+client = genai.Client(enterprise=True, project=PROJECT_ID, location=LOCATION)
+
+
+async def agent_platform_mcp():
+    response = await client.aio.models.generate_content(
+        model="gemini-3.5-flash",
+        contents=f"List my endpoints in {LOCATION} for my {PROJECT_ID} project.",
+        config = types.GenerateContentConfig(
+            tools=[
+                types.Tool(
+                    mcp_servers=[
+                        types.McpServer(name='endpoints')
+                    ]
+                )
+            ]
+        )
+    )
+
+    # Print the model response
+    if response.text:
+        print(response.text)
+
+    # Optionally, print the full conversation between the model and MCP server
+    if response.automatic_function_calling_history:
+        for turn in response.automatic_function_calling_history:
+            print(f"Role: {turn.role}")
+            for part in turn.parts:
+                if part.function_call:
+                    print(f"  Tool Called: {part.function_call.name}")
+                    print(f"  Arguments: {part.function_call.args}")
+                elif part.function_response:
+                    print(f"  Tool Response: {part.function_response.response}")
+            print("-" * 40)
+
+asyncio.run(agent_platform_mcp())
 ```
 
 ### JSON Response Schema
