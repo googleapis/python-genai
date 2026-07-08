@@ -10837,7 +10837,11 @@ class TextResponseFormat(_common.BaseModel):
       default=None,
       description="""Optional. The IANA standard MIME type of the response.""",
   )
-  schema: Optional[Any] = Field(default=None, description="""Optional. The JSON schema that the output should conform to. Only applicable when mime_type is APPLICATION_JSON.""")  # type: ignore[assignment]
+  jsonSchema: Optional[Any] = Field(
+      alias='schema',
+      default=None,
+      description="""Optional. The JSON schema that the output should conform to. Only applicable when mime_type is APPLICATION_JSON.""",
+  )
 
 
 class TextResponseFormatDict(TypedDict, total=False):
