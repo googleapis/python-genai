@@ -29,31 +29,31 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class StepDeltaTypedDict(TypedDict):
-    index: int
     delta: StepDeltaDataTypedDict
-    event_type: Literal["step.delta"]
+    index: int
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+    event_type: Literal["step.delta"]
     metadata: NotRequired[StepDeltaMetadataTypedDict]
     r"""Optional metadata accompanying ANY streamed event."""
 
 
 class StepDelta(BaseModel):
-    index: int
-
     delta: StepDeltaData
 
-    event_type: Annotated[
-        Annotated[Literal["step.delta"], AfterValidator(validate_const("step.delta"))],
-        pydantic.Field(alias="event_type"),
-    ] = "step.delta"
+    index: int
 
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+
+    event_type: Annotated[
+        Annotated[Literal["step.delta"], AfterValidator(validate_const("step.delta"))],
+        pydantic.Field(alias="event_type"),
+    ] = "step.delta"
 
     metadata: Optional[StepDeltaMetadata] = None
     r"""Optional metadata accompanying ANY streamed event."""

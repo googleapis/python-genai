@@ -56,9 +56,6 @@ def parse_open_union(
             return TypeAdapter(variant_cls).validate_python(v)
         except ValidationError:
             if lenient:
-                try:
-                    return construct_unvalidated(v, variant_cls)
-                except Exception:
-                    pass
+                return construct_unvalidated(v, variant_cls)
             return unknown_cls(raw=v)
     return unknown_cls(raw=v)

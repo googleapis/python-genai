@@ -26,6 +26,8 @@ from typing_extensions import NotRequired, TypedDict
 class FilterParam(TypedDict):
     r"""Config for filters."""
 
+    metadata_filter: NotRequired[str]
+    r"""Optional. String for metadata filtering."""
     vector_distance_threshold: NotRequired[float]
     r"""Optional. Only returns contexts with vector distance smaller than the
     threshold.
@@ -34,12 +36,13 @@ class FilterParam(TypedDict):
     r"""Optional. Only returns contexts with vector similarity larger than the
     threshold.
     """
-    metadata_filter: NotRequired[str]
-    r"""Optional. String for metadata filtering."""
 
 
 class Filter(BaseModel):
     r"""Config for filters."""
+
+    metadata_filter: Optional[str] = None
+    r"""Optional. String for metadata filtering."""
 
     vector_distance_threshold: Optional[float] = None
     r"""Optional. Only returns contexts with vector distance smaller than the
@@ -51,16 +54,13 @@ class Filter(BaseModel):
     threshold.
     """
 
-    metadata_filter: Optional[str] = None
-    r"""Optional. String for metadata filtering."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
+                "metadata_filter",
                 "vector_distance_threshold",
                 "vector_similarity_threshold",
-                "metadata_filter",
             ]
         )
         serialized = handler(self)

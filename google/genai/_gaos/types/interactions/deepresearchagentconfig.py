@@ -40,10 +40,6 @@ r"""Whether to include visualizations in the response."""
 class DeepResearchAgentConfigParam(TypedDict):
     r"""Configuration for the Deep Research agent."""
 
-    type: Literal["deep-research"]
-    thinking_summaries: NotRequired[ThinkingSummaries]
-    visualization: NotRequired[Visualization]
-    r"""Whether to include visualizations in the response."""
     collaborative_planning: NotRequired[bool]
     r"""Enables human-in-the-loop planning for the Deep Research agent. If set to
     true, the Deep Research agent will provide a research plan in its response.
@@ -52,22 +48,14 @@ class DeepResearchAgentConfigParam(TypedDict):
     """
     enable_bigquery_tool: NotRequired[bool]
     r"""Enables bigquery tool for the Deep Research agent."""
+    thinking_summaries: NotRequired[ThinkingSummaries]
+    type: Literal["deep-research"]
+    visualization: NotRequired[Visualization]
+    r"""Whether to include visualizations in the response."""
 
 
 class DeepResearchAgentConfig(BaseModel):
     r"""Configuration for the Deep Research agent."""
-
-    type: Annotated[
-        Annotated[
-            Literal["deep-research"], AfterValidator(validate_const("deep-research"))
-        ],
-        pydantic.Field(alias="type"),
-    ] = "deep-research"
-
-    thinking_summaries: Optional[ThinkingSummaries] = None
-
-    visualization: Optional[Visualization] = None
-    r"""Whether to include visualizations in the response."""
 
     collaborative_planning: Optional[bool] = None
     r"""Enables human-in-the-loop planning for the Deep Research agent. If set to
@@ -79,14 +67,26 @@ class DeepResearchAgentConfig(BaseModel):
     enable_bigquery_tool: Optional[bool] = None
     r"""Enables bigquery tool for the Deep Research agent."""
 
+    thinking_summaries: Optional[ThinkingSummaries] = None
+
+    type: Annotated[
+        Annotated[
+            Literal["deep-research"], AfterValidator(validate_const("deep-research"))
+        ],
+        pydantic.Field(alias="type"),
+    ] = "deep-research"
+
+    visualization: Optional[Visualization] = None
+    r"""Whether to include visualizations in the response."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "thinking_summaries",
-                "visualization",
                 "collaborative_planning",
                 "enable_bigquery_tool",
+                "thinking_summaries",
+                "visualization",
             ]
         )
         serialized = handler(self)

@@ -37,7 +37,10 @@ SourceType = Union[
 class SourceParam(TypedDict):
     r"""A source to be mounted into the environment."""
 
-    type: NotRequired[SourceType]
+    content: NotRequired[str]
+    r"""The inline content if `type` is `INLINE`."""
+    encoding: NotRequired[str]
+    r"""Optional encoding for inline content (e.g. `base64`)."""
     source: NotRequired[str]
     r"""The source of the environment.
     For GCS, this is the GCS path.
@@ -45,16 +48,17 @@ class SourceParam(TypedDict):
     """
     target: NotRequired[str]
     r"""Where the source should appear in the environment."""
-    content: NotRequired[str]
-    r"""The inline content if `type` is `INLINE`."""
-    encoding: NotRequired[str]
-    r"""Optional encoding for inline content (e.g. `base64`)."""
+    type: NotRequired[SourceType]
 
 
 class Source(BaseModel):
     r"""A source to be mounted into the environment."""
 
-    type: Optional[SourceType] = None
+    content: Optional[str] = None
+    r"""The inline content if `type` is `INLINE`."""
+
+    encoding: Optional[str] = None
+    r"""Optional encoding for inline content (e.g. `base64`)."""
 
     source: Optional[str] = None
     r"""The source of the environment.
@@ -65,15 +69,11 @@ class Source(BaseModel):
     target: Optional[str] = None
     r"""Where the source should appear in the environment."""
 
-    content: Optional[str] = None
-    r"""The inline content if `type` is `INLINE`."""
-
-    encoding: Optional[str] = None
-    r"""Optional encoding for inline content (e.g. `base64`)."""
+    type: Optional[SourceType] = None
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["type", "source", "target", "content", "encoding"])
+        optional_fields = set(["content", "encoding", "source", "target", "type"])
         serialized = handler(self)
         m = {}
 

@@ -27,12 +27,15 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class ThoughtSignatureDeltaTypedDict(TypedDict):
-    type: Literal["thought_signature"]
     signature: NotRequired[str]
     r"""Signature to match the backend source to be part of the generation."""
+    type: Literal["thought_signature"]
 
 
 class ThoughtSignatureDelta(BaseModel):
+    signature: Optional[str] = None
+    r"""Signature to match the backend source to be part of the generation."""
+
     type: Annotated[
         Annotated[
             Literal["thought_signature"],
@@ -40,9 +43,6 @@ class ThoughtSignatureDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "thought_signature"
-
-    signature: Optional[str] = None
-    r"""Signature to match the backend source to be part of the generation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

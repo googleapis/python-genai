@@ -29,22 +29,17 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class ErrorEventTypedDict(TypedDict):
-    event_type: Literal["error"]
     error: NotRequired[ErrorTypedDict]
     r"""Error message from an interaction."""
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+    event_type: Literal["error"]
     metadata: NotRequired[StreamMetadataTypedDict]
 
 
 class ErrorEvent(BaseModel):
-    event_type: Annotated[
-        Annotated[Literal["error"], AfterValidator(validate_const("error"))],
-        pydantic.Field(alias="event_type"),
-    ] = "error"
-
     error: Optional[Error] = None
     r"""Error message from an interaction."""
 
@@ -52,6 +47,11 @@ class ErrorEvent(BaseModel):
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+
+    event_type: Annotated[
+        Annotated[Literal["error"], AfterValidator(validate_const("error"))],
+        pydantic.Field(alias="event_type"),
+    ] = "error"
 
     metadata: Optional[StreamMetadata] = None
 

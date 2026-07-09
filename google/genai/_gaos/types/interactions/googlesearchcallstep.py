@@ -54,11 +54,11 @@ class GoogleSearchCallStepParam(TypedDict):
     r"""The arguments to pass to Google Search."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
-    type: Literal["google_search_call"]
     search_type: NotRequired[GoogleSearchCallStepSearchType]
     r"""The type of search grounding enabled."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["google_search_call"]
 
 
 class GoogleSearchCallStep(BaseModel):
@@ -70,6 +70,12 @@ class GoogleSearchCallStep(BaseModel):
     id: str
     r"""Required. A unique ID for this specific tool call."""
 
+    search_type: Optional[GoogleSearchCallStepSearchType] = None
+    r"""The type of search grounding enabled."""
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["google_search_call"],
@@ -77,12 +83,6 @@ class GoogleSearchCallStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "google_search_call"
-
-    search_type: Optional[GoogleSearchCallStepSearchType] = None
-    r"""The type of search grounding enabled."""
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

@@ -29,14 +29,19 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GoogleSearchResultDeltaTypedDict(TypedDict):
     result: List[GoogleSearchResultParam]
-    type: Literal["google_search_result"]
     is_error: NotRequired[bool]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["google_search_result"]
 
 
 class GoogleSearchResultDelta(BaseModel):
     result: List[GoogleSearchResult]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -45,11 +50,6 @@ class GoogleSearchResultDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "google_search_result"
-
-    is_error: Optional[bool] = None
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

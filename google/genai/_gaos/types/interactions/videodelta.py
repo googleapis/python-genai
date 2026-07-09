@@ -44,30 +44,30 @@ VideoDeltaMimeType = Union[
 
 
 class VideoDeltaTypedDict(TypedDict):
-    type: Literal["video"]
     data: NotRequired[str]
-    uri: NotRequired[str]
     mime_type: NotRequired[VideoDeltaMimeType]
     resolution: NotRequired[MediaResolution]
+    type: Literal["video"]
+    uri: NotRequired[str]
 
 
 class VideoDelta(BaseModel):
-    type: Annotated[
-        Annotated[Literal["video"], AfterValidator(validate_const("video"))],
-        pydantic.Field(alias="type"),
-    ] = "video"
-
     data: Optional[str] = None
-
-    uri: Optional[str] = None
 
     mime_type: Optional[VideoDeltaMimeType] = None
 
     resolution: Optional[MediaResolution] = None
 
+    type: Annotated[
+        Annotated[Literal["video"], AfterValidator(validate_const("video"))],
+        pydantic.Field(alias="type"),
+    ] = "video"
+
+    uri: Optional[str] = None
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "uri", "mime_type", "resolution"])
+        optional_fields = set(["data", "mime_type", "resolution", "uri"])
         serialized = handler(self)
         m = {}
 

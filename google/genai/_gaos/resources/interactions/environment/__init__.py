@@ -18,6 +18,5 @@
 
 from ....types.interactions.environmentnetworkegressallowlist import Allowlist
 from ....types.interactions.source import Source
-from . import allowlist
 
-__all__ = ["Allowlist", "Source", "allowlist"]
+__all__ = ["Allowlist", "Source"]

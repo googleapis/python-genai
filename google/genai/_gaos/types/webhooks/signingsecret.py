@@ -27,24 +27,24 @@ from typing_extensions import NotRequired, TypedDict
 class SigningSecretTypedDict(TypedDict):
     r"""Represents a signing secret used to verify webhook payloads."""
 
-    truncated_secret: NotRequired[str]
-    r"""Output only. The truncated version of the signing secret."""
     expire_time: NotRequired[datetime]
     r"""Output only. The expiration date of the signing secret."""
+    truncated_secret: NotRequired[str]
+    r"""Output only. The truncated version of the signing secret."""
 
 
 class SigningSecret(BaseModel):
     r"""Represents a signing secret used to verify webhook payloads."""
 
-    truncated_secret: Optional[str] = None
-    r"""Output only. The truncated version of the signing secret."""
-
     expire_time: Optional[datetime] = None
     r"""Output only. The expiration date of the signing secret."""
 
+    truncated_secret: Optional[str] = None
+    r"""Output only. The truncated version of the signing secret."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["truncated_secret", "expire_time"])
+        optional_fields = set(["expire_time", "truncated_secret"])
         serialized = handler(self)
         m = {}
 

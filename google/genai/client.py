@@ -161,7 +161,7 @@ class AsyncClient:
       from google.genai import Client
 
       async_client = Client(
-          vertexai=True, project='my-project-id', location='us-central1'
+          enterprise=True, project='my-project-id', location='us-central1'
       ).aio
       response_1 = await async_client.models.generate_content(
           model='gemini-2.0-flash',

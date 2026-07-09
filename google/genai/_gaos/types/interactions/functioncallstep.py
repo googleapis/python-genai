@@ -28,26 +28,26 @@ from typing_extensions import Annotated, TypedDict
 class FunctionCallStepParam(TypedDict):
     r"""A function tool call step."""
 
-    name: str
-    r"""Required. The name of the tool to call."""
     arguments: Dict[str, Any]
     r"""Required. The arguments to pass to the function."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
+    name: str
+    r"""Required. The name of the tool to call."""
     type: Literal["function_call"]
 
 
 class FunctionCallStep(BaseModel):
     r"""A function tool call step."""
 
-    name: str
-    r"""Required. The name of the tool to call."""
-
     arguments: Dict[str, Any]
     r"""Required. The arguments to pass to the function."""
 
     id: str
     r"""Required. A unique ID for this specific tool call."""
+
+    name: str
+    r"""Required. The name of the tool to call."""
 
     type: Annotated[
         Annotated[

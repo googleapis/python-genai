@@ -29,13 +29,16 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class FileSearchResultDeltaTypedDict(TypedDict):
     result: List[FileSearchResultTypedDict]
-    type: Literal["file_search_result"]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["file_search_result"]
 
 
 class FileSearchResultDelta(BaseModel):
     result: List[FileSearchResult]
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -44,9 +47,6 @@ class FileSearchResultDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "file_search_result"
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

@@ -30,25 +30,31 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class URLContextResultStepParam(TypedDict):
     r"""URL context result step."""
 
-    result: List[URLContextResultParam]
-    r"""Required. The results of the URL context."""
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    type: Literal["url_context_result"]
+    result: List[URLContextResultParam]
+    r"""Required. The results of the URL context."""
     is_error: NotRequired[bool]
     r"""Whether the URL context resulted in an error."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["url_context_result"]
 
 
 class URLContextResultStep(BaseModel):
     r"""URL context result step."""
 
+    call_id: str
+    r"""Required. ID to match the ID from the function call block."""
+
     result: List[URLContextResult]
     r"""Required. The results of the URL context."""
 
-    call_id: str
-    r"""Required. ID to match the ID from the function call block."""
+    is_error: Optional[bool] = None
+    r"""Whether the URL context resulted in an error."""
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -57,12 +63,6 @@ class URLContextResultStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "url_context_result"
-
-    is_error: Optional[bool] = None
-    r"""Whether the URL context resulted in an error."""
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

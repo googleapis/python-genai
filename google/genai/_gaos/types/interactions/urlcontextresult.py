@@ -38,24 +38,24 @@ r"""The status of the URL retrieval."""
 class URLContextResultParam(TypedDict):
     r"""The result of the URL context."""
 
-    url: NotRequired[str]
-    r"""The URL that was fetched."""
     status: NotRequired[URLContextResultStatus]
     r"""The status of the URL retrieval."""
+    url: NotRequired[str]
+    r"""The URL that was fetched."""
 
 
 class URLContextResult(BaseModel):
     r"""The result of the URL context."""
 
-    url: Optional[str] = None
-    r"""The URL that was fetched."""
-
     status: Optional[URLContextResultStatus] = None
     r"""The status of the URL retrieval."""
 
+    url: Optional[str] = None
+    r"""The URL that was fetched."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["url", "status"])
+        optional_fields = set(["status", "url"])
         serialized = handler(self)
         m = {}
 

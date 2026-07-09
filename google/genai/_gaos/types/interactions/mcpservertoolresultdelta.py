@@ -56,13 +56,17 @@ MCPServerToolResultDeltaResultUnion = TypeAliasType(
 
 class MCPServerToolResultDeltaTypedDict(TypedDict):
     result: MCPServerToolResultDeltaResultUnionTypedDict
-    type: Literal["mcp_server_tool_result"]
     name: NotRequired[str]
     server_name: NotRequired[str]
+    type: Literal["mcp_server_tool_result"]
 
 
 class MCPServerToolResultDelta(BaseModel):
     result: MCPServerToolResultDeltaResultUnion
+
+    name: Optional[str] = None
+
+    server_name: Optional[str] = None
 
     type: Annotated[
         Annotated[
@@ -71,10 +75,6 @@ class MCPServerToolResultDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "mcp_server_tool_result"
-
-    name: Optional[str] = None
-
-    server_name: Optional[str] = None
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

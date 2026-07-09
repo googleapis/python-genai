@@ -44,62 +44,30 @@ r"""The tool choice configuration."""
 class GenerationConfigParam(TypedDict):
     r"""Configuration parameters for model interactions."""
 
-    temperature: NotRequired[float]
-    r"""Controls the randomness of the output."""
-    top_p: NotRequired[float]
-    r"""The maximum cumulative probability of tokens to consider when sampling."""
-    seed: NotRequired[int]
-    r"""Seed used in decoding for reproducibility."""
-    stop_sequences: NotRequired[List[str]]
-    r"""A list of character sequences that will stop output interaction."""
-    thinking_level: NotRequired[ThinkingLevel]
-    thinking_summaries: NotRequired[ThinkingSummaries]
-    max_output_tokens: NotRequired[int]
-    r"""The maximum number of tokens to include in the response."""
-    speech_config: NotRequired[List[SpeechConfigParam]]
-    r"""Configuration for speech interaction."""
     image_config: NotRequired[ImageConfigParam]
     r"""The configuration for image interaction."""
-    video_config: NotRequired[VideoConfigParam]
-    r"""Configuration options for video generation."""
-    presence_penalty: NotRequired[float]
-    r"""Penalizes tokens that have already appeared in the generated
-    text. A positive value encourages the model to generate more diverse and
-    less repetitive text. Valid values can range from [-2.0, 2.0].
-    """
-    frequency_penalty: NotRequired[float]
-    r"""Penalizes tokens based on their frequency in the generated text.
-    A positive value helps to reduce the repetition of words and phrases.
-    Valid values can range from [-2.0, 2.0].
-    """
+    max_output_tokens: NotRequired[int]
+    r"""The maximum number of tokens to include in the response."""
+    seed: NotRequired[int]
+    r"""Seed used in decoding for reproducibility."""
+    speech_config: NotRequired[List[SpeechConfigParam]]
+    r"""Configuration for speech interaction."""
+    stop_sequences: NotRequired[List[str]]
+    r"""A list of character sequences that will stop output interaction."""
+    temperature: NotRequired[float]
+    r"""Controls the randomness of the output."""
+    thinking_level: NotRequired[ThinkingLevel]
+    thinking_summaries: NotRequired[ThinkingSummaries]
     tool_choice: NotRequired[ToolChoiceParam]
     r"""The tool choice configuration."""
+    top_p: NotRequired[float]
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
+    video_config: NotRequired[VideoConfigParam]
+    r"""Configuration options for video generation."""
 
 
 class GenerationConfig(BaseModel):
     r"""Configuration parameters for model interactions."""
-
-    temperature: Optional[float] = None
-    r"""Controls the randomness of the output."""
-
-    top_p: Optional[float] = None
-    r"""The maximum cumulative probability of tokens to consider when sampling."""
-
-    seed: Optional[int] = None
-    r"""Seed used in decoding for reproducibility."""
-
-    stop_sequences: Optional[List[str]] = None
-    r"""A list of character sequences that will stop output interaction."""
-
-    thinking_level: Optional[ThinkingLevel] = None
-
-    thinking_summaries: Optional[ThinkingSummaries] = None
-
-    max_output_tokens: Optional[int] = None
-    r"""The maximum number of tokens to include in the response."""
-
-    speech_config: Optional[List[SpeechConfig]] = None
-    r"""Configuration for speech interaction."""
 
     image_config: Annotated[
         Optional[ImageConfig],
@@ -109,41 +77,49 @@ class GenerationConfig(BaseModel):
     ] = None
     r"""The configuration for image interaction."""
 
-    video_config: Optional[VideoConfig] = None
-    r"""Configuration options for video generation."""
+    max_output_tokens: Optional[int] = None
+    r"""The maximum number of tokens to include in the response."""
 
-    presence_penalty: Optional[float] = None
-    r"""Penalizes tokens that have already appeared in the generated
-    text. A positive value encourages the model to generate more diverse and
-    less repetitive text. Valid values can range from [-2.0, 2.0].
-    """
+    seed: Optional[int] = None
+    r"""Seed used in decoding for reproducibility."""
 
-    frequency_penalty: Optional[float] = None
-    r"""Penalizes tokens based on their frequency in the generated text.
-    A positive value helps to reduce the repetition of words and phrases.
-    Valid values can range from [-2.0, 2.0].
-    """
+    speech_config: Optional[List[SpeechConfig]] = None
+    r"""Configuration for speech interaction."""
+
+    stop_sequences: Optional[List[str]] = None
+    r"""A list of character sequences that will stop output interaction."""
+
+    temperature: Optional[float] = None
+    r"""Controls the randomness of the output."""
+
+    thinking_level: Optional[ThinkingLevel] = None
+
+    thinking_summaries: Optional[ThinkingSummaries] = None
 
     tool_choice: Optional[ToolChoice] = None
     r"""The tool choice configuration."""
+
+    top_p: Optional[float] = None
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
+
+    video_config: Optional[VideoConfig] = None
+    r"""Configuration options for video generation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "temperature",
-                "top_p",
+                "image_config",
+                "max_output_tokens",
                 "seed",
+                "speech_config",
                 "stop_sequences",
+                "temperature",
                 "thinking_level",
                 "thinking_summaries",
-                "max_output_tokens",
-                "speech_config",
-                "image_config",
-                "video_config",
-                "presence_penalty",
-                "frequency_penalty",
                 "tool_choice",
+                "top_p",
+                "video_config",
             ]
         )
         serialized = handler(self)

@@ -24,12 +24,13 @@ from .interactionsinput import InteractionsInput, InteractionsInputParam
 from .model import Model
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
+from .safetysetting import SafetySetting, SafetySettingParam
 from .servicetier import ServiceTier
 from .tool import Tool, ToolParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
 import pydantic
 from pydantic import model_serializer
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
@@ -97,6 +98,10 @@ class CreateModelInteractionParam(TypedDict):
     Format:
     `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
     """
+    safety_settings: NotRequired[List[SafetySettingParam]]
+    r"""Safety settings for the interaction."""
+    labels: NotRequired[Dict[str, str]]
+    r"""The labels with user-defined metadata for the request."""
 
 
 class CreateModelInteraction(BaseModel):
@@ -159,6 +164,12 @@ class CreateModelInteraction(BaseModel):
     `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
     """
 
+    safety_settings: Optional[List[SafetySetting]] = None
+    r"""Safety settings for the interaction."""
+
+    labels: Optional[Dict[str, str]] = None
+    r"""The labels with user-defined metadata for the request."""
+
     @model_serializer(mode="wrap")
     def _serialize_model(self, handler):
         optional_fields = set(
@@ -177,6 +188,8 @@ class CreateModelInteraction(BaseModel):
                 "environment",
                 "generation_config",
                 "cached_content",
+                "safety_settings",
+                "labels",
             ]
         )
         serialized = handler(self)

@@ -29,25 +29,31 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class CodeExecutionResultStepParam(TypedDict):
     r"""Code execution result step."""
 
-    result: str
-    r"""Required. The output of the code execution."""
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    type: Literal["code_execution_result"]
+    result: str
+    r"""Required. The output of the code execution."""
     is_error: NotRequired[bool]
     r"""Whether the code execution resulted in an error."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["code_execution_result"]
 
 
 class CodeExecutionResultStep(BaseModel):
     r"""Code execution result step."""
 
+    call_id: str
+    r"""Required. ID to match the ID from the function call block."""
+
     result: str
     r"""Required. The output of the code execution."""
 
-    call_id: str
-    r"""Required. ID to match the ID from the function call block."""
+    is_error: Optional[bool] = None
+    r"""Whether the code execution resulted in an error."""
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -56,12 +62,6 @@ class CodeExecutionResultStep(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "code_execution_result"
-
-    is_error: Optional[bool] = None
-    r"""Whether the code execution resulted in an error."""
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

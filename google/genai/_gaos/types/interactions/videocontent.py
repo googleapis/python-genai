@@ -53,38 +53,38 @@ r"""The mime type of the video."""
 class VideoContentParam(TypedDict):
     r"""A video content block."""
 
-    type: Literal["video"]
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The video content."""
-    uri: NotRequired[str]
-    r"""The URI of the video."""
     mime_type: NotRequired[VideoContentMimeType]
     r"""The mime type of the video."""
     resolution: NotRequired[MediaResolution]
+    type: Literal["video"]
+    uri: NotRequired[str]
+    r"""The URI of the video."""
 
 
 class VideoContent(BaseModel):
     r"""A video content block."""
 
-    type: Annotated[
-        Annotated[Literal["video"], AfterValidator(validate_const("video"))],
-        pydantic.Field(alias="type"),
-    ] = "video"
-
     data: Optional[Base64EncodedString] = None
     r"""The video content."""
-
-    uri: Optional[str] = None
-    r"""The URI of the video."""
 
     mime_type: Optional[VideoContentMimeType] = None
     r"""The mime type of the video."""
 
     resolution: Optional[MediaResolution] = None
 
+    type: Annotated[
+        Annotated[Literal["video"], AfterValidator(validate_const("video"))],
+        pydantic.Field(alias="type"),
+    ] = "video"
+
+    uri: Optional[str] = None
+    r"""The URI of the video."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "uri", "mime_type", "resolution"])
+        optional_fields = set(["data", "mime_type", "resolution", "uri"])
         serialized = handler(self)
         m = {}
 

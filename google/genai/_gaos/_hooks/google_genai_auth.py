@@ -67,7 +67,6 @@ class GoogleGenAIAuthHook(BeforeRequestHook):
         security = _resolve_security(hook_ctx.security_source)
 
         _apply_default_headers(security, request)
-        _apply_api_revision(hook_ctx, request)
         _apply_user_project(hook_ctx, request)
         _apply_auth(security, request)
 
@@ -104,15 +103,6 @@ def _apply_default_headers(
         if request.headers.get(key) is None:
             request.headers[key] = value
 
-
-def _apply_api_revision(
-    hook_ctx: BeforeRequestContext, request: httpx.Request
-) -> None:
-    if request.headers.get("Api-Revision") is not None:
-        return
-
-    api_revision = hook_ctx.config.globals.api_revision
-    request.headers["Api-Revision"] = api_revision or GOOGLE_GENAI_API_REVISION
 
 
 def _apply_user_project(

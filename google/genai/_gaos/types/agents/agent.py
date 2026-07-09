@@ -50,18 +50,18 @@ class AgentParam(TypedDict):
     }
     """
 
-    id: NotRequired[str]
-    r"""The unique identifier for the agent."""
     base_agent: NotRequired[str]
     r"""The base agent to extend."""
-    system_instruction: NotRequired[str]
-    r"""System instruction for the agent."""
-    description: NotRequired[str]
-    r"""Agent description for developers to quickly read and understand."""
-    tools: NotRequired[List[AgentToolParam]]
-    r"""The tools available to the agent."""
     base_environment: NotRequired[BaseEnvironmentParam]
     r"""The environment configuration for the agent."""
+    description: NotRequired[str]
+    r"""Agent description for developers to quickly read and understand."""
+    id: NotRequired[str]
+    r"""The unique identifier for the agent."""
+    system_instruction: NotRequired[str]
+    r"""System instruction for the agent."""
+    tools: NotRequired[List[AgentToolParam]]
+    r"""The tools available to the agent."""
 
 
 class Agent(BaseModel):
@@ -77,34 +77,34 @@ class Agent(BaseModel):
     }
     """
 
-    id: Optional[str] = None
-    r"""The unique identifier for the agent."""
-
     base_agent: Optional[str] = None
     r"""The base agent to extend."""
 
-    system_instruction: Optional[str] = None
-    r"""System instruction for the agent."""
+    base_environment: Optional[BaseEnvironment] = None
+    r"""The environment configuration for the agent."""
 
     description: Optional[str] = None
     r"""Agent description for developers to quickly read and understand."""
 
+    id: Optional[str] = None
+    r"""The unique identifier for the agent."""
+
+    system_instruction: Optional[str] = None
+    r"""System instruction for the agent."""
+
     tools: Optional[List[AgentTool]] = None
     r"""The tools available to the agent."""
-
-    base_environment: Optional[BaseEnvironment] = None
-    r"""The environment configuration for the agent."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "id",
                 "base_agent",
-                "system_instruction",
-                "description",
-                "tools",
                 "base_environment",
+                "description",
+                "id",
+                "system_instruction",
+                "tools",
             ]
         )
         serialized = handler(self)

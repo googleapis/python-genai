@@ -33,14 +33,17 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class CodeExecutionCallDeltaTypedDict(TypedDict):
     arguments: CodeExecutionCallArgumentsParam
     r"""The arguments to pass to the code execution."""
-    type: Literal["code_execution_call"]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["code_execution_call"]
 
 
 class CodeExecutionCallDelta(BaseModel):
     arguments: CodeExecutionCallArguments
     r"""The arguments to pass to the code execution."""
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -49,9 +52,6 @@ class CodeExecutionCallDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "code_execution_call"
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

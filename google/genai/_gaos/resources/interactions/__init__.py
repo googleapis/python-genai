@@ -63,6 +63,7 @@ from ...types.interactions.googlesearchcallarguments import GoogleSearchCallArgu
 from ...types.interactions.googlesearchcallstep import GoogleSearchCallStep
 from ...types.interactions.googlesearchresult import GoogleSearchResult
 from ...types.interactions.googlesearchresultstep import GoogleSearchResultStep
+from ...types.interactions.harmcategory import HarmCategory
 from ...types.interactions.imageconfig import ImageConfig
 from ...types.interactions.imagecontent import ImageContent
 from ...types.interactions.imageresponseformat import ImageResponseFormat
@@ -76,6 +77,10 @@ from ...types.interactions.mcpservertoolresultstep import MCPServerToolResultSte
 from ...types.interactions.model import Model
 from ...types.interactions.modeloutputstep import ModelOutputStep
 from ...types.interactions.placecitation import PlaceCitation
+from ...types.interactions.retrievalcallarguments import RetrievalCallArguments
+from ...types.interactions.retrievalcalldelta import RetrievalCallDelta
+from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
+from ...types.interactions.safetysetting import SafetySetting
 from ...types.interactions.speechconfig import SpeechConfig
 from ...types.interactions.step import Step
 from ...types.interactions.stepdelta import StepDelta
@@ -112,6 +117,7 @@ from . import interactioncreatedevent
 from . import interactionstatusupdate
 from . import modeloutputstep
 from . import placecitation
+from . import retrievalcalldelta
 from . import stepdelta
 from . import stepstart
 from . import stepstop
@@ -155,6 +161,7 @@ __all__ = [
     "GoogleSearchCallStep",
     "GoogleSearchResult",
     "GoogleSearchResultStep",
+    "HarmCategory",
     "ImageConfig",
     "ImageContent",
     "ImageResponseFormat",
@@ -173,6 +180,10 @@ __all__ = [
     "Model",
     "ModelOutputStep",
     "PlaceCitation",
+    "RetrievalCallArguments",
+    "RetrievalCallDelta",
+    "RetrievalResultDelta",
+    "SafetySetting",
     "SpeechConfig",
     "Step",
     "StepDelta",
@@ -209,6 +220,7 @@ __all__ = [
     "interactionstatusupdate",
     "modeloutputstep",
     "placecitation",
+    "retrievalcalldelta",
     "stepdelta",
     "stepstart",
     "stepstop",

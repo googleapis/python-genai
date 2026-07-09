@@ -44,8 +44,8 @@ class Webhooks(BaseSDK):
     def create(
         self,
         *,
-        uri: str,
         subscribed_events: Iterable[webhooks_webhook.WebhookSubscribedEvent],
+        uri: str,
         api_version: Optional[str] = None,
         name: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -55,7 +55,6 @@ class Webhooks(BaseSDK):
     ) -> webhooks.Webhook:
         r"""Creates a new Webhook.
 
-        :param uri: Required. The URI to which webhook events will be sent.
         :param subscribed_events: Required. The events that the webhook is subscribed to.
             Available events:
             - batch.succeeded
@@ -65,6 +64,7 @@ class Webhooks(BaseSDK):
             - interaction.completed
             - interaction.failed
             - video.generated
+        :param uri: Required. The URI to which webhook events will be sent.
         :param api_version: Which version of the API to use.
         :param name: Optional. The user-provided name of the webhook.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -90,10 +90,10 @@ class Webhooks(BaseSDK):
             api_version=api_version,
             body=webhooks.WebhookInput(
                 name=name,
-                uri=uri,
                 subscribed_events=utils.unmarshal(
                     subscribed_events, List[webhooks.WebhookSubscribedEvent]
                 ),
+                uri=uri,
             ),
         )
 
@@ -170,6 +170,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -180,6 +182,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -313,6 +326,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -323,6 +338,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -450,6 +476,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -460,6 +488,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -493,11 +532,11 @@ class Webhooks(BaseSDK):
         api_version: Optional[str] = None,
         update_mask: Optional[str] = None,
         name: Optional[str] = None,
-        uri: Optional[str] = None,
+        state: Optional[webhooks_webhookupdate.WebhookUpdateState] = None,
         subscribed_events: Optional[
             Iterable[webhooks_webhookupdate.WebhookUpdateSubscribedEvent]
         ] = None,
-        state: Optional[webhooks_webhookupdate.WebhookUpdateState] = None,
+        uri: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -509,7 +548,7 @@ class Webhooks(BaseSDK):
         :param api_version: Which version of the API to use.
         :param update_mask: Optional. The list of fields to update.
         :param name: Optional. The user-provided name of the webhook.
-        :param uri: Optional. The URI to which webhook events will be sent.
+        :param state: Optional. The state of the webhook.
         :param subscribed_events: Optional. The events that the webhook is subscribed to.
             Available events:
             - batch.succeeded
@@ -519,7 +558,7 @@ class Webhooks(BaseSDK):
             - interaction.completed
             - interaction.failed
             - video.generated
-        :param state: Optional. The state of the webhook.
+        :param uri: Optional. The URI to which webhook events will be sent.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -545,12 +584,12 @@ class Webhooks(BaseSDK):
             update_mask=update_mask,
             body=webhooks.WebhookUpdate(
                 name=name,
-                uri=uri,
+                state=state,
                 subscribed_events=utils.unmarshal(
                     subscribed_events,
                     Optional[List[webhooks.WebhookUpdateSubscribedEvent]],
                 ),
-                state=state,
+                uri=uri,
             ),
         )
 
@@ -627,6 +666,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -637,6 +678,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -765,6 +817,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -775,6 +829,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -922,6 +987,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -932,6 +999,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1078,6 +1156,8 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1088,6 +1168,17 @@ class Webhooks(BaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.StreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1173,8 +1264,8 @@ class AsyncWebhooks(AsyncBaseSDK):
     async def create(
         self,
         *,
-        uri: str,
         subscribed_events: Iterable[webhooks_webhook.WebhookSubscribedEvent],
+        uri: str,
         api_version: Optional[str] = None,
         name: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -1184,7 +1275,6 @@ class AsyncWebhooks(AsyncBaseSDK):
     ) -> webhooks.Webhook:
         r"""Creates a new Webhook.
 
-        :param uri: Required. The URI to which webhook events will be sent.
         :param subscribed_events: Required. The events that the webhook is subscribed to.
             Available events:
             - batch.succeeded
@@ -1194,6 +1284,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             - interaction.completed
             - interaction.failed
             - video.generated
+        :param uri: Required. The URI to which webhook events will be sent.
         :param api_version: Which version of the API to use.
         :param name: Optional. The user-provided name of the webhook.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -1219,10 +1310,10 @@ class AsyncWebhooks(AsyncBaseSDK):
             api_version=api_version,
             body=webhooks.WebhookInput(
                 name=name,
-                uri=uri,
                 subscribed_events=utils.unmarshal(
                     subscribed_events, List[webhooks.WebhookSubscribedEvent]
                 ),
+                uri=uri,
             ),
         )
 
@@ -1299,6 +1390,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1309,6 +1402,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1444,6 +1549,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1454,6 +1561,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1583,6 +1702,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1593,6 +1714,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1628,11 +1761,11 @@ class AsyncWebhooks(AsyncBaseSDK):
         api_version: Optional[str] = None,
         update_mask: Optional[str] = None,
         name: Optional[str] = None,
-        uri: Optional[str] = None,
+        state: Optional[webhooks_webhookupdate.WebhookUpdateState] = None,
         subscribed_events: Optional[
             Iterable[webhooks_webhookupdate.WebhookUpdateSubscribedEvent]
         ] = None,
-        state: Optional[webhooks_webhookupdate.WebhookUpdateState] = None,
+        uri: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -1644,7 +1777,7 @@ class AsyncWebhooks(AsyncBaseSDK):
         :param api_version: Which version of the API to use.
         :param update_mask: Optional. The list of fields to update.
         :param name: Optional. The user-provided name of the webhook.
-        :param uri: Optional. The URI to which webhook events will be sent.
+        :param state: Optional. The state of the webhook.
         :param subscribed_events: Optional. The events that the webhook is subscribed to.
             Available events:
             - batch.succeeded
@@ -1654,7 +1787,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             - interaction.completed
             - interaction.failed
             - video.generated
-        :param state: Optional. The state of the webhook.
+        :param uri: Optional. The URI to which webhook events will be sent.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1680,12 +1813,12 @@ class AsyncWebhooks(AsyncBaseSDK):
             update_mask=update_mask,
             body=webhooks.WebhookUpdate(
                 name=name,
-                uri=uri,
+                state=state,
                 subscribed_events=utils.unmarshal(
                     subscribed_events,
                     Optional[List[webhooks.WebhookUpdateSubscribedEvent]],
                 ),
-                state=state,
+                uri=uri,
             ),
         )
 
@@ -1762,6 +1895,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1772,6 +1907,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -1902,6 +2049,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1912,6 +2061,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -2061,6 +2222,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2071,6 +2234,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"
@@ -2219,6 +2394,8 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
+            tags=None,
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2229,6 +2406,18 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config=retry_config,
         )
         if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
             _speakeasy_response_cls = (
                 response_helpers.AsyncStreamedAPIResponse
                 if _speakeasy_response_mode == "streaming"

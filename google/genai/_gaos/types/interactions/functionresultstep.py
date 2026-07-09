@@ -59,11 +59,11 @@ class FunctionResultStepParam(TypedDict):
     r"""Required. ID to match the ID from the function call block."""
     result: FunctionResultStepResultUnionParam
     r"""The result of the tool call."""
-    type: Literal["function_result"]
-    name: NotRequired[str]
-    r"""The name of the tool that was called."""
     is_error: NotRequired[bool]
     r"""Whether the tool call resulted in an error."""
+    name: NotRequired[str]
+    r"""The name of the tool that was called."""
+    type: Literal["function_result"]
 
 
 class FunctionResultStep(BaseModel):
@@ -75,6 +75,12 @@ class FunctionResultStep(BaseModel):
     result: FunctionResultStepResultUnion
     r"""The result of the tool call."""
 
+    is_error: Optional[bool] = None
+    r"""Whether the tool call resulted in an error."""
+
+    name: Optional[str] = None
+    r"""The name of the tool that was called."""
+
     type: Annotated[
         Annotated[
             Literal["function_result"],
@@ -83,15 +89,9 @@ class FunctionResultStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "function_result"
 
-    name: Optional[str] = None
-    r"""The name of the tool that was called."""
-
-    is_error: Optional[bool] = None
-    r"""Whether the tool call resulted in an error."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "is_error"])
+        optional_fields = set(["is_error", "name"])
         serialized = handler(self)
         m = {}
 

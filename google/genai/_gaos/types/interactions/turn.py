@@ -34,27 +34,27 @@ TurnContent = TypeAliasType("TurnContent", Union[List[Content], str])
     "warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
 )
 class TurnParam(TypedDict):
+    content: NotRequired[TurnContentParam]
     role: NotRequired[str]
     r"""The originator of this turn. Must be user for input or model for
     model output.
     """
-    content: NotRequired[TurnContentParam]
 
 
 @deprecated(
     "warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
 )
 class Turn(BaseModel):
+    content: Optional[TurnContent] = None
+
     role: Optional[str] = None
     r"""The originator of this turn. Must be user for input or model for
     model output.
     """
 
-    content: Optional[TurnContent] = None
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["role", "content"])
+        optional_fields = set(["content", "role"])
         serialized = handler(self)
         m = {}
 

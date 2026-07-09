@@ -26,24 +26,24 @@ from typing_extensions import NotRequired, TypedDict
 class VertexAISearchConfigParam(TypedDict):
     r"""Used to specify configuration for VertexAISearch."""
 
-    engine: NotRequired[str]
-    r"""Optional. Used to specify Vertex AI Search engine."""
     datastores: NotRequired[List[str]]
     r"""Optional. Used to specify Vertex AI Search datastores."""
+    engine: NotRequired[str]
+    r"""Optional. Used to specify Vertex AI Search engine."""
 
 
 class VertexAISearchConfig(BaseModel):
     r"""Used to specify configuration for VertexAISearch."""
 
-    engine: Optional[str] = None
-    r"""Optional. Used to specify Vertex AI Search engine."""
-
     datastores: Optional[List[str]] = None
     r"""Optional. Used to specify Vertex AI Search datastores."""
 
+    engine: Optional[str] = None
+    r"""Optional. Used to specify Vertex AI Search engine."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["engine", "datastores"])
+        optional_fields = set(["datastores", "engine"])
         serialized = handler(self)
         m = {}
 

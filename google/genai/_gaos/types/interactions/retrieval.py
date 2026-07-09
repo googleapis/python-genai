@@ -30,7 +30,7 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-RetrievalType = Union[
+RetrievalRetrievalType = Union[
     Literal[
         "vertex_ai_search",
         "rag_store",
@@ -44,32 +44,21 @@ RetrievalType = Union[
 class RetrievalParam(TypedDict):
     r"""A tool that can be used by the model to retrieve files."""
 
-    type: Literal["retrieval"]
-    retrieval_types: NotRequired[List[RetrievalType]]
-    r"""The types of file retrieval to enable."""
-    vertex_ai_search_config: NotRequired[VertexAISearchConfigParam]
-    r"""Used to specify configuration for VertexAISearch."""
     exa_ai_search_config: NotRequired[ExaAISearchConfigParam]
     r"""Used to specify configuration for ExaAISearch."""
     parallel_ai_search_config: NotRequired[ParallelAISearchConfigParam]
     r"""Used to specify configuration for ParallelAISearch."""
     rag_store_config: NotRequired[RagStoreConfigParam]
     r"""Use to specify configuration for RAG Store."""
+    retrieval_types: NotRequired[List[RetrievalRetrievalType]]
+    r"""The types of file retrieval to enable."""
+    type: Literal["retrieval"]
+    vertex_ai_search_config: NotRequired[VertexAISearchConfigParam]
+    r"""Used to specify configuration for VertexAISearch."""
 
 
 class Retrieval(BaseModel):
     r"""A tool that can be used by the model to retrieve files."""
-
-    type: Annotated[
-        Annotated[Literal["retrieval"], AfterValidator(validate_const("retrieval"))],
-        pydantic.Field(alias="type"),
-    ] = "retrieval"
-
-    retrieval_types: Optional[List[RetrievalType]] = None
-    r"""The types of file retrieval to enable."""
-
-    vertex_ai_search_config: Optional[VertexAISearchConfig] = None
-    r"""Used to specify configuration for VertexAISearch."""
 
     exa_ai_search_config: Optional[ExaAISearchConfig] = None
     r"""Used to specify configuration for ExaAISearch."""
@@ -80,15 +69,26 @@ class Retrieval(BaseModel):
     rag_store_config: Optional[RagStoreConfig] = None
     r"""Use to specify configuration for RAG Store."""
 
+    retrieval_types: Optional[List[RetrievalRetrievalType]] = None
+    r"""The types of file retrieval to enable."""
+
+    type: Annotated[
+        Annotated[Literal["retrieval"], AfterValidator(validate_const("retrieval"))],
+        pydantic.Field(alias="type"),
+    ] = "retrieval"
+
+    vertex_ai_search_config: Optional[VertexAISearchConfig] = None
+    r"""Used to specify configuration for VertexAISearch."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "retrieval_types",
-                "vertex_ai_search_config",
                 "exa_ai_search_config",
                 "parallel_ai_search_config",
                 "rag_store_config",
+                "retrieval_types",
+                "vertex_ai_search_config",
             ]
         )
         serialized = handler(self)

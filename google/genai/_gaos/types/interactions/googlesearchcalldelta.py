@@ -33,14 +33,17 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class GoogleSearchCallDeltaTypedDict(TypedDict):
     arguments: GoogleSearchCallArgumentsParam
     r"""The arguments to pass to Google Search."""
-    type: Literal["google_search_call"]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["google_search_call"]
 
 
 class GoogleSearchCallDelta(BaseModel):
     arguments: GoogleSearchCallArguments
     r"""The arguments to pass to Google Search."""
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -49,9 +52,6 @@ class GoogleSearchCallDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "google_search_call"
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

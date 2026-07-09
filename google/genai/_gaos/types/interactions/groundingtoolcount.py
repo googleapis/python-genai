@@ -37,24 +37,24 @@ r"""The grounding tool type associated with the count."""
 class GroundingToolCountTypedDict(TypedDict):
     r"""The number of grounding tool counts."""
 
-    type: NotRequired[GroundingToolCountType]
-    r"""The grounding tool type associated with the count."""
     count: NotRequired[int]
     r"""The number of grounding tool counts."""
+    type: NotRequired[GroundingToolCountType]
+    r"""The grounding tool type associated with the count."""
 
 
 class GroundingToolCount(BaseModel):
     r"""The number of grounding tool counts."""
 
-    type: Optional[GroundingToolCountType] = None
-    r"""The grounding tool type associated with the count."""
-
     count: Optional[int] = None
     r"""The number of grounding tool counts."""
 
+    type: Optional[GroundingToolCountType] = None
+    r"""The grounding tool type associated with the count."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["type", "count"])
+        optional_fields = set(["count", "type"])
         serialized = handler(self)
         m = {}
 
