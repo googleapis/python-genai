@@ -2,11 +2,6 @@
 
 ## [2.11.0](https://github.com/googleapis/python-genai/compare/v2.10.0...v2.11.0) (2026-07-09)
 
-
-### ⚠ BREAKING CHANGES
-
-* **interactions:** Not supporting `cached_content`, `presence_penalty`, `frequency_penalty`.
-
 ### Features
 
 * Add environment_id in network config ([df5f13a](https://github.com/googleapis/python-genai/commit/df5f13a9decc1f01f102aba1b953f2a4c6e350d6))
