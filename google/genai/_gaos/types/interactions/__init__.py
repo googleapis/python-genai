@@ -202,6 +202,7 @@ if TYPE_CHECKING:
         GroundingToolCountType,
         GroundingToolCountTypedDict,
     )
+    from .harmcategory import HarmCategory
     from .hybridsearch import HybridSearch, HybridSearchParam
     from .imageconfig import (
         ImageConfig,
@@ -311,6 +312,7 @@ if TYPE_CHECKING:
         RetrievalResultDeltaTypedDict,
     )
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
+    from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
     from .servicetier import ServiceTier
     from .source import Source, SourceParam, SourceType
     from .speechconfig import SpeechConfig, SpeechConfigParam
@@ -531,6 +533,7 @@ __all__ = [
     "GroundingToolCount",
     "GroundingToolCountType",
     "GroundingToolCountTypedDict",
+    "HarmCategory",
     "HybridSearch",
     "HybridSearchParam",
     "ImageConfig",
@@ -594,6 +597,7 @@ __all__ = [
     "MCPServerToolResultStepResultUnion",
     "MCPServerToolResultStepResultUnionParam",
     "MediaResolution",
+    "Method",
     "ModalityTokens",
     "ModalityTokensTypedDict",
     "Model",
@@ -629,6 +633,8 @@ __all__ = [
     "RetrievalRetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
+    "SafetySetting",
+    "SafetySettingParam",
     "ServiceTier",
     "Source",
     "SourceParam",
@@ -671,6 +677,7 @@ __all__ = [
     "ThoughtSummaryContentParam",
     "ThoughtSummaryDelta",
     "ThoughtSummaryDeltaTypedDict",
+    "Threshold",
     "Tool",
     "ToolChoice",
     "ToolChoiceConfig",
@@ -893,6 +900,7 @@ _dynamic_imports: dict[str, str] = {
     "GroundingToolCount": ".groundingtoolcount",
     "GroundingToolCountType": ".groundingtoolcount",
     "GroundingToolCountTypedDict": ".groundingtoolcount",
+    "HarmCategory": ".harmcategory",
     "HybridSearch": ".hybridsearch",
     "HybridSearchParam": ".hybridsearch",
     "ImageConfig": ".imageconfig",
@@ -989,6 +997,10 @@ _dynamic_imports: dict[str, str] = {
     "RetrievalResultDeltaTypedDict": ".retrievalresultdelta",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
+    "Method": ".safetysetting",
+    "SafetySetting": ".safetysetting",
+    "SafetySettingParam": ".safetysetting",
+    "Threshold": ".safetysetting",
     "ServiceTier": ".servicetier",
     "Source": ".source",
     "SourceParam": ".source",

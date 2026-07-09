@@ -63,6 +63,7 @@ from ...types.interactions.googlesearchcallarguments import GoogleSearchCallArgu
 from ...types.interactions.googlesearchcallstep import GoogleSearchCallStep
 from ...types.interactions.googlesearchresult import GoogleSearchResult
 from ...types.interactions.googlesearchresultstep import GoogleSearchResultStep
+from ...types.interactions.harmcategory import HarmCategory
 from ...types.interactions.imageconfig import ImageConfig
 from ...types.interactions.imagecontent import ImageContent
 from ...types.interactions.imageresponseformat import ImageResponseFormat
@@ -79,6 +80,7 @@ from ...types.interactions.placecitation import PlaceCitation
 from ...types.interactions.retrievalcallarguments import RetrievalCallArguments
 from ...types.interactions.retrievalcalldelta import RetrievalCallDelta
 from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
+from ...types.interactions.safetysetting import SafetySetting
 from ...types.interactions.speechconfig import SpeechConfig
 from ...types.interactions.step import Step
 from ...types.interactions.stepdelta import StepDelta
@@ -159,6 +161,7 @@ __all__ = [
     "GoogleSearchCallStep",
     "GoogleSearchResult",
     "GoogleSearchResultStep",
+    "HarmCategory",
     "ImageConfig",
     "ImageContent",
     "ImageResponseFormat",
@@ -180,6 +183,7 @@ __all__ = [
     "RetrievalCallArguments",
     "RetrievalCallDelta",
     "RetrievalResultDelta",
+    "SafetySetting",
     "SpeechConfig",
     "Step",
     "StepDelta",

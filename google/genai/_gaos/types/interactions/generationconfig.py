@@ -44,20 +44,10 @@ r"""The tool choice configuration."""
 class GenerationConfigParam(TypedDict):
     r"""Configuration parameters for model interactions."""
 
-    frequency_penalty: NotRequired[float]
-    r"""Penalizes tokens based on their frequency in the generated text.
-    A positive value helps to reduce the repetition of words and phrases.
-    Valid values can range from [-2.0, 2.0].
-    """
     image_config: NotRequired[ImageConfigParam]
     r"""The configuration for image interaction."""
     max_output_tokens: NotRequired[int]
     r"""The maximum number of tokens to include in the response."""
-    presence_penalty: NotRequired[float]
-    r"""Penalizes tokens that have already appeared in the generated
-    text. A positive value encourages the model to generate more diverse and
-    less repetitive text. Valid values can range from [-2.0, 2.0].
-    """
     seed: NotRequired[int]
     r"""Seed used in decoding for reproducibility."""
     speech_config: NotRequired[List[SpeechConfigParam]]
@@ -79,12 +69,6 @@ class GenerationConfigParam(TypedDict):
 class GenerationConfig(BaseModel):
     r"""Configuration parameters for model interactions."""
 
-    frequency_penalty: Optional[float] = None
-    r"""Penalizes tokens based on their frequency in the generated text.
-    A positive value helps to reduce the repetition of words and phrases.
-    Valid values can range from [-2.0, 2.0].
-    """
-
     image_config: Annotated[
         Optional[ImageConfig],
         pydantic.Field(
@@ -95,12 +79,6 @@ class GenerationConfig(BaseModel):
 
     max_output_tokens: Optional[int] = None
     r"""The maximum number of tokens to include in the response."""
-
-    presence_penalty: Optional[float] = None
-    r"""Penalizes tokens that have already appeared in the generated
-    text. A positive value encourages the model to generate more diverse and
-    less repetitive text. Valid values can range from [-2.0, 2.0].
-    """
 
     seed: Optional[int] = None
     r"""Seed used in decoding for reproducibility."""
@@ -131,10 +109,8 @@ class GenerationConfig(BaseModel):
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "frequency_penalty",
                 "image_config",
                 "max_output_tokens",
-                "presence_penalty",
                 "seed",
                 "speech_config",
                 "stop_sequences",
