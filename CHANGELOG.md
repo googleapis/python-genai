@@ -23,11 +23,6 @@
 * Add Agent Platform MCP example to readme ([cb2a2a3](https://github.com/googleapis/python-genai/commit/cb2a2a3a7aba32b01569ac9a1b61652e18d2728c))
 
 
-### Miscellaneous Chores
-
-* Release 2.11.0 ([511e9b9](https://github.com/googleapis/python-genai/commit/511e9b96e9b76068114dedf5bbe4890df625792a))
-
-
 ### Code Refactoring
 
 * **interactions:** Remove cached_content, presence_penalty, and frequency_penalty; expose safety_settings and labels ([ba552f7](https://github.com/googleapis/python-genai/commit/ba552f72b657a4b5893d453a500b42dfe8d659e4))
