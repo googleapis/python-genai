@@ -15,7 +15,9 @@
 
 """Google Gen AI SDK"""
 
-from . import interactions
+import importlib
+from typing import Any
+
 from . import types
 from . import version
 from .client import Client
@@ -23,4 +25,12 @@ from .client import Client
 
 __version__ = version.__version__
 
-__all__ = ['Client']
+__all__ = ['Client', 'interactions', 'types']
+
+
+def __getattr__(name: str) -> Any:
+  if name == 'interactions':
+    module = importlib.import_module('.interactions', __name__)
+    globals()[name] = module
+    return module
+  raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
