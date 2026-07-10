@@ -21,7 +21,7 @@ from ._hooks import AfterParseErrorContext, HookContext, ResponseContext
 from .basesdk import AsyncBaseSDK, BaseSDK
 from .types import OptionalNullable, UNSET, interactions, triggers
 from .types.triggers import (
-    triggerinteractionrequest as triggers_triggerinteractionrequest,
+    triggercreateparams as triggers_triggercreateparams,
     triggerupdate as triggers_triggerupdate,
 )
 from .utils import get_security_from_env, response_helpers
@@ -42,17 +42,17 @@ class Triggers(BaseSDK):
     def create(
         self,
         *,
-        interaction: Union[
-            triggers_triggerinteractionrequest.TriggerInteractionRequest,
-            triggers_triggerinteractionrequest.TriggerInteractionRequestParam,
-        ],
         schedule: str,
         time_zone: str,
+        interaction: Union[
+            triggers_triggercreateparams.Interaction,
+            triggers_triggercreateparams.InteractionParam,
+        ],
         api_version: Optional[str] = None,
         display_name: Optional[str] = None,
         environment_id: Optional[str] = None,
-        execution_timeout_seconds: Optional[int] = None,
         max_consecutive_failures: Optional[int] = None,
+        execution_timeout_seconds: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -60,16 +60,14 @@ class Triggers(BaseSDK):
     ) -> triggers.Trigger:
         r"""Creates a new trigger that will invoke the specified agent on the given cron schedule.
 
-        :param interaction: Configuration parameters for the interaction request template.
-        :param schedule: Required. The cron schedule on which the trigger should run.
-            Standard cron format.
+        :param schedule: Required. The cron schedule on which the trigger should run. Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
+        :param interaction: Required. The interaction request template to be executed.
         :param api_version: Which version of the API to use.
         :param display_name: Optional. The display name of the trigger.
         :param environment_id: Optional. The environment ID for the trigger execution.
+        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR).
         :param execution_timeout_seconds: Optional. The execution timeout for the triggered interaction.
-        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before
-            the trigger is automatically paused (status becomes ERROR).
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -91,16 +89,14 @@ class Triggers(BaseSDK):
 
         request = models.CreateTriggerRequest(
             api_version=api_version,
-            body=triggers.TriggerInput(
-                display_name=display_name,
-                environment_id=environment_id,
-                execution_timeout_seconds=execution_timeout_seconds,
-                interaction=utils.get_pydantic_model(
-                    interaction, triggers.TriggerInteractionRequest
-                ),
-                max_consecutive_failures=max_consecutive_failures,
+            body=triggers.TriggerCreateParams(
                 schedule=schedule,
                 time_zone=time_zone,
+                display_name=display_name,
+                environment_id=environment_id,
+                max_consecutive_failures=max_consecutive_failures,
+                execution_timeout_seconds=execution_timeout_seconds,
+                interaction=utils.get_pydantic_model(interaction, triggers.Interaction),
             ),
         )
 
@@ -129,7 +125,7 @@ class Triggers(BaseSDK):
                 False,
                 False,
                 "json",
-                triggers.TriggerInput,
+                triggers.TriggerCreateParams,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -1215,17 +1211,17 @@ class AsyncTriggers(AsyncBaseSDK):
     async def create(
         self,
         *,
-        interaction: Union[
-            triggers_triggerinteractionrequest.TriggerInteractionRequest,
-            triggers_triggerinteractionrequest.TriggerInteractionRequestParam,
-        ],
         schedule: str,
         time_zone: str,
+        interaction: Union[
+            triggers_triggercreateparams.Interaction,
+            triggers_triggercreateparams.InteractionParam,
+        ],
         api_version: Optional[str] = None,
         display_name: Optional[str] = None,
         environment_id: Optional[str] = None,
-        execution_timeout_seconds: Optional[int] = None,
         max_consecutive_failures: Optional[int] = None,
+        execution_timeout_seconds: Optional[int] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -1233,16 +1229,14 @@ class AsyncTriggers(AsyncBaseSDK):
     ) -> triggers.Trigger:
         r"""Creates a new trigger that will invoke the specified agent on the given cron schedule.
 
-        :param interaction: Configuration parameters for the interaction request template.
-        :param schedule: Required. The cron schedule on which the trigger should run.
-            Standard cron format.
+        :param schedule: Required. The cron schedule on which the trigger should run. Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
+        :param interaction: Required. The interaction request template to be executed.
         :param api_version: Which version of the API to use.
         :param display_name: Optional. The display name of the trigger.
         :param environment_id: Optional. The environment ID for the trigger execution.
+        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR).
         :param execution_timeout_seconds: Optional. The execution timeout for the triggered interaction.
-        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before
-            the trigger is automatically paused (status becomes ERROR).
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1264,16 +1258,14 @@ class AsyncTriggers(AsyncBaseSDK):
 
         request = models.CreateTriggerRequest(
             api_version=api_version,
-            body=triggers.TriggerInput(
-                display_name=display_name,
-                environment_id=environment_id,
-                execution_timeout_seconds=execution_timeout_seconds,
-                interaction=utils.get_pydantic_model(
-                    interaction, triggers.TriggerInteractionRequest
-                ),
-                max_consecutive_failures=max_consecutive_failures,
+            body=triggers.TriggerCreateParams(
                 schedule=schedule,
                 time_zone=time_zone,
+                display_name=display_name,
+                environment_id=environment_id,
+                max_consecutive_failures=max_consecutive_failures,
+                execution_timeout_seconds=execution_timeout_seconds,
+                interaction=utils.get_pydantic_model(interaction, triggers.Interaction),
             ),
         )
 
@@ -1302,7 +1294,7 @@ class AsyncTriggers(AsyncBaseSDK):
                 False,
                 False,
                 "json",
-                triggers.TriggerInput,
+                triggers.TriggerCreateParams,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,

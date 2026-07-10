@@ -30,31 +30,32 @@ if TYPE_CHECKING:
         ListTriggersResponseTypedDict,
     )
     from .trigger import Trigger, TriggerStatus, TriggerTypedDict
-    from .trigger_input import TriggerInput, TriggerInputParam
+    from .triggercreateparams import (
+        Interaction,
+        InteractionParam,
+        TriggerCreateParams,
+        TriggerCreateParamsParam,
+    )
     from .triggerexecution import (
         TriggerExecution,
         TriggerExecutionStatus,
         TriggerExecutionTypedDict,
     )
-    from .triggerinteractionrequest import (
-        TriggerInteractionRequest,
-        TriggerInteractionRequestParam,
-    )
     from .triggerupdate import TriggerUpdate, TriggerUpdateParam, TriggerUpdateStatus
 
 __all__ = [
+    "Interaction",
+    "InteractionParam",
     "ListTriggerExecutionsResponse",
     "ListTriggerExecutionsResponseTypedDict",
     "ListTriggersResponse",
     "ListTriggersResponseTypedDict",
     "Trigger",
+    "TriggerCreateParams",
+    "TriggerCreateParamsParam",
     "TriggerExecution",
     "TriggerExecutionStatus",
     "TriggerExecutionTypedDict",
-    "TriggerInput",
-    "TriggerInputParam",
-    "TriggerInteractionRequest",
-    "TriggerInteractionRequestParam",
     "TriggerStatus",
     "TriggerTypedDict",
     "TriggerUpdate",
@@ -70,13 +71,13 @@ _dynamic_imports: dict[str, str] = {
     "Trigger": ".trigger",
     "TriggerStatus": ".trigger",
     "TriggerTypedDict": ".trigger",
-    "TriggerInput": ".trigger_input",
-    "TriggerInputParam": ".trigger_input",
+    "Interaction": ".triggercreateparams",
+    "InteractionParam": ".triggercreateparams",
+    "TriggerCreateParams": ".triggercreateparams",
+    "TriggerCreateParamsParam": ".triggercreateparams",
     "TriggerExecution": ".triggerexecution",
     "TriggerExecutionStatus": ".triggerexecution",
     "TriggerExecutionTypedDict": ".triggerexecution",
-    "TriggerInteractionRequest": ".triggerinteractionrequest",
-    "TriggerInteractionRequestParam": ".triggerinteractionrequest",
     "TriggerUpdate": ".triggerupdate",
     "TriggerUpdateParam": ".triggerupdate",
     "TriggerUpdateStatus": ".triggerupdate",

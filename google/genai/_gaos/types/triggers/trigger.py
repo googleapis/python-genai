@@ -18,10 +18,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
-from .triggerinteractionrequest import (
-    TriggerInteractionRequest,
-    TriggerInteractionRequestParam,
-)
+from ..interactions import interaction as interactions_interaction
 from datetime import datetime
 from pydantic import model_serializer
 from typing import Literal, Optional, Union
@@ -44,8 +41,8 @@ class TriggerTypedDict(TypedDict):
 
     id: str
     r"""Required. Output only. Identifier. The ID of the trigger."""
-    interaction: TriggerInteractionRequestParam
-    r"""Configuration parameters for the interaction request template."""
+    interaction: interactions_interaction.InteractionTypedDict
+    r"""The Interaction resource."""
     schedule: str
     r"""Required. The cron schedule on which the trigger should run.
     Standard cron format.
@@ -90,8 +87,8 @@ class Trigger(BaseModel):
     id: str
     r"""Required. Output only. Identifier. The ID of the trigger."""
 
-    interaction: TriggerInteractionRequest
-    r"""Configuration parameters for the interaction request template."""
+    interaction: interactions_interaction.Interaction
+    r"""The Interaction resource."""
 
     schedule: str
     r"""Required. The cron schedule on which the trigger should run.

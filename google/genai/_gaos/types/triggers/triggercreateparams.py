@@ -18,51 +18,65 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from .triggerinteractionrequest import (
-    TriggerInteractionRequest,
-    TriggerInteractionRequestParam,
+from ..interactions import (
+    createagentinteraction as interactions_createagentinteraction,
+    createmodelinteraction as interactions_createmodelinteraction,
 )
 from pydantic import model_serializer
-from typing import Optional
-from typing_extensions import NotRequired, TypedDict
+from typing import Optional, Union
+from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
-class TriggerInputParam(TypedDict):
-    r"""A trigger configuration that is scheduled to run an agent."""
+InteractionParam = TypeAliasType(
+    "InteractionParam",
+    Union[
+        interactions_createagentinteraction.CreateAgentInteractionParam,
+        interactions_createmodelinteraction.CreateModelInteractionParam,
+    ],
+)
+r"""Required. The interaction request template to be executed."""
 
-    interaction: TriggerInteractionRequestParam
-    r"""Configuration parameters for the interaction request template."""
+
+Interaction = TypeAliasType(
+    "Interaction",
+    Union[
+        interactions_createagentinteraction.CreateAgentInteraction,
+        interactions_createmodelinteraction.CreateModelInteraction,
+    ],
+)
+r"""Required. The interaction request template to be executed."""
+
+
+class TriggerCreateParamsParam(TypedDict):
+    r"""Parameters for creating a trigger."""
+
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run.
-    Standard cron format.
-    """
+    r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
+    interaction: InteractionParam
+    r"""Required. The interaction request template to be executed."""
     display_name: NotRequired[str]
     r"""Optional. The display name of the trigger."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the trigger execution."""
+    max_consecutive_failures: NotRequired[int]
+    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
     execution_timeout_seconds: NotRequired[int]
     r"""Optional. The execution timeout for the triggered interaction."""
-    max_consecutive_failures: NotRequired[int]
-    r"""Optional. The maximum number of consecutive failures allowed before
-    the trigger is automatically paused (status becomes ERROR).
-    """
 
 
-class TriggerInput(BaseModel):
-    r"""A trigger configuration that is scheduled to run an agent."""
-
-    interaction: TriggerInteractionRequest
-    r"""Configuration parameters for the interaction request template."""
+class TriggerCreateParams(BaseModel):
+    r"""Parameters for creating a trigger."""
 
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run.
-    Standard cron format.
-    """
+    r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
 
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
+
+    interaction: Interaction
+    r"""Required. The interaction request template to be executed."""
 
     display_name: Optional[str] = None
     r"""Optional. The display name of the trigger."""
@@ -70,13 +84,11 @@ class TriggerInput(BaseModel):
     environment_id: Optional[str] = None
     r"""Optional. The environment ID for the trigger execution."""
 
+    max_consecutive_failures: Optional[int] = None
+    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
+
     execution_timeout_seconds: Optional[int] = None
     r"""Optional. The execution timeout for the triggered interaction."""
-
-    max_consecutive_failures: Optional[int] = None
-    r"""Optional. The maximum number of consecutive failures allowed before
-    the trigger is automatically paused (status becomes ERROR).
-    """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -84,8 +96,8 @@ class TriggerInput(BaseModel):
             [
                 "display_name",
                 "environment_id",
-                "execution_timeout_seconds",
                 "max_consecutive_failures",
+                "execution_timeout_seconds",
             ]
         )
         serialized = handler(self)

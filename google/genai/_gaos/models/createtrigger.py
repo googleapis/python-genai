@@ -18,7 +18,7 @@
 
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
-from ..types.triggers import trigger_input as triggers_trigger_input
+from ..types.triggers import triggercreateparams as triggers_triggercreateparams
 from ..utils import FieldMetadata, PathParamMetadata, RequestMetadata
 from pydantic import model_serializer
 from typing import Optional
@@ -55,14 +55,14 @@ class CreateTriggerGlobals(BaseModel):
 
 
 class CreateTriggerRequestParam(TypedDict):
-    body: triggers_trigger_input.TriggerInputParam
+    body: triggers_triggercreateparams.TriggerCreateParamsParam
     api_version: NotRequired[str]
     r"""Which version of the API to use."""
 
 
 class CreateTriggerRequest(BaseModel):
     body: Annotated[
-        triggers_trigger_input.TriggerInput,
+        triggers_triggercreateparams.TriggerCreateParams,
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ]
 
