@@ -32,7 +32,7 @@ from ..utils.dynamic_imports import lazy_getattr, lazy_dir
 
 if TYPE_CHECKING:
     from .security import Security, SecurityTypedDict
-    from . import agents, interactions, webhooks
+    from . import agents, interactions, triggers, webhooks
 
 __all__ = [
     "Base64EncodedString",
@@ -53,7 +53,7 @@ _dynamic_imports: dict[str, str] = {
     "SecurityTypedDict": ".security",
 }
 
-_sub_packages = ["agents", "interactions", "webhooks"]
+_sub_packages = ["agents", "interactions", "triggers", "webhooks"]
 
 
 def __getattr__(attr_name: str) -> Any:
