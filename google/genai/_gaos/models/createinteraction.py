@@ -63,8 +63,8 @@ class CreateInteractionGlobals(BaseModel):
 CreateInteractionRequestBodyParam = TypeAliasType(
     "CreateInteractionRequestBodyParam",
     Union[
-        interactions_createagentinteraction.CreateAgentInteractionParam,
         interactions_createmodelinteraction.CreateModelInteractionParam,
+        interactions_createagentinteraction.CreateAgentInteractionParam,
     ],
 )
 r"""The request body."""
@@ -73,8 +73,8 @@ r"""The request body."""
 CreateInteractionRequestBody = TypeAliasType(
     "CreateInteractionRequestBody",
     Union[
-        interactions_createagentinteraction.CreateAgentInteraction,
         interactions_createmodelinteraction.CreateModelInteraction,
+        interactions_createagentinteraction.CreateAgentInteraction,
     ],
 )
 r"""The request body."""

@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
+from ...utils import serialize_int, validate_int
 from .agentoption import AgentOption
 from .deepresearchagentconfig import (
     DeepResearchAgentConfig,
@@ -34,6 +35,8 @@ from .tool import Tool, ToolParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
 import pydantic
 from pydantic import Field, model_serializer
+from pydantic.functional_serializers import PlainSerializer
+from pydantic.functional_validators import BeforeValidator
 from typing import Dict, List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
@@ -108,6 +111,8 @@ class CreateAgentInteractionParam(TypedDict):
     r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
     agent_config: NotRequired[CreateAgentInteractionAgentConfigParam]
     r"""Configuration parameters for the agent interaction."""
+    max_total_tokens: NotRequired[int]
+    r"""Max total tokens for the agent run."""
     safety_settings: NotRequired[List[SafetySettingParam]]
     r"""Safety settings for the interaction."""
     labels: NotRequired[Dict[str, str]]
@@ -166,6 +171,13 @@ class CreateAgentInteraction(BaseModel):
     agent_config: Optional[CreateAgentInteractionAgentConfig] = None
     r"""Configuration parameters for the agent interaction."""
 
+    max_total_tokens: Annotated[
+        Optional[int],
+        BeforeValidator(validate_int),
+        PlainSerializer(serialize_int(True)),
+    ] = None
+    r"""Max total tokens for the agent run."""
+
     safety_settings: Optional[List[SafetySetting]] = None
     r"""Safety settings for the interaction."""
 
@@ -189,6 +201,7 @@ class CreateAgentInteraction(BaseModel):
                 "response_format",
                 "environment",
                 "agent_config",
+                "max_total_tokens",
                 "safety_settings",
                 "labels",
             ]

@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
+from ...utils import serialize_int, validate_int
 from ...utils.unions import parse_open_union
 from .agentoption import AgentOption
 from .audiocontent import AudioContent, AudioContentParam
@@ -43,6 +44,7 @@ from .webhookconfig import WebhookConfig, WebhookConfigParam
 from functools import partial
 import pydantic
 from pydantic import ConfigDict, model_serializer, model_validator
+from pydantic.functional_serializers import PlainSerializer
 from pydantic.functional_validators import BeforeValidator
 from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
@@ -182,6 +184,8 @@ class InteractionTypedDict(TypedDict):
     """
     agent_config: NotRequired[InteractionAgentConfigTypedDict]
     r"""Configuration parameters for the agent interaction."""
+    max_total_tokens: NotRequired[int]
+    r"""Max total tokens for the agent run."""
     safety_settings: NotRequired[List[SafetySettingParam]]
     r"""Safety settings for the interaction."""
     labels: NotRequired[Dict[str, str]]
@@ -282,6 +286,13 @@ class Interaction(BaseModel):
     agent_config: Optional[InteractionAgentConfig] = None
     r"""Configuration parameters for the agent interaction."""
 
+    max_total_tokens: Annotated[
+        Optional[int],
+        BeforeValidator(validate_int),
+        PlainSerializer(serialize_int(True)),
+    ] = None
+    r"""Max total tokens for the agent run."""
+
     safety_settings: Optional[List[SafetySetting]] = None
     r"""Safety settings for the interaction."""
 
@@ -330,6 +341,7 @@ class Interaction(BaseModel):
                 "generation_config",
                 "cached_content",
                 "agent_config",
+                "max_total_tokens",
                 "safety_settings",
                 "labels",
                 "input",
