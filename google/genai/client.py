@@ -13,13 +13,17 @@
 # limitations under the License.
 #
 
+from __future__ import annotations
+
 import asyncio
 import os
-from typing import Any, Optional, Union
+from typing import Any, Optional, TYPE_CHECKING, Union
+import warnings
 
 import google.auth
 import pydantic
 
+from . import _common
 from ._api_client import BaseApiClient
 from ._base_url import get_base_url
 from ._replay_api_client import ReplayApiClient
@@ -35,22 +39,17 @@ from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
 from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 
-import warnings
-
-from . import _common
-
-from ._gaos.google_genai import (
-    AsyncGeminiNextGenAgents,
-    AsyncGeminiNextGenInteractions,
-    AsyncGeminiNextGenWebhooks,
-    GeminiNextGenAgents,
-    GeminiNextGenInteractions,
-    GeminiNextGenWebhooks,
-    build_google_genai_async_client,
-    build_google_genai_client,
-)
-from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
-from ._gaos.sdk import GenAI as GeminiNextGenAPI
+if TYPE_CHECKING:
+  from ._gaos.google_genai import (
+      AsyncGeminiNextGenAgents,
+      AsyncGeminiNextGenInteractions,
+      AsyncGeminiNextGenWebhooks,
+      GeminiNextGenAgents,
+      GeminiNextGenInteractions,
+      GeminiNextGenWebhooks,
+  )
+  from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
+  from ._gaos.sdk import GenAI as GeminiNextGenAPI
 
 _agent_experimental_warned = False
 
@@ -77,6 +76,8 @@ class AsyncClient:
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
+    from ._gaos.google_genai import build_google_genai_async_client
+
     if self._nextgen_client_instance is None:
       self._nextgen_client_instance = build_google_genai_async_client(
           self._api_client
@@ -85,18 +86,24 @@ class AsyncClient:
 
   @property
   def interactions(self) -> AsyncGeminiNextGenInteractions:
+    from ._gaos.google_genai import AsyncGeminiNextGenInteractions
+
     if self._interactions is None:
       self._interactions = AsyncGeminiNextGenInteractions(self._api_client)
     return self._interactions
 
   @property
   def webhooks(self) -> AsyncGeminiNextGenWebhooks:
+    from ._gaos.google_genai import AsyncGeminiNextGenWebhooks
+
     if self._webhooks is None:
       self._webhooks = AsyncGeminiNextGenWebhooks(self._api_client)
     return self._webhooks
 
   @property
   def agents(self) -> AsyncGeminiNextGenAgents:
+    from ._gaos.google_genai import AsyncGeminiNextGenAgents
+
     global _agent_experimental_warned
     if not _agent_experimental_warned:
       _agent_experimental_warned = True
@@ -400,6 +407,8 @@ class Client:
 
   @property
   def _nextgen_client(self) -> GeminiNextGenAPI:
+    from ._gaos.google_genai import build_google_genai_client
+
     if self._nextgen_client_instance is None:
       self._nextgen_client_instance = build_google_genai_client(
           self._api_client
@@ -408,18 +417,24 @@ class Client:
 
   @property
   def interactions(self) -> GeminiNextGenInteractions:
+    from ._gaos.google_genai import GeminiNextGenInteractions
+
     if self._interactions is None:
       self._interactions = GeminiNextGenInteractions(self._api_client)
     return self._interactions
 
   @property
   def webhooks(self) -> GeminiNextGenWebhooks:
+    from ._gaos.google_genai import GeminiNextGenWebhooks
+
     if self._webhooks is None:
       self._webhooks = GeminiNextGenWebhooks(self._api_client)
     return self._webhooks
 
   @property
   def agents(self) -> GeminiNextGenAgents:
+    from ._gaos.google_genai import GeminiNextGenAgents
+
     global _agent_experimental_warned
     if not _agent_experimental_warned:
       _agent_experimental_warned = True
