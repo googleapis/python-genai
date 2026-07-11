@@ -25,24 +25,24 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class GoogleMapsResultPlacesParam(TypedDict):
-    place_id: NotRequired[str]
     name: NotRequired[str]
-    url: NotRequired[str]
+    place_id: NotRequired[str]
     review_snippets: NotRequired[List[ReviewSnippetParam]]
+    url: NotRequired[str]
 
 
 class GoogleMapsResultPlaces(BaseModel):
-    place_id: Optional[str] = None
-
     name: Optional[str] = None
 
-    url: Optional[str] = None
+    place_id: Optional[str] = None
 
     review_snippets: Optional[List[ReviewSnippet]] = None
 
+    url: Optional[str] = None
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["place_id", "name", "url", "review_snippets"])
+        optional_fields = set(["name", "place_id", "review_snippets", "url"])
         serialized = handler(self)
         m = {}
 

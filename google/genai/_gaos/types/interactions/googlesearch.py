@@ -39,13 +39,16 @@ GoogleSearchSearchType = Union[
 class GoogleSearchParam(TypedDict):
     r"""A tool that can be used by the model to search Google."""
 
-    type: Literal["google_search"]
     search_types: NotRequired[List[GoogleSearchSearchType]]
     r"""The types of search grounding to enable."""
+    type: Literal["google_search"]
 
 
 class GoogleSearch(BaseModel):
     r"""A tool that can be used by the model to search Google."""
+
+    search_types: Optional[List[GoogleSearchSearchType]] = None
+    r"""The types of search grounding to enable."""
 
     type: Annotated[
         Annotated[
@@ -53,9 +56,6 @@ class GoogleSearch(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "google_search"
-
-    search_types: Optional[List[GoogleSearchSearchType]] = None
-    r"""The types of search grounding to enable."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

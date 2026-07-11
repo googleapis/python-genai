@@ -26,6 +26,20 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
+DisabledSafetyPolicy = Union[
+    Literal[
+        "financial_transactions",
+        "sensitive_data_modification",
+        "communication_tool",
+        "account_creation",
+        "data_modification",
+        "user_consent_management",
+        "legal_terms_and_agreements",
+    ],
+    UnrecognizedStr,
+]
+
+
 EnvironmentEnum = Union[
     Literal[
         "browser",
@@ -40,19 +54,35 @@ r"""The environment being operated."""
 class ComputerUseParam(TypedDict):
     r"""A tool that can be used by the model to interact with the computer."""
 
-    type: Literal["computer_use"]
-    environment: NotRequired[EnvironmentEnum]
-    r"""The environment being operated."""
-    excluded_predefined_functions: NotRequired[List[str]]
-    r"""The list of predefined functions that are excluded from the model call."""
+    disabled_safety_policies: NotRequired[List[DisabledSafetyPolicy]]
+    r"""Optional. Disabled safety policies for computer use."""
     enable_prompt_injection_detection: NotRequired[bool]
     r"""Whether enable the prompt injection detection check on computer-use
     request.
     """
+    environment: NotRequired[EnvironmentEnum]
+    r"""The environment being operated."""
+    excluded_predefined_functions: NotRequired[List[str]]
+    r"""The list of predefined functions that are excluded from the model call."""
+    type: Literal["computer_use"]
 
 
 class ComputerUse(BaseModel):
     r"""A tool that can be used by the model to interact with the computer."""
+
+    disabled_safety_policies: Optional[List[DisabledSafetyPolicy]] = None
+    r"""Optional. Disabled safety policies for computer use."""
+
+    enable_prompt_injection_detection: Optional[bool] = None
+    r"""Whether enable the prompt injection detection check on computer-use
+    request.
+    """
+
+    environment: Optional[EnvironmentEnum] = None
+    r"""The environment being operated."""
+
+    excluded_predefined_functions: Optional[List[str]] = None
+    r"""The list of predefined functions that are excluded from the model call."""
 
     type: Annotated[
         Annotated[
@@ -61,24 +91,14 @@ class ComputerUse(BaseModel):
         pydantic.Field(alias="type"),
     ] = "computer_use"
 
-    environment: Optional[EnvironmentEnum] = None
-    r"""The environment being operated."""
-
-    excluded_predefined_functions: Optional[List[str]] = None
-    r"""The list of predefined functions that are excluded from the model call."""
-
-    enable_prompt_injection_detection: Optional[bool] = None
-    r"""Whether enable the prompt injection detection check on computer-use
-    request.
-    """
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
+                "disabled_safety_policies",
+                "enable_prompt_injection_detection",
                 "environment",
                 "excluded_predefined_functions",
-                "enable_prompt_injection_detection",
             ]
         )
         serialized = handler(self)

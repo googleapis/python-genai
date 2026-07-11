@@ -32,13 +32,13 @@ class GoogleSearchResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    type: Literal["google_search_result"]
-    result: NotRequired[List[GoogleSearchResultParam]]
-    r"""The results of the Google Search."""
+    result: List[GoogleSearchResultParam]
+    r"""Required. The results of the Google Search."""
     is_error: NotRequired[bool]
     r"""Whether the Google Search resulted in an error."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["google_search_result"]
 
 
 class GoogleSearchResultStep(BaseModel):
@@ -46,6 +46,15 @@ class GoogleSearchResultStep(BaseModel):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
+
+    result: List[GoogleSearchResult]
+    r"""Required. The results of the Google Search."""
+
+    is_error: Optional[bool] = None
+    r"""Whether the Google Search resulted in an error."""
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -55,18 +64,9 @@ class GoogleSearchResultStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "google_search_result"
 
-    result: Optional[List[GoogleSearchResult]] = None
-    r"""The results of the Google Search."""
-
-    is_error: Optional[bool] = None
-    r"""Whether the Google Search resulted in an error."""
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["result", "is_error", "signature"])
+        optional_fields = set(["is_error", "signature"])
         serialized = handler(self)
         m = {}
 

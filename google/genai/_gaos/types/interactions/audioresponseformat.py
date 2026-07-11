@@ -26,6 +26,16 @@ from typing import Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
+AudioResponseFormatDelivery = Union[
+    Literal[
+        "inline",
+        "uri",
+    ],
+    UnrecognizedStr,
+]
+r"""The delivery mode for the audio output."""
+
+
 AudioResponseFormatMimeType = Union[
     Literal[
         "audio/mp3",
@@ -40,57 +50,47 @@ AudioResponseFormatMimeType = Union[
 r"""The MIME type of the audio output."""
 
 
-AudioResponseFormatDelivery = Union[
-    Literal[
-        "inline",
-        "uri",
-    ],
-    UnrecognizedStr,
-]
-r"""The delivery mode for the audio output."""
-
-
 class AudioResponseFormatParam(TypedDict):
     r"""Configuration for audio output format."""
 
-    type: Literal["audio"]
-    mime_type: NotRequired[AudioResponseFormatMimeType]
-    r"""The MIME type of the audio output."""
-    delivery: NotRequired[AudioResponseFormatDelivery]
-    r"""The delivery mode for the audio output."""
-    sample_rate: NotRequired[int]
-    r"""Sample rate in Hz."""
     bit_rate: NotRequired[int]
     r"""Bit rate in bits per second (bps). Only applicable for compressed formats
     (MP3, Opus).
     """
+    delivery: NotRequired[AudioResponseFormatDelivery]
+    r"""The delivery mode for the audio output."""
+    mime_type: NotRequired[AudioResponseFormatMimeType]
+    r"""The MIME type of the audio output."""
+    sample_rate: NotRequired[int]
+    r"""Sample rate in Hz."""
+    type: Literal["audio"]
 
 
 class AudioResponseFormat(BaseModel):
     r"""Configuration for audio output format."""
-
-    type: Annotated[
-        Annotated[Literal["audio"], AfterValidator(validate_const("audio"))],
-        pydantic.Field(alias="type"),
-    ] = "audio"
-
-    mime_type: Optional[AudioResponseFormatMimeType] = None
-    r"""The MIME type of the audio output."""
-
-    delivery: Optional[AudioResponseFormatDelivery] = None
-    r"""The delivery mode for the audio output."""
-
-    sample_rate: Optional[int] = None
-    r"""Sample rate in Hz."""
 
     bit_rate: Optional[int] = None
     r"""Bit rate in bits per second (bps). Only applicable for compressed formats
     (MP3, Opus).
     """
 
+    delivery: Optional[AudioResponseFormatDelivery] = None
+    r"""The delivery mode for the audio output."""
+
+    mime_type: Optional[AudioResponseFormatMimeType] = None
+    r"""The MIME type of the audio output."""
+
+    sample_rate: Optional[int] = None
+    r"""Sample rate in Hz."""
+
+    type: Annotated[
+        Annotated[Literal["audio"], AfterValidator(validate_const("audio"))],
+        pydantic.Field(alias="type"),
+    ] = "audio"
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["mime_type", "delivery", "sample_rate", "bit_rate"])
+        optional_fields = set(["bit_rate", "delivery", "mime_type", "sample_rate"])
         serialized = handler(self)
         m = {}
 

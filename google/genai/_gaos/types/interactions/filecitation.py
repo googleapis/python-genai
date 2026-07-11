@@ -29,30 +29,57 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class FileCitationParam(TypedDict):
     r"""A file citation annotation."""
 
-    type: Literal["file_citation"]
-    document_uri: NotRequired[str]
-    r"""The URI of the file."""
-    file_name: NotRequired[str]
-    r"""The name of the file."""
-    source: NotRequired[str]
-    r"""Source attributed for a portion of the text."""
     custom_metadata: NotRequired[Dict[str, Any]]
     r"""User provided metadata about the retrieved context."""
-    page_number: NotRequired[int]
-    r"""Page number of the cited document, if applicable."""
+    document_uri: NotRequired[str]
+    r"""The URI of the file."""
+    end_index: NotRequired[int]
+    r"""End of the attributed segment, exclusive."""
+    file_name: NotRequired[str]
+    r"""The name of the file."""
     media_id: NotRequired[str]
     r"""Media ID in-case of image citations, if applicable."""
+    page_number: NotRequired[int]
+    r"""Page number of the cited document, if applicable."""
+    source: NotRequired[str]
+    r"""Source attributed for a portion of the text."""
     start_index: NotRequired[int]
     r"""Start of segment of the response that is attributed to this source.
 
     Index indicates the start of the segment, measured in bytes.
     """
-    end_index: NotRequired[int]
-    r"""End of the attributed segment, exclusive."""
+    type: Literal["file_citation"]
 
 
 class FileCitation(BaseModel):
     r"""A file citation annotation."""
+
+    custom_metadata: Optional[Dict[str, Any]] = None
+    r"""User provided metadata about the retrieved context."""
+
+    document_uri: Optional[str] = None
+    r"""The URI of the file."""
+
+    end_index: Optional[int] = None
+    r"""End of the attributed segment, exclusive."""
+
+    file_name: Optional[str] = None
+    r"""The name of the file."""
+
+    media_id: Optional[str] = None
+    r"""Media ID in-case of image citations, if applicable."""
+
+    page_number: Optional[int] = None
+    r"""Page number of the cited document, if applicable."""
+
+    source: Optional[str] = None
+    r"""Source attributed for a portion of the text."""
+
+    start_index: Optional[int] = None
+    r"""Start of segment of the response that is attributed to this source.
+
+    Index indicates the start of the segment, measured in bytes.
+    """
 
     type: Annotated[
         Annotated[
@@ -61,45 +88,18 @@ class FileCitation(BaseModel):
         pydantic.Field(alias="type"),
     ] = "file_citation"
 
-    document_uri: Optional[str] = None
-    r"""The URI of the file."""
-
-    file_name: Optional[str] = None
-    r"""The name of the file."""
-
-    source: Optional[str] = None
-    r"""Source attributed for a portion of the text."""
-
-    custom_metadata: Optional[Dict[str, Any]] = None
-    r"""User provided metadata about the retrieved context."""
-
-    page_number: Optional[int] = None
-    r"""Page number of the cited document, if applicable."""
-
-    media_id: Optional[str] = None
-    r"""Media ID in-case of image citations, if applicable."""
-
-    start_index: Optional[int] = None
-    r"""Start of segment of the response that is attributed to this source.
-
-    Index indicates the start of the segment, measured in bytes.
-    """
-
-    end_index: Optional[int] = None
-    r"""End of the attributed segment, exclusive."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "document_uri",
-                "file_name",
-                "source",
                 "custom_metadata",
-                "page_number",
-                "media_id",
-                "start_index",
+                "document_uri",
                 "end_index",
+                "file_name",
+                "media_id",
+                "page_number",
+                "source",
+                "start_index",
             ]
         )
         serialized = handler(self)

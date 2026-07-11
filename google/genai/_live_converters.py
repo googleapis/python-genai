@@ -137,6 +137,37 @@ def _CodeExecutionResult_to_vertex(
   return to_object
 
 
+def _ComputerUse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  if getv(from_object, ['excluded_predefined_functions']) is not None:
+    setv(
+        to_object,
+        ['excludedPredefinedFunctions'],
+        getv(from_object, ['excluded_predefined_functions']),
+    )
+
+  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
+    setv(
+        to_object,
+        ['enablePromptInjectionDetection'],
+        getv(from_object, ['enable_prompt_injection_detection']),
+    )
+
+  if getv(from_object, ['disabled_safety_policies']) is not None:
+    raise ValueError(
+        'disabled_safety_policies parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -363,6 +394,19 @@ def _GenerationConfig_to_vertex(
     raise ValueError(
         'enable_enhanced_civic_answers parameter is only supported in Gemini'
         ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['response_format']) is not None:
+    setv(
+        to_object,
+        ['responseFormat'],
+        [item for item in getv(from_object, ['response_format'])],
+    )
+
+  if getv(from_object, ['translation_config']) is not None:
+    raise ValueError(
+        'translation_config parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1911,6 +1955,12 @@ def _Tool_to_mldev(
         [item for item in getv(from_object, ['mcp_servers'])],
     )
 
+  if getv(from_object, ['exa_ai_search']) is not None:
+    raise ValueError(
+        'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
   return to_object
 
 
@@ -1923,7 +1973,11 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
+    setv(
+        to_object,
+        ['computerUse'],
+        _ComputerUse_to_vertex(getv(from_object, ['computer_use']), to_object),
+    )
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
@@ -1980,6 +2034,9 @@ def _Tool_to_vertex(
             for item in getv(from_object, ['mcp_servers'])
         ],
     )
+
+  if getv(from_object, ['exa_ai_search']) is not None:
+    setv(to_object, ['exaAiSearch'], getv(from_object, ['exa_ai_search']))
 
   return to_object
 

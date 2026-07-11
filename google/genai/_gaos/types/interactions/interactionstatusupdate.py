@@ -44,11 +44,11 @@ InteractionStatusUpdateStatus = Union[
 class InteractionStatusUpdateTypedDict(TypedDict):
     interaction_id: str
     status: InteractionStatusUpdateStatus
-    event_type: Literal["interaction.status_update"]
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+    event_type: Literal["interaction.status_update"]
     metadata: NotRequired[StreamMetadataTypedDict]
 
 
@@ -57,6 +57,11 @@ class InteractionStatusUpdate(BaseModel):
 
     status: InteractionStatusUpdateStatus
 
+    event_id: Optional[str] = None
+    r"""The event_id token to be used to resume the interaction stream, from
+    this event.
+    """
+
     event_type: Annotated[
         Annotated[
             Literal["interaction.status_update"],
@@ -64,11 +69,6 @@ class InteractionStatusUpdate(BaseModel):
         ],
         pydantic.Field(alias="event_type"),
     ] = "interaction.status_update"
-
-    event_id: Optional[str] = None
-    r"""The event_id token to be used to resume the interaction stream, from
-    this event.
-    """
 
     metadata: Optional[StreamMetadata] = None
 

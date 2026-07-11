@@ -32,9 +32,9 @@ class TextContentParam(TypedDict):
 
     text: str
     r"""Required. The text content."""
-    type: Literal["text"]
     annotations: NotRequired[List[AnnotationParam]]
     r"""Citation information for model-generated content."""
+    type: Literal["text"]
 
 
 class TextContent(BaseModel):
@@ -43,13 +43,13 @@ class TextContent(BaseModel):
     text: str
     r"""Required. The text content."""
 
+    annotations: Optional[List[Annotation]] = None
+    r"""Citation information for model-generated content."""
+
     type: Annotated[
         Annotated[Literal["text"], AfterValidator(validate_const("text"))],
         pydantic.Field(alias="type"),
     ] = "text"
-
-    annotations: Optional[List[Annotation]] = None
-    r"""Citation information for model-generated content."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

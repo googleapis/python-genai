@@ -45,35 +45,35 @@ r"""The mime type of the document."""
 class DocumentContentParam(TypedDict):
     r"""A document content block."""
 
-    type: Literal["document"]
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The document content."""
-    uri: NotRequired[str]
-    r"""The URI of the document."""
     mime_type: NotRequired[DocumentContentMimeType]
     r"""The mime type of the document."""
+    type: Literal["document"]
+    uri: NotRequired[str]
+    r"""The URI of the document."""
 
 
 class DocumentContent(BaseModel):
     r"""A document content block."""
+
+    data: Optional[Base64EncodedString] = None
+    r"""The document content."""
+
+    mime_type: Optional[DocumentContentMimeType] = None
+    r"""The mime type of the document."""
 
     type: Annotated[
         Annotated[Literal["document"], AfterValidator(validate_const("document"))],
         pydantic.Field(alias="type"),
     ] = "document"
 
-    data: Optional[Base64EncodedString] = None
-    r"""The document content."""
-
     uri: Optional[str] = None
     r"""The URI of the document."""
 
-    mime_type: Optional[DocumentContentMimeType] = None
-    r"""The mime type of the document."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "uri", "mime_type"])
+        optional_fields = set(["data", "mime_type", "uri"])
         serialized = handler(self)
         m = {}
 

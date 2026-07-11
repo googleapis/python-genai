@@ -52,38 +52,38 @@ r"""The mime type of the image."""
 class ImageContentParam(TypedDict):
     r"""An image content block."""
 
-    type: Literal["image"]
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The image content."""
-    uri: NotRequired[str]
-    r"""The URI of the image."""
     mime_type: NotRequired[ImageContentMimeType]
     r"""The mime type of the image."""
     resolution: NotRequired[MediaResolution]
+    type: Literal["image"]
+    uri: NotRequired[str]
+    r"""The URI of the image."""
 
 
 class ImageContent(BaseModel):
     r"""An image content block."""
 
-    type: Annotated[
-        Annotated[Literal["image"], AfterValidator(validate_const("image"))],
-        pydantic.Field(alias="type"),
-    ] = "image"
-
     data: Optional[Base64EncodedString] = None
     r"""The image content."""
-
-    uri: Optional[str] = None
-    r"""The URI of the image."""
 
     mime_type: Optional[ImageContentMimeType] = None
     r"""The mime type of the image."""
 
     resolution: Optional[MediaResolution] = None
 
+    type: Annotated[
+        Annotated[Literal["image"], AfterValidator(validate_const("image"))],
+        pydantic.Field(alias="type"),
+    ] = "image"
+
+    uri: Optional[str] = None
+    r"""The URI of the image."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "uri", "mime_type", "resolution"])
+        optional_fields = set(["data", "mime_type", "resolution", "uri"])
         serialized = handler(self)
         m = {}
 

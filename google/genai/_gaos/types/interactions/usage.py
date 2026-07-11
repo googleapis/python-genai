@@ -18,68 +18,68 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from .groundingtoolcount import GroundingToolCount, GroundingToolCountParam
-from .modalitytokens import ModalityTokens, ModalityTokensParam
+from .groundingtoolcount import GroundingToolCount, GroundingToolCountTypedDict
+from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
 from pydantic import model_serializer
 from typing import List, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
-class UsageParam(TypedDict):
+class UsageTypedDict(TypedDict):
     r"""Statistics on the interaction request's token usage."""
 
-    total_input_tokens: NotRequired[int]
-    r"""Number of tokens in the prompt (context)."""
-    input_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
+    cached_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of cached token usage by modality."""
+    grounding_tool_count: NotRequired[List[GroundingToolCountTypedDict]]
+    r"""Grounding tool count."""
+    input_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of input token usage by modality."""
+    output_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of output token usage by modality."""
+    tool_use_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
+    r"""A breakdown of tool-use token usage by modality."""
     total_cached_tokens: NotRequired[int]
     r"""Number of tokens in the cached part of the prompt (the cached content)."""
-    cached_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
-    r"""A breakdown of cached token usage by modality."""
+    total_input_tokens: NotRequired[int]
+    r"""Number of tokens in the prompt (context)."""
     total_output_tokens: NotRequired[int]
     r"""Total number of tokens across all the generated responses."""
-    output_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
-    r"""A breakdown of output token usage by modality."""
-    total_tool_use_tokens: NotRequired[int]
-    r"""Number of tokens present in tool-use prompt(s)."""
-    tool_use_tokens_by_modality: NotRequired[List[ModalityTokensParam]]
-    r"""A breakdown of tool-use token usage by modality."""
     total_thought_tokens: NotRequired[int]
     r"""Number of tokens of thoughts for thinking models."""
     total_tokens: NotRequired[int]
     r"""Total token count for the interaction request (prompt + responses + other
     internal tokens).
     """
-    grounding_tool_count: NotRequired[List[GroundingToolCountParam]]
-    r"""Grounding tool count."""
+    total_tool_use_tokens: NotRequired[int]
+    r"""Number of tokens present in tool-use prompt(s)."""
 
 
 class Usage(BaseModel):
     r"""Statistics on the interaction request's token usage."""
 
-    total_input_tokens: Optional[int] = None
-    r"""Number of tokens in the prompt (context)."""
+    cached_tokens_by_modality: Optional[List[ModalityTokens]] = None
+    r"""A breakdown of cached token usage by modality."""
+
+    grounding_tool_count: Optional[List[GroundingToolCount]] = None
+    r"""Grounding tool count."""
 
     input_tokens_by_modality: Optional[List[ModalityTokens]] = None
     r"""A breakdown of input token usage by modality."""
 
-    total_cached_tokens: Optional[int] = None
-    r"""Number of tokens in the cached part of the prompt (the cached content)."""
-
-    cached_tokens_by_modality: Optional[List[ModalityTokens]] = None
-    r"""A breakdown of cached token usage by modality."""
-
-    total_output_tokens: Optional[int] = None
-    r"""Total number of tokens across all the generated responses."""
-
     output_tokens_by_modality: Optional[List[ModalityTokens]] = None
     r"""A breakdown of output token usage by modality."""
 
-    total_tool_use_tokens: Optional[int] = None
-    r"""Number of tokens present in tool-use prompt(s)."""
-
     tool_use_tokens_by_modality: Optional[List[ModalityTokens]] = None
     r"""A breakdown of tool-use token usage by modality."""
+
+    total_cached_tokens: Optional[int] = None
+    r"""Number of tokens in the cached part of the prompt (the cached content)."""
+
+    total_input_tokens: Optional[int] = None
+    r"""Number of tokens in the prompt (context)."""
+
+    total_output_tokens: Optional[int] = None
+    r"""Total number of tokens across all the generated responses."""
 
     total_thought_tokens: Optional[int] = None
     r"""Number of tokens of thoughts for thinking models."""
@@ -89,24 +89,24 @@ class Usage(BaseModel):
     internal tokens).
     """
 
-    grounding_tool_count: Optional[List[GroundingToolCount]] = None
-    r"""Grounding tool count."""
+    total_tool_use_tokens: Optional[int] = None
+    r"""Number of tokens present in tool-use prompt(s)."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "total_input_tokens",
-                "input_tokens_by_modality",
-                "total_cached_tokens",
                 "cached_tokens_by_modality",
-                "total_output_tokens",
+                "grounding_tool_count",
+                "input_tokens_by_modality",
                 "output_tokens_by_modality",
-                "total_tool_use_tokens",
                 "tool_use_tokens_by_modality",
+                "total_cached_tokens",
+                "total_input_tokens",
+                "total_output_tokens",
                 "total_thought_tokens",
                 "total_tokens",
-                "grounding_tool_count",
+                "total_tool_use_tokens",
             ]
         )
         serialized = handler(self)

@@ -28,14 +28,19 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class CodeExecutionResultDeltaTypedDict(TypedDict):
     result: str
-    type: Literal["code_execution_result"]
     is_error: NotRequired[bool]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["code_execution_result"]
 
 
 class CodeExecutionResultDelta(BaseModel):
     result: str
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -44,11 +49,6 @@ class CodeExecutionResultDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "code_execution_result"
-
-    is_error: Optional[bool] = None
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

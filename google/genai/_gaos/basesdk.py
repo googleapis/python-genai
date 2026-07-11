@@ -24,12 +24,7 @@ from ._hooks import (
     HookContext,
 )
 from .sdkconfiguration import SDKConfiguration
-from .utils import (
-    RetryConfig,
-    SerializedRequestBody,
-    get_body_content,
-    run_sync_in_thread,
-)
+from .utils import RetryConfig, SerializedRequestBody, get_body_content
 import httpx
 from typing import Any, Callable, List, Mapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
@@ -243,7 +238,7 @@ class BaseSDK:
 
         hooks = self.sdk_configuration.__dict__["_hooks"]
 
-        def do():
+        def do(_attempt: int = 0):
             http_res = None
             try:
                 req = hooks.before_request(BeforeRequestContext(hook_ctx), request)
@@ -508,13 +503,13 @@ class AsyncBaseSDK:
         client = self.sdk_configuration.async_client
         logger = self.sdk_configuration.debug_logger
 
-        hooks = self.sdk_configuration.__dict__["_hooks"]
+        async_hooks = self.sdk_configuration.__dict__["_async_hooks"]
 
-        async def do():
+        async def do(_attempt: int = 0):
             http_res = None
             try:
-                req = await run_sync_in_thread(
-                    hooks.before_request, BeforeRequestContext(hook_ctx), request
+                req = await async_hooks.before_request(
+                    BeforeRequestContext(hook_ctx), request
                 )
 
                 if "timeout" in request.extensions and "timeout" not in req.extensions:
@@ -532,8 +527,8 @@ class AsyncBaseSDK:
 
                 http_res = await client.send(req, stream=stream)
             except Exception as e:
-                _, e = await run_sync_in_thread(
-                    hooks.after_error, AfterErrorContext(hook_ctx), None, e
+                _, e = await async_hooks.after_error(
+                    AfterErrorContext(hook_ctx), None, e
                 )
 
                 if e is not None:
@@ -562,8 +557,8 @@ class AsyncBaseSDK:
             http_res = await do()
 
         if is_error_status_code(http_res.status_code):
-            result, err = await run_sync_in_thread(
-                hooks.after_error, AfterErrorContext(hook_ctx), http_res, None
+            result, err = await async_hooks.after_error(
+                AfterErrorContext(hook_ctx), http_res, None
             )
 
             if err is not None:
@@ -575,8 +570,8 @@ class AsyncBaseSDK:
                 logger.debug("Raising unexpected SDK error")
                 raise errors.GenAiDefaultError("Unexpected error occurred", http_res)
         else:
-            http_res = await run_sync_in_thread(
-                hooks.after_success, AfterSuccessContext(hook_ctx), http_res
+            http_res = await async_hooks.after_success(
+                AfterSuccessContext(hook_ctx), http_res
             )
 
         return http_res

@@ -28,12 +28,15 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class ThoughtSummaryDeltaTypedDict(TypedDict):
-    type: Literal["thought_summary"]
     content: NotRequired[ContentParam]
     r"""The content of the response."""
+    type: Literal["thought_summary"]
 
 
 class ThoughtSummaryDelta(BaseModel):
+    content: Optional[Content] = None
+    r"""The content of the response."""
+
     type: Annotated[
         Annotated[
             Literal["thought_summary"],
@@ -41,9 +44,6 @@ class ThoughtSummaryDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "thought_summary"
-
-    content: Optional[Content] = None
-    r"""The content of the response."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

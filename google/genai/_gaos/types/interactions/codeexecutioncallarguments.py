@@ -30,24 +30,24 @@ r"""Programming language of the `code`."""
 class CodeExecutionCallArgumentsParam(TypedDict):
     r"""The arguments to pass to the code execution."""
 
-    language: NotRequired[Language]
-    r"""Programming language of the `code`."""
     code: NotRequired[str]
     r"""The code to be executed."""
+    language: NotRequired[Language]
+    r"""Programming language of the `code`."""
 
 
 class CodeExecutionCallArguments(BaseModel):
     r"""The arguments to pass to the code execution."""
 
-    language: Optional[Language] = None
-    r"""Programming language of the `code`."""
-
     code: Optional[str] = None
     r"""The code to be executed."""
 
+    language: Optional[Language] = None
+    r"""Programming language of the `code`."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["language", "code"])
+        optional_fields = set(["code", "language"])
         serialized = handler(self)
         m = {}
 

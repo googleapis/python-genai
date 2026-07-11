@@ -1728,6 +1728,12 @@ def _Tool_to_mldev(
         [item for item in getv(from_object, ['mcp_servers'])],
     )
 
+  if getv(from_object, ['exa_ai_search']) is not None:
+    raise ValueError(
+        'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
   return to_object
 
 

@@ -29,35 +29,35 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class FunctionParam(TypedDict):
     r"""A tool that can be used by the model."""
 
-    type: Literal["function"]
-    name: NotRequired[str]
-    r"""The name of the function."""
     description: NotRequired[str]
     r"""A description of the function."""
+    name: NotRequired[str]
+    r"""The name of the function."""
     parameters: NotRequired[Any]
     r"""The JSON Schema for the function's parameters."""
+    type: Literal["function"]
 
 
 class Function(BaseModel):
     r"""A tool that can be used by the model."""
+
+    description: Optional[str] = None
+    r"""A description of the function."""
+
+    name: Optional[str] = None
+    r"""The name of the function."""
+
+    parameters: Optional[Any] = None
+    r"""The JSON Schema for the function's parameters."""
 
     type: Annotated[
         Annotated[Literal["function"], AfterValidator(validate_const("function"))],
         pydantic.Field(alias="type"),
     ] = "function"
 
-    name: Optional[str] = None
-    r"""The name of the function."""
-
-    description: Optional[str] = None
-    r"""A description of the function."""
-
-    parameters: Optional[Any] = None
-    r"""The JSON Schema for the function's parameters."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "description", "parameters"])
+        optional_fields = set(["description", "name", "parameters"])
         serialized = handler(self)
         m = {}
 

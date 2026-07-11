@@ -25,6 +25,17 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypedDict
 
 
+WebhookState = Union[
+    Literal[
+        "enabled",
+        "disabled",
+        "disabled_due_to_failed_deliveries",
+    ],
+    UnrecognizedStr,
+]
+r"""Output only. The state of the webhook."""
+
+
 WebhookSubscribedEvent = Union[
     Literal[
         # Batch processing finished successfully.
@@ -46,22 +57,9 @@ WebhookSubscribedEvent = Union[
 ]
 
 
-WebhookState = Union[
-    Literal[
-        "enabled",
-        "disabled",
-        "disabled_due_to_failed_deliveries",
-    ],
-    UnrecognizedStr,
-]
-r"""Output only. The state of the webhook."""
-
-
 class WebhookTypedDict(TypedDict):
     r"""A Webhook resource."""
 
-    uri: str
-    r"""Required. The URI to which webhook events will be sent."""
     subscribed_events: List[WebhookSubscribedEvent]
     r"""Required. The events that the webhook is subscribed to.
     Available events:
@@ -73,28 +71,27 @@ class WebhookTypedDict(TypedDict):
     - interaction.failed
     - video.generated
     """
-    name: NotRequired[str]
-    r"""Optional. The user-provided name of the webhook."""
+    uri: str
+    r"""Required. The URI to which webhook events will be sent."""
     create_time: NotRequired[datetime]
     r"""Output only. The timestamp when the webhook was created."""
-    update_time: NotRequired[datetime]
-    r"""Output only. The timestamp when the webhook was last updated."""
+    id: NotRequired[str]
+    r"""Output only. The ID of the webhook."""
+    name: NotRequired[str]
+    r"""Optional. The user-provided name of the webhook."""
+    new_signing_secret: NotRequired[str]
+    r"""Output only. The new signing secret for the webhook. Only populated on create."""
     signing_secrets: NotRequired[List[SigningSecretTypedDict]]
     r"""Output only. The signing secrets associated with this webhook."""
     state: NotRequired[WebhookState]
     r"""Output only. The state of the webhook."""
-    new_signing_secret: NotRequired[str]
-    r"""Output only. The new signing secret for the webhook. Only populated on create."""
-    id: NotRequired[str]
-    r"""Output only. The ID of the webhook."""
+    update_time: NotRequired[datetime]
+    r"""Output only. The timestamp when the webhook was last updated."""
 
 
 class Webhook(BaseModel):
     r"""A Webhook resource."""
 
-    uri: str
-    r"""Required. The URI to which webhook events will be sent."""
-
     subscribed_events: List[WebhookSubscribedEvent]
     r"""Required. The events that the webhook is subscribed to.
     Available events:
@@ -107,14 +104,20 @@ class Webhook(BaseModel):
     - video.generated
     """
 
-    name: Optional[str] = None
-    r"""Optional. The user-provided name of the webhook."""
+    uri: str
+    r"""Required. The URI to which webhook events will be sent."""
 
     create_time: Optional[datetime] = None
     r"""Output only. The timestamp when the webhook was created."""
 
-    update_time: Optional[datetime] = None
-    r"""Output only. The timestamp when the webhook was last updated."""
+    id: Optional[str] = None
+    r"""Output only. The ID of the webhook."""
+
+    name: Optional[str] = None
+    r"""Optional. The user-provided name of the webhook."""
+
+    new_signing_secret: Optional[str] = None
+    r"""Output only. The new signing secret for the webhook. Only populated on create."""
 
     signing_secrets: Optional[List[SigningSecret]] = None
     r"""Output only. The signing secrets associated with this webhook."""
@@ -122,23 +125,20 @@ class Webhook(BaseModel):
     state: Optional[WebhookState] = None
     r"""Output only. The state of the webhook."""
 
-    new_signing_secret: Optional[str] = None
-    r"""Output only. The new signing secret for the webhook. Only populated on create."""
-
-    id: Optional[str] = None
-    r"""Output only. The ID of the webhook."""
+    update_time: Optional[datetime] = None
+    r"""Output only. The timestamp when the webhook was last updated."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "name",
                 "create_time",
-                "update_time",
+                "id",
+                "name",
+                "new_signing_secret",
                 "signing_secrets",
                 "state",
-                "new_signing_secret",
-                "id",
+                "update_time",
             ]
         )
         serialized = handler(self)
@@ -158,8 +158,6 @@ class Webhook(BaseModel):
 class WebhookInputParam(TypedDict):
     r"""A Webhook resource."""
 
-    uri: str
-    r"""Required. The URI to which webhook events will be sent."""
     subscribed_events: List[WebhookSubscribedEvent]
     r"""Required. The events that the webhook is subscribed to.
     Available events:
@@ -171,6 +169,8 @@ class WebhookInputParam(TypedDict):
     - interaction.failed
     - video.generated
     """
+    uri: str
+    r"""Required. The URI to which webhook events will be sent."""
     name: NotRequired[str]
     r"""Optional. The user-provided name of the webhook."""
 
@@ -178,9 +178,6 @@ class WebhookInputParam(TypedDict):
 class WebhookInput(BaseModel):
     r"""A Webhook resource."""
 
-    uri: str
-    r"""Required. The URI to which webhook events will be sent."""
-
     subscribed_events: List[WebhookSubscribedEvent]
     r"""Required. The events that the webhook is subscribed to.
     Available events:
@@ -192,6 +189,9 @@ class WebhookInput(BaseModel):
     - interaction.failed
     - video.generated
     """
+
+    uri: str
+    r"""Required. The URI to which webhook events will be sent."""
 
     name: Optional[str] = None
     r"""Optional. The user-provided name of the webhook."""

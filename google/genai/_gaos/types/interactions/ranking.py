@@ -29,13 +29,16 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class RankingParam(TypedDict):
     r"""Config for Rank Service."""
 
-    ranking_config: Literal["rank_service"]
     model_name: NotRequired[str]
     r"""Optional. The model name of the rank service."""
+    ranking_config: Literal["rank_service"]
 
 
 class Ranking(BaseModel):
     r"""Config for Rank Service."""
+
+    model_name: Optional[str] = None
+    r"""Optional. The model name of the rank service."""
 
     ranking_config: Annotated[
         Annotated[
@@ -43,9 +46,6 @@ class Ranking(BaseModel):
         ],
         pydantic.Field(alias="ranking_config"),
     ] = "rank_service"
-
-    model_name: Optional[str] = None
-    r"""Optional. The model name of the rank service."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

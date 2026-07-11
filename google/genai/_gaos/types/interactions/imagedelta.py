@@ -43,30 +43,30 @@ ImageDeltaMimeType = Union[
 
 
 class ImageDeltaTypedDict(TypedDict):
-    type: Literal["image"]
     data: NotRequired[str]
-    uri: NotRequired[str]
     mime_type: NotRequired[ImageDeltaMimeType]
     resolution: NotRequired[MediaResolution]
+    type: Literal["image"]
+    uri: NotRequired[str]
 
 
 class ImageDelta(BaseModel):
-    type: Annotated[
-        Annotated[Literal["image"], AfterValidator(validate_const("image"))],
-        pydantic.Field(alias="type"),
-    ] = "image"
-
     data: Optional[str] = None
-
-    uri: Optional[str] = None
 
     mime_type: Optional[ImageDeltaMimeType] = None
 
     resolution: Optional[MediaResolution] = None
 
+    type: Annotated[
+        Annotated[Literal["image"], AfterValidator(validate_const("image"))],
+        pydantic.Field(alias="type"),
+    ] = "image"
+
+    uri: Optional[str] = None
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "uri", "mime_type", "resolution"])
+        optional_fields = set(["data", "mime_type", "resolution", "uri"])
         serialized = handler(self)
         m = {}
 

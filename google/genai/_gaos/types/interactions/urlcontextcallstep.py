@@ -19,60 +19,40 @@
 from __future__ import annotations
 from .. import Base64EncodedString, Base64FileInput, BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
+from .urlcontextcallarguments import (
+    URLContextCallArguments,
+    URLContextCallArgumentsParam,
+)
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
-
-
-class ArgumentsParam(TypedDict):
-    r"""The arguments to pass to the URL context."""
-
-    urls: NotRequired[List[str]]
-    r"""The URLs to fetch."""
-
-
-class Arguments(BaseModel):
-    r"""The arguments to pass to the URL context."""
-
-    urls: Optional[List[str]] = None
-    r"""The URLs to fetch."""
-
-    @model_serializer(mode="wrap")
-    def serialize_model(self, handler):
-        optional_fields = set(["urls"])
-        serialized = handler(self)
-        m = {}
-
-        for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
-
-            if val != UNSET_SENTINEL:
-                if val is not None or k not in optional_fields:
-                    m[k] = val
-
-        return m
 
 
 class URLContextCallStepParam(TypedDict):
     r"""URL context call step."""
 
+    arguments: URLContextCallArgumentsParam
+    r"""The arguments to pass to the URL context."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
-    type: Literal["url_context_call"]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
-    arguments: NotRequired[ArgumentsParam]
-    r"""The arguments to pass to the URL context."""
+    type: Literal["url_context_call"]
 
 
 class URLContextCallStep(BaseModel):
     r"""URL context call step."""
 
+    arguments: URLContextCallArguments
+    r"""The arguments to pass to the URL context."""
+
     id: str
     r"""Required. A unique ID for this specific tool call."""
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -82,15 +62,9 @@ class URLContextCallStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "url_context_call"
 
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
-
-    arguments: Optional[Arguments] = None
-    r"""The arguments to pass to the URL context."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature", "arguments"])
+        optional_fields = set(["signature"])
         serialized = handler(self)
         m = {}
 

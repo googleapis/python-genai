@@ -31,13 +31,13 @@ class CodeExecutionResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    type: Literal["code_execution_result"]
-    result: NotRequired[str]
-    r"""The output of the code execution."""
+    result: str
+    r"""Required. The output of the code execution."""
     is_error: NotRequired[bool]
     r"""Whether the code execution resulted in an error."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["code_execution_result"]
 
 
 class CodeExecutionResultStep(BaseModel):
@@ -45,6 +45,15 @@ class CodeExecutionResultStep(BaseModel):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
+
+    result: str
+    r"""Required. The output of the code execution."""
+
+    is_error: Optional[bool] = None
+    r"""Whether the code execution resulted in an error."""
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -54,18 +63,9 @@ class CodeExecutionResultStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "code_execution_result"
 
-    result: Optional[str] = None
-    r"""The output of the code execution."""
-
-    is_error: Optional[bool] = None
-    r"""Whether the code execution resulted in an error."""
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["result", "is_error", "signature"])
+        optional_fields = set(["is_error", "signature"])
         serialized = handler(self)
         m = {}
 

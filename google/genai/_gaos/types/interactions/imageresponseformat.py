@@ -26,20 +26,6 @@ from typing import Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-ImageResponseFormatMimeType = Literal["image/jpeg",]
-r"""The MIME type of the image output."""
-
-
-ImageResponseFormatDelivery = Union[
-    Literal[
-        "inline",
-        "uri",
-    ],
-    UnrecognizedStr,
-]
-r"""The delivery mode for the image output."""
-
-
 ImageResponseFormatAspectRatio = Union[
     Literal[
         "1:1",
@@ -62,6 +48,16 @@ ImageResponseFormatAspectRatio = Union[
 r"""The aspect ratio for the image output."""
 
 
+ImageResponseFormatDelivery = Union[
+    Literal[
+        "inline",
+        "uri",
+    ],
+    UnrecognizedStr,
+]
+r"""The delivery mode for the image output."""
+
+
 ImageResponseFormatImageSize = Union[
     Literal[
         "512",
@@ -74,43 +70,47 @@ ImageResponseFormatImageSize = Union[
 r"""The size of the image output."""
 
 
+ImageResponseFormatMimeType = Literal["image/jpeg",]
+r"""The MIME type of the image output."""
+
+
 class ImageResponseFormatParam(TypedDict):
     r"""Configuration for image output format."""
 
-    type: Literal["image"]
-    mime_type: NotRequired[ImageResponseFormatMimeType]
-    r"""The MIME type of the image output."""
-    delivery: NotRequired[ImageResponseFormatDelivery]
-    r"""The delivery mode for the image output."""
     aspect_ratio: NotRequired[ImageResponseFormatAspectRatio]
     r"""The aspect ratio for the image output."""
+    delivery: NotRequired[ImageResponseFormatDelivery]
+    r"""The delivery mode for the image output."""
     image_size: NotRequired[ImageResponseFormatImageSize]
     r"""The size of the image output."""
+    mime_type: NotRequired[ImageResponseFormatMimeType]
+    r"""The MIME type of the image output."""
+    type: Literal["image"]
 
 
 class ImageResponseFormat(BaseModel):
     r"""Configuration for image output format."""
+
+    aspect_ratio: Optional[ImageResponseFormatAspectRatio] = None
+    r"""The aspect ratio for the image output."""
+
+    delivery: Optional[ImageResponseFormatDelivery] = None
+    r"""The delivery mode for the image output."""
+
+    image_size: Optional[ImageResponseFormatImageSize] = None
+    r"""The size of the image output."""
+
+    mime_type: Optional[ImageResponseFormatMimeType] = None
+    r"""The MIME type of the image output."""
 
     type: Annotated[
         Annotated[Literal["image"], AfterValidator(validate_const("image"))],
         pydantic.Field(alias="type"),
     ] = "image"
 
-    mime_type: Optional[ImageResponseFormatMimeType] = None
-    r"""The MIME type of the image output."""
-
-    delivery: Optional[ImageResponseFormatDelivery] = None
-    r"""The delivery mode for the image output."""
-
-    aspect_ratio: Optional[ImageResponseFormatAspectRatio] = None
-    r"""The aspect ratio for the image output."""
-
-    image_size: Optional[ImageResponseFormatImageSize] = None
-    r"""The size of the image output."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["mime_type", "delivery", "aspect_ratio", "image_size"])
+        optional_fields = set(["aspect_ratio", "delivery", "image_size", "mime_type"])
         serialized = handler(self)
         m = {}
 

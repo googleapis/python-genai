@@ -31,14 +31,20 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class GoogleMapsCallDeltaTypedDict(TypedDict):
-    type: Literal["google_maps_call"]
     arguments: NotRequired[GoogleMapsCallArgumentsParam]
     r"""The arguments to pass to the Google Maps tool."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["google_maps_call"]
 
 
 class GoogleMapsCallDelta(BaseModel):
+    arguments: Optional[GoogleMapsCallArguments] = None
+    r"""The arguments to pass to the Google Maps tool."""
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["google_maps_call"],
@@ -46,12 +52,6 @@ class GoogleMapsCallDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "google_maps_call"
-
-    arguments: Optional[GoogleMapsCallArguments] = None
-    r"""The arguments to pass to the Google Maps tool."""
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

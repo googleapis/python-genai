@@ -20,32 +20,44 @@ from typing import Any, Optional, Type, TypeVar, overload
 
 import httpx
 
-from .serializers import unmarshal_json
+from .serializers import unmarshal_json, construct_unvalidated
 from .. import errors
+import json
 
 T = TypeVar("T")
 
 
 @overload
 def unmarshal_json_response(
-    typ: Type[T], http_res: httpx.Response, body: Optional[str] = None
+    typ: Type[T],
+    http_res: httpx.Response,
+    body: Optional[str] = None,
+    validate: bool = True,
 ) -> T: ...
 
 
 @overload
 def unmarshal_json_response(
-    typ: Any, http_res: httpx.Response, body: Optional[str] = None
+    typ: Any,
+    http_res: httpx.Response,
+    body: Optional[str] = None,
+    validate: bool = True,
 ) -> Any: ...
 
 
 def unmarshal_json_response(
-    typ: Any, http_res: httpx.Response, body: Optional[str] = None
+    typ: Any,
+    http_res: httpx.Response,
+    body: Optional[str] = None,
+    validate: bool = True,
 ) -> Any:
     if body is None:
         body = http_res.text
     try:
         return unmarshal_json(body, typ)
     except Exception as e:
+        if not validate:
+            return construct_unvalidated(json.loads(body), typ)
         raise errors.ResponseValidationError(
             "Response validation failed",
             http_res,

@@ -30,34 +30,34 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class RagRetrievalConfigParam(TypedDict):
     r"""Specifies the context retrieval config."""
 
-    top_k: NotRequired[int]
-    r"""Optional. The number of contexts to retrieve."""
-    hybrid_search: NotRequired[HybridSearchParam]
-    r"""Config for Hybrid Search."""
     filter_: NotRequired[FilterParam]
     r"""Config for filters."""
+    hybrid_search: NotRequired[HybridSearchParam]
+    r"""Config for Hybrid Search."""
     ranking: NotRequired[RankingParam]
     r"""Config for Rank Service."""
+    top_k: NotRequired[int]
+    r"""Optional. The number of contexts to retrieve."""
 
 
 class RagRetrievalConfig(BaseModel):
     r"""Specifies the context retrieval config."""
 
-    top_k: Optional[int] = None
-    r"""Optional. The number of contexts to retrieve."""
+    filter_: Annotated[Optional[Filter], pydantic.Field(alias="filter")] = None
+    r"""Config for filters."""
 
     hybrid_search: Optional[HybridSearch] = None
     r"""Config for Hybrid Search."""
 
-    filter_: Annotated[Optional[Filter], pydantic.Field(alias="filter")] = None
-    r"""Config for filters."""
-
     ranking: Optional[Ranking] = None
     r"""Config for Rank Service."""
 
+    top_k: Optional[int] = None
+    r"""Optional. The number of contexts to retrieve."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["top_k", "hybrid_search", "filter", "ranking"])
+        optional_fields = set(["filter", "hybrid_search", "ranking", "top_k"])
         serialized = handler(self)
         m = {}
 

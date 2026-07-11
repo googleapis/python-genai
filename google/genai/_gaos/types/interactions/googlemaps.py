@@ -29,7 +29,6 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class GoogleMapsParam(TypedDict):
     r"""A tool that can be used by the model to call Google Maps."""
 
-    type: Literal["google_maps"]
     enable_widget: NotRequired[bool]
     r"""Whether to return a widget context token in the tool call result of the
     response.
@@ -38,17 +37,11 @@ class GoogleMapsParam(TypedDict):
     r"""The latitude of the user's location."""
     longitude: NotRequired[float]
     r"""The longitude of the user's location."""
+    type: Literal["google_maps"]
 
 
 class GoogleMaps(BaseModel):
     r"""A tool that can be used by the model to call Google Maps."""
-
-    type: Annotated[
-        Annotated[
-            Literal["google_maps"], AfterValidator(validate_const("google_maps"))
-        ],
-        pydantic.Field(alias="type"),
-    ] = "google_maps"
 
     enable_widget: Optional[bool] = None
     r"""Whether to return a widget context token in the tool call result of the
@@ -60,6 +53,13 @@ class GoogleMaps(BaseModel):
 
     longitude: Optional[float] = None
     r"""The longitude of the user's location."""
+
+    type: Annotated[
+        Annotated[
+            Literal["google_maps"], AfterValidator(validate_const("google_maps"))
+        ],
+        pydantic.Field(alias="type"),
+    ] = "google_maps"
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

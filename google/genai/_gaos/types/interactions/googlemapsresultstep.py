@@ -32,10 +32,10 @@ class GoogleMapsResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    type: Literal["google_maps_result"]
-    result: NotRequired[List[GoogleMapsResultParam]]
+    result: List[GoogleMapsResultParam]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
+    type: Literal["google_maps_result"]
 
 
 class GoogleMapsResultStep(BaseModel):
@@ -43,6 +43,11 @@ class GoogleMapsResultStep(BaseModel):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
+
+    result: List[GoogleMapsResult]
+
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -52,14 +57,9 @@ class GoogleMapsResultStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "google_maps_result"
 
-    result: Optional[List[GoogleMapsResult]] = None
-
-    signature: Optional[Base64EncodedString] = None
-    r"""A signature hash for backend validation."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["result", "signature"])
+        optional_fields = set(["signature"])
         serialized = handler(self)
         m = {}
 

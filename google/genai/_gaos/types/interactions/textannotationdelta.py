@@ -28,12 +28,15 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class TextAnnotationDeltaTypedDict(TypedDict):
-    type: Literal["text_annotation_delta"]
     annotations: NotRequired[List[AnnotationParam]]
     r"""Citation information for model-generated content."""
+    type: Literal["text_annotation_delta"]
 
 
 class TextAnnotationDelta(BaseModel):
+    annotations: Optional[List[Annotation]] = None
+    r"""Citation information for model-generated content."""
+
     type: Annotated[
         Annotated[
             Literal["text_annotation_delta"],
@@ -41,9 +44,6 @@ class TextAnnotationDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "text_annotation_delta"
-
-    annotations: Optional[List[Annotation]] = None
-    r"""Citation information for model-generated content."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

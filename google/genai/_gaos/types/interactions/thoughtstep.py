@@ -30,26 +30,26 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class ThoughtStepParam(TypedDict):
     r"""A thought step."""
 
-    type: Literal["thought"]
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
     summary: NotRequired[List[ThoughtSummaryContentParam]]
     r"""A summary of the thought."""
+    type: Literal["thought"]
 
 
 class ThoughtStep(BaseModel):
     r"""A thought step."""
-
-    type: Annotated[
-        Annotated[Literal["thought"], AfterValidator(validate_const("thought"))],
-        pydantic.Field(alias="type"),
-    ] = "thought"
 
     signature: Optional[Base64EncodedString] = None
     r"""A signature hash for backend validation."""
 
     summary: Optional[List[ThoughtSummaryContent]] = None
     r"""A summary of the thought."""
+
+    type: Annotated[
+        Annotated[Literal["thought"], AfterValidator(validate_const("thought"))],
+        pydantic.Field(alias="type"),
+    ] = "thought"
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

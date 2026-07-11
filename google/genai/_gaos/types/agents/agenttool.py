@@ -21,6 +21,7 @@ from .. import BaseModel
 from ...utils.unions import parse_open_union
 from ..interactions import (
     codeexecution as interactions_codeexecution,
+    function as interactions_function,
     googlesearch as interactions_googlesearch,
     mcpserver as interactions_mcpserver,
     urlcontext as interactions_urlcontext,
@@ -38,6 +39,7 @@ AgentToolParam = TypeAliasType(
         interactions_codeexecution.CodeExecutionParam,
         interactions_urlcontext.URLContextParam,
         interactions_googlesearch.GoogleSearchParam,
+        interactions_function.FunctionParam,
         interactions_mcpserver.MCPServerParam,
     ],
 )
@@ -59,6 +61,7 @@ _AGENT_TOOL_VARIANTS: dict[str, Any] = {
     "google_search": interactions_googlesearch.GoogleSearch,
     "url_context": interactions_urlcontext.URLContext,
     "mcp_server": interactions_mcpserver.MCPServer,
+    "function": interactions_function.Function,
 }
 
 
@@ -68,6 +71,7 @@ AgentTool = Annotated[
         interactions_googlesearch.GoogleSearch,
         interactions_urlcontext.URLContext,
         interactions_mcpserver.MCPServer,
+        interactions_function.Function,
         UnknownAgentTool,
     ],
     BeforeValidator(
@@ -77,6 +81,7 @@ AgentTool = Annotated[
             variants=_AGENT_TOOL_VARIANTS,
             unknown_cls=UnknownAgentTool,
             union_name="AgentTool",
+            lenient=True,
         )
     ),
 ]

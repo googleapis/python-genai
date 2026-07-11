@@ -19,8 +19,18 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from pydantic import model_serializer
-from typing import Dict, List, Optional
-from typing_extensions import NotRequired, TypedDict
+from typing import Dict, List, Optional, Union
+from typing_extensions import NotRequired, TypeAliasType, TypedDict
+
+
+TransformParam = TypeAliasType(
+    "TransformParam", Union[Dict[str, str], List[Dict[str, str]]]
+)
+r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
+
+
+Transform = TypeAliasType("Transform", Union[Dict[str, str], List[Dict[str, str]]])
+r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 
 class AllowlistEntryParam(TypedDict):
@@ -28,8 +38,8 @@ class AllowlistEntryParam(TypedDict):
 
     domain: str
     r"""Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains."""
-    transform: NotRequired[List[Dict[str, str]]]
-    r"""Headers to inject on all outbound requests matching this domain. Each entry is a flat {header_name: header_value} object. The egress proxy injects these automatically."""
+    transform: NotRequired[TransformParam]
+    r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 
 class AllowlistEntry(BaseModel):
@@ -38,8 +48,8 @@ class AllowlistEntry(BaseModel):
     domain: str
     r"""Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains."""
 
-    transform: Optional[List[Dict[str, str]]] = None
-    r"""Headers to inject on all outbound requests matching this domain. Each entry is a flat {header_name: header_value} object. The egress proxy injects these automatically."""
+    transform: Optional[Transform] = None
+    r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

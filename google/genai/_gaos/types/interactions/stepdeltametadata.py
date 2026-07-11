@@ -18,7 +18,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from .usage import Usage, UsageParam
+from .usage import Usage, UsageTypedDict
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import NotRequired, TypedDict
@@ -27,7 +27,7 @@ from typing_extensions import NotRequired, TypedDict
 class StepDeltaMetadataTypedDict(TypedDict):
     r"""Optional metadata accompanying ANY streamed event."""
 
-    total_usage: NotRequired[UsageParam]
+    total_usage: NotRequired[UsageTypedDict]
     r"""Statistics on the interaction request's token usage."""
 
 

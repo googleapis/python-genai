@@ -19,6 +19,7 @@
 from typing import Any
 
 from pydantic import BaseModel, TypeAdapter, ValidationError
+from .serializers import construct_unvalidated
 
 
 def parse_open_union(
@@ -28,6 +29,7 @@ def parse_open_union(
     variants: dict[str, Any],
     unknown_cls: type,
     union_name: str,
+    lenient: bool = False,
 ) -> Any:
     """Parse an open discriminated union value with forward-compatibility.
 
@@ -53,5 +55,7 @@ def parse_open_union(
                 return variant_cls.model_validate(v)
             return TypeAdapter(variant_cls).validate_python(v)
         except ValidationError:
+            if lenient:
+                return construct_unvalidated(v, variant_cls)
             return unknown_cls(raw=v)
     return unknown_cls(raw=v)

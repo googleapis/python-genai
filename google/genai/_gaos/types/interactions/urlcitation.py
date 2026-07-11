@@ -29,22 +29,34 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class URLCitationParam(TypedDict):
     r"""A URL citation annotation."""
 
-    type: Literal["url_citation"]
-    url: NotRequired[str]
-    r"""The URL."""
-    title: NotRequired[str]
-    r"""The title of the URL."""
+    end_index: NotRequired[int]
+    r"""End of the attributed segment, exclusive."""
     start_index: NotRequired[int]
     r"""Start of segment of the response that is attributed to this source.
 
     Index indicates the start of the segment, measured in bytes.
     """
-    end_index: NotRequired[int]
-    r"""End of the attributed segment, exclusive."""
+    title: NotRequired[str]
+    r"""The title of the URL."""
+    type: Literal["url_citation"]
+    url: NotRequired[str]
+    r"""The URL."""
 
 
 class URLCitation(BaseModel):
     r"""A URL citation annotation."""
+
+    end_index: Optional[int] = None
+    r"""End of the attributed segment, exclusive."""
+
+    start_index: Optional[int] = None
+    r"""Start of segment of the response that is attributed to this source.
+
+    Index indicates the start of the segment, measured in bytes.
+    """
+
+    title: Optional[str] = None
+    r"""The title of the URL."""
 
     type: Annotated[
         Annotated[
@@ -56,21 +68,9 @@ class URLCitation(BaseModel):
     url: Optional[str] = None
     r"""The URL."""
 
-    title: Optional[str] = None
-    r"""The title of the URL."""
-
-    start_index: Optional[int] = None
-    r"""Start of segment of the response that is attributed to this source.
-
-    Index indicates the start of the segment, measured in bytes.
-    """
-
-    end_index: Optional[int] = None
-    r"""End of the attributed segment, exclusive."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["url", "title", "start_index", "end_index"])
+        optional_fields = set(["end_index", "start_index", "title", "url"])
         serialized = handler(self)
         m = {}
 

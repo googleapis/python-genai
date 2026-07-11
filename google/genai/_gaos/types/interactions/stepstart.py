@@ -32,11 +32,11 @@ class StepStartTypedDict(TypedDict):
     index: int
     step: StepParam
     r"""A step in the interaction."""
-    event_type: Literal["step.start"]
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+    event_type: Literal["step.start"]
     metadata: NotRequired[StreamMetadataTypedDict]
 
 
@@ -46,15 +46,15 @@ class StepStart(BaseModel):
     step: Step
     r"""A step in the interaction."""
 
-    event_type: Annotated[
-        Annotated[Literal["step.start"], AfterValidator(validate_const("step.start"))],
-        pydantic.Field(alias="event_type"),
-    ] = "step.start"
-
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+
+    event_type: Annotated[
+        Annotated[Literal["step.start"], AfterValidator(validate_const("step.start"))],
+        pydantic.Field(alias="event_type"),
+    ] = "step.start"
 
     metadata: Optional[StreamMetadata] = None
 

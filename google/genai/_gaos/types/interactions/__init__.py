@@ -23,7 +23,12 @@ from ...utils.dynamic_imports import lazy_getattr, lazy_dir
 if TYPE_CHECKING:
     from .agentoption import AgentOption
     from .allowedtools import AllowedTools, AllowedToolsParam
-    from .allowlistentry import AllowlistEntry, AllowlistEntryParam
+    from .allowlistentry import (
+        AllowlistEntry,
+        AllowlistEntryParam,
+        Transform,
+        TransformParam,
+    )
     from .annotation import Annotation, AnnotationParam, UnknownAnnotation
     from .argumentsdelta import ArgumentsDelta, ArgumentsDeltaTypedDict
     from .audiocontent import AudioContent, AudioContentMimeType, AudioContentParam
@@ -53,7 +58,12 @@ if TYPE_CHECKING:
         CodeExecutionResultStep,
         CodeExecutionResultStepParam,
     )
-    from .computeruse import ComputerUse, ComputerUseParam, EnvironmentEnum
+    from .computeruse import (
+        ComputerUse,
+        ComputerUseParam,
+        DisabledSafetyPolicy,
+        EnvironmentEnum,
+    )
     from .content import Content, ContentParam, UnknownContent
     from .createagentinteraction import (
         CreateAgentInteraction,
@@ -189,9 +199,10 @@ if TYPE_CHECKING:
     )
     from .groundingtoolcount import (
         GroundingToolCount,
-        GroundingToolCountParam,
         GroundingToolCountType,
+        GroundingToolCountTypedDict,
     )
+    from .harmcategory import HarmCategory
     from .hybridsearch import HybridSearch, HybridSearchParam
     from .imageconfig import (
         ImageConfig,
@@ -272,7 +283,7 @@ if TYPE_CHECKING:
         MCPServerToolResultStepResultUnionParam,
     )
     from .mediaresolution import MediaResolution
-    from .modalitytokens import ModalityTokens, ModalityTokensParam
+    from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
     from .model import Model
     from .modeloutputstep import ModelOutputStep, ModelOutputStepParam
     from .parallelaisearchconfig import (
@@ -286,11 +297,26 @@ if TYPE_CHECKING:
     from .ranking import Ranking, RankingParam
     from .responseformat import ResponseFormat, ResponseFormatParam
     from .responsemodality import ResponseModality
-    from .retrieval import Retrieval, RetrievalParam, RetrievalType
+    from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
+    from .retrievalcallarguments import (
+        RetrievalCallArguments,
+        RetrievalCallArgumentsTypedDict,
+    )
+    from .retrievalcalldelta import (
+        RetrievalCallDelta,
+        RetrievalCallDeltaRetrievalType,
+        RetrievalCallDeltaTypedDict,
+    )
+    from .retrievalresultdelta import (
+        RetrievalResultDelta,
+        RetrievalResultDeltaTypedDict,
+    )
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
+    from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
     from .servicetier import ServiceTier
     from .source import Source, SourceParam, SourceType
     from .speechconfig import SpeechConfig, SpeechConfigParam
+    from .status import Status, StatusParam
     from .step import Step, StepParam, UnknownStep
     from .stepdelta import StepDelta, StepDeltaTypedDict
     from .stepdeltadata import (
@@ -331,15 +357,10 @@ if TYPE_CHECKING:
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
         URLContextCallArguments,
-        URLContextCallArgumentsTypedDict,
+        URLContextCallArgumentsParam,
     )
     from .urlcontextcalldelta import URLContextCallDelta, URLContextCallDeltaTypedDict
-    from .urlcontextcallstep import (
-        Arguments,
-        ArgumentsParam,
-        URLContextCallStep,
-        URLContextCallStepParam,
-    )
+    from .urlcontextcallstep import URLContextCallStep, URLContextCallStepParam
     from .urlcontextresult import (
         URLContextResult,
         URLContextResultParam,
@@ -350,11 +371,18 @@ if TYPE_CHECKING:
         URLContextResultDeltaTypedDict,
     )
     from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
-    from .usage import Usage, UsageParam
+    from .usage import Usage, UsageTypedDict
     from .userinputstep import UserInputStep, UserInputStepParam
     from .vertexaisearchconfig import VertexAISearchConfig, VertexAISearchConfigParam
+    from .videoconfig import Task, VideoConfig, VideoConfigParam
     from .videocontent import VideoContent, VideoContentMimeType, VideoContentParam
     from .videodelta import VideoDelta, VideoDeltaMimeType, VideoDeltaTypedDict
+    from .videoresponseformat import (
+        VideoResponseFormat,
+        VideoResponseFormatAspectRatio,
+        VideoResponseFormatDelivery,
+        VideoResponseFormatParam,
+    )
     from .webhookconfig import WebhookConfig, WebhookConfigParam
 
 __all__ = [
@@ -367,10 +395,8 @@ __all__ = [
     "AllowlistParam",
     "Annotation",
     "AnnotationParam",
-    "Arguments",
     "ArgumentsDelta",
     "ArgumentsDeltaTypedDict",
-    "ArgumentsParam",
     "AudioContent",
     "AudioContentMimeType",
     "AudioContentParam",
@@ -414,6 +440,7 @@ __all__ = [
     "DeepResearchAgentConfig",
     "DeepResearchAgentConfigParam",
     "Disabled",
+    "DisabledSafetyPolicy",
     "DocumentContent",
     "DocumentContentMimeType",
     "DocumentContentParam",
@@ -504,8 +531,9 @@ __all__ = [
     "GoogleSearchResultStepParam",
     "GoogleSearchSearchType",
     "GroundingToolCount",
-    "GroundingToolCountParam",
     "GroundingToolCountType",
+    "GroundingToolCountTypedDict",
+    "HarmCategory",
     "HybridSearch",
     "HybridSearchParam",
     "ImageConfig",
@@ -569,8 +597,9 @@ __all__ = [
     "MCPServerToolResultStepResultUnion",
     "MCPServerToolResultStepResultUnionParam",
     "MediaResolution",
+    "Method",
     "ModalityTokens",
-    "ModalityTokensParam",
+    "ModalityTokensTypedDict",
     "Model",
     "ModelOutputStep",
     "ModelOutputStepParam",
@@ -593,16 +622,27 @@ __all__ = [
     "ResponseFormatParam",
     "ResponseModality",
     "Retrieval",
+    "RetrievalCallArguments",
+    "RetrievalCallArgumentsTypedDict",
+    "RetrievalCallDelta",
+    "RetrievalCallDeltaRetrievalType",
+    "RetrievalCallDeltaTypedDict",
     "RetrievalParam",
-    "RetrievalType",
+    "RetrievalResultDelta",
+    "RetrievalResultDeltaTypedDict",
+    "RetrievalRetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
+    "SafetySetting",
+    "SafetySettingParam",
     "ServiceTier",
     "Source",
     "SourceParam",
     "SourceType",
     "SpeechConfig",
     "SpeechConfigParam",
+    "Status",
+    "StatusParam",
     "Step",
     "StepDelta",
     "StepDeltaData",
@@ -617,6 +657,7 @@ __all__ = [
     "StepStopTypedDict",
     "StreamMetadata",
     "StreamMetadataTypedDict",
+    "Task",
     "TextAnnotationDelta",
     "TextAnnotationDeltaTypedDict",
     "TextContent",
@@ -636,6 +677,7 @@ __all__ = [
     "ThoughtSummaryContentParam",
     "ThoughtSummaryDelta",
     "ThoughtSummaryDeltaTypedDict",
+    "Threshold",
     "Tool",
     "ToolChoice",
     "ToolChoiceConfig",
@@ -643,6 +685,8 @@ __all__ = [
     "ToolChoiceParam",
     "ToolChoiceType",
     "ToolParam",
+    "Transform",
+    "TransformParam",
     "Turn",
     "TurnContent",
     "TurnContentParam",
@@ -651,7 +695,7 @@ __all__ = [
     "URLCitationParam",
     "URLContext",
     "URLContextCallArguments",
-    "URLContextCallArgumentsTypedDict",
+    "URLContextCallArgumentsParam",
     "URLContextCallDelta",
     "URLContextCallDeltaTypedDict",
     "URLContextCallStep",
@@ -674,17 +718,23 @@ __all__ = [
     "UnknownThoughtSummaryContent",
     "UnknownTool",
     "Usage",
-    "UsageParam",
+    "UsageTypedDict",
     "UserInputStep",
     "UserInputStepParam",
     "VertexAISearchConfig",
     "VertexAISearchConfigParam",
+    "VideoConfig",
+    "VideoConfigParam",
     "VideoContent",
     "VideoContentMimeType",
     "VideoContentParam",
     "VideoDelta",
     "VideoDeltaMimeType",
     "VideoDeltaTypedDict",
+    "VideoResponseFormat",
+    "VideoResponseFormatAspectRatio",
+    "VideoResponseFormatDelivery",
+    "VideoResponseFormatParam",
     "Visualization",
     "WebhookConfig",
     "WebhookConfigParam",
@@ -696,6 +746,8 @@ _dynamic_imports: dict[str, str] = {
     "AllowedToolsParam": ".allowedtools",
     "AllowlistEntry": ".allowlistentry",
     "AllowlistEntryParam": ".allowlistentry",
+    "Transform": ".allowlistentry",
+    "TransformParam": ".allowlistentry",
     "Annotation": ".annotation",
     "AnnotationParam": ".annotation",
     "UnknownAnnotation": ".annotation",
@@ -726,6 +778,7 @@ _dynamic_imports: dict[str, str] = {
     "CodeExecutionResultStepParam": ".codeexecutionresultstep",
     "ComputerUse": ".computeruse",
     "ComputerUseParam": ".computeruse",
+    "DisabledSafetyPolicy": ".computeruse",
     "EnvironmentEnum": ".computeruse",
     "Content": ".content",
     "ContentParam": ".content",
@@ -845,8 +898,9 @@ _dynamic_imports: dict[str, str] = {
     "GoogleSearchResultStep": ".googlesearchresultstep",
     "GoogleSearchResultStepParam": ".googlesearchresultstep",
     "GroundingToolCount": ".groundingtoolcount",
-    "GroundingToolCountParam": ".groundingtoolcount",
     "GroundingToolCountType": ".groundingtoolcount",
+    "GroundingToolCountTypedDict": ".groundingtoolcount",
+    "HarmCategory": ".harmcategory",
     "HybridSearch": ".hybridsearch",
     "HybridSearchParam": ".hybridsearch",
     "ImageConfig": ".imageconfig",
@@ -912,7 +966,7 @@ _dynamic_imports: dict[str, str] = {
     "MCPServerToolResultStepResultUnionParam": ".mcpservertoolresultstep",
     "MediaResolution": ".mediaresolution",
     "ModalityTokens": ".modalitytokens",
-    "ModalityTokensParam": ".modalitytokens",
+    "ModalityTokensTypedDict": ".modalitytokens",
     "Model": ".model",
     "ModelOutputStep": ".modeloutputstep",
     "ModelOutputStepParam": ".modeloutputstep",
@@ -933,15 +987,28 @@ _dynamic_imports: dict[str, str] = {
     "ResponseModality": ".responsemodality",
     "Retrieval": ".retrieval",
     "RetrievalParam": ".retrieval",
-    "RetrievalType": ".retrieval",
+    "RetrievalRetrievalType": ".retrieval",
+    "RetrievalCallArguments": ".retrievalcallarguments",
+    "RetrievalCallArgumentsTypedDict": ".retrievalcallarguments",
+    "RetrievalCallDelta": ".retrievalcalldelta",
+    "RetrievalCallDeltaRetrievalType": ".retrievalcalldelta",
+    "RetrievalCallDeltaTypedDict": ".retrievalcalldelta",
+    "RetrievalResultDelta": ".retrievalresultdelta",
+    "RetrievalResultDeltaTypedDict": ".retrievalresultdelta",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
+    "Method": ".safetysetting",
+    "SafetySetting": ".safetysetting",
+    "SafetySettingParam": ".safetysetting",
+    "Threshold": ".safetysetting",
     "ServiceTier": ".servicetier",
     "Source": ".source",
     "SourceParam": ".source",
     "SourceType": ".source",
     "SpeechConfig": ".speechconfig",
     "SpeechConfigParam": ".speechconfig",
+    "Status": ".status",
+    "StatusParam": ".status",
     "Step": ".step",
     "StepParam": ".step",
     "UnknownStep": ".step",
@@ -993,11 +1060,9 @@ _dynamic_imports: dict[str, str] = {
     "URLContext": ".urlcontext",
     "URLContextParam": ".urlcontext",
     "URLContextCallArguments": ".urlcontextcallarguments",
-    "URLContextCallArgumentsTypedDict": ".urlcontextcallarguments",
+    "URLContextCallArgumentsParam": ".urlcontextcallarguments",
     "URLContextCallDelta": ".urlcontextcalldelta",
     "URLContextCallDeltaTypedDict": ".urlcontextcalldelta",
-    "Arguments": ".urlcontextcallstep",
-    "ArgumentsParam": ".urlcontextcallstep",
     "URLContextCallStep": ".urlcontextcallstep",
     "URLContextCallStepParam": ".urlcontextcallstep",
     "URLContextResult": ".urlcontextresult",
@@ -1008,17 +1073,24 @@ _dynamic_imports: dict[str, str] = {
     "URLContextResultStep": ".urlcontextresultstep",
     "URLContextResultStepParam": ".urlcontextresultstep",
     "Usage": ".usage",
-    "UsageParam": ".usage",
+    "UsageTypedDict": ".usage",
     "UserInputStep": ".userinputstep",
     "UserInputStepParam": ".userinputstep",
     "VertexAISearchConfig": ".vertexaisearchconfig",
     "VertexAISearchConfigParam": ".vertexaisearchconfig",
+    "Task": ".videoconfig",
+    "VideoConfig": ".videoconfig",
+    "VideoConfigParam": ".videoconfig",
     "VideoContent": ".videocontent",
     "VideoContentMimeType": ".videocontent",
     "VideoContentParam": ".videocontent",
     "VideoDelta": ".videodelta",
     "VideoDeltaMimeType": ".videodelta",
     "VideoDeltaTypedDict": ".videodelta",
+    "VideoResponseFormat": ".videoresponseformat",
+    "VideoResponseFormatAspectRatio": ".videoresponseformat",
+    "VideoResponseFormatDelivery": ".videoresponseformat",
+    "VideoResponseFormatParam": ".videoresponseformat",
     "WebhookConfig": ".webhookconfig",
     "WebhookConfigParam": ".webhookconfig",
 }

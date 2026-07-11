@@ -27,28 +27,28 @@ from typing_extensions import NotRequired, TypedDict
 class WebhookListResponseTypedDict(TypedDict):
     r"""Response message for WebhookService.ListWebhooks."""
 
-    webhooks: NotRequired[List[WebhookTypedDict]]
-    r"""The webhooks."""
     next_page_token: NotRequired[str]
     r"""A token, which can be sent as `page_token` to retrieve the next page.
     If this field is omitted, there are no subsequent pages.
     """
+    webhooks: NotRequired[List[WebhookTypedDict]]
+    r"""The webhooks."""
 
 
 class WebhookListResponse(BaseModel):
     r"""Response message for WebhookService.ListWebhooks."""
-
-    webhooks: Optional[List[Webhook]] = None
-    r"""The webhooks."""
 
     next_page_token: Optional[str] = None
     r"""A token, which can be sent as `page_token` to retrieve the next page.
     If this field is omitted, there are no subsequent pages.
     """
 
+    webhooks: Optional[List[Webhook]] = None
+    r"""The webhooks."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["webhooks", "next_page_token"])
+        optional_fields = set(["next_page_token", "webhooks"])
         serialized = handler(self)
         m = {}
 

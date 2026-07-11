@@ -1,0 +1,100 @@
+# This workflow blocks release-please PRs for major versions unless they have at least 2 approvals.
+name: Enforce Multiple Approvals for Major Releases
+
+on:
+  pull_request_review:
+    types: [submitted, dismissed]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-major-approval:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'release-please[bot]'
+    permissions:
+      pull-requests: read
+    steps:
+      - name: Enforce Multiple Approvals for Major Releases
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prTitle = context.payload.pull_request.title;
+            console.log(`PR Title: ${prTitle}`);
+
+            // 1. Extract proposed version securely from the PR title
+            const versionMatch = prTitle.match(/\b\d+\.\d+\.\d+\b/);
+            if (!versionMatch) {
+              console.log("No version pattern found in the PR title. Skipping check.");
+              return;
+            }
+
+            const version = versionMatch[0];
+            console.log(`Extracted Version: ${version}`);
+
+            // 2. Identify if this is a major release (ends with .0.0)
+            if (!version.endsWith('.0.0')) {
+              console.log("This is a minor or patch version release. Skipping check.");
+              return;
+            }
+
+            console.log(`MAJOR version release detected (${version})! Verifying approvals...`);
+
+            const prNumber = context.payload.pull_request.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 3. Fetch reviews for the PR (with pagination safety)
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            // 4. Handle potential API delay by including the triggering review if missing
+            if (context.eventName === 'pull_request_review' && context.payload.action === 'submitted') {
+              const currentReview = context.payload.review;
+              if (currentReview && !reviews.some(r => r.id === currentReview.id)) {
+                reviews.push(currentReview);
+              }
+            }
+
+            // 5. Gather unique approvals
+            const approvals = {};
+            for (const review of reviews) {
+              if (review.state === 'APPROVED') {
+                approvals[review.user.login] = true;
+              } else if (review.state === 'CHANGES_REQUESTED' || review.state === 'DISMISSED') {
+                delete approvals[review.user.login];
+              }
+            }
+
+            // 6. Verify repository write/admin permissions for each unique approver
+            const approvers = Object.keys(approvals);
+            const verifiedGooglers = [];
+            for (const username of approvers) {
+              try {
+                const response = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner,
+                  repo,
+                  username: username,
+                });
+                const permission = response.data.permission; // 'admin', 'write', 'read', or 'none'
+                if (['admin', 'write'].includes(permission)) {
+                  verifiedGooglers.push(username);
+                } else {
+                  console.log(`User ${username} has permission level '${permission}', which is insufficient (requires 'write' or 'admin').`);
+                }
+              } catch (e) {
+                console.log(`Could not verify repository permissions for ${username}:`, e.message);
+              }
+            }
+
+            const approvalCount = verifiedGooglers.length;
+            console.log(`Current approved reviews by authorized Googlers: ${verifiedGooglers.join(', ')} (${approvalCount})`);
+
+            if (approvalCount < 2) {
+              core.setFailed(`Major version releases (${version}) require at least 2 approvals from authorized maintainers. Current approval count: ${approvalCount}.`);
+            } else {
+              console.log("Approval requirements successfully met.");
+            }

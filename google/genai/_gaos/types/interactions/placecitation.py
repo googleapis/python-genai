@@ -30,13 +30,12 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class PlaceCitationParam(TypedDict):
     r"""A place citation annotation."""
 
-    type: Literal["place_citation"]
-    place_id: NotRequired[str]
-    r"""The ID of the place, in `places/{place_id}` format."""
+    end_index: NotRequired[int]
+    r"""End of the attributed segment, exclusive."""
     name: NotRequired[str]
     r"""Title of the place."""
-    url: NotRequired[str]
-    r"""URI reference of the place."""
+    place_id: NotRequired[str]
+    r"""The ID of the place, in `places/{place_id}` format."""
     review_snippets: NotRequired[List[ReviewSnippetParam]]
     r"""Snippets of reviews that are used to generate answers about the
     features of a given place in Google Maps.
@@ -46,28 +45,22 @@ class PlaceCitationParam(TypedDict):
 
     Index indicates the start of the segment, measured in bytes.
     """
-    end_index: NotRequired[int]
-    r"""End of the attributed segment, exclusive."""
+    type: Literal["place_citation"]
+    url: NotRequired[str]
+    r"""URI reference of the place."""
 
 
 class PlaceCitation(BaseModel):
     r"""A place citation annotation."""
 
-    type: Annotated[
-        Annotated[
-            Literal["place_citation"], AfterValidator(validate_const("place_citation"))
-        ],
-        pydantic.Field(alias="type"),
-    ] = "place_citation"
-
-    place_id: Optional[str] = None
-    r"""The ID of the place, in `places/{place_id}` format."""
+    end_index: Optional[int] = None
+    r"""End of the attributed segment, exclusive."""
 
     name: Optional[str] = None
     r"""Title of the place."""
 
-    url: Optional[str] = None
-    r"""URI reference of the place."""
+    place_id: Optional[str] = None
+    r"""The ID of the place, in `places/{place_id}` format."""
 
     review_snippets: Optional[List[ReviewSnippet]] = None
     r"""Snippets of reviews that are used to generate answers about the
@@ -80,13 +73,20 @@ class PlaceCitation(BaseModel):
     Index indicates the start of the segment, measured in bytes.
     """
 
-    end_index: Optional[int] = None
-    r"""End of the attributed segment, exclusive."""
+    type: Annotated[
+        Annotated[
+            Literal["place_citation"], AfterValidator(validate_const("place_citation"))
+        ],
+        pydantic.Field(alias="type"),
+    ] = "place_citation"
+
+    url: Optional[str] = None
+    r"""URI reference of the place."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
-            ["place_id", "name", "url", "review_snippets", "start_index", "end_index"]
+            ["end_index", "name", "place_id", "review_snippets", "start_index", "url"]
         )
         serialized = handler(self)
         m = {}

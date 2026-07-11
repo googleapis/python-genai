@@ -29,14 +29,19 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class URLContextResultDeltaTypedDict(TypedDict):
     result: List[URLContextResultParam]
-    type: Literal["url_context_result"]
     is_error: NotRequired[bool]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
+    type: Literal["url_context_result"]
 
 
 class URLContextResultDelta(BaseModel):
     result: List[URLContextResult]
+
+    is_error: Optional[bool] = None
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -45,11 +50,6 @@ class URLContextResultDelta(BaseModel):
         ],
         pydantic.Field(alias="type"),
     ] = "url_context_result"
-
-    is_error: Optional[bool] = None
-
-    signature: Optional[str] = None
-    r"""A signature hash for backend validation."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
