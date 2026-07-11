@@ -319,6 +319,13 @@ def _ContentEmbeddingStatistics_from_vertex(
   if getv(from_object, ['token_count']) is not None:
     setv(to_object, ['token_count'], getv(from_object, ['token_count']))
 
+  if getv(from_object, ['tokensDetails']) is not None:
+    setv(
+        to_object,
+        ['tokens_details'],
+        [item for item in getv(from_object, ['tokensDetails'])],
+    )
+
   return to_object
 
 
@@ -1137,6 +1144,8 @@ def _EmbedContentResponse_from_vertex(
       stats = {}
       if usage_metadata and usage_metadata.get('promptTokenCount'):
         stats['token_count'] = usage_metadata['promptTokenCount']
+      if usage_metadata and usage_metadata.get('promptTokensDetails'):
+        stats['tokensDetails'] = usage_metadata['promptTokensDetails']
       if truncated:
         stats['truncated'] = truncated
       embedding['statistics'] = stats
