@@ -35,6 +35,7 @@ from ...types.interactions.audioresponseformat import AudioResponseFormat
 from ...types.interactions.codeexecutioncallarguments import CodeExecutionCallArguments
 from ...types.interactions.codeexecutioncallstep import CodeExecutionCallStep
 from ...types.interactions.codeexecutionresultstep import CodeExecutionResultStep
+from ...types.interactions.codemenderagentconfig import CodeMenderAgentConfig
 from ...types.interactions.content import Content
 from ...types.interactions.createagentinteraction import (
     CreateAgentInteractionParam as CreateAgentInteractionParamsNonStreaming,
@@ -105,6 +106,7 @@ from ...types.interactions.videocontent import VideoContent
 from ...types.interactions.videoresponseformat import VideoResponseFormat
 from ...types.interactions.webhookconfig import WebhookConfig
 from . import codeexecutioncallstep
+from . import codemenderagentconfig
 from . import environment
 from . import errorevent
 from . import googlemapscallstep
@@ -136,6 +138,7 @@ __all__ = [
     "CodeExecutionCallArguments",
     "CodeExecutionCallStep",
     "CodeExecutionResultStep",
+    "CodeMenderAgentConfig",
     "Content",
     "CreateAgentInteractionParamsNonStreaming",
     "CreateAgentInteractionParamsStreaming",
@@ -208,6 +211,7 @@ __all__ = [
     "VideoResponseFormat",
     "WebhookConfig",
     "codeexecutioncallstep",
+    "codemenderagentconfig",
     "environment",
     "errorevent",
     "googlemapscallstep",
