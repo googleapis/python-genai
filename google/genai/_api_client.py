@@ -30,6 +30,7 @@ import logging
 import math
 import os
 import random
+import socket
 import ssl
 import sys
 import threading
@@ -557,12 +558,39 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   }
 
 
+def _default_socket_options() -> list[tuple[int, int, int]]:
+  """Returns socket options that enable TCP keepalive on connections.
+
+  Long-running calls can stay silent on the wire for longer than the idle
+  timeout of NAT gateways and stateful firewalls on the egress path. Without
+  keepalive probes such connections are dropped silently and the response
+  read hangs forever (https://github.com/googleapis/python-genai/issues/2705).
+  """
+  options = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
+  # Start sending keepalive probes after 60 seconds of idleness, well below
+  # common NAT idle timeouts. The option name is platform dependent: Linux
+  # and Windows expose TCP_KEEPIDLE; macOS uses TCP_KEEPALIVE.
+  if hasattr(socket, 'TCP_KEEPIDLE'):
+    options.append((socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60))
+  elif hasattr(socket, 'TCP_KEEPALIVE'):
+    options.append((socket.IPPROTO_TCP, socket.TCP_KEEPALIVE, 60))
+  if hasattr(socket, 'TCP_KEEPINTVL'):
+    options.append((socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 60))
+  if hasattr(socket, 'TCP_KEEPCNT'):
+    options.append((socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5))
+  return options
+
+
 class SyncHttpxClient(httpx.Client):
   """Sync httpx client."""
 
   def __init__(self, **kwargs: Any) -> None:
     """Initializes the httpx client."""
     kwargs.setdefault('follow_redirects', True)
+    if 'transport' not in kwargs and 'mounts' not in kwargs:
+      kwargs['transport'] = httpx.HTTPTransport(
+          socket_options=_default_socket_options()
+      )
     super().__init__(**kwargs)
 
   def __del__(self) -> None:
@@ -584,6 +612,10 @@ class AsyncHttpxClient(httpx.AsyncClient):
   def __init__(self, **kwargs: Any) -> None:
     """Initializes the httpx client."""
     kwargs.setdefault('follow_redirects', True)
+    if 'transport' not in kwargs and 'mounts' not in kwargs:
+      kwargs['transport'] = httpx.AsyncHTTPTransport(
+          socket_options=_default_socket_options()
+      )
     super().__init__(**kwargs)
 
   def __del__(self) -> None:
