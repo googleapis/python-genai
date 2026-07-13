@@ -848,7 +848,7 @@ class Triggers(BaseSDK):
 
     def run(
         self,
-        id: str,
+        trigger_id: str,
         *,
         api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -857,7 +857,7 @@ class Triggers(BaseSDK):
     ) -> triggers.TriggerExecution:
         r"""Runs a trigger immediately.
 
-        :param id: Resource name of the trigger.
+        :param trigger_id: Resource name of the trigger.
         :param api_version: Which version of the API to use.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -879,7 +879,7 @@ class Triggers(BaseSDK):
 
         request = models.RunTriggerRequest(
             api_version=api_version,
-            id=id,
+            trigger_id=trigger_id,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -887,7 +887,7 @@ class Triggers(BaseSDK):
         )
         req = self._build_request(
             method="POST",
-            path="/{api_version}/triggers/{id}/executions",
+            path="/{api_version}/triggers/{trigger_id}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -998,7 +998,7 @@ class Triggers(BaseSDK):
 
     def list_executions(
         self,
-        id: str,
+        trigger_id: str,
         *,
         api_version: Optional[str] = None,
         page_size: Optional[int] = None,
@@ -1009,7 +1009,7 @@ class Triggers(BaseSDK):
     ) -> triggers.ListTriggerExecutionsResponse:
         r"""Lists executions for a trigger.
 
-        :param id: Resource name of the trigger.
+        :param trigger_id: Resource name of the trigger.
         :param api_version: Which version of the API to use.
         :param page_size: Optional. The maximum number of executions to return per page.
         :param page_token: Optional. A page token from a previous ListTriggerExecutions call.
@@ -1033,7 +1033,7 @@ class Triggers(BaseSDK):
 
         request = models.ListTriggerExecutionsRequest(
             api_version=api_version,
-            id=id,
+            trigger_id=trigger_id,
             page_size=page_size,
             page_token=page_token,
         )
@@ -1043,7 +1043,7 @@ class Triggers(BaseSDK):
         )
         req = self._build_request(
             method="GET",
-            path="/{api_version}/triggers/{id}/executions",
+            path="/{api_version}/triggers/{trigger_id}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2032,7 +2032,7 @@ class AsyncTriggers(AsyncBaseSDK):
 
     async def run(
         self,
-        id: str,
+        trigger_id: str,
         *,
         api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -2041,7 +2041,7 @@ class AsyncTriggers(AsyncBaseSDK):
     ) -> triggers.TriggerExecution:
         r"""Runs a trigger immediately.
 
-        :param id: Resource name of the trigger.
+        :param trigger_id: Resource name of the trigger.
         :param api_version: Which version of the API to use.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -2063,7 +2063,7 @@ class AsyncTriggers(AsyncBaseSDK):
 
         request = models.RunTriggerRequest(
             api_version=api_version,
-            id=id,
+            trigger_id=trigger_id,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -2071,7 +2071,7 @@ class AsyncTriggers(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="POST",
-            path="/{api_version}/triggers/{id}/executions",
+            path="/{api_version}/triggers/{trigger_id}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2185,7 +2185,7 @@ class AsyncTriggers(AsyncBaseSDK):
 
     async def list_executions(
         self,
-        id: str,
+        trigger_id: str,
         *,
         api_version: Optional[str] = None,
         page_size: Optional[int] = None,
@@ -2196,7 +2196,7 @@ class AsyncTriggers(AsyncBaseSDK):
     ) -> triggers.ListTriggerExecutionsResponse:
         r"""Lists executions for a trigger.
 
-        :param id: Resource name of the trigger.
+        :param trigger_id: Resource name of the trigger.
         :param api_version: Which version of the API to use.
         :param page_size: Optional. The maximum number of executions to return per page.
         :param page_token: Optional. A page token from a previous ListTriggerExecutions call.
@@ -2220,7 +2220,7 @@ class AsyncTriggers(AsyncBaseSDK):
 
         request = models.ListTriggerExecutionsRequest(
             api_version=api_version,
-            id=id,
+            trigger_id=trigger_id,
             page_size=page_size,
             page_token=page_token,
         )
@@ -2230,7 +2230,7 @@ class AsyncTriggers(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="GET",
-            path="/{api_version}/triggers/{id}/executions",
+            path="/{api_version}/triggers/{trigger_id}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,

@@ -54,7 +54,7 @@ class ListTriggerExecutionsGlobals(BaseModel):
 
 
 class ListTriggerExecutionsRequestParam(TypedDict):
-    id: str
+    trigger_id: str
     r"""Resource name of the trigger."""
     api_version: NotRequired[str]
     r"""Which version of the API to use."""
@@ -65,7 +65,7 @@ class ListTriggerExecutionsRequestParam(TypedDict):
 
 
 class ListTriggerExecutionsRequest(BaseModel):
-    id: Annotated[
+    trigger_id: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
     r"""Resource name of the trigger."""
