@@ -4548,6 +4548,12 @@ def _UpdateModelConfig_to_mldev(
         getv(from_object, ['default_checkpoint_id']),
     )
 
+  if getv(from_object, ['update_mask']) is not None:
+    raise ValueError(
+        'update_mask parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
   return to_object
 
 
@@ -4569,6 +4575,13 @@ def _UpdateModelConfig_to_vertex(
         parent_object,
         ['defaultCheckpointId'],
         getv(from_object, ['default_checkpoint_id']),
+    )
+
+  if getv(from_object, ['update_mask']) is not None:
+    setv(
+        parent_object,
+        ['_query', 'updateMask'],
+        getv(from_object, ['update_mask']),
     )
 
   return to_object

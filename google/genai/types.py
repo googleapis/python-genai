@@ -10703,6 +10703,7 @@ class UpdateModelConfig(_common.BaseModel):
   display_name: Optional[str] = Field(default=None, description="""""")
   description: Optional[str] = Field(default=None, description="""""")
   default_checkpoint_id: Optional[str] = Field(default=None, description="""""")
+  update_mask: Optional[str] = Field(default=None, description="""""")
 
 
 class UpdateModelConfigDict(TypedDict, total=False):
@@ -10718,6 +10719,9 @@ class UpdateModelConfigDict(TypedDict, total=False):
   """"""
 
   default_checkpoint_id: Optional[str]
+  """"""
+
+  update_mask: Optional[str]
   """"""
 
 
