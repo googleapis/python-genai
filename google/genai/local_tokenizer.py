@@ -245,9 +245,9 @@ class _TextsAccumulator:
 
 
 def _token_str_to_bytes(
-    token: str, type: sentencepiece_model_pb2.ModelProto.SentencePiece.Type
+    token: str, type: sentencepiece_model_pb2.ModelProto.SentencePiece.Type  # type: ignore[name-defined]
 ) -> bytes:
-  if type == sentencepiece_model_pb2.ModelProto.SentencePiece.Type.BYTE:
+  if type == sentencepiece_model_pb2.ModelProto.SentencePiece.Type.BYTE:  # type: ignore[attr-defined]
     return _parse_hex_byte(token).to_bytes(length=1, byteorder="big")
   else:
     return token.replace("▁", " ").encode("utf-8")
