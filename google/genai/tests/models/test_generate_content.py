@@ -148,7 +148,9 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_labels',
-        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'only supported in Gemini Enterprise Agent Platform mode'
+        ),
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('What is your name?'),
@@ -283,7 +285,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_google_search_tool_with_blocking_confidence',
@@ -300,7 +304,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool',
@@ -315,7 +321,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_exclude_domains',
@@ -332,7 +340,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_blocking_confidence',
@@ -349,7 +359,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_config',
@@ -478,7 +490,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             ],
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_response_schema_with_default',
@@ -556,7 +570,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_service_tier',
@@ -579,6 +595,27 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_audio_transcription_config',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                    )
+                ),
+                audio_transcription_config=types.AudioTranscriptionConfig(
+                    diarization=True,
+                    word_timestamp=True,
+                ),
+            ),
+        ),
     ),
 ]
 
