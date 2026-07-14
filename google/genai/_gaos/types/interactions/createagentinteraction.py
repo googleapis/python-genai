@@ -20,6 +20,7 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import serialize_int, validate_int
 from .agentoption import AgentOption
+from .antigravityagentconfig import AntigravityAgentConfig, AntigravityAgentConfigParam
 from .codemenderagentconfig import CodeMenderAgentConfig, CodeMenderAgentConfigParam
 from .deepresearchagentconfig import (
     DeepResearchAgentConfig,
@@ -71,6 +72,7 @@ CreateAgentInteractionAgentConfigParam = TypeAliasType(
     "CreateAgentInteractionAgentConfigParam",
     Union[
         DynamicAgentConfigParam,
+        AntigravityAgentConfigParam,
         DeepResearchAgentConfigParam,
         CodeMenderAgentConfigParam,
     ],
@@ -79,7 +81,12 @@ r"""Configuration parameters for the agent interaction."""
 
 
 CreateAgentInteractionAgentConfig = Annotated[
-    Union[DynamicAgentConfig, DeepResearchAgentConfig, CodeMenderAgentConfig],
+    Union[
+        DynamicAgentConfig,
+        DeepResearchAgentConfig,
+        CodeMenderAgentConfig,
+        AntigravityAgentConfig,
+    ],
     Field(discriminator="type"),
 ]
 r"""Configuration parameters for the agent interaction."""

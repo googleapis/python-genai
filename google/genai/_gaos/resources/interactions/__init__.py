@@ -30,6 +30,7 @@ from ...models.getinteractionbyid import (
 )
 from ...types.interactions.allowedtools import AllowedTools
 from ...types.interactions.annotation import Annotation
+from ...types.interactions.antigravityagentconfig import AntigravityAgentConfig
 from ...types.interactions.audiocontent import AudioContent
 from ...types.interactions.audioresponseformat import AudioResponseFormat
 from ...types.interactions.codeexecutioncallarguments import CodeExecutionCallArguments
@@ -133,6 +134,7 @@ CreateModelInteractionParamsStreaming = CreateModelInteractionParamsNonStreaming
 __all__ = [
     "AllowedTools",
     "Annotation",
+    "AntigravityAgentConfig",
     "AudioContent",
     "AudioResponseFormat",
     "CodeExecutionCallArguments",

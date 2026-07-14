@@ -30,6 +30,10 @@ if TYPE_CHECKING:
         TransformParam,
     )
     from .annotation import Annotation, AnnotationParam, UnknownAnnotation
+    from .antigravityagentconfig import (
+        AntigravityAgentConfig,
+        AntigravityAgentConfigParam,
+    )
     from .argumentsdelta import ArgumentsDelta, ArgumentsDeltaTypedDict
     from .audiocontent import AudioContent, AudioContentMimeType, AudioContentParam
     from .audiodelta import AudioDelta, AudioDeltaMimeType, AudioDeltaTypedDict
@@ -400,6 +404,8 @@ __all__ = [
     "AllowlistParam",
     "Annotation",
     "AnnotationParam",
+    "AntigravityAgentConfig",
+    "AntigravityAgentConfigParam",
     "ArgumentsDelta",
     "ArgumentsDeltaTypedDict",
     "AudioContent",
@@ -767,6 +773,8 @@ _dynamic_imports: dict[str, str] = {
     "Annotation": ".annotation",
     "AnnotationParam": ".annotation",
     "UnknownAnnotation": ".annotation",
+    "AntigravityAgentConfig": ".antigravityagentconfig",
+    "AntigravityAgentConfigParam": ".antigravityagentconfig",
     "ArgumentsDelta": ".argumentsdelta",
     "ArgumentsDeltaTypedDict": ".argumentsdelta",
     "AudioContent": ".audiocontent",

@@ -21,6 +21,7 @@ from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils import serialize_int, validate_int
 from ...utils.unions import parse_open_union
 from .agentoption import AgentOption
+from .antigravityagentconfig import AntigravityAgentConfig, AntigravityAgentConfigParam
 from .audiocontent import AudioContent, AudioContentParam
 from .codemenderagentconfig import CodeMenderAgentConfig, CodeMenderAgentConfigParam
 from .deepresearchagentconfig import (
@@ -95,6 +96,7 @@ InteractionAgentConfigTypedDict = TypeAliasType(
     "InteractionAgentConfigTypedDict",
     Union[
         DynamicAgentConfigParam,
+        AntigravityAgentConfigParam,
         DeepResearchAgentConfigParam,
         CodeMenderAgentConfigParam,
     ],
@@ -116,6 +118,7 @@ _INTERACTION_AGENT_CONFIG_VARIANTS: dict[str, Any] = {
     "dynamic": DynamicAgentConfig,
     "deep-research": DeepResearchAgentConfig,
     "code-mender": CodeMenderAgentConfig,
+    "antigravity": AntigravityAgentConfig,
 }
 
 
@@ -124,6 +127,7 @@ InteractionAgentConfig = Annotated[
         DynamicAgentConfig,
         DeepResearchAgentConfig,
         CodeMenderAgentConfig,
+        AntigravityAgentConfig,
         UnknownInteractionAgentConfig,
     ],
     BeforeValidator(
