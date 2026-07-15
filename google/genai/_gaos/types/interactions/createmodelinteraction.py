@@ -91,13 +91,6 @@ class CreateModelInteractionParam(TypedDict):
     r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
     generation_config: NotRequired[GenerationConfigParam]
     r"""Configuration parameters for model interactions."""
-    cached_content: NotRequired[str]
-    r"""The name of the cached content used as context to serve the prediction.
-    Note: only used in explicit caching, where users can have control over
-    caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-    Format:
-    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
-    """
     safety_settings: NotRequired[List[SafetySettingParam]]
     r"""Safety settings for the interaction."""
     labels: NotRequired[Dict[str, str]]
@@ -156,14 +149,6 @@ class CreateModelInteraction(BaseModel):
     generation_config: Optional[GenerationConfig] = None
     r"""Configuration parameters for model interactions."""
 
-    cached_content: Optional[str] = None
-    r"""The name of the cached content used as context to serve the prediction.
-    Note: only used in explicit caching, where users can have control over
-    caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-    Format:
-    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
-    """
-
     safety_settings: Optional[List[SafetySetting]] = None
     r"""Safety settings for the interaction."""
 
@@ -187,7 +172,6 @@ class CreateModelInteraction(BaseModel):
                 "response_format",
                 "environment",
                 "generation_config",
-                "cached_content",
                 "safety_settings",
                 "labels",
             ]

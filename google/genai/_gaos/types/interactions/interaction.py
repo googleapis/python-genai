@@ -188,13 +188,6 @@ class InteractionTypedDict(TypedDict):
     r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
     generation_config: NotRequired[GenerationConfigParam]
     r"""Configuration parameters for model interactions."""
-    cached_content: NotRequired[str]
-    r"""The name of the cached content used as context to serve the prediction.
-    Note: only used in explicit caching, where users can have control over
-    caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-    Format:
-    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
-    """
     agent_config: NotRequired[InteractionAgentConfigTypedDict]
     r"""Configuration parameters for the agent interaction."""
     safety_settings: NotRequired[List[SafetySettingParam]]
@@ -286,14 +279,6 @@ class Interaction(BaseModel):
     generation_config: Optional[GenerationConfig] = None
     r"""Configuration parameters for model interactions."""
 
-    cached_content: Optional[str] = None
-    r"""The name of the cached content used as context to serve the prediction.
-    Note: only used in explicit caching, where users can have control over
-    caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-    Format:
-    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
-    """
-
     agent_config: Optional[InteractionAgentConfig] = None
     r"""Configuration parameters for the agent interaction."""
 
@@ -343,7 +328,6 @@ class Interaction(BaseModel):
                 "response_format",
                 "environment",
                 "generation_config",
-                "cached_content",
                 "agent_config",
                 "safety_settings",
                 "labels",
