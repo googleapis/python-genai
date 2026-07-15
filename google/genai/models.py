@@ -6412,9 +6412,18 @@ class Models(_api_module.BaseModule):
     if t.t_is_vertex_embed_content_model(model):
       normalized_contents = t.t_contents(contents)
       if len(normalized_contents) > 1:
-        raise ValueError(
-            'The embedContent API for this model only supports one content at a'
-            ' time.'
+        # Multimodal embeddings (e.g. gemini-embedding-2 with image
+        # parts) accept multiple contents per the public docs. Route
+        # through the PREDICT endpoint with the full contents list.
+        # The single-content embedContent path (text-only one-shot)
+        # still caps at 1.
+        # Fix for #2567.
+        return self._embed_content(
+            model=model,
+            content=None,
+            contents=contents,
+            embedding_api_type=types.EmbeddingApiType.PREDICT,
+            config=config,
         )
       return self._embed_content(
           model=model,
