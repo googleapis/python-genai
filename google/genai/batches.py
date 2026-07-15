@@ -2164,7 +2164,7 @@ class Batches(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -2264,7 +2264,7 @@ class Batches(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -2794,7 +2794,7 @@ class AsyncBatches(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -2894,7 +2894,7 @@ class AsyncBatches(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value

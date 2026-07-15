@@ -1109,6 +1109,9 @@ def _EmbedContentResponse_from_mldev(
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
   return to_object
 
 
@@ -1135,6 +1138,9 @@ def _EmbedContentResponse_from_vertex(
 
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
 
   if getv(root_object, ['embedding_api_type']) == 'EMBED_CONTENT':
     embedding = getv(from_object, ['embedding'])
@@ -5025,7 +5031,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5126,7 +5132,7 @@ class Models(_api_module.BaseModule):
           else {},
       )
       return_value.sdk_http_response = types.HttpResponse(
-          headers=response.headers
+          headers=response.headers, body=response.body
       )
       self._api_client._verify_response(return_value)
       yield return_value
@@ -5247,7 +5253,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5338,7 +5344,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5422,7 +5428,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5506,7 +5512,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -5881,7 +5887,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6049,7 +6055,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6159,7 +6165,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -6262,7 +6268,7 @@ class Models(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -7224,7 +7230,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -7328,7 +7334,7 @@ class AsyncModels(_api_module.BaseModule):
             else {},
         )
         return_value.sdk_http_response = types.HttpResponse(
-            headers=response.headers
+            headers=response.headers, body=response.body
         )
         self._api_client._verify_response(return_value)
         yield return_value
@@ -7451,7 +7457,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -7542,7 +7548,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -7626,7 +7632,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -7710,7 +7716,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -8092,7 +8098,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -8260,7 +8266,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -8370,7 +8376,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
@@ -8472,7 +8478,7 @@ class AsyncModels(_api_module.BaseModule):
         else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
-        headers=response.headers
+        headers=response.headers, body=response.body
     )
     self._api_client._verify_response(return_value)
     return return_value
