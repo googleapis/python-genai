@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.12.0](https://github.com/googleapis/python-genai/compare/v2.11.0...v2.12.0) (2026-07-15)
+
+
+### Features
+
+* Add AntigravityAgentConfig to OpenAPI schema overlays and regenerate SDKs. ([c68f857](https://github.com/googleapis/python-genai/commit/c68f857234ed510ed3d85b136cca8a5b7421e597))
+* Add max_total_tokens for Interaction. ([c875069](https://github.com/googleapis/python-genai/commit/c8750696763056122433b4b611c84063c575396a))
+* Add max_total_tokens for Interaction. ([a6d8d54](https://github.com/googleapis/python-genai/commit/a6d8d546d5dc14e3be4282e4fd8dbf7b1ef51ad0))
+* Add trigger resource ([0ab9525](https://github.com/googleapis/python-genai/commit/0ab9525157aa04fbed46caa0955486c2a3aad11a))
+* Add Triggers resource to GoogleGenAI client. ([60727fe](https://github.com/googleapis/python-genai/commit/60727fe1277c68fe7c4da3be7e369408b5463e7f))
+* **interactions:** Add CodeMenderAgentConfig ([50eca74](https://github.com/googleapis/python-genai/commit/50eca746eb6acf66e98e6381b71c122a868613f0))
+* Populate per-modality prompt token count in embedding responses for gemini-embedding-2 ([2ba0154](https://github.com/googleapis/python-genai/commit/2ba0154a41654dc2e999c6242633e2b2eedaa5e7))
+
 ## [2.11.0](https://github.com/googleapis/python-genai/compare/v2.10.0...v2.11.0) (2026-07-09)
 
 ### Features
