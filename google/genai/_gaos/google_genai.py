@@ -692,6 +692,10 @@ class GeminiNextGenTriggers(GeneratedTriggers):
             return _RawResponseAccessorProxy(super().with_streaming_response)
 
         def create(self, *args: Any, **kwargs: Any) -> Any:
+            if 'interaction' in kwargs:
+                interaction = kwargs['interaction']
+                if isinstance(interaction, dict):
+                    kwargs['interaction'] = _normalize_create_body(interaction)
             return wrap_sdk_call(super().create, *args, **kwargs)
 
         def list(self, *args: Any, **kwargs: Any) -> Any:
@@ -730,6 +734,10 @@ class AsyncGeminiNextGenTriggers(GeneratedAsyncTriggers):
             return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
 
         async def create(self, *args: Any, **kwargs: Any) -> Any:
+            if 'interaction' in kwargs:
+                interaction = kwargs['interaction']
+                if isinstance(interaction, dict):
+                    kwargs['interaction'] = _normalize_create_body(interaction)
             return await async_wrap_sdk_call(super().create, *args, **kwargs)
 
         async def list(self, *args: Any, **kwargs: Any) -> Any:
@@ -871,7 +879,6 @@ def _get_value(value: Any, name: str) -> Any:
         return value.get(name)
     return getattr(value, name, None)
 
-
 # Allowed create() body keys, derived from the generated request models so the
 # set tracks the schema; output-only fields are excluded.
 _CREATE_BODY_KEYS = frozenset(
@@ -915,7 +922,13 @@ def _is_content_list(value: Any) -> bool:
 
 
 def _is_content_block(value: Any) -> bool:
-    return isinstance(value, dict) and not _is_step_block(value)
+    if not isinstance(value, dict):
+        return False
+    if _is_step_block(value):
+        return False
+    if 'role' in value or 'content' in value:
+        return False
+    return True
 
 
 def _is_step_block(value: dict[str, Any]) -> bool:

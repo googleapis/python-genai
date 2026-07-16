@@ -19,6 +19,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import threading
 
+import pytest
+
 from ... import Client
 
 TRIGGER_BODY = {
@@ -51,9 +53,15 @@ TRIGGER_BODY = {
 
 class _RecordingHandler(BaseHTTPRequestHandler):
   captured: list[str] = []
+  captured_bodies: list[dict] = []
 
   def _record_and_respond(self) -> None:
     self.captured.append(f"{self.command} {self.path}")
+    if self.command in ("POST", "PATCH", "PUT"):
+      content_length = int(self.headers.get("Content-Length", 0))
+      if content_length > 0:
+        body = self.rfile.read(content_length)
+        self.captured_bodies.append(json.loads(body.decode("utf-8")))
     payload = json.dumps(TRIGGER_BODY).encode()
     self.send_response(200)
     self.send_header("content-type", "application/json")
@@ -70,12 +78,58 @@ class _RecordingHandler(BaseHTTPRequestHandler):
     pass
 
 
+@pytest.mark.parametrize(
+    "input_value, expected_input_value",
+    [
+        ("test-input-str", "test-input-str"),
+        (
+            [{"type": "user_input", "content": [{"type": "text", "text": "test-input-step"}]}],
+            [{"type": "user_input", "content": [{"type": "text", "text": "test-input-step"}]}],
+        ),
+        (
+            [{"type": "text", "text": "test-input-content-1"}, {"type": "text", "text": "test-input-content-2"}],
+            [
+                {
+                    "type": "user_input",
+                    "content": [
+                        {"type": "text", "text": "test-input-content-1"},
+                        {"type": "text", "text": "test-input-content-2"},
+                    ],
+                }
+            ],
+        ),
+        (
+            [{"role": "user", "content": "test-input-turn"}],
+            [{"role": "user", "content": "test-input-turn"}],
+        ),
+        (
+            {"type": "text", "text": "test-input-single-content"},
+            {"type": "text", "text": "test-input-single-content"},
+        ),
+        (
+            [{"text": "test-input-content-shorthand-1"}, {"text": "test-input-content-shorthand-2"}],
+            [
+                {
+                    "type": "user_input",
+                    "content": [
+                        {"type": "text", "text": "test-input-content-shorthand-1"},
+                        {"type": "text", "text": "test-input-content-shorthand-2"},
+                    ],
+                }
+            ],
+        ),
+    ]
+)
 def test_python_triggers_lifecycle_routes_through_google_genai_client(
-    monkeypatch,
+    monkeypatch, input_value, expected_input_value
 ):
   monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
   captured: list[str] = []
-  handler = type("Handler", (_RecordingHandler,), {"captured": captured})
+  captured_bodies: list[dict] = []
+  handler = type("Handler", (_RecordingHandler,), {
+      "captured": captured,
+      "captured_bodies": captured_bodies,
+  })
   server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
   thread = threading.Thread(target=server.serve_forever, daemon=True)
   thread.start()
@@ -93,7 +147,7 @@ def test_python_triggers_lifecycle_routes_through_google_genai_client(
             "agent": (
                 "projects/my-project/locations/my-location/agents/my-agent"
             ),
-            "input": "test-input",
+            "input": input_value,
             "environment": {
                 "type": "remote",
                 "network": {
@@ -137,7 +191,17 @@ def test_python_triggers_lifecycle_routes_through_google_genai_client(
         "POST /v1beta/triggers/svc_abc/executions",
         "GET /v1beta/triggers/svc_abc/executions?page_size=5",
     ]
+
+    # Verify the serialized interaction input in the CREATE request
+    create_body = captured_bodies[0]
+    interaction_in_req = create_body["interaction"]
+
+    # Assert that the input was serialized correctly
+    assert interaction_in_req["input"] == expected_input_value
+
+
   finally:
     server.shutdown()
     thread.join()
     server.server_close()
+
