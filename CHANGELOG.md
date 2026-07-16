@@ -1,11 +1,5 @@
 # Changelog
 
-## [2.12.1](https://github.com/googleapis/python-genai/compare/v2.12.0...v2.12.1) (2026-07-16)
-
-
-### Bug Fixes
-
-* Fix the normalization of Interactions inside triggers ([be554d3](https://github.com/googleapis/python-genai/commit/be554d3f35dd4e74c49769379c82225d8b5c3032))
 ## [2.12.0](https://github.com/googleapis/python-genai/compare/v2.11.0...v2.12.0) (2026-07-15)
 
 
