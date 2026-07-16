@@ -79,7 +79,6 @@ class Interactions(BaseSDK):
         response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        cached_content: str = ...,
         safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
         input: interactions.InteractionsInputParam,
@@ -107,11 +106,6 @@ class Interactions(BaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -140,7 +134,6 @@ class Interactions(BaseSDK):
         response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        cached_content: str = ...,
         safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
         input: interactions.InteractionsInputParam,
@@ -168,11 +161,6 @@ class Interactions(BaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -325,11 +313,6 @@ class Interactions(BaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -373,11 +356,6 @@ class Interactions(BaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -398,10 +376,6 @@ class Interactions(BaseSDK):
             raise ValueError(
                 "Cannot supply both 'generation_config' and 'agent_config'."
             )
-        if "cached_content" in body_kwargs and "agent" in body_kwargs:
-            raise ValueError("Cannot supply both 'cached_content' and 'agent'.")
-        if "cached_content" in body_kwargs and "agent_config" in body_kwargs:
-            raise ValueError("Cannot supply both 'cached_content' and 'agent_config'.")
         base_url = None
         url_variables = None
         retries: OptionalNullable[utils.RetryConfig] = UNSET
@@ -1503,7 +1477,6 @@ class AsyncInteractions(AsyncBaseSDK):
         response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        cached_content: str = ...,
         safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
         input: interactions.InteractionsInputParam,
@@ -1531,11 +1504,6 @@ class AsyncInteractions(AsyncBaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -1564,7 +1532,6 @@ class AsyncInteractions(AsyncBaseSDK):
         response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        cached_content: str = ...,
         safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
         input: interactions.InteractionsInputParam,
@@ -1592,11 +1559,6 @@ class AsyncInteractions(AsyncBaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -1749,11 +1711,6 @@ class AsyncInteractions(AsyncBaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -1797,11 +1754,6 @@ class AsyncInteractions(AsyncBaseSDK):
         :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
         :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
         :param generation_config: Configuration parameters for model interactions.
-        :param cached_content: The name of the cached content used as context to serve the prediction.
-            Note: only used in explicit caching, where users can have control over
-            caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-            Format:
-            `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
         :param safety_settings: Safety settings for the interaction.
         :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
@@ -1822,10 +1774,6 @@ class AsyncInteractions(AsyncBaseSDK):
             raise ValueError(
                 "Cannot supply both 'generation_config' and 'agent_config'."
             )
-        if "cached_content" in body_kwargs and "agent" in body_kwargs:
-            raise ValueError("Cannot supply both 'cached_content' and 'agent'.")
-        if "cached_content" in body_kwargs and "agent_config" in body_kwargs:
-            raise ValueError("Cannot supply both 'cached_content' and 'agent_config'.")
         base_url = None
         url_variables = None
         retries: OptionalNullable[utils.RetryConfig] = UNSET
