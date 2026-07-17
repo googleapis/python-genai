@@ -40,6 +40,13 @@ def _AudioTranscriptionConfig_to_mldev(
   if getv(from_object, ['language_hints']) is not None:
     setv(to_object, ['languageHints'], getv(from_object, ['language_hints']))
 
+  if getv(from_object, ['custom_vocabulary']) is not None:
+    setv(
+        to_object,
+        ['customVocabulary'],
+        getv(from_object, ['custom_vocabulary']),
+    )
+
   if getv(from_object, ['adaptation_phrases']) is not None:
     setv(
         to_object,

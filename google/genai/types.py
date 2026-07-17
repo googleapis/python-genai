@@ -20594,9 +20594,13 @@ class AudioTranscriptionConfig(_common.BaseModel):
       default=None,
       description="""Specifies one or more languages in the audio. Do not use together with LanguageAuto.""",
   )
+  custom_vocabulary: Optional[list[str]] = Field(
+      default=None,
+      description="""A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms.""",
+  )
   adaptation_phrases: Optional[list[str]] = Field(
       default=None,
-      description="""A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms.""",
+      description="""Deprecated. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms.""",
   )
 
 
@@ -20612,8 +20616,11 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   language_hints: Optional[LanguageHintsDict]
   """Specifies one or more languages in the audio. Do not use together with LanguageAuto."""
 
+  custom_vocabulary: Optional[list[str]]
+  """A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms."""
+
   adaptation_phrases: Optional[list[str]]
-  """A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms."""
+  """Deprecated. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms."""
 
 
 AudioTranscriptionConfigOrDict = Union[
