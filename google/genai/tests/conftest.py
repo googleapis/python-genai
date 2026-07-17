@@ -55,6 +55,26 @@ def use_vertex():
   return False
 
 
+@pytest.fixture(autouse=True)
+def skip_vertex_in_api_mode(request):
+  mode = request.config.getoption('--mode')
+  if mode == 'api' and not os.environ.get(
+      'GOOGLE_GENAI_RUN_VERTEX_IN_API_MODE'
+  ):
+    if hasattr(request, 'node') and hasattr(request.node, 'callspec'):
+      if request.node.callspec.params.get('use_vertex') is True:
+        pytest.skip(
+            'Skipping Vertex AI tests in API mode (no GCP credentials'
+            ' configured).'
+        )
+    elif 'use_vertex' in request.fixturenames:
+      if request.getfixturevalue('use_vertex') is True:
+        pytest.skip(
+            'Skipping Vertex AI tests in API mode (no GCP credentials'
+            ' configured).'
+        )
+
+
 # Overridden at the module level for each test file.
 @pytest.fixture
 def replays_prefix():
