@@ -109,9 +109,14 @@ if typing.TYPE_CHECKING:
 _is_httpx_imported = False
 if typing.TYPE_CHECKING:
   import httpx
+  import httpx2
 
-  HttpxClient = httpx.Client
-  HttpxAsyncClient = httpx.AsyncClient
+  # httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under
+  # a separate import namespace, so an httpx2 client is not an instance of the
+  # httpx client. Widen the aliases so HttpOptions accepts either. This file is
+  # generated ("DO NOT EDIT"); the real fix belongs in the generator template.
+  HttpxClient = Union[httpx.Client, httpx2.Client]
+  HttpxAsyncClient = Union[httpx.AsyncClient, httpx2.AsyncClient]
   _is_httpx_imported = True
 else:
   HttpxClient: typing.Type = Any
@@ -126,6 +131,19 @@ else:
   except ImportError:
     HttpxClient = None
     HttpxAsyncClient = None
+
+  try:
+    import httpx2
+
+    if _is_httpx_imported:
+      HttpxClient = Union[httpx.Client, httpx2.Client]
+      HttpxAsyncClient = Union[httpx.AsyncClient, httpx2.AsyncClient]
+    else:
+      HttpxClient = httpx2.Client
+      HttpxAsyncClient = httpx2.AsyncClient
+      _is_httpx_imported = True
+  except ImportError:
+    pass
 
 _is_aiohttp_imported = False
 if typing.TYPE_CHECKING:
