@@ -42,14 +42,14 @@ MCPServerToolResultStepResultUnionParam = TypeAliasType(
     "MCPServerToolResultStepResultUnionParam",
     Union[MCPServerToolResultStepResultParam, str, List[FunctionResultSubcontentParam]],
 )
-r"""The output from the MCP server call. Can be simple text or rich content."""
+r"""Required. The output from the MCP server call. Can be simple text or rich content."""
 
 
 MCPServerToolResultStepResultUnion = TypeAliasType(
     "MCPServerToolResultStepResultUnion",
     Union[MCPServerToolResultStepResult, str, List[FunctionResultSubcontent]],
 )
-r"""The output from the MCP server call. Can be simple text or rich content."""
+r"""Required. The output from the MCP server call. Can be simple text or rich content."""
 
 
 class MCPServerToolResultStepParam(TypedDict):
@@ -58,7 +58,7 @@ class MCPServerToolResultStepParam(TypedDict):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
     result: MCPServerToolResultStepResultUnionParam
-    r"""The output from the MCP server call. Can be simple text or rich content."""
+    r"""Required. The output from the MCP server call. Can be simple text or rich content."""
     name: NotRequired[str]
     r"""Name of the tool which is called for this specific tool call."""
     server_name: NotRequired[str]
@@ -73,7 +73,7 @@ class MCPServerToolResultStep(BaseModel):
     r"""Required. ID to match the ID from the function call block."""
 
     result: MCPServerToolResultStepResultUnion
-    r"""The output from the MCP server call. Can be simple text or rich content."""
+    r"""Required. The output from the MCP server call. Can be simple text or rich content."""
 
     name: Optional[str] = None
     r"""Name of the tool which is called for this specific tool call."""
