@@ -3287,6 +3287,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
               and field_name != 'additional_properties'
           ):
             setattr(schema, field_name, field_value)
+      if schema.any_of and not schema.type:
+        if all(s.type == 'OBJECT' for s in schema.any_of):
+          schema.type = Type('OBJECT')
 
       if (
           schema.type == 'ARRAY'
