@@ -40,6 +40,9 @@ class Agents(BaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
+        agent_config: Optional[
+            Union[agents_agent.AgentConfig, agents_agent.AgentConfigParam]
+        ] = None,
         base_agent: Optional[str] = None,
         base_environment: Optional[
             Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
@@ -61,6 +64,7 @@ class Agents(BaseSDK):
         r"""Creates a new Agent (Typed version for SDK).
 
         :param api_version: Which version of the API to use.
+        :param agent_config: Configuration parameters for the agent.
         :param base_agent: The base agent to extend.
         :param base_environment: The environment configuration for the agent.
         :param description: Agent description for developers to quickly read and understand.
@@ -89,6 +93,9 @@ class Agents(BaseSDK):
         request = models.CreateAgentRequest(
             api_version=api_version,
             body=agents.Agent(
+                agent_config=utils.get_pydantic_model(
+                    agent_config, Optional[agents.AgentConfig]
+                ),
                 base_agent=base_agent,
                 base_environment=utils.get_pydantic_model(
                     base_environment, Optional[agents.BaseEnvironment]
@@ -815,6 +822,9 @@ class AsyncAgents(AsyncBaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
+        agent_config: Optional[
+            Union[agents_agent.AgentConfig, agents_agent.AgentConfigParam]
+        ] = None,
         base_agent: Optional[str] = None,
         base_environment: Optional[
             Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
@@ -836,6 +846,7 @@ class AsyncAgents(AsyncBaseSDK):
         r"""Creates a new Agent (Typed version for SDK).
 
         :param api_version: Which version of the API to use.
+        :param agent_config: Configuration parameters for the agent.
         :param base_agent: The base agent to extend.
         :param base_environment: The environment configuration for the agent.
         :param description: Agent description for developers to quickly read and understand.
@@ -864,6 +875,9 @@ class AsyncAgents(AsyncBaseSDK):
         request = models.CreateAgentRequest(
             api_version=api_version,
             body=agents.Agent(
+                agent_config=utils.get_pydantic_model(
+                    agent_config, Optional[agents.AgentConfig]
+                ),
                 base_agent=base_agent,
                 base_environment=utils.get_pydantic_model(
                     base_environment, Optional[agents.BaseEnvironment]

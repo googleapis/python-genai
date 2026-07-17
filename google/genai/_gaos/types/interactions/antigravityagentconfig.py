@@ -35,6 +35,8 @@ class AntigravityAgentConfigParam(TypedDict):
 
     max_total_tokens: NotRequired[int]
     r"""Max total tokens for the agent run."""
+    model: NotRequired[str]
+    r"""The model to use for agent reasoning."""
     type: Literal["antigravity"]
 
 
@@ -51,6 +53,9 @@ class AntigravityAgentConfig(BaseModel):
     ] = None
     r"""Max total tokens for the agent run."""
 
+    model: Optional[str] = None
+    r"""The model to use for agent reasoning."""
+
     type: Annotated[
         Annotated[
             Literal["antigravity"], AfterValidator(validate_const("antigravity"))
@@ -60,7 +65,7 @@ class AntigravityAgentConfig(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["max_total_tokens"])
+        optional_fields = set(["max_total_tokens", "model"])
         serialized = handler(self)
         m = {}
 

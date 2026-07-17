@@ -21,12 +21,21 @@ from typing import Any, TYPE_CHECKING
 from ...utils.dynamic_imports import lazy_getattr, lazy_dir
 
 if TYPE_CHECKING:
-    from .agent import Agent, AgentParam, BaseEnvironment, BaseEnvironmentParam
+    from .agent import (
+        Agent,
+        AgentConfig,
+        AgentConfigParam,
+        AgentParam,
+        BaseEnvironment,
+        BaseEnvironmentParam,
+    )
     from .agentlistresponse import AgentListResponse, AgentListResponseTypedDict
     from .agenttool import AgentTool, AgentToolParam, UnknownAgentTool
 
 __all__ = [
     "Agent",
+    "AgentConfig",
+    "AgentConfigParam",
     "AgentListResponse",
     "AgentListResponseTypedDict",
     "AgentParam",
@@ -39,6 +48,8 @@ __all__ = [
 
 _dynamic_imports: dict[str, str] = {
     "Agent": ".agent",
+    "AgentConfig": ".agent",
+    "AgentConfigParam": ".agent",
     "AgentParam": ".agent",
     "BaseEnvironment": ".agent",
     "BaseEnvironmentParam": ".agent",
