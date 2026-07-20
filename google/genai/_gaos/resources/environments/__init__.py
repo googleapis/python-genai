@@ -18,18 +18,14 @@
 
 from ...types.environments.createenvironmentrequest import CreateEnvironmentRequest
 from ...types.environments.environment import Environment
-from ...types.environments.listenvironmentsresponse import (
-    ListEnvironmentsResponse as EnvironmentListResponse,
-)
+from ...types.environments.listenvironmentsresponse import ListEnvironmentsResponse
 from ...types.interactions.empty import Empty as EnvironmentDeleteResponse
-from . import createenvironmentrequest
-from . import environment
 
+EnvironmentListResponse = ListEnvironmentsResponse
 __all__ = [
     "CreateEnvironmentRequest",
     "Environment",
     "EnvironmentDeleteResponse",
     "EnvironmentListResponse",
-    "createenvironmentrequest",
-    "environment",
+    "ListEnvironmentsResponse",
 ]

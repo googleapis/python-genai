@@ -19,9 +19,6 @@
 from ...models.cancelinteractionbyid import (
     CancelInteractionByIDRequestParam as InteractionCancelParams,
 )
-from ...models.createinteraction import (
-    CreateInteractionRequestParam as InteractionCreateParams,
-)
 from ...models.deleteinteraction import (
     DeleteInteractionRequestParam as InteractionDeleteParams,
 )
@@ -40,6 +37,9 @@ from ...types.interactions.codemenderagentconfig import CodeMenderAgentConfig
 from ...types.interactions.content import Content
 from ...types.interactions.createagentinteraction import (
     CreateAgentInteractionParam as CreateAgentInteractionParamsNonStreaming,
+)
+from ...types.interactions.createinteractionrequest import (
+    CreateInteractionRequestParam as InteractionCreateParams,
 )
 from ...types.interactions.createmodelinteraction import (
     CreateModelInteractionParam as CreateModelInteractionParamsNonStreaming,
@@ -82,7 +82,9 @@ from ...types.interactions.modeloutputstep import ModelOutputStep
 from ...types.interactions.placecitation import PlaceCitation
 from ...types.interactions.retrievalcallarguments import RetrievalCallArguments
 from ...types.interactions.retrievalcalldelta import RetrievalCallDelta
+from ...types.interactions.retrievalcallstep import RetrievalCallStep
 from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
+from ...types.interactions.retrievalresultstep import RetrievalResultStep
 from ...types.interactions.safetysetting import SafetySetting
 from ...types.interactions.speechconfig import SpeechConfig
 from ...types.interactions.step import Step
@@ -113,14 +115,21 @@ from . import codeexecutioncallstep
 from . import codemenderagentconfig
 from . import environment
 from . import errorevent
+from . import generationconfig
 from . import googlemapscallstep
 from . import googlemapsresult
 from . import googlemapsresultstep
 from . import googlesearchcallstep
 from . import googlesearchresultstep
+from . import interactioncompletedevent
+from . import interactioncreatedevent
+from . import interactionstatusupdate
 from . import placecitation
 from . import retrievalcalldelta
+from . import retrievalcallstep
 from . import stepdelta
+from . import stepstart
+from . import stepstop
 from . import tool
 from . import urlcontextcallstep
 from . import urlcontextresultstep
@@ -186,7 +195,9 @@ __all__ = [
     "PlaceCitation",
     "RetrievalCallArguments",
     "RetrievalCallDelta",
+    "RetrievalCallStep",
     "RetrievalResultDelta",
+    "RetrievalResultStep",
     "SafetySetting",
     "SpeechConfig",
     "Step",
@@ -217,14 +228,21 @@ __all__ = [
     "codemenderagentconfig",
     "environment",
     "errorevent",
+    "generationconfig",
     "googlemapscallstep",
     "googlemapsresult",
     "googlemapsresultstep",
     "googlesearchcallstep",
     "googlesearchresultstep",
+    "interactioncompletedevent",
+    "interactioncreatedevent",
+    "interactionstatusupdate",
     "placecitation",
     "retrievalcalldelta",
+    "retrievalcallstep",
     "stepdelta",
+    "stepstart",
+    "stepstop",
     "tool",
     "urlcontextcallstep",
     "urlcontextresultstep",

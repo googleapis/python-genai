@@ -36,10 +36,178 @@ class Agents(BaseSDK):
     def with_streaming_response(self):
         return AgentsWithStreamingResponse(self)
 
+    def list(
+        self,
+        *,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        parent: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> agents.AgentListResponse:
+        r"""Lists agents.
+
+        :param page_size:
+        :param page_token:
+        :param parent:
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = models.ListAgentsRequest(
+            page_size=page_size,
+            page_token=page_token,
+            parent=parent,
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request(
+            method="GET",
+            path="/{api_version}/agents",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=False,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.ListAgentsGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        def _speakeasy_parse_response(http_res):
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListAgentsClientErrorData, http_res
+                    )
+                    raise errors.ListAgentsClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListAgentsServerErrorData, http_res
+                    )
+                    raise errors.ListAgentsServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    agents.AgentListResponse, http_res, validate=False
+                )
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="ListAgents",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=None,
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
+        )
+        http_res = self.do_request(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.StreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.APIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                ),
+            )
+        try:
+            return _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            response_helpers.raise_parse_error(
+                self.sdk_configuration.__dict__["_hooks"],
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
     def create(
         self,
         *,
-        api_version: Optional[str] = None,
+        parent: Optional[str] = None,
         agent_config: Optional[
             Union[agents_agent.AgentConfig, agents_agent.AgentConfigParam]
         ] = None,
@@ -61,9 +229,9 @@ class Agents(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Creates a new Agent (Typed version for SDK).
+        r"""Creates or updates an agent (upsert by name).
 
-        :param api_version: Which version of the API to use.
+        :param parent:
         :param agent_config: Configuration parameters for the agent.
         :param base_agent: The base agent to extend.
         :param base_environment: The environment configuration for the agent.
@@ -91,7 +259,7 @@ class Agents(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.CreateAgentRequest(
-            api_version=api_version,
+            parent=parent,
             body=agents.Agent(
                 agent_config=utils.get_pydantic_model(
                     agent_config, Optional[agents.AgentConfig]
@@ -150,16 +318,31 @@ class Agents(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateAgentClientErrorData, http_res
+                    )
+                    raise errors.CreateAgentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateAgentServerErrorData, http_res
+                    )
+                    raise errors.CreateAgentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(agents.Agent, http_res, validate=False)
 
@@ -174,229 +357,7 @@ class Agents(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "create",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"research-assistant-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    description="A helpful research assistant.",\n    system_instruction="You are a helpful research assistant.",\n    base_environment="remote",\n    tools=[{"type": "google_search"}],\n)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `research-assistant-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A helpful research assistant.',\n    system_instruction: 'You are a helpful research assistant.',\n    base_environment: 'remote',\n    tools: [{ type: 'google_search' }],\n});\nif (!agent.id) {\n    throw new Error('Agent creation failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"data-analyst-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Always include visualizations and export results as PDF.",\n    base_environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "inline",\n                "target": ".agents/AGENTS.md",\n                "content": "Always use matplotlib for charts. Include a summary table in every report.",\n            },\n            {\n                "type": "repository",\n                "source": "https://github.com/my-org/analysis-templates",\n                "target": "/workspace/templates",\n            },\n        ],\n    },\n)\nprint(f"Created agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Always include visualizations and export results as PDF.',\n    base_environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'inline',\n                target: '.agents/AGENTS.md',\n                content: 'Always use matplotlib for charts. Include a summary table in every report.',\n            },\n            {\n                type: 'repository',\n                source: 'https://github.com/my-org/analysis-templates',\n                target: '/workspace/templates',\n            },\n        ],\n    },\n});\nconsole.log(`Created agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Set up the environment interactively.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a basic Hello World template to /workspace/template.py.",\n    environment="remote",\n)\n\n# Step 2: Fork that environment into a named agent.\nagent_id = f"my-data-analyst-{uuid.uuid4().hex[:8]}"\nagent = client.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Use the template at /workspace/template.py for all reports.",\n    base_environment=interaction.environment_id,\n)\nprint(f"Forked agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Set up the environment interactively.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a basic Hello World template to /workspace/template.py.',\n    environment: 'remote',\n});\n\n// Step 2: Fork that environment into a named agent.\nconst agentId = `my-data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Use the template at /workspace/template.py for all reports.',\n    base_environment: interaction.environment_id,\n});\nconsole.log(`Forked agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                ]
-            },
-            response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
-        )
-        http_res = self.do_request(
-            hook_ctx=_speakeasy_hook_ctx,
-            request=req,
-            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
-            stream=_speakeasy_response_mode == "streaming",
-            retry_config=retry_config,
-        )
-        if _speakeasy_response_mode != "parsed":
-            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
-                http_res.read()
-                try:
-                    _speakeasy_parse_response(http_res)
-                except Exception as parse_exc_:
-                    response_helpers.raise_parse_error(
-                        self.sdk_configuration.__dict__["_hooks"],
-                        AfterParseErrorContext(_speakeasy_hook_ctx),
-                        http_res,
-                        parse_exc_,
-                    )
-            _speakeasy_response_cls = (
-                response_helpers.StreamedAPIResponse
-                if _speakeasy_response_mode == "streaming"
-                else response_helpers.APIResponse
-            )
-            return cast(
-                Any,
-                _speakeasy_response_cls(
-                    raw=http_res,
-                    parser=_speakeasy_parse_response,
-                    mode="buffered",
-                    client_ref=self,
-                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
-                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
-                ),
-            )
-        try:
-            return _speakeasy_parse_response(http_res)
-        except Exception as parse_exc_:
-            response_helpers.raise_parse_error(
-                self.sdk_configuration.__dict__["_hooks"],
-                AfterParseErrorContext(_speakeasy_hook_ctx),
-                http_res,
-                parse_exc_,
-            )
-
-    def list(
-        self,
-        *,
-        api_version: Optional[str] = None,
-        page_size: Optional[int] = None,
-        page_token: Optional[str] = None,
-        parent: Optional[str] = None,
-        extra_headers: Optional[Mapping[str, str]] = None,
-        extra_query: Optional[Mapping[str, Any]] = None,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-    ) -> agents.AgentListResponse:
-        r"""Lists all Agents.
-
-        :param api_version: Which version of the API to use.
-        :param page_size:
-        :param page_token:
-        :param parent:
-        :param extra_headers: Additional headers to set or replace on requests.
-        :param extra_query: Additional query parameters to append to requests.
-        :param timeout: Override the default request timeout configuration for this method in seconds
-        """
-        base_url = None
-        url_variables = None
-        retries: OptionalNullable[utils.RetryConfig] = UNSET
-        server_url = None
-        http_headers = extra_headers
-        timeout_ms = self._coerce_timeout_ms(timeout)
-        if timeout_ms is None:
-            timeout_ms = self.sdk_configuration.timeout_ms
-
-        if server_url is not None:
-            base_url = server_url
-        else:
-            base_url = self._get_url(base_url, url_variables)
-
-        request = models.ListAgentsRequest(
-            api_version=api_version,
-            page_size=page_size,
-            page_token=page_token,
-            parent=parent,
-        )
-
-        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
-            http_headers
-        )
-        req = self._build_request(
-            method="GET",
-            path="/{api_version}/agents",
-            base_url=base_url,
-            url_variables=url_variables,
-            request=request,
-            request_body_required=False,
-            request_has_path_params=True,
-            request_has_query_params=True,
-            user_agent_header="user-agent",
-            accept_header_value="application/json",
-            http_headers=http_headers,
-            extra_query_params=extra_query,
-            _globals=models.ListAgentsGlobals(
-                api_version=self.sdk_configuration.globals.api_version,
-            ),
-            security=self.sdk_configuration.security,
-            allow_empty_value=None,
-            timeout_ms=timeout_ms,
-        )
-
-        if retries == UNSET:
-            if self.sdk_configuration.retry_config is not UNSET:
-                retries = self.sdk_configuration.retry_config
-            else:
-                retries = utils.RetryConfig(
-                    "attempt-count-backoff",
-                    utils.BackoffStrategy(500, 8000, 2, 30000),
-                    True,
-                    max_retries=4,
-                )
-
-        retry_config = None
-        if isinstance(retries, utils.RetryConfig):
-            retry_config = (retries, ["408", "409", "429", "5XX"])
-
-        def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "default", "application/json"):
-                return unmarshal_json_response(
-                    agents.AgentListResponse, http_res, validate=False
-                )
-
-            raise errors.GenAiDefaultError("Unexpected response received", http_res)
-
-        _speakeasy_hook_ctx = HookContext(
-            config=self.sdk_configuration,
-            base_url=base_url or "",
-            operation_id="ListAgents",
-            oauth2_scopes=None,
-            security_source=get_security_from_env(
-                self.sdk_configuration.security, types.Security
-            ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "list",
-                        "lang": "python",
-                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.agents.list()\nfor agent in response.agents or []:\n    print(agent.id)\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agents = await ai.agents.list();\nfor (const agent of (agents.agents ?? [])) {\n    console.log(agent.id);\n}\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -448,15 +409,13 @@ class Agents(BaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Gets a specific Agent.
+        r"""Gets an agent (latest version).
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -476,7 +435,6 @@ class Agents(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.GetAgentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -485,7 +443,7 @@ class Agents(BaseSDK):
         )
         req = self._build_request(
             method="GET",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -520,16 +478,31 @@ class Agents(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetAgentClientErrorData, http_res
+                    )
+                    raise errors.GetAgentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetAgentServerErrorData, http_res
+                    )
+                    raise errors.GetAgentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(agents.Agent, http_res, validate=False)
 
@@ -544,25 +517,7 @@ class Agents(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to retrieve.\nagent_id = f"test-agent-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="A test agent.",\n    base_environment="remote",\n)\n\nagent = client.agents.get(agent_id)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to retrieve.\nconst agentId = `test-agent-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'A test agent.',\n    base_environment: 'remote',\n});\n\nconst agent = await ai.agents.get(agentId);\nif (!agent.id) {\n    throw new Error('Agent retrieval failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -614,15 +569,13 @@ class Agents(BaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an Agent.
+        r"""Deletes an agent and all its versions.
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -642,7 +595,6 @@ class Agents(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.DeleteAgentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -651,7 +603,7 @@ class Agents(BaseSDK):
         )
         req = self._build_request(
             method="DELETE",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -686,16 +638,31 @@ class Agents(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteAgentClientErrorData, http_res
+                    )
+                    raise errors.DeleteAgentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteAgentServerErrorData, http_res
+                    )
+                    raise errors.DeleteAgentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     interactions.Empty, http_res, validate=False
@@ -712,25 +679,7 @@ class Agents(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to delete.\nagent_id = f"delete-test-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="Temporary agent for deletion.",\n    base_environment="remote",\n)\n\nclient.agents.delete(agent_id)\nprint("Agent deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to delete.\nconst agentId = `delete-test-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'Temporary agent for deletion.',\n    base_environment: 'remote',\n});\n\nawait ai.agents.delete(agentId);\nconsole.log('Agent deleted successfully.');\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -782,10 +731,10 @@ class Agents(BaseSDK):
 class AgentsWithRawResponse:
     def __init__(self, sdk: Agents) -> None:
         self._sdk = sdk
+        self.list = response_helpers.to_raw_response_wrapper(sdk.list, "extra_headers")
         self.create = response_helpers.to_raw_response_wrapper(
             sdk.create, "extra_headers"
         )
-        self.list = response_helpers.to_raw_response_wrapper(sdk.list, "extra_headers")
         self.get = response_helpers.to_raw_response_wrapper(sdk.get, "extra_headers")
         self.delete = response_helpers.to_raw_response_wrapper(
             sdk.delete, "extra_headers"
@@ -795,11 +744,11 @@ class AgentsWithRawResponse:
 class AgentsWithStreamingResponse:
     def __init__(self, sdk: Agents) -> None:
         self._sdk = sdk
-        self.create = response_helpers.to_streamed_response_wrapper(
-            sdk.create, "extra_headers"
-        )
         self.list = response_helpers.to_streamed_response_wrapper(
             sdk.list, "extra_headers"
+        )
+        self.create = response_helpers.to_streamed_response_wrapper(
+            sdk.create, "extra_headers"
         )
         self.get = response_helpers.to_streamed_response_wrapper(
             sdk.get, "extra_headers"
@@ -818,10 +767,181 @@ class AsyncAgents(AsyncBaseSDK):
     def with_streaming_response(self):
         return AsyncAgentsWithStreamingResponse(self)
 
+    async def list(
+        self,
+        *,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        parent: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> agents.AgentListResponse:
+        r"""Lists agents.
+
+        :param page_size:
+        :param page_token:
+        :param parent:
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = models.ListAgentsRequest(
+            page_size=page_size,
+            page_token=page_token,
+            parent=parent,
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request_async(
+            method="GET",
+            path="/{api_version}/agents",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=False,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.ListAgentsGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        async def _speakeasy_parse_response(http_res):
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListAgentsClientErrorData, http_res
+                    )
+                    raise errors.ListAgentsClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListAgentsServerErrorData, http_res
+                    )
+                    raise errors.ListAgentsServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    agents.AgentListResponse, http_res, validate=False
+                )
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="ListAgents",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=None,
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
+        )
+        http_res = await self.do_request_async(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.AsyncStreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.AsyncAPIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                    async_hooks=self.sdk_configuration.__dict__.get("_async_hooks"),
+                ),
+            )
+        try:
+            return await _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            await response_helpers.raise_parse_error_async(
+                self.sdk_configuration.__dict__.get("_async_hooks"),
+                self.sdk_configuration.__dict__.get("_hooks"),
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
     async def create(
         self,
         *,
-        api_version: Optional[str] = None,
+        parent: Optional[str] = None,
         agent_config: Optional[
             Union[agents_agent.AgentConfig, agents_agent.AgentConfigParam]
         ] = None,
@@ -843,9 +963,9 @@ class AsyncAgents(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Creates a new Agent (Typed version for SDK).
+        r"""Creates or updates an agent (upsert by name).
 
-        :param api_version: Which version of the API to use.
+        :param parent:
         :param agent_config: Configuration parameters for the agent.
         :param base_agent: The base agent to extend.
         :param base_environment: The environment configuration for the agent.
@@ -873,7 +993,7 @@ class AsyncAgents(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.CreateAgentRequest(
-            api_version=api_version,
+            parent=parent,
             body=agents.Agent(
                 agent_config=utils.get_pydantic_model(
                     agent_config, Optional[agents.AgentConfig]
@@ -932,16 +1052,31 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateAgentClientErrorData, http_res
+                    )
+                    raise errors.CreateAgentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateAgentServerErrorData, http_res
+                    )
+                    raise errors.CreateAgentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(agents.Agent, http_res, validate=False)
 
@@ -956,232 +1091,7 @@ class AsyncAgents(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "create",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"research-assistant-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    description="A helpful research assistant.",\n    system_instruction="You are a helpful research assistant.",\n    base_environment="remote",\n    tools=[{"type": "google_search"}],\n)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `research-assistant-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A helpful research assistant.',\n    system_instruction: 'You are a helpful research assistant.',\n    base_environment: 'remote',\n    tools: [{ type: 'google_search' }],\n});\nif (!agent.id) {\n    throw new Error('Agent creation failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"data-analyst-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Always include visualizations and export results as PDF.",\n    base_environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "inline",\n                "target": ".agents/AGENTS.md",\n                "content": "Always use matplotlib for charts. Include a summary table in every report.",\n            },\n            {\n                "type": "repository",\n                "source": "https://github.com/my-org/analysis-templates",\n                "target": "/workspace/templates",\n            },\n        ],\n    },\n)\nprint(f"Created agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Always include visualizations and export results as PDF.',\n    base_environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'inline',\n                target: '.agents/AGENTS.md',\n                content: 'Always use matplotlib for charts. Include a summary table in every report.',\n            },\n            {\n                type: 'repository',\n                source: 'https://github.com/my-org/analysis-templates',\n                target: '/workspace/templates',\n            },\n        ],\n    },\n});\nconsole.log(`Created agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Set up the environment interactively.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a basic Hello World template to /workspace/template.py.",\n    environment="remote",\n)\n\n# Step 2: Fork that environment into a named agent.\nagent_id = f"my-data-analyst-{uuid.uuid4().hex[:8]}"\nagent = client.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Use the template at /workspace/template.py for all reports.",\n    base_environment=interaction.environment_id,\n)\nprint(f"Forked agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Set up the environment interactively.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a basic Hello World template to /workspace/template.py.',\n    environment: 'remote',\n});\n\n// Step 2: Fork that environment into a named agent.\nconst agentId = `my-data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Use the template at /workspace/template.py for all reports.',\n    base_environment: interaction.environment_id,\n});\nconsole.log(`Forked agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                ]
-            },
-            response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
-        )
-        http_res = await self.do_request_async(
-            hook_ctx=_speakeasy_hook_ctx,
-            request=req,
-            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
-            stream=_speakeasy_response_mode == "streaming",
-            retry_config=retry_config,
-        )
-        if _speakeasy_response_mode != "parsed":
-            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
-                await http_res.aread()
-                try:
-                    await _speakeasy_parse_response(http_res)
-                except Exception as parse_exc_:
-                    await response_helpers.raise_parse_error_async(
-                        self.sdk_configuration.__dict__.get("_async_hooks"),
-                        self.sdk_configuration.__dict__.get("_hooks"),
-                        AfterParseErrorContext(_speakeasy_hook_ctx),
-                        http_res,
-                        parse_exc_,
-                    )
-            _speakeasy_response_cls = (
-                response_helpers.AsyncStreamedAPIResponse
-                if _speakeasy_response_mode == "streaming"
-                else response_helpers.AsyncAPIResponse
-            )
-            return cast(
-                Any,
-                _speakeasy_response_cls(
-                    raw=http_res,
-                    parser=_speakeasy_parse_response,
-                    mode="buffered",
-                    client_ref=self,
-                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
-                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
-                    async_hooks=self.sdk_configuration.__dict__.get("_async_hooks"),
-                ),
-            )
-        try:
-            return await _speakeasy_parse_response(http_res)
-        except Exception as parse_exc_:
-            await response_helpers.raise_parse_error_async(
-                self.sdk_configuration.__dict__.get("_async_hooks"),
-                self.sdk_configuration.__dict__.get("_hooks"),
-                AfterParseErrorContext(_speakeasy_hook_ctx),
-                http_res,
-                parse_exc_,
-            )
-
-    async def list(
-        self,
-        *,
-        api_version: Optional[str] = None,
-        page_size: Optional[int] = None,
-        page_token: Optional[str] = None,
-        parent: Optional[str] = None,
-        extra_headers: Optional[Mapping[str, str]] = None,
-        extra_query: Optional[Mapping[str, Any]] = None,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-    ) -> agents.AgentListResponse:
-        r"""Lists all Agents.
-
-        :param api_version: Which version of the API to use.
-        :param page_size:
-        :param page_token:
-        :param parent:
-        :param extra_headers: Additional headers to set or replace on requests.
-        :param extra_query: Additional query parameters to append to requests.
-        :param timeout: Override the default request timeout configuration for this method in seconds
-        """
-        base_url = None
-        url_variables = None
-        retries: OptionalNullable[utils.RetryConfig] = UNSET
-        server_url = None
-        http_headers = extra_headers
-        timeout_ms = self._coerce_timeout_ms(timeout)
-        if timeout_ms is None:
-            timeout_ms = self.sdk_configuration.timeout_ms
-
-        if server_url is not None:
-            base_url = server_url
-        else:
-            base_url = self._get_url(base_url, url_variables)
-
-        request = models.ListAgentsRequest(
-            api_version=api_version,
-            page_size=page_size,
-            page_token=page_token,
-            parent=parent,
-        )
-
-        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
-            http_headers
-        )
-        req = self._build_request_async(
-            method="GET",
-            path="/{api_version}/agents",
-            base_url=base_url,
-            url_variables=url_variables,
-            request=request,
-            request_body_required=False,
-            request_has_path_params=True,
-            request_has_query_params=True,
-            user_agent_header="user-agent",
-            accept_header_value="application/json",
-            http_headers=http_headers,
-            extra_query_params=extra_query,
-            _globals=models.ListAgentsGlobals(
-                api_version=self.sdk_configuration.globals.api_version,
-            ),
-            security=self.sdk_configuration.security,
-            allow_empty_value=None,
-            timeout_ms=timeout_ms,
-        )
-
-        if retries == UNSET:
-            if self.sdk_configuration.retry_config is not UNSET:
-                retries = self.sdk_configuration.retry_config
-            else:
-                retries = utils.RetryConfig(
-                    "attempt-count-backoff",
-                    utils.BackoffStrategy(500, 8000, 2, 30000),
-                    True,
-                    max_retries=4,
-                )
-
-        retry_config = None
-        if isinstance(retries, utils.RetryConfig):
-            retry_config = (retries, ["408", "409", "429", "5XX"])
-
-        async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "default", "application/json"):
-                return unmarshal_json_response(
-                    agents.AgentListResponse, http_res, validate=False
-                )
-
-            raise errors.GenAiDefaultError("Unexpected response received", http_res)
-
-        _speakeasy_hook_ctx = HookContext(
-            config=self.sdk_configuration,
-            base_url=base_url or "",
-            operation_id="ListAgents",
-            oauth2_scopes=None,
-            security_source=get_security_from_env(
-                self.sdk_configuration.security, types.Security
-            ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "list",
-                        "lang": "python",
-                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.agents.list()\nfor agent in response.agents or []:\n    print(agent.id)\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agents = await ai.agents.list();\nfor (const agent of (agents.agents ?? [])) {\n    console.log(agent.id);\n}\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1236,15 +1146,13 @@ class AsyncAgents(AsyncBaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Gets a specific Agent.
+        r"""Gets an agent (latest version).
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1264,7 +1172,6 @@ class AsyncAgents(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.GetAgentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -1273,7 +1180,7 @@ class AsyncAgents(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="GET",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1308,16 +1215,31 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetAgentClientErrorData, http_res
+                    )
+                    raise errors.GetAgentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetAgentServerErrorData, http_res
+                    )
+                    raise errors.GetAgentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(agents.Agent, http_res, validate=False)
 
@@ -1332,25 +1254,7 @@ class AsyncAgents(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to retrieve.\nagent_id = f"test-agent-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="A test agent.",\n    base_environment="remote",\n)\n\nagent = client.agents.get(agent_id)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to retrieve.\nconst agentId = `test-agent-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'A test agent.',\n    base_environment: 'remote',\n});\n\nconst agent = await ai.agents.get(agentId);\nif (!agent.id) {\n    throw new Error('Agent retrieval failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1405,15 +1309,13 @@ class AsyncAgents(AsyncBaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an Agent.
+        r"""Deletes an agent and all its versions.
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1433,7 +1335,6 @@ class AsyncAgents(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.DeleteAgentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -1442,7 +1343,7 @@ class AsyncAgents(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="DELETE",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1477,16 +1378,31 @@ class AsyncAgents(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteAgentClientErrorData, http_res
+                    )
+                    raise errors.DeleteAgentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteAgentServerErrorData, http_res
+                    )
+                    raise errors.DeleteAgentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     interactions.Empty, http_res, validate=False
@@ -1503,25 +1419,7 @@ class AsyncAgents(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Create an agent so we have a valid ID to delete.\nagent_id = f"delete-test-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="waverunner",\n    description="Temporary agent for deletion.",\n    base_environment="remote",\n)\n\nclient.agents.delete(agent_id)\nprint("Agent deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Create an agent so we have a valid ID to delete.\nconst agentId = `delete-test-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'waverunner',\n    description: 'Temporary agent for deletion.',\n    base_environment: 'remote',\n});\n\nawait ai.agents.delete(agentId);\nconsole.log('Agent deleted successfully.');\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1576,11 +1474,11 @@ class AsyncAgents(AsyncBaseSDK):
 class AsyncAgentsWithRawResponse:
     def __init__(self, sdk: AsyncAgents) -> None:
         self._sdk = sdk
-        self.create = response_helpers.async_to_raw_response_wrapper(
-            sdk.create, "extra_headers"
-        )
         self.list = response_helpers.async_to_raw_response_wrapper(
             sdk.list, "extra_headers"
+        )
+        self.create = response_helpers.async_to_raw_response_wrapper(
+            sdk.create, "extra_headers"
         )
         self.get = response_helpers.async_to_raw_response_wrapper(
             sdk.get, "extra_headers"
@@ -1593,11 +1491,11 @@ class AsyncAgentsWithRawResponse:
 class AsyncAgentsWithStreamingResponse:
     def __init__(self, sdk: AsyncAgents) -> None:
         self._sdk = sdk
-        self.create = response_helpers.async_to_streamed_response_wrapper(
-            sdk.create, "extra_headers"
-        )
         self.list = response_helpers.async_to_streamed_response_wrapper(
             sdk.list, "extra_headers"
+        )
+        self.create = response_helpers.async_to_streamed_response_wrapper(
+            sdk.create, "extra_headers"
         )
         self.get = response_helpers.async_to_streamed_response_wrapper(
             sdk.get, "extra_headers"

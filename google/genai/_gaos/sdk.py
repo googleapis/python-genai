@@ -56,17 +56,17 @@ class GenAI(BaseSDK):
     def with_streaming_response(self):
         return GenAIWithStreamingResponse(self)
 
-    interactions: "Interactions"
-    webhooks: "Webhooks"
     agents: "Agents"
-    triggers: "Triggers"
     environments: "Environments"
+    interactions: "Interactions"
+    triggers: "Triggers"
+    webhooks: "Webhooks"
     _sub_sdk_map = {
-        "interactions": (".interactions", "Interactions"),
-        "webhooks": (".webhooks", "Webhooks"),
         "agents": (".agents", "Agents"),
-        "triggers": (".triggers", "Triggers"),
         "environments": (".environments", "Environments"),
+        "interactions": (".interactions", "Interactions"),
+        "triggers": (".triggers", "Triggers"),
+        "webhooks": (".webhooks", "Webhooks"),
     }
 
     def __init__(
@@ -74,6 +74,7 @@ class GenAI(BaseSDK):
         security: Optional[Union[types.Security, Callable[[], types.Security]]] = None,
         api_version: Optional[str] = None,
         user_project: Optional[str] = None,
+        api_revision: Optional[str] = None,
         server_idx: Optional[int] = None,
         url_params: Optional[Dict[str, str]] = None,
         server_url: Optional[str] = None,
@@ -87,6 +88,7 @@ class GenAI(BaseSDK):
         :param security: The security details required for authentication
         :param api_version: Configures the api_version parameter for all supported operations
         :param user_project: Configures the user_project parameter for all supported operations
+        :param api_revision: Configures the api_revision parameter for all supported operations
         :param server_idx: The index of the server to use for all methods
         :param server_url: The server URL to use for all methods
         :param url_params: Parameters to optionally template the server URL with
@@ -116,6 +118,9 @@ class GenAI(BaseSDK):
             ),
             user_project=utils.get_global_from_env(
                 user_project, "GOOGLE_GENAI_USER_PROJECT", str
+            ),
+            api_revision=utils.get_global_from_env(
+                api_revision, "GOOGLE_GENAI_API_REVISION", str
             ),
         )
 
@@ -211,24 +216,24 @@ class GenAIWithRawResponse:
         self._sdk = sdk
 
     @property
-    def interactions(self):
-        return self._sdk.interactions.with_raw_response
-
-    @property
-    def webhooks(self):
-        return self._sdk.webhooks.with_raw_response
-
-    @property
     def agents(self):
         return self._sdk.agents.with_raw_response
+
+    @property
+    def environments(self):
+        return self._sdk.environments.with_raw_response
+
+    @property
+    def interactions(self):
+        return self._sdk.interactions.with_raw_response
 
     @property
     def triggers(self):
         return self._sdk.triggers.with_raw_response
 
     @property
-    def environments(self):
-        return self._sdk.environments.with_raw_response
+    def webhooks(self):
+        return self._sdk.webhooks.with_raw_response
 
 
 class GenAIWithStreamingResponse:
@@ -236,24 +241,24 @@ class GenAIWithStreamingResponse:
         self._sdk = sdk
 
     @property
-    def interactions(self):
-        return self._sdk.interactions.with_streaming_response
-
-    @property
-    def webhooks(self):
-        return self._sdk.webhooks.with_streaming_response
-
-    @property
     def agents(self):
         return self._sdk.agents.with_streaming_response
+
+    @property
+    def environments(self):
+        return self._sdk.environments.with_streaming_response
+
+    @property
+    def interactions(self):
+        return self._sdk.interactions.with_streaming_response
 
     @property
     def triggers(self):
         return self._sdk.triggers.with_streaming_response
 
     @property
-    def environments(self):
-        return self._sdk.environments.with_streaming_response
+    def webhooks(self):
+        return self._sdk.webhooks.with_streaming_response
 
 
 class AsyncGenAI(AsyncBaseSDK):
@@ -267,17 +272,17 @@ class AsyncGenAI(AsyncBaseSDK):
     def with_streaming_response(self):
         return AsyncGenAIWithStreamingResponse(self)
 
-    interactions: "AsyncInteractions"
-    webhooks: "AsyncWebhooks"
     agents: "AsyncAgents"
-    triggers: "AsyncTriggers"
     environments: "AsyncEnvironments"
+    interactions: "AsyncInteractions"
+    triggers: "AsyncTriggers"
+    webhooks: "AsyncWebhooks"
     _sub_sdk_map = {
-        "interactions": (".interactions", "AsyncInteractions"),
-        "webhooks": (".webhooks", "AsyncWebhooks"),
         "agents": (".agents", "AsyncAgents"),
-        "triggers": (".triggers", "AsyncTriggers"),
         "environments": (".environments", "AsyncEnvironments"),
+        "interactions": (".interactions", "AsyncInteractions"),
+        "triggers": (".triggers", "AsyncTriggers"),
+        "webhooks": (".webhooks", "AsyncWebhooks"),
     }
 
     def __init__(
@@ -285,6 +290,7 @@ class AsyncGenAI(AsyncBaseSDK):
         security: Optional[Union[types.Security, Callable[[], types.Security]]] = None,
         api_version: Optional[str] = None,
         user_project: Optional[str] = None,
+        api_revision: Optional[str] = None,
         server_idx: Optional[int] = None,
         url_params: Optional[Dict[str, str]] = None,
         server_url: Optional[str] = None,
@@ -298,6 +304,7 @@ class AsyncGenAI(AsyncBaseSDK):
         :param security: The security details required for authentication
         :param api_version: Configures the api_version parameter for all supported operations
         :param user_project: Configures the user_project parameter for all supported operations
+        :param api_revision: Configures the api_revision parameter for all supported operations
         :param server_idx: The index of the server to use for all methods
         :param server_url: The server URL to use for all methods
         :param url_params: Parameters to optionally template the server URL with
@@ -325,6 +332,9 @@ class AsyncGenAI(AsyncBaseSDK):
             ),
             user_project=utils.get_global_from_env(
                 user_project, "GOOGLE_GENAI_USER_PROJECT", str
+            ),
+            api_revision=utils.get_global_from_env(
+                api_revision, "GOOGLE_GENAI_API_REVISION", str
             ),
         )
 
@@ -420,24 +430,24 @@ class AsyncGenAIWithRawResponse:
         self._sdk = sdk
 
     @property
-    def interactions(self):
-        return self._sdk.interactions.with_raw_response
-
-    @property
-    def webhooks(self):
-        return self._sdk.webhooks.with_raw_response
-
-    @property
     def agents(self):
         return self._sdk.agents.with_raw_response
+
+    @property
+    def environments(self):
+        return self._sdk.environments.with_raw_response
+
+    @property
+    def interactions(self):
+        return self._sdk.interactions.with_raw_response
 
     @property
     def triggers(self):
         return self._sdk.triggers.with_raw_response
 
     @property
-    def environments(self):
-        return self._sdk.environments.with_raw_response
+    def webhooks(self):
+        return self._sdk.webhooks.with_raw_response
 
 
 class AsyncGenAIWithStreamingResponse:
@@ -445,21 +455,21 @@ class AsyncGenAIWithStreamingResponse:
         self._sdk = sdk
 
     @property
-    def interactions(self):
-        return self._sdk.interactions.with_streaming_response
-
-    @property
-    def webhooks(self):
-        return self._sdk.webhooks.with_streaming_response
-
-    @property
     def agents(self):
         return self._sdk.agents.with_streaming_response
+
+    @property
+    def environments(self):
+        return self._sdk.environments.with_streaming_response
+
+    @property
+    def interactions(self):
+        return self._sdk.interactions.with_streaming_response
 
     @property
     def triggers(self):
         return self._sdk.triggers.with_streaming_response
 
     @property
-    def environments(self):
-        return self._sdk.environments.with_streaming_response
+    def webhooks(self):
+        return self._sdk.webhooks.with_streaming_response

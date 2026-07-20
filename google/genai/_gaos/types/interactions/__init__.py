@@ -23,6 +23,7 @@ from ...utils.dynamic_imports import lazy_getattr, lazy_dir
 if TYPE_CHECKING:
     from .agentoption import AgentOption
     from .allowedtools import AllowedTools, AllowedToolsParam
+    from .allowlist import Allowlist, AllowlistParam
     from .allowlistentry import (
         AllowlistEntry,
         AllowlistEntryParam,
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
         AntigravityAgentConfig,
         AntigravityAgentConfigParam,
     )
+    from .arguments import Arguments, ArgumentsParam
     from .argumentsdelta import ArgumentsDelta, ArgumentsDeltaTypedDict
     from .audiocontent import AudioContent, AudioContentMimeType, AudioContentParam
     from .audiodelta import AudioDelta, AudioDeltaMimeType, AudioDeltaTypedDict
@@ -80,6 +82,10 @@ if TYPE_CHECKING:
         CreateAgentInteractionResponseFormat,
         CreateAgentInteractionResponseFormatParam,
     )
+    from .createinteractionrequest import (
+        CreateInteractionRequest,
+        CreateInteractionRequestParam,
+    )
     from .createmodelinteraction import (
         CreateModelInteraction,
         CreateModelInteractionEnvironment,
@@ -113,8 +119,6 @@ if TYPE_CHECKING:
         NetworkParam,
     )
     from .environmentnetworkegressallowlist import (
-        Allowlist,
-        AllowlistParam,
         Disabled,
         EnvironmentNetworkEgressAllowlist,
         EnvironmentNetworkEgressAllowlistParam,
@@ -162,8 +166,8 @@ if TYPE_CHECKING:
     from .generationconfig import (
         GenerationConfig,
         GenerationConfigParam,
-        SpeechConfigUnion,
-        SpeechConfigUnionParam,
+        StructuredSpeechConfig,
+        StructuredSpeechConfigParam,
         ToolChoice,
         ToolChoiceParam,
     )
@@ -270,6 +274,10 @@ if TYPE_CHECKING:
         InteractionStatusUpdateStatus,
         InteractionStatusUpdateTypedDict,
     )
+    from .localenvironmentconfig import (
+        LocalEnvironmentConfig,
+        LocalEnvironmentConfigParam,
+    )
     from .mcpserver import MCPServer, MCPServerParam
     from .mcpservertoolcalldelta import (
         MCPServerToolCallDelta,
@@ -306,22 +314,30 @@ if TYPE_CHECKING:
     from .ragretrievalconfig import RagRetrievalConfig, RagRetrievalConfigParam
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
     from .ranking import Ranking, RankingParam
+    from .rankservice import RankService, RankServiceParam
     from .responseformat import ResponseFormat, ResponseFormatParam
     from .responsemodality import ResponseModality
-    from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
+    from .retrieval import Retrieval, RetrievalParam
     from .retrievalcallarguments import (
         RetrievalCallArguments,
-        RetrievalCallArgumentsTypedDict,
+        RetrievalCallArgumentsParam,
     )
     from .retrievalcalldelta import (
         RetrievalCallDelta,
         RetrievalCallDeltaRetrievalType,
         RetrievalCallDeltaTypedDict,
     )
+    from .retrievalcallstep import (
+        RetrievalCallStep,
+        RetrievalCallStepParam,
+        RetrievalCallStepRetrievalType,
+    )
     from .retrievalresultdelta import (
         RetrievalResultDelta,
         RetrievalResultDeltaTypedDict,
     )
+    from .retrievalresultstep import RetrievalResultStep, RetrievalResultStepParam
+    from .retrievaltype import RetrievalType
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
     from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
     from .servicetier import ServiceTier
@@ -341,7 +357,12 @@ if TYPE_CHECKING:
     from .stepdeltametadata import StepDeltaMetadata, StepDeltaMetadataTypedDict
     from .stepstart import StepStart, StepStartTypedDict
     from .stepstop import StepStop, StepStopTypedDict
-    from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDict
+    from .streammetadata import StreamMetadata, StreamMetadataTypedDict
+    from .textannotationdelta import (
+        TextAnnotationDelta,
+        TextAnnotationDeltaType,
+        TextAnnotationDeltaTypedDict,
+    )
     from .textcontent import TextContent, TextContentParam
     from .textdelta import TextDelta, TextDeltaTypedDict
     from .textresponseformat import (
@@ -366,26 +387,37 @@ if TYPE_CHECKING:
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
     from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
+    from .turn import Turn, TurnContent, TurnContentParam, TurnParam
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
         URLContextCallArguments,
-        URLContextCallArgumentsParam,
+        URLContextCallArgumentsTypedDict,
     )
     from .urlcontextcalldelta import URLContextCallDelta, URLContextCallDeltaTypedDict
     from .urlcontextcallstep import URLContextCallStep, URLContextCallStepParam
     from .urlcontextresult import (
         URLContextResult,
-        URLContextResultParam,
         URLContextResultStatus,
+        URLContextResultTypedDict,
     )
     from .urlcontextresultdelta import (
         URLContextResultDelta,
         URLContextResultDeltaTypedDict,
     )
+    from .urlcontextresultitem import (
+        URLContextResultItem,
+        URLContextResultItemParam,
+        URLContextResultItemStatus,
+    )
     from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
     from .usage import Usage, UsageTypedDict
-    from .userinputstep import UserInputStep, UserInputStepParam
+    from .userinputstep import (
+        UserInputStep,
+        UserInputStepContent,
+        UserInputStepContentParam,
+        UserInputStepParam,
+    )
     from .vertexaisearchconfig import VertexAISearchConfig, VertexAISearchConfigParam
     from .videoconfig import Task, VideoConfig, VideoConfigParam
     from .videocontent import (
@@ -419,8 +451,10 @@ __all__ = [
     "AnnotationParam",
     "AntigravityAgentConfig",
     "AntigravityAgentConfigParam",
+    "Arguments",
     "ArgumentsDelta",
     "ArgumentsDeltaTypedDict",
+    "ArgumentsParam",
     "AudioContent",
     "AudioContentMimeType",
     "AudioContentParam",
@@ -457,6 +491,8 @@ __all__ = [
     "CreateAgentInteractionParam",
     "CreateAgentInteractionResponseFormat",
     "CreateAgentInteractionResponseFormatParam",
+    "CreateInteractionRequest",
+    "CreateInteractionRequestParam",
     "CreateModelInteraction",
     "CreateModelInteractionEnvironment",
     "CreateModelInteractionEnvironmentParam",
@@ -610,6 +646,8 @@ __all__ = [
     "InteractionsInput",
     "InteractionsInputParam",
     "Language",
+    "LocalEnvironmentConfig",
+    "LocalEnvironmentConfigParam",
     "MCPServer",
     "MCPServerParam",
     "MCPServerToolCallDelta",
@@ -654,6 +692,8 @@ __all__ = [
     "RagRetrievalConfigParam",
     "RagStoreConfig",
     "RagStoreConfigParam",
+    "RankService",
+    "RankServiceParam",
     "Ranking",
     "RankingParam",
     "Resolution",
@@ -662,14 +702,19 @@ __all__ = [
     "ResponseModality",
     "Retrieval",
     "RetrievalCallArguments",
-    "RetrievalCallArgumentsTypedDict",
+    "RetrievalCallArgumentsParam",
     "RetrievalCallDelta",
     "RetrievalCallDeltaRetrievalType",
     "RetrievalCallDeltaTypedDict",
+    "RetrievalCallStep",
+    "RetrievalCallStepParam",
+    "RetrievalCallStepRetrievalType",
     "RetrievalParam",
     "RetrievalResultDelta",
     "RetrievalResultDeltaTypedDict",
-    "RetrievalRetrievalType",
+    "RetrievalResultStep",
+    "RetrievalResultStepParam",
+    "RetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
     "SafetySetting",
@@ -684,8 +729,6 @@ __all__ = [
     "SpeakerConfigParam",
     "SpeechConfig",
     "SpeechConfigParam",
-    "SpeechConfigUnion",
-    "SpeechConfigUnionParam",
     "StaticMediaProcessing",
     "StaticMediaProcessingParam",
     "Status",
@@ -702,8 +745,13 @@ __all__ = [
     "StepStartTypedDict",
     "StepStop",
     "StepStopTypedDict",
+    "StreamMetadata",
+    "StreamMetadataTypedDict",
+    "StructuredSpeechConfig",
+    "StructuredSpeechConfigParam",
     "Task",
     "TextAnnotationDelta",
+    "TextAnnotationDeltaType",
     "TextAnnotationDeltaTypedDict",
     "TextContent",
     "TextContentParam",
@@ -734,11 +782,15 @@ __all__ = [
     "TranscriptionConfigParam",
     "Transform",
     "TransformParam",
+    "Turn",
+    "TurnContent",
+    "TurnContentParam",
+    "TurnParam",
     "URLCitation",
     "URLCitationParam",
     "URLContext",
     "URLContextCallArguments",
-    "URLContextCallArgumentsParam",
+    "URLContextCallArgumentsTypedDict",
     "URLContextCallDelta",
     "URLContextCallDeltaTypedDict",
     "URLContextCallStep",
@@ -747,10 +799,13 @@ __all__ = [
     "URLContextResult",
     "URLContextResultDelta",
     "URLContextResultDeltaTypedDict",
-    "URLContextResultParam",
+    "URLContextResultItem",
+    "URLContextResultItemParam",
+    "URLContextResultItemStatus",
     "URLContextResultStatus",
     "URLContextResultStep",
     "URLContextResultStepParam",
+    "URLContextResultTypedDict",
     "UnknownAnnotation",
     "UnknownContent",
     "UnknownFunctionResultSubcontent",
@@ -763,6 +818,8 @@ __all__ = [
     "Usage",
     "UsageTypedDict",
     "UserInputStep",
+    "UserInputStepContent",
+    "UserInputStepContentParam",
     "UserInputStepParam",
     "VertexAISearchConfig",
     "VertexAISearchConfigParam",
@@ -789,6 +846,8 @@ _dynamic_imports: dict[str, str] = {
     "AgentOption": ".agentoption",
     "AllowedTools": ".allowedtools",
     "AllowedToolsParam": ".allowedtools",
+    "Allowlist": ".allowlist",
+    "AllowlistParam": ".allowlist",
     "AllowlistEntry": ".allowlistentry",
     "AllowlistEntryParam": ".allowlistentry",
     "Transform": ".allowlistentry",
@@ -798,6 +857,8 @@ _dynamic_imports: dict[str, str] = {
     "UnknownAnnotation": ".annotation",
     "AntigravityAgentConfig": ".antigravityagentconfig",
     "AntigravityAgentConfigParam": ".antigravityagentconfig",
+    "Arguments": ".arguments",
+    "ArgumentsParam": ".arguments",
     "ArgumentsDelta": ".argumentsdelta",
     "ArgumentsDeltaTypedDict": ".argumentsdelta",
     "AudioContent": ".audiocontent",
@@ -840,6 +901,8 @@ _dynamic_imports: dict[str, str] = {
     "CreateAgentInteractionParam": ".createagentinteraction",
     "CreateAgentInteractionResponseFormat": ".createagentinteraction",
     "CreateAgentInteractionResponseFormatParam": ".createagentinteraction",
+    "CreateInteractionRequest": ".createinteractionrequest",
+    "CreateInteractionRequestParam": ".createinteractionrequest",
     "CreateModelInteraction": ".createmodelinteraction",
     "CreateModelInteractionEnvironment": ".createmodelinteraction",
     "CreateModelInteractionEnvironmentParam": ".createmodelinteraction",
@@ -864,8 +927,6 @@ _dynamic_imports: dict[str, str] = {
     "Network": ".environment",
     "NetworkEnum": ".environment",
     "NetworkParam": ".environment",
-    "Allowlist": ".environmentnetworkegressallowlist",
-    "AllowlistParam": ".environmentnetworkegressallowlist",
     "Disabled": ".environmentnetworkegressallowlist",
     "EnvironmentNetworkEgressAllowlist": ".environmentnetworkegressallowlist",
     "EnvironmentNetworkEgressAllowlistParam": ".environmentnetworkegressallowlist",
@@ -919,8 +980,8 @@ _dynamic_imports: dict[str, str] = {
     "UnknownFunctionResultSubcontent": ".functionresultsubcontent",
     "GenerationConfig": ".generationconfig",
     "GenerationConfigParam": ".generationconfig",
-    "SpeechConfigUnion": ".generationconfig",
-    "SpeechConfigUnionParam": ".generationconfig",
+    "StructuredSpeechConfig": ".generationconfig",
+    "StructuredSpeechConfigParam": ".generationconfig",
     "ToolChoice": ".generationconfig",
     "ToolChoiceParam": ".generationconfig",
     "GoogleMaps": ".googlemaps",
@@ -1004,6 +1065,8 @@ _dynamic_imports: dict[str, str] = {
     "InteractionStatusUpdate": ".interactionstatusupdate",
     "InteractionStatusUpdateStatus": ".interactionstatusupdate",
     "InteractionStatusUpdateTypedDict": ".interactionstatusupdate",
+    "LocalEnvironmentConfig": ".localenvironmentconfig",
+    "LocalEnvironmentConfigParam": ".localenvironmentconfig",
     "MCPServer": ".mcpserver",
     "MCPServerParam": ".mcpserver",
     "MCPServerToolCallDelta": ".mcpservertoolcalldelta",
@@ -1042,19 +1105,26 @@ _dynamic_imports: dict[str, str] = {
     "RagStoreConfigParam": ".ragstoreconfig",
     "Ranking": ".ranking",
     "RankingParam": ".ranking",
+    "RankService": ".rankservice",
+    "RankServiceParam": ".rankservice",
     "ResponseFormat": ".responseformat",
     "ResponseFormatParam": ".responseformat",
     "ResponseModality": ".responsemodality",
     "Retrieval": ".retrieval",
     "RetrievalParam": ".retrieval",
-    "RetrievalRetrievalType": ".retrieval",
     "RetrievalCallArguments": ".retrievalcallarguments",
-    "RetrievalCallArgumentsTypedDict": ".retrievalcallarguments",
+    "RetrievalCallArgumentsParam": ".retrievalcallarguments",
     "RetrievalCallDelta": ".retrievalcalldelta",
     "RetrievalCallDeltaRetrievalType": ".retrievalcalldelta",
     "RetrievalCallDeltaTypedDict": ".retrievalcalldelta",
+    "RetrievalCallStep": ".retrievalcallstep",
+    "RetrievalCallStepParam": ".retrievalcallstep",
+    "RetrievalCallStepRetrievalType": ".retrievalcallstep",
     "RetrievalResultDelta": ".retrievalresultdelta",
     "RetrievalResultDeltaTypedDict": ".retrievalresultdelta",
+    "RetrievalResultStep": ".retrievalresultstep",
+    "RetrievalResultStepParam": ".retrievalresultstep",
+    "RetrievalType": ".retrievaltype",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
     "Method": ".safetysetting",
@@ -1089,7 +1159,10 @@ _dynamic_imports: dict[str, str] = {
     "StepStartTypedDict": ".stepstart",
     "StepStop": ".stepstop",
     "StepStopTypedDict": ".stepstop",
+    "StreamMetadata": ".streammetadata",
+    "StreamMetadataTypedDict": ".streammetadata",
     "TextAnnotationDelta": ".textannotationdelta",
+    "TextAnnotationDeltaType": ".textannotationdelta",
     "TextAnnotationDeltaTypedDict": ".textannotationdelta",
     "TextContent": ".textcontent",
     "TextContentParam": ".textcontent",
@@ -1117,26 +1190,35 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceType": ".toolchoicetype",
     "TranscriptionConfig": ".transcriptionconfig",
     "TranscriptionConfigParam": ".transcriptionconfig",
+    "Turn": ".turn",
+    "TurnContent": ".turn",
+    "TurnContentParam": ".turn",
+    "TurnParam": ".turn",
     "URLCitation": ".urlcitation",
     "URLCitationParam": ".urlcitation",
     "URLContext": ".urlcontext",
     "URLContextParam": ".urlcontext",
     "URLContextCallArguments": ".urlcontextcallarguments",
-    "URLContextCallArgumentsParam": ".urlcontextcallarguments",
+    "URLContextCallArgumentsTypedDict": ".urlcontextcallarguments",
     "URLContextCallDelta": ".urlcontextcalldelta",
     "URLContextCallDeltaTypedDict": ".urlcontextcalldelta",
     "URLContextCallStep": ".urlcontextcallstep",
     "URLContextCallStepParam": ".urlcontextcallstep",
     "URLContextResult": ".urlcontextresult",
-    "URLContextResultParam": ".urlcontextresult",
     "URLContextResultStatus": ".urlcontextresult",
+    "URLContextResultTypedDict": ".urlcontextresult",
     "URLContextResultDelta": ".urlcontextresultdelta",
     "URLContextResultDeltaTypedDict": ".urlcontextresultdelta",
+    "URLContextResultItem": ".urlcontextresultitem",
+    "URLContextResultItemParam": ".urlcontextresultitem",
+    "URLContextResultItemStatus": ".urlcontextresultitem",
     "URLContextResultStep": ".urlcontextresultstep",
     "URLContextResultStepParam": ".urlcontextresultstep",
     "Usage": ".usage",
     "UsageTypedDict": ".usage",
     "UserInputStep": ".userinputstep",
+    "UserInputStepContent": ".userinputstep",
+    "UserInputStepContentParam": ".userinputstep",
     "UserInputStepParam": ".userinputstep",
     "VertexAISearchConfig": ".vertexaisearchconfig",
     "VertexAISearchConfigParam": ".vertexaisearchconfig",

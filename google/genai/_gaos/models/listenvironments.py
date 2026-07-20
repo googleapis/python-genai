@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListEnvironmentsGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListEnvironmentsGlobals(BaseModel):
@@ -34,7 +34,7 @@ class ListEnvironmentsGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -54,36 +54,32 @@ class ListEnvironmentsGlobals(BaseModel):
 
 
 class ListEnvironmentsRequestParam(TypedDict):
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
     page_size: NotRequired[int]
-    r"""Optional. Maximum number of environments to return.\nIf unspecified, defaults to 50. Maximum is 1000."""
+    r"""Maximum number of environments to return.
+    If unspecified, defaults to 50. Maximum is 1000.
+    """
     page_token: NotRequired[str]
-    r"""Optional. Pagination token."""
+    r"""Pagination token."""
 
 
 class ListEnvironmentsRequest(BaseModel):
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
     page_size: Annotated[
         Optional[int],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. Maximum number of environments to return.\nIf unspecified, defaults to 50. Maximum is 1000."""
+    r"""Maximum number of environments to return.
+    If unspecified, defaults to 50. Maximum is 1000.
+    """
 
     page_token: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. Pagination token."""
+    r"""Pagination token."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "page_size", "page_token"])
+        optional_fields = set(["page_size", "page_token"])
         serialized = handler(self)
         m = {}
 

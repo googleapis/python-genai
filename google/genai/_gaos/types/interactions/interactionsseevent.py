@@ -45,12 +45,12 @@ from typing_extensions import Annotated, TypeAliasType
 InteractionSSEEventTypedDict = TypeAliasType(
     "InteractionSSEEventTypedDict",
     Union[
-        InteractionCreatedEventTypedDict,
-        InteractionCompletedEventTypedDict,
         ErrorEventTypedDict,
+        InteractionCompletedEventTypedDict,
+        InteractionCreatedEventTypedDict,
         InteractionStatusUpdateTypedDict,
-        StepStartTypedDict,
         StepDeltaTypedDict,
+        StepStartTypedDict,
         StepStopTypedDict,
     ],
 )
@@ -67,24 +67,24 @@ class UnknownInteractionSSEEvent(BaseModel):
 
 
 _INTERACTION_SSE_EVENT_VARIANTS: dict[str, Any] = {
-    "interaction.created": InteractionCreatedEvent,
-    "interaction.completed": InteractionCompletedEvent,
-    "interaction.status_update": InteractionStatusUpdate,
     "error": ErrorEvent,
-    "step.start": StepStart,
+    "interaction.completed": InteractionCompletedEvent,
+    "interaction.created": InteractionCreatedEvent,
+    "interaction.status_update": InteractionStatusUpdate,
     "step.delta": StepDelta,
+    "step.start": StepStart,
     "step.stop": StepStop,
 }
 
 
 InteractionSSEEvent = Annotated[
     Union[
-        InteractionCreatedEvent,
-        InteractionCompletedEvent,
-        InteractionStatusUpdate,
         ErrorEvent,
-        StepStart,
+        InteractionCompletedEvent,
+        InteractionCreatedEvent,
+        InteractionStatusUpdate,
         StepDelta,
+        StepStart,
         StepStop,
         UnknownInteractionSSEEvent,
     ],

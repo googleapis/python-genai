@@ -39,200 +39,20 @@ class Environments(BaseSDK):
     def with_streaming_response(self):
         return EnvironmentsWithStreamingResponse(self)
 
-    def create_environment(
-        self,
-        *,
-        api_version: Optional[str] = None,
-        network: Optional[
-            Union[
-                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
-                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnionParam,
-            ]
-        ] = None,
-        sources: Optional[
-            Union[
-                Iterable[interactions_source.Source],
-                Iterable[interactions_source.SourceParam],
-            ]
-        ] = None,
-        extra_headers: Optional[Mapping[str, str]] = None,
-        extra_query: Optional[Mapping[str, Any]] = None,
-        extra_body: Optional[Mapping[str, Any]] = None,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-    ) -> environments.Environment:
-        r"""Creates an environment.
-
-        :param api_version: Which version of the API to use.
-        :param network: Network configuration for the environment.
-        :param sources: Sources to be mounted into the environment.
-        :param extra_headers: Additional headers to set or replace on requests.
-        :param extra_query: Additional query parameters to append to requests.
-        :param extra_body: Additional JSON object fields to merge into request bodies.
-        :param timeout: Override the default request timeout configuration for this method in seconds
-        """
-        base_url = None
-        url_variables = None
-        retries: OptionalNullable[utils.RetryConfig] = UNSET
-        server_url = None
-        http_headers = extra_headers
-        timeout_ms = self._coerce_timeout_ms(timeout)
-        if timeout_ms is None:
-            timeout_ms = self.sdk_configuration.timeout_ms
-
-        if server_url is not None:
-            base_url = server_url
-        else:
-            base_url = self._get_url(base_url, url_variables)
-
-        request = models.CreateEnvironmentRequest(
-            api_version=api_version,
-            body=environments.CreateEnvironmentRequest(
-                network=utils.get_pydantic_model(
-                    network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
-                ),
-                sources=utils.get_pydantic_model(
-                    sources, Optional[List[interactions.Source]]
-                ),
-            ),
-        )
-
-        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
-            http_headers
-        )
-        req = self._build_request(
-            method="POST",
-            path="/{api_version}/environments",
-            base_url=base_url,
-            url_variables=url_variables,
-            request=request,
-            request_body_required=True,
-            request_has_path_params=True,
-            request_has_query_params=True,
-            user_agent_header="user-agent",
-            accept_header_value="application/json",
-            http_headers=http_headers,
-            extra_query_params=extra_query,
-            _globals=models.CreateEnvironmentGlobals(
-                api_version=self.sdk_configuration.globals.api_version,
-            ),
-            security=self.sdk_configuration.security,
-            get_serialized_body=lambda: utils.serialize_request_body(
-                request.body,
-                False,
-                False,
-                "json",
-                environments.CreateEnvironmentRequest,
-                extra_body=extra_body,
-            ),
-            allow_empty_value=None,
-            timeout_ms=timeout_ms,
-        )
-
-        if retries == UNSET:
-            if self.sdk_configuration.retry_config is not UNSET:
-                retries = self.sdk_configuration.retry_config
-            else:
-                retries = utils.RetryConfig(
-                    "attempt-count-backoff",
-                    utils.BackoffStrategy(500, 8000, 2, 30000),
-                    True,
-                    max_retries=4,
-                )
-
-        retry_config = None
-        if isinstance(retries, utils.RetryConfig):
-            retry_config = (retries, ["408", "409", "429", "5XX"])
-
-        def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "default", "application/json"):
-                return unmarshal_json_response(
-                    environments.Environment, http_res, validate=False
-                )
-
-            raise errors.GenAiDefaultError("Unexpected response received", http_res)
-
-        _speakeasy_hook_ctx = HookContext(
-            config=self.sdk_configuration,
-            base_url=base_url or "",
-            operation_id="CreateEnvironment",
-            oauth2_scopes=None,
-            security_source=get_security_from_env(
-                self.sdk_configuration.security, types.Security
-            ),
-            tags=None,
-            extensions=None,
-            response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
-        )
-        http_res = self.do_request(
-            hook_ctx=_speakeasy_hook_ctx,
-            request=req,
-            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
-            stream=_speakeasy_response_mode == "streaming",
-            retry_config=retry_config,
-        )
-        if _speakeasy_response_mode != "parsed":
-            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
-                http_res.read()
-                try:
-                    _speakeasy_parse_response(http_res)
-                except Exception as parse_exc_:
-                    response_helpers.raise_parse_error(
-                        self.sdk_configuration.__dict__["_hooks"],
-                        AfterParseErrorContext(_speakeasy_hook_ctx),
-                        http_res,
-                        parse_exc_,
-                    )
-            _speakeasy_response_cls = (
-                response_helpers.StreamedAPIResponse
-                if _speakeasy_response_mode == "streaming"
-                else response_helpers.APIResponse
-            )
-            return cast(
-                Any,
-                _speakeasy_response_cls(
-                    raw=http_res,
-                    parser=_speakeasy_parse_response,
-                    mode="buffered",
-                    client_ref=self,
-                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
-                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
-                ),
-            )
-        try:
-            return _speakeasy_parse_response(http_res)
-        except Exception as parse_exc_:
-            response_helpers.raise_parse_error(
-                self.sdk_configuration.__dict__["_hooks"],
-                AfterParseErrorContext(_speakeasy_hook_ctx),
-                http_res,
-                parse_exc_,
-            )
-
     def list_environments(
         self,
         *,
-        api_version: Optional[str] = None,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.ListEnvironmentsResponse:
-        r"""Lists environments.
+        r"""Lists environments (HTTP endpoint).
 
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. Maximum number of environments to return.\nIf unspecified, defaults to 50. Maximum is 1000.
-        :param page_token: Optional. Pagination token.
+        :param page_size: Maximum number of environments to return.
+            If unspecified, defaults to 50. Maximum is 1000.
+        :param page_token: Pagination token.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -252,7 +72,6 @@ class Environments(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.ListEnvironmentsRequest(
-            api_version=api_version,
             page_size=page_size,
             page_token=page_token,
         )
@@ -297,16 +116,31 @@ class Environments(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListEnvironmentsClientErrorData, http_res
+                    )
+                    raise errors.ListEnvironmentsClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListEnvironmentsServerErrorData, http_res
+                    )
+                    raise errors.ListEnvironmentsServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     environments.ListEnvironmentsResponse, http_res, validate=False
@@ -371,19 +205,206 @@ class Environments(BaseSDK):
                 parse_exc_,
             )
 
+    def create_environment(
+        self,
+        *,
+        network: Optional[
+            Union[
+                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
+                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnionParam,
+            ]
+        ] = None,
+        sources: Optional[
+            Union[
+                Iterable[interactions_source.Source],
+                Iterable[interactions_source.SourceParam],
+            ]
+        ] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        extra_body: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> environments.Environment:
+        r"""Creates an environment (HTTP endpoint).
+
+        :param network: Network configuration for the environment.
+        :param sources: Sources to be mounted into the environment.
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param extra_body: Additional JSON object fields to merge into request bodies.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = environments.CreateEnvironmentRequest(
+            network=utils.get_pydantic_model(
+                network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
+            ),
+            sources=utils.get_pydantic_model(
+                sources, Optional[List[interactions.Source]]
+            ),
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request(
+            method="POST",
+            path="/{api_version}/environments",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=True,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.CreateEnvironmentGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            get_serialized_body=lambda: utils.serialize_request_body(
+                request,
+                False,
+                False,
+                "json",
+                environments.CreateEnvironmentRequest,
+                extra_body=extra_body,
+            ),
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        def _speakeasy_parse_response(http_res):
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateEnvironmentClientErrorData, http_res
+                    )
+                    raise errors.CreateEnvironmentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateEnvironmentServerErrorData, http_res
+                    )
+                    raise errors.CreateEnvironmentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    environments.Environment, http_res, validate=False
+                )
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="CreateEnvironment",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=None,
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
+        )
+        http_res = self.do_request(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.StreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.APIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                ),
+            )
+        try:
+            return _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            response_helpers.raise_parse_error(
+                self.sdk_configuration.__dict__["_hooks"],
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
     def get_environment(
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.Environment:
-        r"""Gets an environment.
+        r"""Gets an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to retrieve.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -403,7 +424,6 @@ class Environments(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.GetEnvironmentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -447,16 +467,31 @@ class Environments(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetEnvironmentClientErrorData, http_res
+                    )
+                    raise errors.GetEnvironmentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetEnvironmentServerErrorData, http_res
+                    )
+                    raise errors.GetEnvironmentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     environments.Environment, http_res, validate=False
@@ -525,15 +560,13 @@ class Environments(BaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an environment.
+        r"""Deletes an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to delete.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -553,7 +586,6 @@ class Environments(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.DeleteEnvironmentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -597,16 +629,31 @@ class Environments(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteEnvironmentClientErrorData, http_res
+                    )
+                    raise errors.DeleteEnvironmentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteEnvironmentServerErrorData, http_res
+                    )
+                    raise errors.DeleteEnvironmentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     interactions.Empty, http_res, validate=False
@@ -675,11 +722,11 @@ class Environments(BaseSDK):
 class EnvironmentsWithRawResponse:
     def __init__(self, sdk: Environments) -> None:
         self._sdk = sdk
-        self.create_environment = response_helpers.to_raw_response_wrapper(
-            sdk.create_environment, "extra_headers"
-        )
         self.list_environments = response_helpers.to_raw_response_wrapper(
             sdk.list_environments, "extra_headers"
+        )
+        self.create_environment = response_helpers.to_raw_response_wrapper(
+            sdk.create_environment, "extra_headers"
         )
         self.get_environment = response_helpers.to_raw_response_wrapper(
             sdk.get_environment, "extra_headers"
@@ -692,11 +739,11 @@ class EnvironmentsWithRawResponse:
 class EnvironmentsWithStreamingResponse:
     def __init__(self, sdk: Environments) -> None:
         self._sdk = sdk
-        self.create_environment = response_helpers.to_streamed_response_wrapper(
-            sdk.create_environment, "extra_headers"
-        )
         self.list_environments = response_helpers.to_streamed_response_wrapper(
             sdk.list_environments, "extra_headers"
+        )
+        self.create_environment = response_helpers.to_streamed_response_wrapper(
+            sdk.create_environment, "extra_headers"
         )
         self.get_environment = response_helpers.to_streamed_response_wrapper(
             sdk.get_environment, "extra_headers"
@@ -715,203 +762,20 @@ class AsyncEnvironments(AsyncBaseSDK):
     def with_streaming_response(self):
         return AsyncEnvironmentsWithStreamingResponse(self)
 
-    async def create_environment(
-        self,
-        *,
-        api_version: Optional[str] = None,
-        network: Optional[
-            Union[
-                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
-                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnionParam,
-            ]
-        ] = None,
-        sources: Optional[
-            Union[
-                Iterable[interactions_source.Source],
-                Iterable[interactions_source.SourceParam],
-            ]
-        ] = None,
-        extra_headers: Optional[Mapping[str, str]] = None,
-        extra_query: Optional[Mapping[str, Any]] = None,
-        extra_body: Optional[Mapping[str, Any]] = None,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-    ) -> environments.Environment:
-        r"""Creates an environment.
-
-        :param api_version: Which version of the API to use.
-        :param network: Network configuration for the environment.
-        :param sources: Sources to be mounted into the environment.
-        :param extra_headers: Additional headers to set or replace on requests.
-        :param extra_query: Additional query parameters to append to requests.
-        :param extra_body: Additional JSON object fields to merge into request bodies.
-        :param timeout: Override the default request timeout configuration for this method in seconds
-        """
-        base_url = None
-        url_variables = None
-        retries: OptionalNullable[utils.RetryConfig] = UNSET
-        server_url = None
-        http_headers = extra_headers
-        timeout_ms = self._coerce_timeout_ms(timeout)
-        if timeout_ms is None:
-            timeout_ms = self.sdk_configuration.timeout_ms
-
-        if server_url is not None:
-            base_url = server_url
-        else:
-            base_url = self._get_url(base_url, url_variables)
-
-        request = models.CreateEnvironmentRequest(
-            api_version=api_version,
-            body=environments.CreateEnvironmentRequest(
-                network=utils.get_pydantic_model(
-                    network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
-                ),
-                sources=utils.get_pydantic_model(
-                    sources, Optional[List[interactions.Source]]
-                ),
-            ),
-        )
-
-        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
-            http_headers
-        )
-        req = self._build_request_async(
-            method="POST",
-            path="/{api_version}/environments",
-            base_url=base_url,
-            url_variables=url_variables,
-            request=request,
-            request_body_required=True,
-            request_has_path_params=True,
-            request_has_query_params=True,
-            user_agent_header="user-agent",
-            accept_header_value="application/json",
-            http_headers=http_headers,
-            extra_query_params=extra_query,
-            _globals=models.CreateEnvironmentGlobals(
-                api_version=self.sdk_configuration.globals.api_version,
-            ),
-            security=self.sdk_configuration.security,
-            get_serialized_body=lambda: utils.serialize_request_body(
-                request.body,
-                False,
-                False,
-                "json",
-                environments.CreateEnvironmentRequest,
-                extra_body=extra_body,
-            ),
-            allow_empty_value=None,
-            timeout_ms=timeout_ms,
-        )
-
-        if retries == UNSET:
-            if self.sdk_configuration.retry_config is not UNSET:
-                retries = self.sdk_configuration.retry_config
-            else:
-                retries = utils.RetryConfig(
-                    "attempt-count-backoff",
-                    utils.BackoffStrategy(500, 8000, 2, 30000),
-                    True,
-                    max_retries=4,
-                )
-
-        retry_config = None
-        if isinstance(retries, utils.RetryConfig):
-            retry_config = (retries, ["408", "409", "429", "5XX"])
-
-        async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "default", "application/json"):
-                return unmarshal_json_response(
-                    environments.Environment, http_res, validate=False
-                )
-
-            raise errors.GenAiDefaultError("Unexpected response received", http_res)
-
-        _speakeasy_hook_ctx = HookContext(
-            config=self.sdk_configuration,
-            base_url=base_url or "",
-            operation_id="CreateEnvironment",
-            oauth2_scopes=None,
-            security_source=get_security_from_env(
-                self.sdk_configuration.security, types.Security
-            ),
-            tags=None,
-            extensions=None,
-            response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
-        )
-        http_res = await self.do_request_async(
-            hook_ctx=_speakeasy_hook_ctx,
-            request=req,
-            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
-            stream=_speakeasy_response_mode == "streaming",
-            retry_config=retry_config,
-        )
-        if _speakeasy_response_mode != "parsed":
-            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
-                await http_res.aread()
-                try:
-                    await _speakeasy_parse_response(http_res)
-                except Exception as parse_exc_:
-                    await response_helpers.raise_parse_error_async(
-                        self.sdk_configuration.__dict__.get("_async_hooks"),
-                        self.sdk_configuration.__dict__.get("_hooks"),
-                        AfterParseErrorContext(_speakeasy_hook_ctx),
-                        http_res,
-                        parse_exc_,
-                    )
-            _speakeasy_response_cls = (
-                response_helpers.AsyncStreamedAPIResponse
-                if _speakeasy_response_mode == "streaming"
-                else response_helpers.AsyncAPIResponse
-            )
-            return cast(
-                Any,
-                _speakeasy_response_cls(
-                    raw=http_res,
-                    parser=_speakeasy_parse_response,
-                    mode="buffered",
-                    client_ref=self,
-                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
-                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
-                    async_hooks=self.sdk_configuration.__dict__.get("_async_hooks"),
-                ),
-            )
-        try:
-            return await _speakeasy_parse_response(http_res)
-        except Exception as parse_exc_:
-            await response_helpers.raise_parse_error_async(
-                self.sdk_configuration.__dict__.get("_async_hooks"),
-                self.sdk_configuration.__dict__.get("_hooks"),
-                AfterParseErrorContext(_speakeasy_hook_ctx),
-                http_res,
-                parse_exc_,
-            )
-
     async def list_environments(
         self,
         *,
-        api_version: Optional[str] = None,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.ListEnvironmentsResponse:
-        r"""Lists environments.
+        r"""Lists environments (HTTP endpoint).
 
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. Maximum number of environments to return.\nIf unspecified, defaults to 50. Maximum is 1000.
-        :param page_token: Optional. Pagination token.
+        :param page_size: Maximum number of environments to return.
+            If unspecified, defaults to 50. Maximum is 1000.
+        :param page_token: Pagination token.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -931,7 +795,6 @@ class AsyncEnvironments(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.ListEnvironmentsRequest(
-            api_version=api_version,
             page_size=page_size,
             page_token=page_token,
         )
@@ -976,16 +839,31 @@ class AsyncEnvironments(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListEnvironmentsClientErrorData, http_res
+                    )
+                    raise errors.ListEnvironmentsClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.ListEnvironmentsServerErrorData, http_res
+                    )
+                    raise errors.ListEnvironmentsServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     environments.ListEnvironmentsResponse, http_res, validate=False
@@ -1053,19 +931,209 @@ class AsyncEnvironments(AsyncBaseSDK):
                 parse_exc_,
             )
 
+    async def create_environment(
+        self,
+        *,
+        network: Optional[
+            Union[
+                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
+                environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnionParam,
+            ]
+        ] = None,
+        sources: Optional[
+            Union[
+                Iterable[interactions_source.Source],
+                Iterable[interactions_source.SourceParam],
+            ]
+        ] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        extra_body: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> environments.Environment:
+        r"""Creates an environment (HTTP endpoint).
+
+        :param network: Network configuration for the environment.
+        :param sources: Sources to be mounted into the environment.
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param extra_body: Additional JSON object fields to merge into request bodies.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = environments.CreateEnvironmentRequest(
+            network=utils.get_pydantic_model(
+                network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
+            ),
+            sources=utils.get_pydantic_model(
+                sources, Optional[List[interactions.Source]]
+            ),
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request_async(
+            method="POST",
+            path="/{api_version}/environments",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=True,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.CreateEnvironmentGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            get_serialized_body=lambda: utils.serialize_request_body(
+                request,
+                False,
+                False,
+                "json",
+                environments.CreateEnvironmentRequest,
+                extra_body=extra_body,
+            ),
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        async def _speakeasy_parse_response(http_res):
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateEnvironmentClientErrorData, http_res
+                    )
+                    raise errors.CreateEnvironmentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.CreateEnvironmentServerErrorData, http_res
+                    )
+                    raise errors.CreateEnvironmentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    environments.Environment, http_res, validate=False
+                )
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="CreateEnvironment",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=None,
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
+        )
+        http_res = await self.do_request_async(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.AsyncStreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.AsyncAPIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                    async_hooks=self.sdk_configuration.__dict__.get("_async_hooks"),
+                ),
+            )
+        try:
+            return await _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            await response_helpers.raise_parse_error_async(
+                self.sdk_configuration.__dict__.get("_async_hooks"),
+                self.sdk_configuration.__dict__.get("_hooks"),
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
     async def get_environment(
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.Environment:
-        r"""Gets an environment.
+        r"""Gets an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to retrieve.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1085,7 +1153,6 @@ class AsyncEnvironments(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.GetEnvironmentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -1129,16 +1196,31 @@ class AsyncEnvironments(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetEnvironmentClientErrorData, http_res
+                    )
+                    raise errors.GetEnvironmentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.GetEnvironmentServerErrorData, http_res
+                    )
+                    raise errors.GetEnvironmentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     environments.Environment, http_res, validate=False
@@ -1210,15 +1292,13 @@ class AsyncEnvironments(AsyncBaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an environment.
+        r"""Deletes an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to delete.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1238,7 +1318,6 @@ class AsyncEnvironments(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.DeleteEnvironmentRequest(
-            api_version=api_version,
             id=id,
         )
 
@@ -1282,16 +1361,31 @@ class AsyncEnvironments(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteEnvironmentClientErrorData, http_res
+                    )
+                    raise errors.DeleteEnvironmentClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.DeleteEnvironmentServerErrorData, http_res
+                    )
+                    raise errors.DeleteEnvironmentServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     interactions.Empty, http_res, validate=False
@@ -1363,11 +1457,11 @@ class AsyncEnvironments(AsyncBaseSDK):
 class AsyncEnvironmentsWithRawResponse:
     def __init__(self, sdk: AsyncEnvironments) -> None:
         self._sdk = sdk
-        self.create_environment = response_helpers.async_to_raw_response_wrapper(
-            sdk.create_environment, "extra_headers"
-        )
         self.list_environments = response_helpers.async_to_raw_response_wrapper(
             sdk.list_environments, "extra_headers"
+        )
+        self.create_environment = response_helpers.async_to_raw_response_wrapper(
+            sdk.create_environment, "extra_headers"
         )
         self.get_environment = response_helpers.async_to_raw_response_wrapper(
             sdk.get_environment, "extra_headers"
@@ -1380,11 +1474,11 @@ class AsyncEnvironmentsWithRawResponse:
 class AsyncEnvironmentsWithStreamingResponse:
     def __init__(self, sdk: AsyncEnvironments) -> None:
         self._sdk = sdk
-        self.create_environment = response_helpers.async_to_streamed_response_wrapper(
-            sdk.create_environment, "extra_headers"
-        )
         self.list_environments = response_helpers.async_to_streamed_response_wrapper(
             sdk.list_environments, "extra_headers"
+        )
+        self.create_environment = response_helpers.async_to_streamed_response_wrapper(
+            sdk.create_environment, "extra_headers"
         )
         self.get_environment = response_helpers.async_to_streamed_response_wrapper(
             sdk.get_environment, "extra_headers"

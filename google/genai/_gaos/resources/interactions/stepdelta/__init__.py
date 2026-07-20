@@ -54,7 +54,9 @@ from ....types.interactions.mcpservertoolresultdelta import (
     MCPServerToolResultDelta as MCPServerToolResult,
 )
 from ....types.interactions.stepdeltametadata import StepDeltaMetadata as Metadata
-from ....types.interactions.textannotationdelta import TextAnnotationDelta
+from ....types.interactions.textannotationdelta import (
+    TextAnnotationDelta as TextAnnotation,
+)
 from ....types.interactions.textdelta import TextDelta as Text
 from ....types.interactions.thoughtsignaturedelta import (
     ThoughtSignatureDelta as ThoughtSignature,
@@ -88,7 +90,7 @@ __all__ = [
     "MCPServerToolResult",
     "Metadata",
     "Text",
-    "TextAnnotationDelta",
+    "TextAnnotation",
     "ThoughtSignature",
     "ThoughtSummary",
     "URLContextCall",

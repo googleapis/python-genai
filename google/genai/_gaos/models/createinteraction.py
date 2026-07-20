@@ -19,12 +19,10 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..types.interactions import (
-    createagentinteraction as interactions_createagentinteraction,
-    createmodelinteraction as interactions_createmodelinteraction,
     interaction as interactions_interaction,
     interactionsseevent as interactions_interactionsseevent,
 )
-from ..utils import FieldMetadata, PathParamMetadata, RequestMetadata
+from ..utils import FieldMetadata, PathParamMetadata
 from ..utils.eventstreaming import AsyncStream, Stream
 from pydantic import model_serializer
 from typing import Optional, Union
@@ -33,7 +31,7 @@ from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 class CreateInteractionGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateInteractionGlobals(BaseModel):
@@ -41,64 +39,7 @@ class CreateInteractionGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
-
-    @model_serializer(mode="wrap")
-    def serialize_model(self, handler):
-        optional_fields = set(["api_version"])
-        serialized = handler(self)
-        m = {}
-
-        for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
-
-            if val != UNSET_SENTINEL:
-                if val is not None or k not in optional_fields:
-                    m[k] = val
-
-        return m
-
-
-CreateInteractionRequestBodyParam = TypeAliasType(
-    "CreateInteractionRequestBodyParam",
-    Union[
-        interactions_createmodelinteraction.CreateModelInteractionParam,
-        interactions_createagentinteraction.CreateAgentInteractionParam,
-    ],
-)
-r"""The request body."""
-
-
-CreateInteractionRequestBody = TypeAliasType(
-    "CreateInteractionRequestBody",
-    Union[
-        interactions_createmodelinteraction.CreateModelInteraction,
-        interactions_createagentinteraction.CreateAgentInteraction,
-    ],
-)
-r"""The request body."""
-
-
-class CreateInteractionRequestParam(TypedDict):
-    body: CreateInteractionRequestBodyParam
-    r"""The request body."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
-
-
-class CreateInteractionRequest(BaseModel):
-    body: Annotated[
-        CreateInteractionRequestBody,
-        FieldMetadata(request=RequestMetadata(media_type="application/json")),
-    ]
-    r"""The request body."""
-
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

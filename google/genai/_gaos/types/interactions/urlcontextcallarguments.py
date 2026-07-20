@@ -23,7 +23,7 @@ from typing import List, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
-class URLContextCallArgumentsParam(TypedDict):
+class URLContextCallArgumentsTypedDict(TypedDict):
     r"""The arguments to pass to the URL context."""
 
     urls: NotRequired[List[str]]

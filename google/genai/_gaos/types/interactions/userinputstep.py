@@ -23,21 +23,29 @@ from .content import Content, ContentParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import List, Literal, Optional
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing import List, Literal, Optional, Union
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
+
+
+UserInputStepContentParam = TypeAliasType(
+    "UserInputStepContentParam", Union[List[ContentParam], str]
+)
+
+
+UserInputStepContent = TypeAliasType("UserInputStepContent", Union[List[Content], str])
 
 
 class UserInputStepParam(TypedDict):
     r"""Input provided by the user."""
 
-    content: NotRequired[List[ContentParam]]
+    content: NotRequired[UserInputStepContentParam]
     type: Literal["user_input"]
 
 
 class UserInputStep(BaseModel):
     r"""Input provided by the user."""
 
-    content: Optional[List[Content]] = None
+    content: Optional[UserInputStepContent] = None
 
     type: Annotated[
         Annotated[Literal["user_input"], AfterValidator(validate_const("user_input"))],

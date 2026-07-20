@@ -19,10 +19,7 @@
 from __future__ import annotations
 from .. import Base64EncodedString, Base64FileInput, BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .urlcontextcallarguments import (
-    URLContextCallArguments,
-    URLContextCallArgumentsParam,
-)
+from .arguments import Arguments, ArgumentsParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -33,7 +30,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class URLContextCallStepParam(TypedDict):
     r"""URL context call step."""
 
-    arguments: URLContextCallArgumentsParam
+    arguments: ArgumentsParam
     r"""The arguments to pass to the URL context."""
     id: str
     r"""Required. A unique ID for this specific tool call."""
@@ -45,7 +42,7 @@ class URLContextCallStepParam(TypedDict):
 class URLContextCallStep(BaseModel):
     r"""URL context call step."""
 
-    arguments: URLContextCallArguments
+    arguments: Arguments
     r"""The arguments to pass to the URL context."""
 
     id: str

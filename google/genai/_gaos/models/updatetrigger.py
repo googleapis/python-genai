@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class UpdateTriggerGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class UpdateTriggerGlobals(BaseModel):
@@ -35,7 +35,7 @@ class UpdateTriggerGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,41 +56,19 @@ class UpdateTriggerGlobals(BaseModel):
 
 class UpdateTriggerRequestParam(TypedDict):
     id: str
-    r"""Resource name of the trigger."""
+    r"""Required. The ID of the trigger to update."""
     body: triggers_triggerupdate.TriggerUpdateParam
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""Required. The trigger with updated fields."""
 
 
 class UpdateTriggerRequest(BaseModel):
     id: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
-    r"""Resource name of the trigger."""
+    r"""Required. The ID of the trigger to update."""
 
     body: Annotated[
         triggers_triggerupdate.TriggerUpdate,
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ]
-
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
-    @model_serializer(mode="wrap")
-    def serialize_model(self, handler):
-        optional_fields = set(["api_version"])
-        serialized = handler(self)
-        m = {}
-
-        for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
-
-            if val != UNSET_SENTINEL:
-                if val is not None or k not in optional_fields:
-                    m[k] = val
-
-        return m
+    r"""Required. The trigger with updated fields."""

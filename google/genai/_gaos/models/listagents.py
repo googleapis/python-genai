@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListAgentsGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListAgentsGlobals(BaseModel):
@@ -34,7 +34,7 @@ class ListAgentsGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -54,20 +54,12 @@ class ListAgentsGlobals(BaseModel):
 
 
 class ListAgentsRequestParam(TypedDict):
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
     page_size: NotRequired[int]
     page_token: NotRequired[str]
     parent: NotRequired[str]
 
 
 class ListAgentsRequest(BaseModel):
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
     page_size: Annotated[
         Optional[int],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
@@ -85,7 +77,7 @@ class ListAgentsRequest(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "page_size", "page_token", "parent"])
+        optional_fields = set(["page_size", "page_token", "parent"])
         serialized = handler(self)
         m = {}
 

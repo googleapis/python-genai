@@ -32,7 +32,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class UpdateWebhookGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class UpdateWebhookGlobals(BaseModel):
@@ -40,7 +40,7 @@ class UpdateWebhookGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -62,12 +62,10 @@ class UpdateWebhookGlobals(BaseModel):
 class UpdateWebhookRequestParam(TypedDict):
     id: str
     r"""Required. The ID of the webhook to update."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
     update_mask: NotRequired[str]
-    r"""Optional. The list of fields to update."""
+    r"""Optional list of fields to update."""
     body: NotRequired[webhooks_webhookupdate.WebhookUpdateParam]
-    r"""Required. The webhook to update."""
+    r"""Required. The HTTP body of the payload."""
 
 
 class UpdateWebhookRequest(BaseModel):
@@ -76,27 +74,21 @@ class UpdateWebhookRequest(BaseModel):
     ]
     r"""Required. The ID of the webhook to update."""
 
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
     update_mask: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. The list of fields to update."""
+    r"""Optional list of fields to update."""
 
     body: Annotated[
         Optional[webhooks_webhookupdate.WebhookUpdate],
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ] = None
-    r"""Required. The webhook to update."""
+    r"""Required. The HTTP body of the payload."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "update_mask", "body"])
+        optional_fields = set(["update_mask", "body"])
         serialized = handler(self)
         m = {}
 

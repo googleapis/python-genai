@@ -32,7 +32,7 @@ from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 class GetInteractionByIDGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetInteractionByIDGlobals(BaseModel):
@@ -40,7 +40,7 @@ class GetInteractionByIDGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -61,55 +61,52 @@ class GetInteractionByIDGlobals(BaseModel):
 
 class GetInteractionByIDRequestParam(TypedDict):
     id: str
-    r"""The unique identifier of the interaction to retrieve."""
-    stream: NotRequired[bool]
-    r"""If set to true, the generated content will be streamed incrementally."""
-    last_event_id: NotRequired[str]
-    r"""Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true."""
+    r"""Part of `name`. Required. The name of the interaction to retrieve.
+    Format: interactions/{interaction}
+    """
     include_input: NotRequired[bool]
-    r"""If set to true, includes the input in the response."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""If true, includes the input in the response."""
+    last_event_id: NotRequired[str]
+    r"""If set, resumes the interaction stream from the chunk after the event
+    marked by the event id. Can only be used if `stream` is true.
+    """
+    stream: NotRequired[bool]
+    r"""If true, streams the interaction events as Server-Sent Events."""
 
 
 class GetInteractionByIDRequest(BaseModel):
     id: Annotated[
-        str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
+        str,
+        pydantic.Field(alias="interactionsId"),
+        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ]
-    r"""The unique identifier of the interaction to retrieve."""
+    r"""Part of `name`. Required. The name of the interaction to retrieve.
+    Format: interactions/{interaction}
+    """
 
-    stream: Annotated[
+    include_input: Annotated[
         Optional[bool],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
-    ] = False
-    r"""If set to true, the generated content will be streamed incrementally."""
+    ] = None
+    r"""If true, includes the input in the response."""
 
     last_event_id: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true."""
+    r"""If set, resumes the interaction stream from the chunk after the event
+    marked by the event id. Can only be used if `stream` is true.
+    """
 
-    include_input: Annotated[
+    stream: Annotated[
         Optional[bool],
-        pydantic.Field(
-            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-        ),
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
-    ] = False
-    r"""If set to true, includes the input in the response."""
-
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""If true, streams the interaction events as Server-Sent Events."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(
-            ["stream", "last_event_id", "include_input", "api_version"]
-        )
+        optional_fields = set(["include_input", "last_event_id", "stream"])
         serialized = handler(self)
         m = {}
 

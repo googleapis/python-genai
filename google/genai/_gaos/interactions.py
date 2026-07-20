@@ -20,6 +20,9 @@ from . import errors, models, types, utils
 from ._hooks import AfterParseErrorContext, HookContext, ResponseContext
 from .basesdk import AsyncBaseSDK, BaseSDK
 from .types import BaseModel, OptionalNullable, UNSET, interactions
+from .types.interactions import (
+    createinteractionrequest as interactions_createinteractionrequest,
+)
 from .utils import get_security_from_env, response_helpers
 from .utils.eventstreaming import AsyncStream, Stream
 from .utils.unmarshal_json_response import unmarshal_json_response
@@ -41,19 +44,17 @@ class Interactions(BaseSDK):
         self,
         *,
         request: Union[
-            models.CreateInteractionRequest, models.CreateInteractionRequestParam
+            interactions_createinteractionrequest.CreateInteractionRequest,
+            interactions_createinteractionrequest.CreateInteractionRequestParam,
         ],
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param body: The request body.
-        :param api_version: Which version of the API to use.
+        :param request: The request object to send.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -64,51 +65,53 @@ class Interactions(BaseSDK):
     def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        model: interactions.Model,
-        stream: Union[Literal[False], None] = None,
-        store: bool = ...,
         background: bool = ...,
-        system_instruction: str = ...,
-        tools: List[interactions.ToolParam] = ...,
-        response_modalities: List[interactions.ResponseModality] = ...,
-        response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Union[Literal[False], None] = None,
+        system_instruction: str = ...,
+        tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
+        response_modalities: List[interactions.ResponseModality] = ...,
+        response_mime_type: str = ...,
+        input: interactions.InteractionsInputParam = ...,
+        model: interactions.Model,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -119,51 +122,53 @@ class Interactions(BaseSDK):
     def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        model: interactions.Model,
-        stream: Literal[True],
-        store: bool = ...,
         background: bool = ...,
-        system_instruction: str = ...,
-        tools: List[interactions.ToolParam] = ...,
-        response_modalities: List[interactions.ResponseModality] = ...,
-        response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Literal[True],
+        system_instruction: str = ...,
+        tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
+        response_modalities: List[interactions.ResponseModality] = ...,
+        response_mime_type: str = ...,
+        input: interactions.InteractionsInputParam = ...,
+        model: interactions.Model,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -174,51 +179,53 @@ class Interactions(BaseSDK):
     def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        agent: interactions.AgentOption,
-        stream: Union[Literal[False], None] = None,
-        store: bool = ...,
+        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
+        labels: Dict[str, str] = ...,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Union[Literal[False], None] = None,
         system_instruction: str = ...,
         tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
         response_modalities: List[interactions.ResponseModality] = ...,
         response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
-        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
-        labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
+        agent: interactions.AgentOption,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param agent: The agent to interact with.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param agent_config: Configuration parameters for the agent interaction.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param agent: The agent to interact with.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -229,51 +236,53 @@ class Interactions(BaseSDK):
     def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        agent: interactions.AgentOption,
-        stream: Literal[True],
-        store: bool = ...,
+        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
+        labels: Dict[str, str] = ...,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Literal[True],
         system_instruction: str = ...,
         tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
         response_modalities: List[interactions.ResponseModality] = ...,
         response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
-        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
-        labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
+        agent: interactions.AgentOption,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param agent: The agent to interact with.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param agent_config: Configuration parameters for the agent interaction.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param agent: The agent to interact with.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -285,39 +294,44 @@ class Interactions(BaseSDK):
         self,
         *,
         request: OptionalNullable[
-            Union[models.CreateInteractionRequest, models.CreateInteractionRequestParam]
+            Union[
+                interactions_createinteractionrequest.CreateInteractionRequest,
+                interactions_createinteractionrequest.CreateInteractionRequestParam,
+            ]
         ] = UNSET,
-        api_version: OptionalNullable[str] = UNSET,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+        :param agent_config: Parameters for the agent interaction.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -328,54 +342,59 @@ class Interactions(BaseSDK):
         self,
         *,
         request: OptionalNullable[
-            Union[models.CreateInteractionRequest, models.CreateInteractionRequestParam]
+            Union[
+                interactions_createinteractionrequest.CreateInteractionRequest,
+                interactions_createinteractionrequest.CreateInteractionRequestParam,
+            ]
         ] = UNSET,
-        api_version: OptionalNullable[str] = UNSET,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+        :param agent_config: Parameters for the agent interaction.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
         :param timeout: Override the default request timeout configuration for this method in seconds
         """
-        if "model" in body_kwargs and "agent" in body_kwargs:
-            raise ValueError("Cannot supply both 'model' and 'agent'.")
-        if "model" in body_kwargs and "agent_config" in body_kwargs:
-            raise ValueError("Cannot supply both 'model' and 'agent_config'.")
-        if "generation_config" in body_kwargs and "agent" in body_kwargs:
-            raise ValueError("Cannot supply both 'generation_config' and 'agent'.")
         if "generation_config" in body_kwargs and "agent_config" in body_kwargs:
             raise ValueError(
                 "Cannot supply both 'generation_config' and 'agent_config'."
             )
+        if "generation_config" in body_kwargs and "agent" in body_kwargs:
+            raise ValueError("Cannot supply both 'generation_config' and 'agent'.")
+        if "model" in body_kwargs and "agent_config" in body_kwargs:
+            raise ValueError("Cannot supply both 'model' and 'agent_config'.")
+        if "model" in body_kwargs and "agent" in body_kwargs:
+            raise ValueError("Cannot supply both 'model' and 'agent'.")
         base_url = None
         url_variables = None
         retries: OptionalNullable[utils.RetryConfig] = UNSET
@@ -392,24 +411,19 @@ class Interactions(BaseSDK):
 
         if request is not UNSET:
             request = cast(
-                models.CreateInteractionRequest,
+                interactions.CreateInteractionRequest,
                 request
                 if isinstance(request, BaseModel)
                 else utils.unmarshal(
-                    cast(Any, request), models.CreateInteractionRequest
+                    cast(Any, request), interactions.CreateInteractionRequest
                 ),
             )
         else:
             _body_kwargs = dict(body_kwargs)
             _body_kwargs = {k: v for k, v in _body_kwargs.items() if v is not UNSET}
-            _request_kwargs: dict[str, Any] = {"api_version": api_version}
-            _request_kwargs = {
-                k: v for k, v in _request_kwargs.items() if v is not UNSET
-            }
-            _request_kwargs["body"] = _body_kwargs
             request = cast(
-                models.CreateInteractionRequest,
-                utils.unmarshal(_request_kwargs, models.CreateInteractionRequest),
+                interactions.CreateInteractionRequest,
+                utils.unmarshal(_body_kwargs, interactions.CreateInteractionRequest),
             )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -426,7 +440,7 @@ class Interactions(BaseSDK):
             request_has_query_params=True,
             user_agent_header="user-agent",
             accept_header_value="text/event-stream"
-            if getattr(getattr(request, "body", None), "stream", False) is True
+            if getattr(request, "stream", False) is True
             else "application/json",
             http_headers=http_headers,
             extra_query_params=extra_query,
@@ -435,11 +449,11 @@ class Interactions(BaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body,
+                request,
                 False,
                 False,
                 "json",
-                models.CreateInteractionRequestBody,
+                interactions.CreateInteractionRequest,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -525,152 +539,14 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "simple",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": "Hello, how are you?"\n  }\'\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello, how are you?",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello, how are you?',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n      { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n      { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n        { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n        { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n        { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n        { type: 'user_input', content: [{ type: 'text', text: 'Hello' }] },\n        { type: 'model_output', content: [{ type: 'text', text: 'Hi there! How can I help you today?' }] },\n        { type: 'user_input', content: [{ type: 'text', text: 'What is the capital of France?' }] }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      {\n        "type": "text",\n        "text": "What is in this picture?"\n      },\n      {\n        "type": "image",\n        "data": "BASE64_ENCODED_IMAGE",\n        "mime_type": "image/png"\n      }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n      { "type": "text", "text": "What is in this picture?" },\n      { "type": "image", "data": "BASE64_ENCODED_IMAGE", "mime_type": "image/png" }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n      { type: 'text', text: 'What is in this picture?' },\n      { type: 'image', data: 'BASE64_ENCODED_IMAGE', mime_type: 'image/png' }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "tools": [\n      {\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n          "type": "object",\n          "properties": {\n            "location": {\n              "type": "string",\n              "description": "The city and state, e.g. San Francisco, CA"\n            }\n          },\n          "required": [\n            "location"\n          ]\n        }\n      }\n    ],\n    "input": "What is the weather like in Boston, MA?"\n  }\'\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    tools=[{\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n            "type": "object",\n            "properties": {\n                "location": {\n                    "type": "string",\n                    "description": "The city and state, e.g. San Francisco, CA"\n                }\n            },\n            "required": ["location"]\n        }\n    }],\n    input="What is the weather like in Boston, MA?"\n)\nprint(response.steps[-1])\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    tools: [{\n        type: 'function',\n        name: 'get_weather',\n        description: 'Get the current weather in a given location',\n        parameters: {\n            type: 'object',\n            properties: {\n                location: {\n                    type: 'string',\n                    description: 'The city and state, e.g. San Francisco, CA'\n                }\n            },\n            required: ['location']\n        }\n    }],\n    input: 'What is the weather like in Boston, MA?'\n});\nconsole.log(interaction.steps.at(-1));\n",
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "deep-research-pro-preview-12-2025",\n    "input": "Find a cure to cancer",\n    "background": true\n  }\'\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="deep-research-pro-preview-12-2025",\n    input="find a cure to cancer",\n    background=True,\n)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'deep-research-pro-preview-12-2025',\n    input: 'find a cure to cancer',\n    background: true,\n});\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    environment="remote",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Read Hacker News, summarize the top 5 stories, and save results as a markdown file.',\n    environment: 'remote',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Create an interaction with a fresh remote environment.\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a hello world script at /workspace/hello.py.",\n    "environment": "remote"\n  }\')\nINTERACTION_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"agent\\": \\"antigravity-preview-05-2026\\",\n    \\"input\\": \\"Modify the script to accept a name argument and greet the user.\\",\n    \\"environment\\": \\"$ENV_ID\\",\n    \\"previous_interaction_id\\": \\"$INTERACTION_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Step 1: Create an interaction with a fresh remote environment.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a hello world script at /workspace/hello.py.",\n    environment="remote",\n)\nprint(f"Environment ID: {interaction.environment_id}")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ninteraction_2 = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Modify the script to accept a name argument and greet the user.",\n    environment=interaction.environment_id,\n    previous_interaction_id=interaction.id,\n)\nprint(interaction_2.output_text)\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create an interaction with a fresh remote environment.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a hello world script at /workspace/hello.py.',\n    environment: 'remote',\n});\nconsole.log(`Environment ID: ${interaction.environment_id}`);\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nconst interaction2 = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Modify the script to accept a name argument and greet the user.',\n    environment: interaction.environment_id,\n    previous_interaction_id: interaction.id,\n});\nconsole.log(interaction2.output_text);\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "List all files under /workspace and summarize what you find.",\n    "environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "repository",\n          "source": "https://github.com/octocat/Spoon-Knife",\n          "target": "/workspace/repo"\n        },\n        {\n          "type": "inline",\n          "content": "Focus on Python files only.",\n          "target": "/workspace/notes.txt"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="List all files under /workspace and summarize what you find.",\n    environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "repository",\n                "source": "https://github.com/octocat/Spoon-Knife",\n                "target": "/workspace/repo",\n            },\n            {\n                "type": "inline",\n                "content": "Focus on Python files only.",\n                "target": "/workspace/notes.txt",\n            },\n        ],\n    },\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'List all files under /workspace and summarize what you find.',\n    environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'repository',\n                source: 'https://github.com/octocat/Spoon-Knife',\n                target: '/workspace/repo',\n            },\n            {\n                type: 'inline',\n                content: 'Focus on Python files only.',\n                target: '/workspace/notes.txt',\n            },\n        ],\n    },\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "sh",
-                        "source": '# Step 1: Create a custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "code-reviewer",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [{\n        "type": "repository",\n        "source": "https://github.com/octocat/Spoon-Knife",\n        "target": "/workspace/repo"\n      }]\n    }\n  }\'\n\n# Step 2: Use the custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "code-reviewer",\n    "input": "Review the latest changes in /workspace/repo/src and file a summary.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Create a custom agent.\nagent_id = f"code-reviewer-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    base_environment={\n        "type": "remote",\n        "sources": [{\n            "type": "repository",\n            "source": "https://github.com/octocat/Spoon-Knife",\n            "target": "/workspace/repo",\n        }],\n    },\n)\n\n# Step 2: Use the custom agent.\nresult = client.interactions.create(\n    agent=agent_id,\n    input="Review the latest changes in /workspace/repo/src and file a summary.",\n    environment="remote",\n)\nprint(result.output_text)\n\n# [cleanup]\nclient.agents.delete(agent_id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create a custom agent.\nconst agentId = `code-reviewer-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.',\n    base_environment: {\n        type: 'remote',\n        sources: [{\n            type: 'repository',\n            source: 'https://github.com/octocat/Spoon-Knife',\n            target: '/workspace/repo',\n        }],\n    },\n});\n\n// Step 2: Use the custom agent.\nconst result = await ai.interactions.create({\n    agent: agentId,\n    input: 'Review the latest changes in /workspace/repo/src and file a summary.',\n    environment: 'remote',\n});\nconsole.log(result.output_text);\n\n// [cleanup]\nawait ai.agents.delete(agentId);\n// [/cleanup]\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
             hook_ctx=_speakeasy_hook_ctx,
             request=req,
             is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
-            stream=getattr(getattr(request, "body", None), "stream", False) is True
+            stream=getattr(request, "stream", False) is True
             or _speakeasy_response_mode == "streaming",
             retry_config=retry_config,
         )
@@ -698,8 +574,7 @@ class Interactions(BaseSDK):
                     parser=_speakeasy_parse_response,
                     mode=(
                         "event_stream"
-                        if getattr(getattr(request, "body", None), "stream", False)
-                        is True
+                        if getattr(request, "stream", False) is True
                         else "buffered"
                     ),
                     client_ref=self,
@@ -722,23 +597,21 @@ class Interactions(BaseSDK):
         self,
         id: str,
         *,
-        stream: Union[Literal[False], None] = None,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: Union[Literal[False], None] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -749,23 +622,21 @@ class Interactions(BaseSDK):
         self,
         id: str,
         *,
-        stream: Literal[True],
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: Literal[True],
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -776,23 +647,21 @@ class Interactions(BaseSDK):
         self,
         id: str,
         *,
-        stream: bool,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: bool,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -802,23 +671,21 @@ class Interactions(BaseSDK):
         self,
         id: str,
         *,
-        stream: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: Optional[bool] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -838,11 +705,10 @@ class Interactions(BaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.GetInteractionByIDRequest(
-            id=id,
-            stream=stream,
-            last_event_id=last_event_id,
             include_input=include_input,
-            api_version=api_version,
+            id=id,
+            last_event_id=last_event_id,
+            stream=stream,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -850,7 +716,7 @@ class Interactions(BaseSDK):
         )
         req = self._build_request(
             method="GET",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -954,25 +820,7 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1024,17 +872,14 @@ class Interactions(BaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ):
-        r"""Deleting an interaction
+        r"""Deletes an interaction.
 
-        Deletes the interaction by id.
-
-        :param id: The unique identifier of the interaction to delete.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to delete.
+            Format: interactions/{interaction}
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1055,7 +900,6 @@ class Interactions(BaseSDK):
 
         request = models.DeleteInteractionRequest(
             id=id,
-            api_version=api_version,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -1063,7 +907,7 @@ class Interactions(BaseSDK):
         )
         req = self._build_request(
             method="DELETE",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1137,25 +981,7 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1207,17 +1033,14 @@ class Interactions(BaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Canceling an interaction
+        r"""Cancels an interaction.
 
-        Cancels an interaction by id. This only applies to background interactions that are still running.
-
-        :param id: The unique identifier of the interaction to cancel.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to cancel.
+            Format: `interactions/{interaction}`.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1238,7 +1061,6 @@ class Interactions(BaseSDK):
 
         request = models.CancelInteractionByIDRequest(
             id=id,
-            api_version=api_version,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -1246,7 +1068,7 @@ class Interactions(BaseSDK):
         )
         req = self._build_request(
             method="POST",
-            path="/{api_version}/interactions/{id}/cancel",
+            path="/{api_version}/interactions/{interactionsId}/cancel",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1282,10 +1104,6 @@ class Interactions(BaseSDK):
 
         def _speakeasy_parse_response(http_res):
             response_data: Any = None
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    interactions.Interaction, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "application/json"):
                 try:
                     response_data = unmarshal_json_response(
@@ -1314,6 +1132,10 @@ class Interactions(BaseSDK):
                         http_res,
                         http_res.text,
                     ) from e
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    interactions.Interaction, http_res, validate=False
+                )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
 
@@ -1326,25 +1148,7 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "cancel",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1439,19 +1243,17 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         *,
         request: Union[
-            models.CreateInteractionRequest, models.CreateInteractionRequestParam
+            interactions_createinteractionrequest.CreateInteractionRequest,
+            interactions_createinteractionrequest.CreateInteractionRequestParam,
         ],
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param body: The request body.
-        :param api_version: Which version of the API to use.
+        :param request: The request object to send.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1462,51 +1264,53 @@ class AsyncInteractions(AsyncBaseSDK):
     async def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        model: interactions.Model,
-        stream: Union[Literal[False], None] = None,
-        store: bool = ...,
         background: bool = ...,
-        system_instruction: str = ...,
-        tools: List[interactions.ToolParam] = ...,
-        response_modalities: List[interactions.ResponseModality] = ...,
-        response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Union[Literal[False], None] = None,
+        system_instruction: str = ...,
+        tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
+        response_modalities: List[interactions.ResponseModality] = ...,
+        response_mime_type: str = ...,
+        input: interactions.InteractionsInputParam = ...,
+        model: interactions.Model,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1517,51 +1321,53 @@ class AsyncInteractions(AsyncBaseSDK):
     async def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        model: interactions.Model,
-        stream: Literal[True],
-        store: bool = ...,
         background: bool = ...,
-        system_instruction: str = ...,
-        tools: List[interactions.ToolParam] = ...,
-        response_modalities: List[interactions.ResponseModality] = ...,
-        response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
         labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateModelInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Literal[True],
+        system_instruction: str = ...,
+        tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
+        response_modalities: List[interactions.ResponseModality] = ...,
+        response_mime_type: str = ...,
+        input: interactions.InteractionsInputParam = ...,
+        model: interactions.Model,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1572,51 +1378,53 @@ class AsyncInteractions(AsyncBaseSDK):
     async def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        agent: interactions.AgentOption,
-        stream: Union[Literal[False], None] = None,
-        store: bool = ...,
+        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
+        labels: Dict[str, str] = ...,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Union[Literal[False], None] = None,
         system_instruction: str = ...,
         tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
         response_modalities: List[interactions.ResponseModality] = ...,
         response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
-        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
-        labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
+        agent: interactions.AgentOption,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param agent: The agent to interact with.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param agent_config: Configuration parameters for the agent interaction.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param agent: The agent to interact with.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1627,51 +1435,53 @@ class AsyncInteractions(AsyncBaseSDK):
     async def create(
         self,
         *,
-        api_version: Optional[str] = None,
-        agent: interactions.AgentOption,
-        stream: Literal[True],
-        store: bool = ...,
+        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
+        labels: Dict[str, str] = ...,
+        previous_interaction_id: str = ...,
+        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
+        safety_settings: List[interactions.SafetySettingParam] = ...,
+        service_tier: interactions.ServiceTier = ...,
+        store: bool = ...,
+        stream: Literal[True],
         system_instruction: str = ...,
         tools: List[interactions.ToolParam] = ...,
+        webhook_config: interactions.WebhookConfigParam = ...,
         response_modalities: List[interactions.ResponseModality] = ...,
         response_mime_type: str = ...,
-        previous_interaction_id: str = ...,
-        service_tier: interactions.ServiceTier = ...,
-        webhook_config: interactions.WebhookConfigParam = ...,
-        response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
-        environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
-        safety_settings: List[interactions.SafetySettingParam] = ...,
-        labels: Dict[str, str] = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
+        agent: interactions.AgentOption,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param agent: The agent to interact with.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param agent_config: Configuration parameters for the agent interaction.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param agent: The agent to interact with.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1683,39 +1493,44 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         *,
         request: OptionalNullable[
-            Union[models.CreateInteractionRequest, models.CreateInteractionRequestParam]
+            Union[
+                interactions_createinteractionrequest.CreateInteractionRequest,
+                interactions_createinteractionrequest.CreateInteractionRequestParam,
+            ]
         ] = UNSET,
-        api_version: OptionalNullable[str] = UNSET,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+        :param agent_config: Parameters for the agent interaction.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1726,54 +1541,59 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         *,
         request: OptionalNullable[
-            Union[models.CreateInteractionRequest, models.CreateInteractionRequestParam]
+            Union[
+                interactions_createinteractionrequest.CreateInteractionRequest,
+                interactions_createinteractionrequest.CreateInteractionRequestParam,
+            ]
         ] = UNSET,
-        api_version: OptionalNullable[str] = UNSET,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
-        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
-        :param stream: Input only. Whether the interaction will be streamed.
-        :param store: Input only. Whether to store the response and request for later retrieval.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param environment: The environment configuration for the interaction.
+        :param generation_config: Configuration parameters for model interactions.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
+        :param previous_interaction_id: The ID of the previous interaction, if any.
+        :param response_format:
+        :param safety_settings: Safety settings for the interaction.
+        :param service_tier:
+        :param store: Input only. Whether to store the response and request for later retrieval.
+        :param stream: Input only. Whether the interaction will be streamed.
         :param system_instruction: System instruction for the interaction.
         :param tools: A list of tool declarations the model may call during interaction.
+        :param webhook_config: Message for configuring webhook events for a request.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
-        :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param service_tier:
-        :param webhook_config: Message for configuring webhook events for a request.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
-        :param generation_config: Configuration parameters for model interactions.
-        :param safety_settings: Safety settings for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
         :param input: The input for the interaction.
+        :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
+        :param agent_config: Parameters for the agent interaction.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
         :param timeout: Override the default request timeout configuration for this method in seconds
         """
-        if "model" in body_kwargs and "agent" in body_kwargs:
-            raise ValueError("Cannot supply both 'model' and 'agent'.")
-        if "model" in body_kwargs and "agent_config" in body_kwargs:
-            raise ValueError("Cannot supply both 'model' and 'agent_config'.")
-        if "generation_config" in body_kwargs and "agent" in body_kwargs:
-            raise ValueError("Cannot supply both 'generation_config' and 'agent'.")
         if "generation_config" in body_kwargs and "agent_config" in body_kwargs:
             raise ValueError(
                 "Cannot supply both 'generation_config' and 'agent_config'."
             )
+        if "generation_config" in body_kwargs and "agent" in body_kwargs:
+            raise ValueError("Cannot supply both 'generation_config' and 'agent'.")
+        if "model" in body_kwargs and "agent_config" in body_kwargs:
+            raise ValueError("Cannot supply both 'model' and 'agent_config'.")
+        if "model" in body_kwargs and "agent" in body_kwargs:
+            raise ValueError("Cannot supply both 'model' and 'agent'.")
         base_url = None
         url_variables = None
         retries: OptionalNullable[utils.RetryConfig] = UNSET
@@ -1790,24 +1610,19 @@ class AsyncInteractions(AsyncBaseSDK):
 
         if request is not UNSET:
             request = cast(
-                models.CreateInteractionRequest,
+                interactions.CreateInteractionRequest,
                 request
                 if isinstance(request, BaseModel)
                 else utils.unmarshal(
-                    cast(Any, request), models.CreateInteractionRequest
+                    cast(Any, request), interactions.CreateInteractionRequest
                 ),
             )
         else:
             _body_kwargs = dict(body_kwargs)
             _body_kwargs = {k: v for k, v in _body_kwargs.items() if v is not UNSET}
-            _request_kwargs: dict[str, Any] = {"api_version": api_version}
-            _request_kwargs = {
-                k: v for k, v in _request_kwargs.items() if v is not UNSET
-            }
-            _request_kwargs["body"] = _body_kwargs
             request = cast(
-                models.CreateInteractionRequest,
-                utils.unmarshal(_request_kwargs, models.CreateInteractionRequest),
+                interactions.CreateInteractionRequest,
+                utils.unmarshal(_body_kwargs, interactions.CreateInteractionRequest),
             )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -1824,7 +1639,7 @@ class AsyncInteractions(AsyncBaseSDK):
             request_has_query_params=True,
             user_agent_header="user-agent",
             accept_header_value="text/event-stream"
-            if getattr(getattr(request, "body", None), "stream", False) is True
+            if getattr(request, "stream", False) is True
             else "application/json",
             http_headers=http_headers,
             extra_query_params=extra_query,
@@ -1833,11 +1648,11 @@ class AsyncInteractions(AsyncBaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body,
+                request,
                 False,
                 False,
                 "json",
-                models.CreateInteractionRequestBody,
+                interactions.CreateInteractionRequest,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -1923,152 +1738,14 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "simple",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": "Hello, how are you?"\n  }\'\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello, how are you?",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello, how are you?',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n      { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n      { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n        { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n        { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n        { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n        { type: 'user_input', content: [{ type: 'text', text: 'Hello' }] },\n        { type: 'model_output', content: [{ type: 'text', text: 'Hi there! How can I help you today?' }] },\n        { type: 'user_input', content: [{ type: 'text', text: 'What is the capital of France?' }] }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      {\n        "type": "text",\n        "text": "What is in this picture?"\n      },\n      {\n        "type": "image",\n        "data": "BASE64_ENCODED_IMAGE",\n        "mime_type": "image/png"\n      }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n      { "type": "text", "text": "What is in this picture?" },\n      { "type": "image", "data": "BASE64_ENCODED_IMAGE", "mime_type": "image/png" }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n      { type: 'text', text: 'What is in this picture?' },\n      { type: 'image', data: 'BASE64_ENCODED_IMAGE', mime_type: 'image/png' }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "tools": [\n      {\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n          "type": "object",\n          "properties": {\n            "location": {\n              "type": "string",\n              "description": "The city and state, e.g. San Francisco, CA"\n            }\n          },\n          "required": [\n            "location"\n          ]\n        }\n      }\n    ],\n    "input": "What is the weather like in Boston, MA?"\n  }\'\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    tools=[{\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n            "type": "object",\n            "properties": {\n                "location": {\n                    "type": "string",\n                    "description": "The city and state, e.g. San Francisco, CA"\n                }\n            },\n            "required": ["location"]\n        }\n    }],\n    input="What is the weather like in Boston, MA?"\n)\nprint(response.steps[-1])\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    tools: [{\n        type: 'function',\n        name: 'get_weather',\n        description: 'Get the current weather in a given location',\n        parameters: {\n            type: 'object',\n            properties: {\n                location: {\n                    type: 'string',\n                    description: 'The city and state, e.g. San Francisco, CA'\n                }\n            },\n            required: ['location']\n        }\n    }],\n    input: 'What is the weather like in Boston, MA?'\n});\nconsole.log(interaction.steps.at(-1));\n",
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "deep-research-pro-preview-12-2025",\n    "input": "Find a cure to cancer",\n    "background": true\n  }\'\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="deep-research-pro-preview-12-2025",\n    input="find a cure to cancer",\n    background=True,\n)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'deep-research-pro-preview-12-2025',\n    input: 'find a cure to cancer',\n    background: true,\n});\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    environment="remote",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Read Hacker News, summarize the top 5 stories, and save results as a markdown file.',\n    environment: 'remote',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Create an interaction with a fresh remote environment.\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a hello world script at /workspace/hello.py.",\n    "environment": "remote"\n  }\')\nINTERACTION_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"agent\\": \\"antigravity-preview-05-2026\\",\n    \\"input\\": \\"Modify the script to accept a name argument and greet the user.\\",\n    \\"environment\\": \\"$ENV_ID\\",\n    \\"previous_interaction_id\\": \\"$INTERACTION_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Step 1: Create an interaction with a fresh remote environment.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a hello world script at /workspace/hello.py.",\n    environment="remote",\n)\nprint(f"Environment ID: {interaction.environment_id}")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ninteraction_2 = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Modify the script to accept a name argument and greet the user.",\n    environment=interaction.environment_id,\n    previous_interaction_id=interaction.id,\n)\nprint(interaction_2.output_text)\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create an interaction with a fresh remote environment.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a hello world script at /workspace/hello.py.',\n    environment: 'remote',\n});\nconsole.log(`Environment ID: ${interaction.environment_id}`);\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nconst interaction2 = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Modify the script to accept a name argument and greet the user.',\n    environment: interaction.environment_id,\n    previous_interaction_id: interaction.id,\n});\nconsole.log(interaction2.output_text);\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "List all files under /workspace and summarize what you find.",\n    "environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "repository",\n          "source": "https://github.com/octocat/Spoon-Knife",\n          "target": "/workspace/repo"\n        },\n        {\n          "type": "inline",\n          "content": "Focus on Python files only.",\n          "target": "/workspace/notes.txt"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="List all files under /workspace and summarize what you find.",\n    environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "repository",\n                "source": "https://github.com/octocat/Spoon-Knife",\n                "target": "/workspace/repo",\n            },\n            {\n                "type": "inline",\n                "content": "Focus on Python files only.",\n                "target": "/workspace/notes.txt",\n            },\n        ],\n    },\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'List all files under /workspace and summarize what you find.',\n    environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'repository',\n                source: 'https://github.com/octocat/Spoon-Knife',\n                target: '/workspace/repo',\n            },\n            {\n                type: 'inline',\n                content: 'Focus on Python files only.',\n                target: '/workspace/notes.txt',\n            },\n        ],\n    },\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "sh",
-                        "source": '# Step 1: Create a custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "code-reviewer",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [{\n        "type": "repository",\n        "source": "https://github.com/octocat/Spoon-Knife",\n        "target": "/workspace/repo"\n      }]\n    }\n  }\'\n\n# Step 2: Use the custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "code-reviewer",\n    "input": "Review the latest changes in /workspace/repo/src and file a summary.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Create a custom agent.\nagent_id = f"code-reviewer-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    base_environment={\n        "type": "remote",\n        "sources": [{\n            "type": "repository",\n            "source": "https://github.com/octocat/Spoon-Knife",\n            "target": "/workspace/repo",\n        }],\n    },\n)\n\n# Step 2: Use the custom agent.\nresult = client.interactions.create(\n    agent=agent_id,\n    input="Review the latest changes in /workspace/repo/src and file a summary.",\n    environment="remote",\n)\nprint(result.output_text)\n\n# [cleanup]\nclient.agents.delete(agent_id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create a custom agent.\nconst agentId = `code-reviewer-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.',\n    base_environment: {\n        type: 'remote',\n        sources: [{\n            type: 'repository',\n            source: 'https://github.com/octocat/Spoon-Knife',\n            target: '/workspace/repo',\n        }],\n    },\n});\n\n// Step 2: Use the custom agent.\nconst result = await ai.interactions.create({\n    agent: agentId,\n    input: 'Review the latest changes in /workspace/repo/src and file a summary.',\n    environment: 'remote',\n});\nconsole.log(result.output_text);\n\n// [cleanup]\nawait ai.agents.delete(agentId);\n// [/cleanup]\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
             hook_ctx=_speakeasy_hook_ctx,
             request=req,
             is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
-            stream=getattr(getattr(request, "body", None), "stream", False) is True
+            stream=getattr(request, "stream", False) is True
             or _speakeasy_response_mode == "streaming",
             retry_config=retry_config,
         )
@@ -2097,8 +1774,7 @@ class AsyncInteractions(AsyncBaseSDK):
                     parser=_speakeasy_parse_response,
                     mode=(
                         "event_stream"
-                        if getattr(getattr(request, "body", None), "stream", False)
-                        is True
+                        if getattr(request, "stream", False) is True
                         else "buffered"
                     ),
                     client_ref=self,
@@ -2123,23 +1799,21 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         id: str,
         *,
-        stream: Union[Literal[False], None] = None,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: Union[Literal[False], None] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2150,23 +1824,21 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         id: str,
         *,
-        stream: Literal[True],
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: Literal[True],
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2177,23 +1849,21 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         id: str,
         *,
-        stream: bool,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: bool,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2203,23 +1873,21 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         id: str,
         *,
-        stream: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        include_input: Optional[bool] = False,
-        api_version: Optional[str] = None,
+        stream: Optional[bool] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param stream: If set to true, the generated content will be streamed incrementally.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param include_input: If set to true, includes the input in the response.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2239,11 +1907,10 @@ class AsyncInteractions(AsyncBaseSDK):
             base_url = self._get_url(base_url, url_variables)
 
         request = models.GetInteractionByIDRequest(
-            id=id,
-            stream=stream,
-            last_event_id=last_event_id,
             include_input=include_input,
-            api_version=api_version,
+            id=id,
+            last_event_id=last_event_id,
+            stream=stream,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -2251,7 +1918,7 @@ class AsyncInteractions(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="GET",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2355,25 +2022,7 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2428,17 +2077,14 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ):
-        r"""Deleting an interaction
+        r"""Deletes an interaction.
 
-        Deletes the interaction by id.
-
-        :param id: The unique identifier of the interaction to delete.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to delete.
+            Format: interactions/{interaction}
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2459,7 +2105,6 @@ class AsyncInteractions(AsyncBaseSDK):
 
         request = models.DeleteInteractionRequest(
             id=id,
-            api_version=api_version,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -2467,7 +2112,7 @@ class AsyncInteractions(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="DELETE",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2541,25 +2186,7 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2614,17 +2241,14 @@ class AsyncInteractions(AsyncBaseSDK):
         self,
         id: str,
         *,
-        api_version: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Canceling an interaction
+        r"""Cancels an interaction.
 
-        Cancels an interaction by id. This only applies to background interactions that are still running.
-
-        :param id: The unique identifier of the interaction to cancel.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to cancel.
+            Format: `interactions/{interaction}`.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2645,7 +2269,6 @@ class AsyncInteractions(AsyncBaseSDK):
 
         request = models.CancelInteractionByIDRequest(
             id=id,
-            api_version=api_version,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -2653,7 +2276,7 @@ class AsyncInteractions(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="POST",
-            path="/{api_version}/interactions/{id}/cancel",
+            path="/{api_version}/interactions/{interactionsId}/cancel",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2689,10 +2312,6 @@ class AsyncInteractions(AsyncBaseSDK):
 
         async def _speakeasy_parse_response(http_res):
             response_data: Any = None
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    interactions.Interaction, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "application/json"):
                 try:
                     response_data = unmarshal_json_response(
@@ -2721,6 +2340,10 @@ class AsyncInteractions(AsyncBaseSDK):
                         http_res,
                         http_res.text,
                     ) from e
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    interactions.Interaction, http_res, validate=False
+                )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
 
@@ -2733,25 +2356,7 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "cancel",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                ]
-            },
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(

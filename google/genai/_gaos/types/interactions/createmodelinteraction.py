@@ -21,6 +21,7 @@ from .. import BaseModel, UNSET_SENTINEL
 from .environment import Environment, EnvironmentParam
 from .generationconfig import GenerationConfig, GenerationConfigParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
+from .localenvironmentconfig import LocalEnvironmentConfig, LocalEnvironmentConfigParam
 from .model import Model
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
@@ -34,92 +35,123 @@ from typing import Dict, List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-CreateModelInteractionResponseFormatParam = TypeAliasType(
-    "CreateModelInteractionResponseFormatParam",
-    Union[List[ResponseFormatParam], ResponseFormatParam],
-)
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-
-CreateModelInteractionResponseFormat = TypeAliasType(
-    "CreateModelInteractionResponseFormat", Union[List[ResponseFormat], ResponseFormat]
-)
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-
 CreateModelInteractionEnvironmentParam = TypeAliasType(
-    "CreateModelInteractionEnvironmentParam", Union[EnvironmentParam, str]
+    "CreateModelInteractionEnvironmentParam",
+    Union[LocalEnvironmentConfigParam, EnvironmentParam, str],
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 CreateModelInteractionEnvironment = TypeAliasType(
-    "CreateModelInteractionEnvironment", Union[Environment, str]
+    "CreateModelInteractionEnvironment", Union[LocalEnvironmentConfig, Environment, str]
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
+
+
+CreateModelInteractionResponseFormatParam = TypeAliasType(
+    "CreateModelInteractionResponseFormatParam",
+    Union[ResponseFormatParam, List[ResponseFormatParam]],
+)
+
+
+CreateModelInteractionResponseFormat = TypeAliasType(
+    "CreateModelInteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
+)
 
 
 class CreateModelInteractionParam(TypedDict):
-    r"""Parameters for creating model interactions"""
+    r"""Interaction for generating the completion using models."""
 
     model: Model
     r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
-    input: InteractionsInputParam
-    r"""The input for the interaction."""
-    stream: NotRequired[bool]
-    r"""Input only. Whether the interaction will be streamed."""
-    store: NotRequired[bool]
-    r"""Input only. Whether to store the response and request for later retrieval."""
     background: NotRequired[bool]
     r"""Input only. Whether to run the model interaction in the background."""
+    environment: NotRequired[CreateModelInteractionEnvironmentParam]
+    r"""The environment configuration for the interaction."""
+    generation_config: NotRequired[GenerationConfigParam]
+    r"""Configuration parameters for model interactions."""
+    labels: NotRequired[Dict[str, str]]
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
+    previous_interaction_id: NotRequired[str]
+    r"""The ID of the previous interaction, if any."""
+    response_format: NotRequired[CreateModelInteractionResponseFormatParam]
+    safety_settings: NotRequired[List[SafetySettingParam]]
+    r"""Safety settings for the interaction."""
+    service_tier: NotRequired[ServiceTier]
+    store: NotRequired[bool]
+    r"""Input only. Whether to store the response and request for later retrieval."""
+    stream: NotRequired[bool]
+    r"""Input only. Whether the interaction will be streamed."""
     system_instruction: NotRequired[str]
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
     r"""A list of tool declarations the model may call during interaction."""
+    webhook_config: NotRequired[WebhookConfigParam]
+    r"""Message for configuring webhook events for a request."""
     response_modalities: NotRequired[List[ResponseModality]]
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
     response_mime_type: NotRequired[str]
     r"""The mime type of the response. This is required if response_format is set."""
-    previous_interaction_id: NotRequired[str]
-    r"""The ID of the previous interaction, if any."""
-    service_tier: NotRequired[ServiceTier]
-    webhook_config: NotRequired[WebhookConfigParam]
-    r"""Message for configuring webhook events for a request."""
-    response_format: NotRequired[CreateModelInteractionResponseFormatParam]
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-    environment: NotRequired[CreateModelInteractionEnvironmentParam]
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-    generation_config: NotRequired[GenerationConfigParam]
-    r"""Configuration parameters for model interactions."""
-    safety_settings: NotRequired[List[SafetySettingParam]]
-    r"""Safety settings for the interaction."""
-    labels: NotRequired[Dict[str, str]]
-    r"""The labels with user-defined metadata for the request."""
+    input: NotRequired[InteractionsInputParam]
+    r"""The input for the interaction."""
 
 
 class CreateModelInteraction(BaseModel):
-    r"""Parameters for creating model interactions"""
+    r"""Interaction for generating the completion using models."""
 
     model: Model
     r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
 
-    input: InteractionsInput
-    r"""The input for the interaction."""
+    background: Optional[bool] = None
+    r"""Input only. Whether to run the model interaction in the background."""
 
-    stream: Optional[bool] = None
-    r"""Input only. Whether the interaction will be streamed."""
+    environment: Optional[CreateModelInteractionEnvironment] = None
+    r"""The environment configuration for the interaction."""
+
+    generation_config: Optional[GenerationConfig] = None
+    r"""Configuration parameters for model interactions."""
+
+    labels: Optional[Dict[str, str]] = None
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
+
+    previous_interaction_id: Optional[str] = None
+    r"""The ID of the previous interaction, if any."""
+
+    response_format: Optional[CreateModelInteractionResponseFormat] = None
+
+    safety_settings: Optional[List[SafetySetting]] = None
+    r"""Safety settings for the interaction."""
+
+    service_tier: Optional[ServiceTier] = None
 
     store: Optional[bool] = None
     r"""Input only. Whether to store the response and request for later retrieval."""
 
-    background: Optional[bool] = None
-    r"""Input only. Whether to run the model interaction in the background."""
+    stream: Optional[bool] = None
+    r"""Input only. Whether the interaction will be streamed."""
 
     system_instruction: Optional[str] = None
     r"""System instruction for the interaction."""
 
     tools: Optional[List[Tool]] = None
     r"""A list of tool declarations the model may call during interaction."""
+
+    webhook_config: Optional[WebhookConfig] = None
+    r"""Message for configuring webhook events for a request."""
 
     response_modalities: Annotated[
         Optional[List[ResponseModality]],
@@ -137,48 +169,29 @@ class CreateModelInteraction(BaseModel):
     ] = None
     r"""The mime type of the response. This is required if response_format is set."""
 
-    previous_interaction_id: Optional[str] = None
-    r"""The ID of the previous interaction, if any."""
-
-    service_tier: Optional[ServiceTier] = None
-
-    webhook_config: Optional[WebhookConfig] = None
-    r"""Message for configuring webhook events for a request."""
-
-    response_format: Optional[CreateModelInteractionResponseFormat] = None
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-    environment: Optional[CreateModelInteractionEnvironment] = None
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-    generation_config: Optional[GenerationConfig] = None
-    r"""Configuration parameters for model interactions."""
-
-    safety_settings: Optional[List[SafetySetting]] = None
-    r"""Safety settings for the interaction."""
-
-    labels: Optional[Dict[str, str]] = None
-    r"""The labels with user-defined metadata for the request."""
+    input: Optional[InteractionsInput] = None
+    r"""The input for the interaction."""
 
     @model_serializer(mode="wrap")
     def _serialize_model(self, handler):
         optional_fields = set(
             [
-                "stream",
-                "store",
                 "background",
-                "system_instruction",
-                "tools",
-                "response_modalities",
-                "response_mime_type",
-                "previous_interaction_id",
-                "service_tier",
-                "webhook_config",
-                "response_format",
                 "environment",
                 "generation_config",
-                "safety_settings",
                 "labels",
+                "previous_interaction_id",
+                "response_format",
+                "safety_settings",
+                "service_tier",
+                "store",
+                "stream",
+                "system_instruction",
+                "tools",
+                "webhook_config",
+                "response_modalities",
+                "response_mime_type",
+                "input",
             ]
         )
         serialized = handler(self)

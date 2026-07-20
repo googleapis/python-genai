@@ -29,6 +29,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GoogleSearchResultDeltaTypedDict(TypedDict):
     result: List[GoogleSearchResultParam]
+    call_id: NotRequired[str]
+    r"""Required. ID to match the ID from the function call block."""
     is_error: NotRequired[bool]
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
@@ -37,6 +39,9 @@ class GoogleSearchResultDeltaTypedDict(TypedDict):
 
 class GoogleSearchResultDelta(BaseModel):
     result: List[GoogleSearchResult]
+
+    call_id: Optional[str] = None
+    r"""Required. ID to match the ID from the function call block."""
 
     is_error: Optional[bool] = None
 
@@ -53,7 +58,7 @@ class GoogleSearchResultDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["is_error", "signature"])
+        optional_fields = set(["call_id", "is_error", "signature"])
         serialized = handler(self)
         m = {}
 

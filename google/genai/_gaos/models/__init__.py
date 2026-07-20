@@ -36,16 +36,10 @@ if TYPE_CHECKING:
     from .createenvironment import (
         CreateEnvironmentGlobals,
         CreateEnvironmentGlobalsTypedDict,
-        CreateEnvironmentRequest,
-        CreateEnvironmentRequestParam,
     )
     from .createinteraction import (
         CreateInteractionGlobals,
         CreateInteractionGlobalsTypedDict,
-        CreateInteractionRequest,
-        CreateInteractionRequestBody,
-        CreateInteractionRequestBodyParam,
-        CreateInteractionRequestParam,
         CreateInteractionResponse,
         CreateInteractionResponseTypedDict,
     )
@@ -55,12 +49,7 @@ if TYPE_CHECKING:
         CreateTriggerRequest,
         CreateTriggerRequestParam,
     )
-    from .createwebhook import (
-        CreateWebhookGlobals,
-        CreateWebhookGlobalsTypedDict,
-        CreateWebhookRequest,
-        CreateWebhookRequestParam,
-    )
+    from .createwebhook import CreateWebhookGlobals, CreateWebhookGlobalsTypedDict
     from .deleteagent import (
         DeleteAgentGlobals,
         DeleteAgentGlobalsTypedDict,
@@ -196,14 +185,8 @@ __all__ = [
     "CreateAgentRequestParam",
     "CreateEnvironmentGlobals",
     "CreateEnvironmentGlobalsTypedDict",
-    "CreateEnvironmentRequest",
-    "CreateEnvironmentRequestParam",
     "CreateInteractionGlobals",
     "CreateInteractionGlobalsTypedDict",
-    "CreateInteractionRequest",
-    "CreateInteractionRequestBody",
-    "CreateInteractionRequestBodyParam",
-    "CreateInteractionRequestParam",
     "CreateInteractionResponse",
     "CreateInteractionResponseTypedDict",
     "CreateTriggerGlobals",
@@ -212,8 +195,6 @@ __all__ = [
     "CreateTriggerRequestParam",
     "CreateWebhookGlobals",
     "CreateWebhookGlobalsTypedDict",
-    "CreateWebhookRequest",
-    "CreateWebhookRequestParam",
     "DeleteAgentGlobals",
     "DeleteAgentGlobalsTypedDict",
     "DeleteAgentRequest",
@@ -309,14 +290,8 @@ _dynamic_imports: dict[str, str] = {
     "CreateAgentRequestParam": ".createagent",
     "CreateEnvironmentGlobals": ".createenvironment",
     "CreateEnvironmentGlobalsTypedDict": ".createenvironment",
-    "CreateEnvironmentRequest": ".createenvironment",
-    "CreateEnvironmentRequestParam": ".createenvironment",
     "CreateInteractionGlobals": ".createinteraction",
     "CreateInteractionGlobalsTypedDict": ".createinteraction",
-    "CreateInteractionRequest": ".createinteraction",
-    "CreateInteractionRequestBody": ".createinteraction",
-    "CreateInteractionRequestBodyParam": ".createinteraction",
-    "CreateInteractionRequestParam": ".createinteraction",
     "CreateInteractionResponse": ".createinteraction",
     "CreateInteractionResponseTypedDict": ".createinteraction",
     "CreateTriggerGlobals": ".createtrigger",
@@ -325,8 +300,6 @@ _dynamic_imports: dict[str, str] = {
     "CreateTriggerRequestParam": ".createtrigger",
     "CreateWebhookGlobals": ".createwebhook",
     "CreateWebhookGlobalsTypedDict": ".createwebhook",
-    "CreateWebhookRequest": ".createwebhook",
-    "CreateWebhookRequestParam": ".createwebhook",
     "DeleteAgentGlobals": ".deleteagent",
     "DeleteAgentGlobalsTypedDict": ".deleteagent",
     "DeleteAgentRequest": ".deleteagent",

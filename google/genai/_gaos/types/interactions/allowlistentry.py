@@ -24,29 +24,43 @@ from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
 TransformParam = TypeAliasType(
-    "TransformParam", Union[Dict[str, str], List[Dict[str, str]]]
+    "TransformParam", Union[List[Dict[str, str]], Dict[str, str]]
 )
 r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 
-Transform = TypeAliasType("Transform", Union[Dict[str, str], List[Dict[str, str]]])
+Transform = TypeAliasType("Transform", Union[List[Dict[str, str]], Dict[str, str]])
 r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 
 class AllowlistEntryParam(TypedDict):
-    r"""A single domain allowlist rule with optional header injection."""
+    r"""A network egress rule that controls which external domains the
+    environment is allowed to reach.  Each rule identifies a target domain
+    and, optionally, a set of HTTP headers to inject into every matching
+    outbound request.
+    """
 
     domain: str
-    r"""Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains."""
+    r"""The domain pattern to match for this rule.
+    Use an exact hostname (e.g., `github.com`), a wildcard prefix
+    (e.g., `*.googleapis.com`), or `*` to match all domains.
+    """
     transform: NotRequired[TransformParam]
     r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 
 class AllowlistEntry(BaseModel):
-    r"""A single domain allowlist rule with optional header injection."""
+    r"""A network egress rule that controls which external domains the
+    environment is allowed to reach.  Each rule identifies a target domain
+    and, optionally, a set of HTTP headers to inject into every matching
+    outbound request.
+    """
 
     domain: str
-    r"""Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains."""
+    r"""The domain pattern to match for this rule.
+    Use an exact hostname (e.g., `github.com`), a wildcard prefix
+    (e.g., `*.googleapis.com`), or `*` to match all domains.
+    """
 
     transform: Optional[Transform] = None
     r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""

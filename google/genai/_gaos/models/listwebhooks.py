@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListWebhooksGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListWebhooksGlobals(BaseModel):
@@ -34,7 +34,7 @@ class ListWebhooksGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -54,31 +54,23 @@ class ListWebhooksGlobals(BaseModel):
 
 
 class ListWebhooksRequestParam(TypedDict):
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
     page_size: NotRequired[int]
-    r"""Optional. The maximum number of webhooks to return. The service may return fewer than
+    r"""The maximum number of webhooks to return. The service may return fewer than
     this value. If unspecified, at most 50 webhooks will be returned.
     The maximum value is 1000.
     """
     page_token: NotRequired[str]
-    r"""Optional. A page token, received from a previous `ListWebhooks` call.
+    r"""A page token, received from a previous `ListWebhooks` call.
     Provide this to retrieve the subsequent page.
     """
 
 
 class ListWebhooksRequest(BaseModel):
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
     page_size: Annotated[
         Optional[int],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. The maximum number of webhooks to return. The service may return fewer than
+    r"""The maximum number of webhooks to return. The service may return fewer than
     this value. If unspecified, at most 50 webhooks will be returned.
     The maximum value is 1000.
     """
@@ -87,13 +79,13 @@ class ListWebhooksRequest(BaseModel):
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. A page token, received from a previous `ListWebhooks` call.
+    r"""A page token, received from a previous `ListWebhooks` call.
     Provide this to retrieve the subsequent page.
     """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "page_size", "page_token"])
+        optional_fields = set(["page_size", "page_token"])
         serialized = handler(self)
         m = {}
 

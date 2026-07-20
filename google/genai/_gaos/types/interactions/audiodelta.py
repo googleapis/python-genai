@@ -50,12 +50,12 @@ class AudioDeltaTypedDict(TypedDict):
     r"""The number of audio channels."""
     data: NotRequired[str]
     mime_type: NotRequired[AudioDeltaMimeType]
-    rate: NotRequired[int]
-    r"""Deprecated. Use sample_rate instead. The value is ignored."""
     sample_rate: NotRequired[int]
     r"""The sample rate of the audio."""
     type: Literal["audio"]
     uri: NotRequired[str]
+    rate: NotRequired[int]
+    r"""Deprecated. Use sample_rate instead. The value is ignored."""
 
 
 class AudioDelta(BaseModel):
@@ -65,14 +65,6 @@ class AudioDelta(BaseModel):
     data: Optional[str] = None
 
     mime_type: Optional[AudioDeltaMimeType] = None
-
-    rate: Annotated[
-        Optional[int],
-        pydantic.Field(
-            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-        ),
-    ] = None
-    r"""Deprecated. Use sample_rate instead. The value is ignored."""
 
     sample_rate: Optional[int] = None
     r"""The sample rate of the audio."""
@@ -84,10 +76,18 @@ class AudioDelta(BaseModel):
 
     uri: Optional[str] = None
 
+    rate: Annotated[
+        Optional[int],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Deprecated. Use sample_rate instead. The value is ignored."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
-            ["channels", "data", "mime_type", "rate", "sample_rate", "uri"]
+            ["channels", "data", "mime_type", "sample_rate", "uri", "rate"]
         )
         serialized = handler(self)
         m = {}

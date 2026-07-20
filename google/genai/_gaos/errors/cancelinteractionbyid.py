@@ -32,7 +32,7 @@ class CancelInteractionByIDServerErrorData(BaseModel):
 
 @dataclass(unsafe_hash=True)
 class CancelInteractionByIDServerError(GenAiError):
-    r"""Error cancelling interaction"""
+    r"""Server Error"""
 
     data: CancelInteractionByIDServerErrorData = field(hash=False)
 
@@ -55,7 +55,7 @@ class CancelInteractionByIDClientErrorData(BaseModel):
 
 @dataclass(unsafe_hash=True)
 class CancelInteractionByIDClientError(GenAiError):
-    r"""Error cancelling interaction"""
+    r"""Client Error"""
 
     data: CancelInteractionByIDClientErrorData = field(hash=False)
 

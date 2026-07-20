@@ -19,6 +19,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils import validate_const
+from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -49,6 +50,8 @@ class InteractionStatusUpdateTypedDict(TypedDict):
     this event.
     """
     event_type: Literal["interaction.status_update"]
+    metadata: NotRequired[StreamMetadataTypedDict]
+    r"""Optional metadata accompanying ANY streamed event."""
 
 
 class InteractionStatusUpdate(BaseModel):
@@ -69,9 +72,12 @@ class InteractionStatusUpdate(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "interaction.status_update"
 
+    metadata: Optional[StreamMetadata] = None
+    r"""Optional metadata accompanying ANY streamed event."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id"])
+        optional_fields = set(["event_id", "metadata"])
         serialized = handler(self)
         m = {}
 

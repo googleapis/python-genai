@@ -55,20 +55,20 @@ class UnknownContent(BaseModel):
 
 
 _CONTENT_VARIANTS: dict[str, Any] = {
-    "text": TextContent,
-    "image": ImageContent,
     "audio": AudioContent,
     "document": DocumentContent,
+    "image": ImageContent,
+    "text": TextContent,
     "video": VideoContent,
 }
 
 
 Content = Annotated[
     Union[
-        TextContent,
-        ImageContent,
         AudioContent,
         DocumentContent,
+        ImageContent,
+        TextContent,
         VideoContent,
         UnknownContent,
     ],
