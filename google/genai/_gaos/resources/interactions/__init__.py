@@ -95,6 +95,7 @@ from ...types.interactions.thoughtstep import ThoughtStep
 from ...types.interactions.tool import Tool
 from ...types.interactions.toolchoiceconfig import ToolChoiceConfig
 from ...types.interactions.toolchoicetype import ToolChoiceType
+from ...types.interactions.transcriptionconfig import TranscriptionConfig
 from ...types.interactions.urlcitation import URLCitation
 from ...types.interactions.urlcontextcallarguments import URLContextCallArguments
 from ...types.interactions.urlcontextcallstep import URLContextCallStep
@@ -106,6 +107,7 @@ from ...types.interactions.videoconfig import VideoConfig
 from ...types.interactions.videocontent import VideoContent
 from ...types.interactions.videoresponseformat import VideoResponseFormat
 from ...types.interactions.webhookconfig import WebhookConfig
+from ...types.interactions.wordinfo import WordInfo
 from . import codeexecutioncallstep
 from . import codemenderagentconfig
 from . import environment
@@ -201,6 +203,7 @@ __all__ = [
     "Tool",
     "ToolChoiceConfig",
     "ToolChoiceType",
+    "TranscriptionConfig",
     "URLCitation",
     "URLContextCallArguments",
     "URLContextCallStep",
@@ -212,6 +215,7 @@ __all__ = [
     "VideoContent",
     "VideoResponseFormat",
     "WebhookConfig",
+    "WordInfo",
     "codeexecutioncallstep",
     "codemenderagentconfig",
     "environment",

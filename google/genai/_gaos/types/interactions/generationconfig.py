@@ -24,6 +24,7 @@ from .thinkinglevel import ThinkingLevel
 from .thinkingsummaries import ThinkingSummaries
 from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
 from .toolchoicetype import ToolChoiceType
+from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
 from .videoconfig import VideoConfig, VideoConfigParam
 import pydantic
 from pydantic import model_serializer
@@ -62,6 +63,8 @@ class GenerationConfigParam(TypedDict):
     r"""The tool choice configuration."""
     top_p: NotRequired[float]
     r"""The maximum cumulative probability of tokens to consider when sampling."""
+    transcription_config: NotRequired[TranscriptionConfigParam]
+    r"""Configuration for speech recognition (transcription)."""
     video_config: NotRequired[VideoConfigParam]
     r"""Configuration options for video generation."""
 
@@ -102,6 +105,9 @@ class GenerationConfig(BaseModel):
     top_p: Optional[float] = None
     r"""The maximum cumulative probability of tokens to consider when sampling."""
 
+    transcription_config: Optional[TranscriptionConfig] = None
+    r"""Configuration for speech recognition (transcription)."""
+
     video_config: Optional[VideoConfig] = None
     r"""Configuration options for video generation."""
 
@@ -119,6 +125,7 @@ class GenerationConfig(BaseModel):
                 "thinking_summaries",
                 "tool_choice",
                 "top_p",
+                "transcription_config",
                 "video_config",
             ]
         )
