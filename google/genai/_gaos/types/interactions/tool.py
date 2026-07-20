@@ -27,6 +27,7 @@ from .googlemaps import GoogleMaps, GoogleMapsParam
 from .googlesearch import GoogleSearch, GoogleSearchParam
 from .mcpserver import MCPServer, MCPServerParam
 from .retrieval import Retrieval, RetrievalParam
+from .toolsearch import ToolSearch, ToolSearchParam
 from .urlcontext import URLContext, URLContextParam
 from functools import partial
 from pydantic import ConfigDict
@@ -40,6 +41,7 @@ ToolParam = TypeAliasType(
     Union[
         CodeExecutionParam,
         URLContextParam,
+        ToolSearchParam,
         GoogleSearchParam,
         FunctionParam,
         FileSearchParam,
@@ -72,6 +74,7 @@ _TOOL_VARIANTS: dict[str, Any] = {
     "file_search": FileSearch,
     "google_maps": GoogleMaps,
     "retrieval": Retrieval,
+    "tool_search": ToolSearch,
 }
 
 
@@ -86,6 +89,7 @@ Tool = Annotated[
         FileSearch,
         GoogleMaps,
         Retrieval,
+        ToolSearch,
         UnknownTool,
     ],
     BeforeValidator(
