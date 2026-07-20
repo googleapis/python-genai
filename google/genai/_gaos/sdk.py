@@ -39,6 +39,7 @@ import weakref
 
 if TYPE_CHECKING:
     from .agents import Agents, AsyncAgents
+    from .environments import AsyncEnvironments, Environments
     from .interactions import AsyncInteractions, Interactions
     from .triggers import AsyncTriggers, Triggers
     from .webhooks import AsyncWebhooks, Webhooks
@@ -55,11 +56,13 @@ class GenAI(BaseSDK):
     def with_streaming_response(self):
         return GenAIWithStreamingResponse(self)
 
+    environments: "Environments"
     interactions: "Interactions"
     webhooks: "Webhooks"
     agents: "Agents"
     triggers: "Triggers"
     _sub_sdk_map = {
+        "environments": (".environments", "Environments"),
         "interactions": (".interactions", "Interactions"),
         "webhooks": (".webhooks", "Webhooks"),
         "agents": (".agents", "Agents"),
@@ -208,6 +211,10 @@ class GenAIWithRawResponse:
         self._sdk = sdk
 
     @property
+    def environments(self):
+        return self._sdk.environments.with_raw_response
+
+    @property
     def interactions(self):
         return self._sdk.interactions.with_raw_response
 
@@ -227,6 +234,10 @@ class GenAIWithRawResponse:
 class GenAIWithStreamingResponse:
     def __init__(self, sdk: GenAI) -> None:
         self._sdk = sdk
+
+    @property
+    def environments(self):
+        return self._sdk.environments.with_streaming_response
 
     @property
     def interactions(self):
@@ -256,11 +267,13 @@ class AsyncGenAI(AsyncBaseSDK):
     def with_streaming_response(self):
         return AsyncGenAIWithStreamingResponse(self)
 
+    environments: "AsyncEnvironments"
     interactions: "AsyncInteractions"
     webhooks: "AsyncWebhooks"
     agents: "AsyncAgents"
     triggers: "AsyncTriggers"
     _sub_sdk_map = {
+        "environments": (".environments", "AsyncEnvironments"),
         "interactions": (".interactions", "AsyncInteractions"),
         "webhooks": (".webhooks", "AsyncWebhooks"),
         "agents": (".agents", "AsyncAgents"),
@@ -407,6 +420,10 @@ class AsyncGenAIWithRawResponse:
         self._sdk = sdk
 
     @property
+    def environments(self):
+        return self._sdk.environments.with_raw_response
+
+    @property
     def interactions(self):
         return self._sdk.interactions.with_raw_response
 
@@ -426,6 +443,10 @@ class AsyncGenAIWithRawResponse:
 class AsyncGenAIWithStreamingResponse:
     def __init__(self, sdk: AsyncGenAI) -> None:
         self._sdk = sdk
+
+    @property
+    def environments(self):
+        return self._sdk.environments.with_streaming_response
 
     @property
     def interactions(self):

@@ -16,12 +16,30 @@
 import asyncio
 import os
 from typing import Any, Optional, Union
+import warnings
 
 import google.auth
 import pydantic
 
+from . import _common
 from ._api_client import BaseApiClient
 from ._base_url import get_base_url
+from ._gaos.google_genai import (
+    AsyncGeminiNextGenAgents,
+    AsyncGeminiNextGenEnvironments,
+    AsyncGeminiNextGenInteractions,
+    AsyncGeminiNextGenTriggers,
+    AsyncGeminiNextGenWebhooks,
+    GeminiNextGenAgents,
+    GeminiNextGenEnvironments,
+    GeminiNextGenInteractions,
+    GeminiNextGenTriggers,
+    GeminiNextGenWebhooks,
+    build_google_genai_async_client,
+    build_google_genai_client,
+)
+from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
+from ._gaos.sdk import GenAI as GeminiNextGenAPI
 from ._replay_api_client import ReplayApiClient
 from .batches import AsyncBatches, Batches
 from .caches import AsyncCaches, Caches
@@ -34,25 +52,6 @@ from .operations import AsyncOperations, Operations
 from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
 from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
-
-import warnings
-
-from . import _common
-
-from ._gaos.google_genai import (
-    AsyncGeminiNextGenAgents,
-    AsyncGeminiNextGenInteractions,
-    AsyncGeminiNextGenTriggers,
-    AsyncGeminiNextGenWebhooks,
-    GeminiNextGenAgents,
-    GeminiNextGenInteractions,
-    GeminiNextGenTriggers,
-    GeminiNextGenWebhooks,
-    build_google_genai_async_client,
-    build_google_genai_client,
-)
-from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
-from ._gaos.sdk import GenAI as GeminiNextGenAPI
 
 _agent_experimental_warned = False
 _trigger_experimental_warned = False
@@ -78,6 +77,7 @@ class AsyncClient:
     self._interactions: Optional[AsyncGeminiNextGenInteractions] = None
     self._webhooks: Optional[AsyncGeminiNextGenWebhooks] = None
     self._triggers: Optional[AsyncGeminiNextGenTriggers] = None
+    self._environments: Optional[AsyncGeminiNextGenEnvironments] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
@@ -98,6 +98,12 @@ class AsyncClient:
     if self._webhooks is None:
       self._webhooks = AsyncGeminiNextGenWebhooks(self._api_client)
     return self._webhooks
+
+  @property
+  def environments(self) -> AsyncGeminiNextGenEnvironments:
+    if self._environments is None:
+      self._environments = AsyncGeminiNextGenEnvironments(self._api_client)
+    return self._environments
 
   @property
   def agents(self) -> AsyncGeminiNextGenAgents:
@@ -380,6 +386,7 @@ class Client:
     self._interactions: Optional[GeminiNextGenInteractions] = None
     self._webhooks: Optional[GeminiNextGenWebhooks] = None
     self._triggers: Optional[GeminiNextGenTriggers] = None
+    self._environments: Optional[GeminiNextGenEnvironments] = None
 
   @staticmethod
   def _get_api_client(
@@ -436,6 +443,12 @@ class Client:
     if self._webhooks is None:
       self._webhooks = GeminiNextGenWebhooks(self._api_client)
     return self._webhooks
+
+  @property
+  def environments(self) -> GeminiNextGenEnvironments:
+    if self._environments is None:
+      self._environments = GeminiNextGenEnvironments(self._api_client)
+    return self._environments
 
   @property
   def agents(self) -> GeminiNextGenAgents:

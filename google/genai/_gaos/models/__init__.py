@@ -61,6 +61,10 @@ if TYPE_CHECKING:
         DeleteAgentRequest,
         DeleteAgentRequestParam,
     )
+    from .deleteenvironment import (
+        DeleteEnvironmentRequest,
+        DeleteEnvironmentRequestParam,
+    )
     from .deleteinteraction import (
         DeleteInteractionGlobals,
         DeleteInteractionGlobalsTypedDict,
@@ -84,6 +88,11 @@ if TYPE_CHECKING:
         GetAgentGlobalsTypedDict,
         GetAgentRequest,
         GetAgentRequestParam,
+    )
+    from .getenvironment import GetEnvironmentRequest, GetEnvironmentRequestParam
+    from .getenvironmentfiles import (
+        GetEnvironmentFilesRequest,
+        GetEnvironmentFilesRequestParam,
     )
     from .getinteractionbyid import (
         GetInteractionByIDGlobals,
@@ -111,6 +120,7 @@ if TYPE_CHECKING:
         ListAgentsRequest,
         ListAgentsRequestParam,
     )
+    from .listenvironments import ListEnvironmentsRequest, ListEnvironmentsRequestParam
     from .listtriggerexecutions import (
         ListTriggerExecutionsGlobals,
         ListTriggerExecutionsGlobalsTypedDict,
@@ -190,6 +200,8 @@ __all__ = [
     "DeleteAgentGlobalsTypedDict",
     "DeleteAgentRequest",
     "DeleteAgentRequestParam",
+    "DeleteEnvironmentRequest",
+    "DeleteEnvironmentRequestParam",
     "DeleteInteractionGlobals",
     "DeleteInteractionGlobalsTypedDict",
     "DeleteInteractionRequest",
@@ -206,6 +218,10 @@ __all__ = [
     "GetAgentGlobalsTypedDict",
     "GetAgentRequest",
     "GetAgentRequestParam",
+    "GetEnvironmentFilesRequest",
+    "GetEnvironmentFilesRequestParam",
+    "GetEnvironmentRequest",
+    "GetEnvironmentRequestParam",
     "GetInteractionByIDGlobals",
     "GetInteractionByIDGlobalsTypedDict",
     "GetInteractionByIDRequest",
@@ -224,6 +240,8 @@ __all__ = [
     "ListAgentsGlobalsTypedDict",
     "ListAgentsRequest",
     "ListAgentsRequestParam",
+    "ListEnvironmentsRequest",
+    "ListEnvironmentsRequestParam",
     "ListTriggerExecutionsGlobals",
     "ListTriggerExecutionsGlobalsTypedDict",
     "ListTriggerExecutionsRequest",
@@ -287,6 +305,8 @@ _dynamic_imports: dict[str, str] = {
     "DeleteAgentGlobalsTypedDict": ".deleteagent",
     "DeleteAgentRequest": ".deleteagent",
     "DeleteAgentRequestParam": ".deleteagent",
+    "DeleteEnvironmentRequest": ".deleteenvironment",
+    "DeleteEnvironmentRequestParam": ".deleteenvironment",
     "DeleteInteractionGlobals": ".deleteinteraction",
     "DeleteInteractionGlobalsTypedDict": ".deleteinteraction",
     "DeleteInteractionRequest": ".deleteinteraction",
@@ -303,6 +323,10 @@ _dynamic_imports: dict[str, str] = {
     "GetAgentGlobalsTypedDict": ".getagent",
     "GetAgentRequest": ".getagent",
     "GetAgentRequestParam": ".getagent",
+    "GetEnvironmentRequest": ".getenvironment",
+    "GetEnvironmentRequestParam": ".getenvironment",
+    "GetEnvironmentFilesRequest": ".getenvironmentfiles",
+    "GetEnvironmentFilesRequestParam": ".getenvironmentfiles",
     "GetInteractionByIDGlobals": ".getinteractionbyid",
     "GetInteractionByIDGlobalsTypedDict": ".getinteractionbyid",
     "GetInteractionByIDRequest": ".getinteractionbyid",
@@ -321,6 +345,8 @@ _dynamic_imports: dict[str, str] = {
     "ListAgentsGlobalsTypedDict": ".listagents",
     "ListAgentsRequest": ".listagents",
     "ListAgentsRequestParam": ".listagents",
+    "ListEnvironmentsRequest": ".listenvironments",
+    "ListEnvironmentsRequestParam": ".listenvironments",
     "ListTriggerExecutionsGlobals": ".listtriggerexecutions",
     "ListTriggerExecutionsGlobalsTypedDict": ".listtriggerexecutions",
     "ListTriggerExecutionsRequest": ".listtriggerexecutions",
