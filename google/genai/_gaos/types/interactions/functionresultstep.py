@@ -42,14 +42,14 @@ FunctionResultStepResultUnionParam = TypeAliasType(
     "FunctionResultStepResultUnionParam",
     Union[FunctionResultStepResultParam, List[FunctionResultSubcontentParam], str],
 )
-r"""The result of the tool call."""
+r"""Required. The result of the tool call."""
 
 
 FunctionResultStepResultUnion = TypeAliasType(
     "FunctionResultStepResultUnion",
     Union[FunctionResultStepResult, List[FunctionResultSubcontent], str],
 )
-r"""The result of the tool call."""
+r"""Required. The result of the tool call."""
 
 
 class FunctionResultStepParam(TypedDict):
@@ -58,7 +58,7 @@ class FunctionResultStepParam(TypedDict):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
     result: FunctionResultStepResultUnionParam
-    r"""The result of the tool call."""
+    r"""Required. The result of the tool call."""
     is_error: NotRequired[bool]
     r"""Whether the tool call resulted in an error."""
     name: NotRequired[str]
@@ -73,7 +73,7 @@ class FunctionResultStep(BaseModel):
     r"""Required. ID to match the ID from the function call block."""
 
     result: FunctionResultStepResultUnion
-    r"""The result of the tool call."""
+    r"""Required. The result of the tool call."""
 
     is_error: Optional[bool] = None
     r"""Whether the tool call resulted in an error."""

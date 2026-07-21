@@ -42,9 +42,11 @@ from . import _common
 from ._gaos.google_genai import (
     AsyncGeminiNextGenAgents,
     AsyncGeminiNextGenInteractions,
+    AsyncGeminiNextGenTriggers,
     AsyncGeminiNextGenWebhooks,
     GeminiNextGenAgents,
     GeminiNextGenInteractions,
+    GeminiNextGenTriggers,
     GeminiNextGenWebhooks,
     build_google_genai_async_client,
     build_google_genai_client,
@@ -53,6 +55,7 @@ from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
 from ._gaos.sdk import GenAI as GeminiNextGenAPI
 
 _agent_experimental_warned = False
+_trigger_experimental_warned = False
 
 
 class AsyncClient:
@@ -74,6 +77,7 @@ class AsyncClient:
     self._agents: Optional[AsyncGeminiNextGenAgents] = None
     self._interactions: Optional[AsyncGeminiNextGenInteractions] = None
     self._webhooks: Optional[AsyncGeminiNextGenWebhooks] = None
+    self._triggers: Optional[AsyncGeminiNextGenTriggers] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
@@ -108,6 +112,20 @@ class AsyncClient:
     if self._agents is None:
       self._agents = AsyncGeminiNextGenAgents(self._api_client)
     return self._agents
+
+  @property
+  def triggers(self) -> AsyncGeminiNextGenTriggers:
+    global _trigger_experimental_warned
+    if not _trigger_experimental_warned:
+      _trigger_experimental_warned = True
+      warnings.warn(
+          'Triggers usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    if self._triggers is None:
+      self._triggers = AsyncGeminiNextGenTriggers(self._api_client)
+    return self._triggers
 
   @property
   def models(self) -> AsyncModels:
@@ -361,6 +379,7 @@ class Client:
     self._agents: Optional[GeminiNextGenAgents] = None
     self._interactions: Optional[GeminiNextGenInteractions] = None
     self._webhooks: Optional[GeminiNextGenWebhooks] = None
+    self._triggers: Optional[GeminiNextGenTriggers] = None
 
   @staticmethod
   def _get_api_client(
@@ -431,6 +450,20 @@ class Client:
     if self._agents is None:
       self._agents = GeminiNextGenAgents(self._api_client)
     return self._agents
+
+  @property
+  def triggers(self) -> GeminiNextGenTriggers:
+    global _trigger_experimental_warned
+    if not _trigger_experimental_warned:
+      _trigger_experimental_warned = True
+      warnings.warn(
+          'Triggers usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
+    if self._triggers is None:
+      self._triggers = GeminiNextGenTriggers(self._api_client)
+    return self._triggers
 
   @property
   def chats(self) -> Chats:

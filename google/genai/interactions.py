@@ -20,6 +20,12 @@ from typing import Union
 
 from typing_extensions import Literal, Required, TypedDict
 
+# Import triggers before interactions so that interactions.Interaction (the
+# resource class) overrides triggers.Interaction (the TypeAliasType representing
+# nested interactions inside triggers) in the exported namespace, resolving
+# the name collision.
+from ._gaos.types.triggers import *  # noqa: F401,F403
+from ._gaos.types.triggers import __all__ as _triggers_all
 from ._gaos.types.interactions import *  # noqa: F401,F403
 from ._gaos.types.interactions import __all__ as _interactions_all
 from ._gaos.models.listagents import ListAgentsRequestParam as AgentListParams
@@ -129,4 +135,6 @@ __all__ = [
     "WebhookRotateSigningSecretParams",
     "WebhookUpdateParams",
 ]
-__all__ = __all__ + list(_interactions_all) + list(_resources_all)
+# Ensure _interactions_all is appended last so interactions.Interaction wins
+# when doing wildcard imports from this module.
+__all__ = __all__ + list(_triggers_all) + list(_resources_all) + list(_interactions_all)

@@ -18,11 +18,22 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from ..interactions import environment as interactions_environment
+from ..interactions import (
+    antigravityagentconfig as interactions_antigravityagentconfig,
+    environment as interactions_environment,
+)
 from .agenttool import AgentTool, AgentToolParam
 from pydantic import model_serializer
 from typing import List, Optional, Union
 from typing_extensions import NotRequired, TypeAliasType, TypedDict
+
+
+AgentConfigParam = interactions_antigravityagentconfig.AntigravityAgentConfigParam
+r"""Configuration parameters for the agent."""
+
+
+AgentConfig = interactions_antigravityagentconfig.AntigravityAgentConfig
+r"""Configuration parameters for the agent."""
 
 
 BaseEnvironmentParam = TypeAliasType(
@@ -50,6 +61,8 @@ class AgentParam(TypedDict):
     }
     """
 
+    agent_config: NotRequired[AgentConfigParam]
+    r"""Configuration parameters for the agent."""
     base_agent: NotRequired[str]
     r"""The base agent to extend."""
     base_environment: NotRequired[BaseEnvironmentParam]
@@ -77,6 +90,9 @@ class Agent(BaseModel):
     }
     """
 
+    agent_config: Optional[AgentConfig] = None
+    r"""Configuration parameters for the agent."""
+
     base_agent: Optional[str] = None
     r"""The base agent to extend."""
 
@@ -99,6 +115,7 @@ class Agent(BaseModel):
     def serialize_model(self, handler):
         optional_fields = set(
             [
+                "agent_config",
                 "base_agent",
                 "base_environment",
                 "description",

@@ -40,6 +40,7 @@ import weakref
 if TYPE_CHECKING:
     from .agents import Agents, AsyncAgents
     from .interactions import AsyncInteractions, Interactions
+    from .triggers import AsyncTriggers, Triggers
     from .webhooks import AsyncWebhooks, Webhooks
 
 
@@ -57,10 +58,12 @@ class GenAI(BaseSDK):
     interactions: "Interactions"
     webhooks: "Webhooks"
     agents: "Agents"
+    triggers: "Triggers"
     _sub_sdk_map = {
         "interactions": (".interactions", "Interactions"),
         "webhooks": (".webhooks", "Webhooks"),
         "agents": (".agents", "Agents"),
+        "triggers": (".triggers", "Triggers"),
     }
 
     def __init__(
@@ -216,6 +219,10 @@ class GenAIWithRawResponse:
     def agents(self):
         return self._sdk.agents.with_raw_response
 
+    @property
+    def triggers(self):
+        return self._sdk.triggers.with_raw_response
+
 
 class GenAIWithStreamingResponse:
     def __init__(self, sdk: GenAI) -> None:
@@ -233,6 +240,10 @@ class GenAIWithStreamingResponse:
     def agents(self):
         return self._sdk.agents.with_streaming_response
 
+    @property
+    def triggers(self):
+        return self._sdk.triggers.with_streaming_response
+
 
 class AsyncGenAI(AsyncBaseSDK):
     r"""Gemini API: The Gemini Interactions API allows developers to build generative AI applications using Gemini models. Gemini is our most capable model, built from the ground up to be multimodal. It can generalize and seamlessly understand, operate across, and combine different types of information including language, images, audio, video, and code. You can use the Gemini API for use cases like reasoning across text and images, content generation, dialogue agents, summarization and classification systems, and more."""
@@ -248,10 +259,12 @@ class AsyncGenAI(AsyncBaseSDK):
     interactions: "AsyncInteractions"
     webhooks: "AsyncWebhooks"
     agents: "AsyncAgents"
+    triggers: "AsyncTriggers"
     _sub_sdk_map = {
         "interactions": (".interactions", "AsyncInteractions"),
         "webhooks": (".webhooks", "AsyncWebhooks"),
         "agents": (".agents", "AsyncAgents"),
+        "triggers": (".triggers", "AsyncTriggers"),
     }
 
     def __init__(
@@ -405,6 +418,10 @@ class AsyncGenAIWithRawResponse:
     def agents(self):
         return self._sdk.agents.with_raw_response
 
+    @property
+    def triggers(self):
+        return self._sdk.triggers.with_raw_response
+
 
 class AsyncGenAIWithStreamingResponse:
     def __init__(self, sdk: AsyncGenAI) -> None:
@@ -421,3 +438,7 @@ class AsyncGenAIWithStreamingResponse:
     @property
     def agents(self):
         return self._sdk.agents.with_streaming_response
+
+    @property
+    def triggers(self):
+        return self._sdk.triggers.with_streaming_response

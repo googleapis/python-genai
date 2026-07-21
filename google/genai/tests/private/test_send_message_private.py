@@ -161,3 +161,90 @@ def test_send_message_multi_turn_afc_enabled_FC_FR_parts(client):
   )
   with pytest_helper.exception_if_vertex(client, ClientError):
     chat.send_message('What is the stock price of symbol GOOG?')
+
+
+@pytest.mark.asyncio
+async def test_async_send_message_function_tool_afc_disabled(client):
+  chat = client.aio.chats.create(
+      model=MODEL_NAME,
+      config={
+          'tools': [get_weather],
+      },
+  )
+  await chat.send_message('What is the weather in Boston?')
+  history = chat.get_history()
+  assert len(history) == 2
+  assert history[0].role == 'user'
+  assert history[0].parts[0].text == 'What is the weather in Boston?'
+  assert history[1].role == 'model'
+  assert len(history[1].parts) == 1
+  assert history[1].parts[0].function_call.name == 'get_weather'
+  assert history[1].parts[0].function_call.args == {'city': 'Boston'}
+
+
+@pytest.mark.asyncio
+async def test_async_send_message_function_tool_afc_enabled(client):
+  chat = client.aio.chats.create(
+      model=MODEL_NAME,
+      config={
+          'tools': [get_weather],
+          'automatic_function_calling': {'enable': True},
+      },
+  )
+  await chat.send_message('What is the weather in Boston?')
+  history = chat.get_history()
+  assert len(history) == 4
+  assert history[0].role == 'user'
+  assert history[0].parts[0].text == 'What is the weather in Boston?'
+  assert history[1].role == 'model'
+  assert history[1].parts[0].function_call.name == 'get_weather'
+  assert history[1].parts[0].function_call.args == {'city': 'Boston'}
+  assert history[2].role == 'user'
+  assert history[2].parts[0].function_response.name == 'get_weather'
+  assert history[3].role == 'model'
+  assert 'sunny' in history[3].parts[0].text.lower()
+
+
+@pytest.mark.asyncio
+async def test_async_send_message_function_tool_afc_enabled_multi_turn(client):
+  chat = client.aio.chats.create(
+      model=MODEL_NAME,
+      config={
+          'tools': [get_weather, get_stock_price],
+          'automatic_function_calling': {'enable': True},
+      },
+  )
+  await chat.send_message('What is the weather in Boston?')
+  history = chat.get_history()
+  assert len(history) == 4
+  assert history[0].role == 'user'
+  assert history[0].parts[0].text == 'What is the weather in Boston?'
+  assert history[1].role == 'model'
+  assert history[1].parts[0].function_call.name == 'get_weather'
+  assert history[1].parts[0].function_call.args == {'city': 'Boston'}
+  assert history[2].role == 'user'
+  assert history[2].parts[0].function_response.name == 'get_weather'
+  assert history[3].role == 'model'
+  assert 'sunny' in history[3].parts[0].text.lower()
+
+  await chat.send_message('What is the stock price of symbol GOOG?')
+  history = chat.get_history()
+  assert len(history) == 8
+  assert history[0].role == 'user'
+  assert history[0].parts[0].text == 'What is the weather in Boston?'
+  assert history[1].role == 'model'
+  assert history[1].parts[0].function_call.name == 'get_weather'
+  assert history[1].parts[0].function_call.args == {'city': 'Boston'}
+  assert history[2].role == 'user'
+  assert history[2].parts[0].function_response.name == 'get_weather'
+  assert history[3].role == 'model'
+  assert 'sunny' in history[3].parts[0].text.lower()
+  assert history[4].role == 'user'
+  assert history[4].parts[0].text == 'What is the stock price of symbol GOOG?'
+  assert history[5].role == 'model'
+  assert history[5].parts[0].function_call.name == 'get_stock_price'
+  assert history[5].parts[0].function_call.args == {'symbol': 'GOOG'}
+  assert history[6].role == 'user'
+  assert history[6].parts[0].function_response.name == 'get_stock_price'
+  assert history[7].role == 'model'
+  assert '1000' in history[7].parts[0].text

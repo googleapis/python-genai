@@ -17,7 +17,7 @@ Google Gen AI SDK
 Google Gen AI Python SDK provides an interface for developers to integrate
 Google's generative models into their Python applications. It supports the
 `Gemini Developer API <https://ai.google.dev/gemini-api/docs>`_ and
-`Vertex AI <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview>`_
+`Gemini Enterprise Agent Platform API <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/beginners-guide>`_
 APIs.
 
 Installation
@@ -46,7 +46,7 @@ Create a client
 ---------------
 
 Please run one of the following code blocks to create a client for
-different services (`Gemini Developer API <https://ai.google.dev/gemini-api/docs>`_ or `Vertex AI <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/overview>`_).
+different services (`Gemini Developer API <https://ai.google.dev/gemini-api/docs>`_ or `Gemini Enterprise Agent Platform API <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/beginners-guide>`_).
 
 .. code:: python
 
@@ -59,9 +59,9 @@ different services (`Gemini Developer API <https://ai.google.dev/gemini-api/docs
 
     from google import genai
 
-    # Only run this block for Vertex AI API
+    # Only run this block for Gemini Enterprise Agent Platform API
     client = genai.Client(
-        vertexai=True, project='your-project-id', location='us-central1'
+        enterprise=True, project='your-project-id', location='us-central1'
     )
 
 
@@ -69,7 +69,7 @@ different services (`Gemini Developer API <https://ai.google.dev/gemini-api/docs
 
 You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini
-Developer API or the Gemini API in Vertex AI.
+Developer API or the Gemini API in Gemini Enterprise Agent Platform.
 
 **Gemini Developer API:** Set the `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
 It will automatically be picked up by the client. It's recommended that you
@@ -81,12 +81,12 @@ precedence.
     export GEMINI_API_KEY='your-api-key'
 
 
-**Gemini API on Vertex AI:** Set `GOOGLE_GENAI_USE_VERTEXAI`,
+**Gemini API on Gemini Enterprise Agent Platform:** Set `GOOGLE_GENAI_USE_ENTERPRISE`,
 `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 .. code:: bash
 
-    export GOOGLE_GENAI_USE_VERTEXAI=true
+    export GOOGLE_GENAI_USE_ENTERPRISE=true
     export GOOGLE_CLOUD_PROJECT='your-project-id'
     export GOOGLE_CLOUD_LOCATION='us-central1'
 
@@ -128,7 +128,7 @@ To explicitly close the async client:
     from google.genai import Client
 
     aclient = Client(
-        vertexai=True, project='my-project-id', location='us-central1'
+        enterprise=True, project='my-project-id', location='us-central1'
     ).aio
     response_1 = await aclient.models.generate_content(
         model=MODEL_ID,
@@ -187,7 +187,7 @@ API Selection
 
 By default, the SDK uses the beta API endpoints provided by Google to support preview features in the APIs. The stable API endpoints can be selected by setting the API version to `v1`.
 
-To set the API version use ``http_options``. For example, to set the API version to ``v1`` for Vertex AI:
+To set the API version use ``http_options``. For example, to set the API version to ``v1`` for Gemini Enterprise Agent Platform API:
 
 .. code:: python
 
@@ -195,7 +195,7 @@ To set the API version use ``http_options``. For example, to set the API version
     from google.genai import types
 
     client = genai.Client(
-        vertexai=True,
+        enterprise=True,
         project='your-project-id',
         location='us-central1',
         http_options=types.HttpOptions(api_version='v1')
@@ -273,7 +273,7 @@ You may pass the custom base url like this:
 
     base_url = 'https://test-api-gateway-proxy.com'
     client = Client(
-        vertexai=True,  # Currently only vertexai=True is supported
+        enterprise=True,  # Currently only enterprise=True is supported.
         http_options={
             'base_url': base_url,
             'headers': {'Authorization': 'Bearer test_token'},
@@ -578,7 +578,7 @@ available in generate_content's config parameter. For example, increasing
 deterministic, lowering the `temperature` parameter reduces randomness, with
 values near 0 minimizing variability. Capabilities and parameter defaults for
 each model is shown in the
-`Vertex AI docs <https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash>`_
+`Gemini Enterprise Agent Platform docs <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/2-5-flash>`_
 and `Gemini API docs <https://ai.google.dev/gemini-api/docs/models>`_ respectively.
 
 .. code:: python
@@ -1211,7 +1211,7 @@ Count Tokens and Compute Tokens
 Compute Tokens
 ^^^^^^^^^^^^^^
 
-Compute tokens is only supported in Vertex AI.
+Compute tokens is only supported in Gemini Enterprise Agent Platform.
 
 .. code:: python
 
@@ -1303,7 +1303,7 @@ Support for generate images in Gemini Developer API is behind an allowlist
 Upscale Image
 ^^^^^^^^^^^^^
 
-Upscale image is only supported in Vertex AI.
+Upscale image is only supported in Gemini Enterprise Agent Platform.
 
 .. code:: python
 
@@ -1326,7 +1326,7 @@ Edit Image
 
 Edit image uses a separate model from generate and upscale.
 
-Edit image is only supported in Vertex AI.
+Edit image is only supported in Gemini Enterprise Agent Platform.
 
 .. code:: python
 
@@ -1428,7 +1428,7 @@ Generate Videos (Image to Video)
 Generate Videos (Video to Video)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Currently, only Vertex AI supports Video to Video generation (Video extension).
+Currently, only Gemini Enterprise Agent Platform supports Video to Video generation (Video extension).
 
 
 .. code:: python
@@ -1562,7 +1562,7 @@ Create
 
     from google.genai import types
 
-    if client.vertexai:
+    if client.enterprise:
         file_uris = [
             'gs://cloud-samples-data/generative-ai/pdf/2312.11805v3.pdf',
             'gs://cloud-samples-data/generative-ai/pdf/2403.05530.pdf',
@@ -1620,13 +1620,13 @@ Tunings
 =======
 
 ``client.tunings`` contains tuning job APIs and supports supervised fine
-tuning through ``tune``. Only supported in Vertex AI. See the 'Create a client'
+tuning through ``tune``. Only supported in Gemini Enterprise Agent Platform. See the 'Create a client'
 section above to initialize a client.
 
 Tune
 ----
 
--   Vertex AI supports tuning from GCS source or from a `Vertex AI Multimodal Dataset <https://docs.cloud.google.com/vertex-ai/generative-ai/docs/multimodal/datasets>`_
+-   Gemini Enterprise Agent Platform supports tuning from GCS source or from a `Gemini Enterprise Agent Platform Multimodal Dataset <https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/datasets>`_
 
 .. code:: python
 
@@ -1634,7 +1634,7 @@ Tune
 
     model = 'gemini-2.5-flash'
     training_dataset = types.TuningDataset(
-        # or gcs_uri=my_vertex_multimodal_dataset
+        # or gcs_uri=my_enterprise_multimodal_dataset
         gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
     )
 
@@ -1979,7 +1979,7 @@ properties to include in the request body. This can be used to access new or
 experimental backend features that are not yet formally supported in the SDK.
 The structure of the dictionary must match the backend API's request structure.
 
-- VertexAI backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
+- Gemini Enterprise Agent Platform backend API docs: https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest
 - GeminiAPI backend API docs: https://ai.google.dev/api/rest
 
 .. code:: python

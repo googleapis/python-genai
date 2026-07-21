@@ -20,7 +20,9 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils.unions import parse_open_union
 from .agentoption import AgentOption
+from .antigravityagentconfig import AntigravityAgentConfig, AntigravityAgentConfigParam
 from .audiocontent import AudioContent, AudioContentParam
+from .codemenderagentconfig import CodeMenderAgentConfig, CodeMenderAgentConfigParam
 from .deepresearchagentconfig import (
     DeepResearchAgentConfig,
     DeepResearchAgentConfigParam,
@@ -90,7 +92,12 @@ r"""The environment configuration for the interaction. Can be an object specifyi
 
 InteractionAgentConfigTypedDict = TypeAliasType(
     "InteractionAgentConfigTypedDict",
-    Union[DynamicAgentConfigParam, DeepResearchAgentConfigParam],
+    Union[
+        DynamicAgentConfigParam,
+        AntigravityAgentConfigParam,
+        DeepResearchAgentConfigParam,
+        CodeMenderAgentConfigParam,
+    ],
 )
 r"""Configuration parameters for the agent interaction."""
 
@@ -108,11 +115,19 @@ class UnknownInteractionAgentConfig(BaseModel):
 _INTERACTION_AGENT_CONFIG_VARIANTS: dict[str, Any] = {
     "dynamic": DynamicAgentConfig,
     "deep-research": DeepResearchAgentConfig,
+    "code-mender": CodeMenderAgentConfig,
+    "antigravity": AntigravityAgentConfig,
 }
 
 
 InteractionAgentConfig = Annotated[
-    Union[DynamicAgentConfig, DeepResearchAgentConfig, UnknownInteractionAgentConfig],
+    Union[
+        DynamicAgentConfig,
+        DeepResearchAgentConfig,
+        CodeMenderAgentConfig,
+        AntigravityAgentConfig,
+        UnknownInteractionAgentConfig,
+    ],
     BeforeValidator(
         partial(
             parse_open_union,
@@ -173,13 +188,6 @@ class InteractionTypedDict(TypedDict):
     r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
     generation_config: NotRequired[GenerationConfigParam]
     r"""Configuration parameters for model interactions."""
-    cached_content: NotRequired[str]
-    r"""The name of the cached content used as context to serve the prediction.
-    Note: only used in explicit caching, where users can have control over
-    caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-    Format:
-    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
-    """
     agent_config: NotRequired[InteractionAgentConfigTypedDict]
     r"""Configuration parameters for the agent interaction."""
     safety_settings: NotRequired[List[SafetySettingParam]]
@@ -271,14 +279,6 @@ class Interaction(BaseModel):
     generation_config: Optional[GenerationConfig] = None
     r"""Configuration parameters for model interactions."""
 
-    cached_content: Optional[str] = None
-    r"""The name of the cached content used as context to serve the prediction.
-    Note: only used in explicit caching, where users can have control over
-    caching (e.g. what content to cache) and enjoy guaranteed cost savings.
-    Format:
-    `projects/{project}/locations/{location}/cachedContents/{cachedContent}`
-    """
-
     agent_config: Optional[InteractionAgentConfig] = None
     r"""Configuration parameters for the agent interaction."""
 
@@ -328,7 +328,6 @@ class Interaction(BaseModel):
                 "response_format",
                 "environment",
                 "generation_config",
-                "cached_content",
                 "agent_config",
                 "safety_settings",
                 "labels",
