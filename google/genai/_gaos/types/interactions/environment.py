@@ -49,7 +49,7 @@ r"""Network configuration for the environment."""
 class EnvironmentParam(TypedDict):
     r"""Configuration for a custom environment."""
 
-    environment_id: NotRequired[str]
+    id: NotRequired[str]
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
@@ -62,7 +62,7 @@ class EnvironmentParam(TypedDict):
 class Environment(BaseModel):
     r"""Configuration for a custom environment."""
 
-    environment_id: Optional[str] = None
+    id: Optional[str] = None
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
@@ -79,7 +79,7 @@ class Environment(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["environment_id", "network", "sources"])
+        optional_fields = set(["id", "network", "sources"])
         serialized = handler(self)
         m = {}
 
