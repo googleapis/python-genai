@@ -6156,13 +6156,13 @@ ModelArmorConfigOrDict = Union[ModelArmorConfig, ModelArmorConfigDict]
 
 
 class LanguageAuto(_common.BaseModel):
-  """Indicates the language of the audio should be automatically detected."""
+  """Deprecated: Language auto-detection is now the default when language_codes is omitted."""
 
   pass
 
 
 class LanguageAutoDict(TypedDict, total=False):
-  """Indicates the language of the audio should be automatically detected."""
+  """Deprecated: Language auto-detection is now the default when language_codes is omitted."""
 
   pass
 
@@ -6171,19 +6171,18 @@ LanguageAutoOrDict = Union[LanguageAuto, LanguageAutoDict]
 
 
 class LanguageHints(_common.BaseModel):
-  """Provides hints to the model about possible languages present in the audio."""
+  """Deprecated: Use AudioTranscriptionConfig.language_codes instead."""
 
   language_codes: Optional[list[str]] = Field(
-      default=None,
-      description="""BCP-47 language codes. At least one must be specified.""",
+      default=None, description="""Deprecated. BCP-47 language codes."""
   )
 
 
 class LanguageHintsDict(TypedDict, total=False):
-  """Provides hints to the model about possible languages present in the audio."""
+  """Deprecated: Use AudioTranscriptionConfig.language_codes instead."""
 
   language_codes: Optional[list[str]]
-  """BCP-47 language codes. At least one must be specified."""
+  """Deprecated. BCP-47 language codes."""
 
 
 LanguageHintsOrDict = Union[LanguageHints, LanguageHintsDict]
@@ -6194,15 +6193,15 @@ class AudioTranscriptionConfig(_common.BaseModel):
 
   language_codes: Optional[list[str]] = Field(
       default=None,
-      description="""Deprecated: use LanguageAuto or LanguageHints instead.""",
+      description="""BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.""",
   )
   language_auto: Optional[LanguageAuto] = Field(
       default=None,
-      description="""The model will detect the language automatically. Do not use together with LanguageHints.""",
+      description="""Deprecated: Auto-detection is now the default when language_codes is omitted. This field will be removed in a future version.""",
   )
   language_hints: Optional[LanguageHints] = Field(
       default=None,
-      description="""Specifies one or more languages in the audio. Do not use together with LanguageAuto.""",
+      description="""Deprecated: Use top-level language_codes instead. This field will be removed in a future version.""",
   )
   custom_vocabulary: Optional[list[str]] = Field(
       default=None,
@@ -6228,13 +6227,13 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   """The audio transcription configuration in Setup."""
 
   language_codes: Optional[list[str]]
-  """Deprecated: use LanguageAuto or LanguageHints instead."""
+  """BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection."""
 
   language_auto: Optional[LanguageAutoDict]
-  """The model will detect the language automatically. Do not use together with LanguageHints."""
+  """Deprecated: Auto-detection is now the default when language_codes is omitted. This field will be removed in a future version."""
 
   language_hints: Optional[LanguageHintsDict]
-  """Specifies one or more languages in the audio. Do not use together with LanguageAuto."""
+  """Deprecated: Use top-level language_codes instead. This field will be removed in a future version."""
 
   custom_vocabulary: Optional[list[str]]
   """A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms."""
