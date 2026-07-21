@@ -10,7 +10,7 @@ import libcst as cst
 from libcst import matchers as m
 
 
-class ImportAndConfigureVisitor(cst.CSTTransformer):
+class ImportAndConfigureVisitor(cst.CSTTransformer):  # type: ignore[misc]
     """Transform legacy imports and genai.configure() calls.
 
     (a) Replaces: import google.generativeai as genai
@@ -26,7 +26,7 @@ class ImportAndConfigureVisitor(cst.CSTTransformer):
 
     def leave_Import(
         self, original_node: cst.Import, updated_node: cst.Import
-    ) -> cst.BaseStatement:
+    ) -> cst.BaseSmallStatement:
         # Match: import google.generativeai as genai
         if m.matches(
             original_node,
@@ -51,7 +51,7 @@ class ImportAndConfigureVisitor(cst.CSTTransformer):
 
     def leave_Expr(
         self, original_node: cst.Expr, updated_node: cst.Expr
-    ) -> cst.BaseStatement:
+    ) -> cst.BaseSmallStatement:
         # Match: genai.configure(...) as a top-level expression statement
         if m.matches(
             original_node,
@@ -82,7 +82,7 @@ class ImportAndConfigureVisitor(cst.CSTTransformer):
         return updated_node
 
 
-class GenerativeModelVisitor(cst.CSTTransformer):
+class GenerativeModelVisitor(cst.CSTTransformer): # type: ignore[misc]
     """Detect genai.GenerativeModel(...) assignments and record model names.
 
     Records a mapping: variable_name -> model_name_string
@@ -93,7 +93,7 @@ class GenerativeModelVisitor(cst.CSTTransformer):
         super().__init__()
         self.symbol_table = symbol_table
 
-    def leave_Assign(self, original_node: cst.Assign, updated_node: cst.Assign):
+    def leave_Assign(self, original_node: cst.Assign, updated_node: cst.Assign) -> cst.BaseSmallStatement:
         # Match: var = genai.GenerativeModel('model-name')
         if m.matches(
             original_node,
@@ -108,7 +108,11 @@ class GenerativeModelVisitor(cst.CSTTransformer):
             ),
         ):
             # Extract variable name
-            var_name = original_node.targets[0].target.value
+            target = original_node.targets[0].target
+            if isinstance(target, cst.Name):
+                var_name = target.value
+            else:
+                return updated_node
 
             # Extract model name from arguments
             model_name = "gemini-1.5-flash"  # default
@@ -119,23 +123,31 @@ class GenerativeModelVisitor(cst.CSTTransformer):
                     if arg.keyword is None:
                         # Positional argument
                         if isinstance(arg.value, cst.SimpleString):
-                            model_name = arg.value.evaluated_value
+                            evaluated = arg.value.evaluated_value
+                            if isinstance(evaluated, bytes):
+                                model_name = evaluated.decode("utf-8")
+                            else:
+                                model_name = str(evaluated)
                         break
                 else:
                     # No positional args, check keyword args
                     for arg in call.args:
                         if arg.keyword and arg.keyword.value == "model_name":
                             if isinstance(arg.value, cst.SimpleString):
-                                model_name = arg.value.evaluated_value
+                                evaluated = arg.value.evaluated_value
+                                if isinstance(evaluated, bytes):
+                                    model_name = evaluated.decode("utf-8")
+                                else:
+                                    model_name = str(evaluated)
                             break
 
             self.symbol_table[var_name] = model_name
-            return cst.FlattenSentinel([])
+            return cst.FlattenSentinel([])  # type: ignore[return-value]
 
         return updated_node
 
 
-class GenerateContentVisitor(cst.CSTTransformer):
+class GenerateContentVisitor(cst.CSTTransformer): # type: ignore[misc]
     """Rewrite model.generate_content(...) calls to client.models.generate_content(...).
 
     Uses the symbol_table populated by GenerativeModelVisitor to know the model name.
@@ -219,7 +231,7 @@ class GenerateContentVisitor(cst.CSTTransformer):
         return updated_node
 
 
-class StartChatVisitor(cst.CSTTransformer):
+class StartChatVisitor(cst.CSTTransformer): # type: ignore[misc]
     """Rewrite model.start_chat(...) calls to client.chats.create(...).
 
     Uses the symbol_table populated by GenerativeModelVisitor to know the model name.
@@ -289,7 +301,7 @@ class StartChatVisitor(cst.CSTTransformer):
         return updated_node
 
 
-class CountTokensVisitor(cst.CSTTransformer):
+class CountTokensVisitor(cst.CSTTransformer): # type: ignore[misc]
     """Rewrite model.count_tokens(...) calls to client.models.count_tokens(...).
 
     Uses the symbol_table populated by GenerativeModelVisitor to know the model name.

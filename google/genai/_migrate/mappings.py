@@ -7,7 +7,7 @@ Each dict represents one legacy -> new transformation with keys:
 - notes: additional notes about the transformation
 """
 
-MAPPINGS = [
+MAPPINGS: list[dict[str, str]] = [
     {
         "name": "import",
         "legacy_pattern": "import google.generativeai as genai",

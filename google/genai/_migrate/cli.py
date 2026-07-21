@@ -10,7 +10,7 @@ from google.genai._migrate.codemod import transform_source
 
 def collect_python_files(path: Path, include_tests: bool) -> list[Path]:
     """Collect .py files from path, optionally including test_*.py files."""
-    files = []
+    files: list[Path] = []
     if path.is_file() and path.suffix == ".py":
         files.append(path)
     elif path.is_dir():

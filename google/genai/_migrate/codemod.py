@@ -1,5 +1,6 @@
 # google/genai/_migrate/codemod.py
 import libcst as cst
+# from typing import Dict, Any
 
 from google.genai._migrate.visitors import (CountTokensVisitor,
                                             GenerateContentVisitor,
@@ -34,7 +35,7 @@ def transform_source(src: str) -> str:
 
     # Shared state container: maps legacy model variable names to their string names.
     # e.g., {"model": "'gemini-1.5-flash'"}
-    symbol_table = {}
+    symbol_table: dict[str, str] = {}
 
     # Apply visitors sequentially.
     # Order matters:
