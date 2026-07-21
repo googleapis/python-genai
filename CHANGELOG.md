@@ -6,8 +6,6 @@
 ### Features
 
 * A new field `custom_vocabulary` is added to message `.google.cloud.aiplatform.v1beta1.BidiGenerateContentSetup` ([4eeb1ad](https://github.com/googleapis/python-genai/commit/4eeb1ade8dedb9ccdabe00892d4ff2119b54a444))
-* Add environments service to GenAI SDK. ([d3d69c6](https://github.com/googleapis/python-genai/commit/d3d69c664fc3130f87562b408e277cbf54ffa947))
-* Add environments service to GenAI SDK. ([0ad6e59](https://github.com/googleapis/python-genai/commit/0ad6e595147e3c8ca99b6b66fcd29af5531e2990))
 * Add model selector ([bf3dba4](https://github.com/googleapis/python-genai/commit/bf3dba460092d2f3af7a2b29abe2f0778ff8334d))
 * **interaction-api:** Add queued status to interaction proto ([87f1650](https://github.com/googleapis/python-genai/commit/87f1650e169a35cae45e415ad9b9c48e3e53f143))
 * Make ASR fields public in v1main and Interactions ([5b52faa](https://github.com/googleapis/python-genai/commit/5b52faaca37744c6a79b2bb37b3204229c445121))
