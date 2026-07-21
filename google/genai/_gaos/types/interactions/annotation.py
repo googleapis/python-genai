@@ -22,6 +22,7 @@ from ...utils.unions import parse_open_union
 from .filecitation import FileCitation, FileCitationParam
 from .placecitation import PlaceCitation, PlaceCitationParam
 from .urlcitation import URLCitation, URLCitationParam
+from .wordinfo import WordInfo, WordInfoParam
 from functools import partial
 from pydantic import ConfigDict
 from pydantic.functional_validators import BeforeValidator
@@ -30,7 +31,8 @@ from typing_extensions import Annotated, TypeAliasType
 
 
 AnnotationParam = TypeAliasType(
-    "AnnotationParam", Union[URLCitationParam, PlaceCitationParam, FileCitationParam]
+    "AnnotationParam",
+    Union[URLCitationParam, PlaceCitationParam, WordInfoParam, FileCitationParam],
 )
 r"""Citation information for model-generated content."""
 
@@ -49,11 +51,12 @@ _ANNOTATION_VARIANTS: dict[str, Any] = {
     "url_citation": URLCitation,
     "file_citation": FileCitation,
     "place_citation": PlaceCitation,
+    "word_info": WordInfo,
 }
 
 
 Annotation = Annotated[
-    Union[URLCitation, FileCitation, PlaceCitation, UnknownAnnotation],
+    Union[URLCitation, FileCitation, PlaceCitation, WordInfo, UnknownAnnotation],
     BeforeValidator(
         partial(
             parse_open_union,

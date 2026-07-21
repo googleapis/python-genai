@@ -361,6 +361,7 @@ if TYPE_CHECKING:
     from .tool import Tool, ToolParam, UnknownTool
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
+    from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
     from .turn import Turn, TurnContent, TurnContentParam, TurnParam
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
@@ -393,6 +394,7 @@ if TYPE_CHECKING:
         VideoResponseFormatParam,
     )
     from .webhookconfig import WebhookConfig, WebhookConfigParam
+    from .wordinfo import WordInfo, WordInfoParam
 
 __all__ = [
     "AgentOption",
@@ -707,6 +709,8 @@ __all__ = [
     "ToolChoiceParam",
     "ToolChoiceType",
     "ToolParam",
+    "TranscriptionConfig",
+    "TranscriptionConfigParam",
     "Transform",
     "TransformParam",
     "Turn",
@@ -760,6 +764,8 @@ __all__ = [
     "Visualization",
     "WebhookConfig",
     "WebhookConfigParam",
+    "WordInfo",
+    "WordInfoParam",
 ]
 
 _dynamic_imports: dict[str, str] = {
@@ -1086,6 +1092,8 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceConfig": ".toolchoiceconfig",
     "ToolChoiceConfigParam": ".toolchoiceconfig",
     "ToolChoiceType": ".toolchoicetype",
+    "TranscriptionConfig": ".transcriptionconfig",
+    "TranscriptionConfigParam": ".transcriptionconfig",
     "Turn": ".turn",
     "TurnContent": ".turn",
     "TurnContentParam": ".turn",
@@ -1128,6 +1136,8 @@ _dynamic_imports: dict[str, str] = {
     "VideoResponseFormatParam": ".videoresponseformat",
     "WebhookConfig": ".webhookconfig",
     "WebhookConfigParam": ".webhookconfig",
+    "WordInfo": ".wordinfo",
+    "WordInfoParam": ".wordinfo",
 }
 
 

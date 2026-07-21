@@ -806,7 +806,8 @@ class BaseApiClient:
         append_library_version_headers(self._http_options.headers)
 
     client_args, async_client_args = self._ensure_httpx_ssl_ctx(
-        self._http_options
+        self._http_options,
+        vertexai=bool(self.vertexai),
     )
     self._async_httpx_client_args = async_client_args
     self._authorized_session: Optional[AuthorizedSession] = None
@@ -837,7 +838,10 @@ class BaseApiClient:
         import aiohttp  # pylint: disable=g-import-not-at-top
         # Do it once at the genai.Client level. Share among all requests.
         self._async_client_session_request_args = (
-            self._ensure_aiohttp_ssl_ctx(self._http_options)
+            self._ensure_aiohttp_ssl_ctx(
+                self._http_options,
+                vertexai=bool(self.vertexai),
+            )
         )
         if self._use_google_auth_async():
           self._async_client_session_request_args['ssl'] = True  # type: ignore[no-untyped-call]
@@ -851,7 +855,10 @@ class BaseApiClient:
         pass
 
     retry_kwargs = retry_args(self._http_options.retry_options)
-    self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(self._http_options)
+    self._websocket_ssl_ctx = self._ensure_websocket_ssl_ctx(
+        self._http_options,
+        vertexai=bool(self.vertexai),
+    )
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
 
@@ -1014,6 +1021,7 @@ class BaseApiClient:
   @staticmethod
   def _ensure_httpx_ssl_ctx(
       options: HttpOptions,
+      vertexai: bool = False,
   ) -> Tuple[_common.StringDict, _common.StringDict]:
     """Ensures the SSL context is present in the HTTPX client args.
 
@@ -1021,6 +1029,7 @@ class BaseApiClient:
 
     Args:
       options: The http options to check for SSL context.
+      vertexai: Whether Vertex AI is enabled.
 
     Returns:
       A tuple of sync/async httpx client args.
@@ -1037,15 +1046,24 @@ class BaseApiClient:
         else None
     )
 
-    if not ctx:
+    if ctx is None:
       # Initialize the SSL context for the httpx client.
       # Unlike requests, the httpx package does not automatically pull in the
       # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
       # enabled explicitly.
-      ctx = ssl.create_default_context(
-          cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
-          capath=os.environ.get('SSL_CERT_DIR'),
-      )
+      if vertexai:
+        get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
+        if get_ctx_fn is not None:
+          try:
+            ctx = get_ctx_fn()
+          except Exception as e:  # pylint: disable=broad-except
+            logger.warning('Failed to get default SSL context from google-auth: %s', e)
+
+      if ctx is None:
+        ctx = ssl.create_default_context(
+            cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+            capath=os.environ.get('SSL_CERT_DIR'),
+        )
 
     def _maybe_set(
         args: Optional[_common.StringDict],
@@ -1080,13 +1098,17 @@ class BaseApiClient:
     )
 
   @staticmethod
-  def _ensure_aiohttp_ssl_ctx(options: HttpOptions) -> _common.StringDict:
+  def _ensure_aiohttp_ssl_ctx(
+      options: HttpOptions,
+      vertexai: bool = False,
+  ) -> _common.StringDict:
     """Ensures the SSL context is present in the async client args.
 
     Creates a default SSL context if one is not provided.
 
     Args:
       options: The http options to check for SSL context.
+      vertexai: Whether Vertex AI is enabled.
 
     Returns:
       An async aiohttp ClientSession._request args.
@@ -1095,11 +1117,20 @@ class BaseApiClient:
     async_args = options.async_client_args
     ctx = async_args.get(verify) if async_args else None
 
-    if not ctx:
-      ctx = ssl.create_default_context(
-          cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
-          capath=os.environ.get('SSL_CERT_DIR'),
-      )
+    if ctx is None:
+      if vertexai:
+        get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
+        if get_ctx_fn is not None:
+          try:
+            ctx = get_ctx_fn()
+          except Exception as e:  # pylint: disable=broad-except
+            logger.warning('Failed to get default SSL context from google-auth: %s', e)
+
+      if ctx is None:
+        ctx = ssl.create_default_context(
+            cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+            capath=os.environ.get('SSL_CERT_DIR'),
+        )
 
     def _maybe_set(
         args: Optional[_common.StringDict],
@@ -1132,13 +1163,17 @@ class BaseApiClient:
     return _maybe_set(async_args, ctx)
 
   @staticmethod
-  def _ensure_websocket_ssl_ctx(options: HttpOptions) -> _common.StringDict:
+  def _ensure_websocket_ssl_ctx(
+      options: HttpOptions,
+      vertexai: bool = False,
+  ) -> _common.StringDict:
     """Ensures the SSL context is present in the async client args.
 
     Creates a default SSL context if one is not provided.
 
     Args:
       options: The http options to check for SSL context.
+      vertexai: Whether Vertex AI is enabled.
 
     Returns:
       An async aiohttp ClientSession._request args.
@@ -1148,16 +1183,25 @@ class BaseApiClient:
     async_args = options.async_client_args
     ctx = async_args.get(verify) if async_args else None
 
-    if not ctx:
+    if ctx is None:
       # Initialize the SSL context for the httpx client.
       # Unlike requests, the aiohttp package does not automatically pull in the
       # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
       # enabled explicitly. Instead of 'verify' at client level in httpx,
       # aiohttp uses 'ssl' at request level.
-      ctx = ssl.create_default_context(
-          cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
-          capath=os.environ.get('SSL_CERT_DIR'),
-      )
+      if vertexai:
+        get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
+        if get_ctx_fn is not None:
+          try:
+            ctx = get_ctx_fn()
+          except Exception as e:  # pylint: disable=broad-except
+            logger.warning('Failed to get default SSL context from google-auth: %s', e)
+
+      if ctx is None:
+        ctx = ssl.create_default_context(
+            cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+            capath=os.environ.get('SSL_CERT_DIR'),
+        )
 
     def _maybe_set(
         args: Optional[_common.StringDict],
@@ -1498,7 +1542,10 @@ class BaseApiClient:
           logger.info('Retrying due to aiohttp error: %s' % e)
           # Retrieve the SSL context from the session.
           self._async_client_session_request_args = (
-              self._ensure_aiohttp_ssl_ctx(self._http_options)
+              self._ensure_aiohttp_ssl_ctx(
+                  self._http_options,
+                  vertexai=bool(self.vertexai),
+              )
           )
           # Instantiate a new session with the updated SSL context.
           session = await self._get_aiohttp_session()  # type: ignore[assignment]
@@ -1576,7 +1623,10 @@ class BaseApiClient:
           logger.info('Retrying due to aiohttp error: %s' % e)
           # Retrieve the SSL context from the session.
           self._async_client_session_request_args = (
-              self._ensure_aiohttp_ssl_ctx(self._http_options)
+              self._ensure_aiohttp_ssl_ctx(
+                  self._http_options,
+                  vertexai=bool(self.vertexai),
+              )
           )
           # Instantiate a new session with the updated SSL context.
           session = await self._get_aiohttp_session()  # type: ignore[assignment]
