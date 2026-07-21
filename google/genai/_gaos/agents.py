@@ -179,7 +179,7 @@ class Agents(BaseSDK):
                     {
                         "label": "create",
                         "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
                     },
                     {
                         "label": "create",
@@ -194,7 +194,7 @@ class Agents(BaseSDK):
                     {
                         "label": "with_sources",
                         "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
                     },
                     {
                         "label": "with_sources",
@@ -209,7 +209,7 @@ class Agents(BaseSDK):
                     {
                         "label": "fork_from_env",
                         "lang": "sh",
-                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
+                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
                     },
                     {
                         "label": "fork_from_env",
@@ -383,7 +383,7 @@ class Agents(BaseSDK):
                     {
                         "label": "list",
                         "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
                     },
                     {
                         "label": "list",
@@ -549,7 +549,7 @@ class Agents(BaseSDK):
                     {
                         "label": "get",
                         "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
                     },
                     {
                         "label": "get",
@@ -717,7 +717,7 @@ class Agents(BaseSDK):
                     {
                         "label": "delete",
                         "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
                     },
                     {
                         "label": "delete",
@@ -961,7 +961,7 @@ class AsyncAgents(AsyncBaseSDK):
                     {
                         "label": "create",
                         "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
                     },
                     {
                         "label": "create",
@@ -976,7 +976,7 @@ class AsyncAgents(AsyncBaseSDK):
                     {
                         "label": "with_sources",
                         "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
+                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
                     },
                     {
                         "label": "with_sources",
@@ -991,7 +991,7 @@ class AsyncAgents(AsyncBaseSDK):
                     {
                         "label": "fork_from_env",
                         "lang": "sh",
-                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
+                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
                     },
                     {
                         "label": "fork_from_env",
@@ -1168,7 +1168,7 @@ class AsyncAgents(AsyncBaseSDK):
                     {
                         "label": "list",
                         "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
                     },
                     {
                         "label": "list",
@@ -1337,7 +1337,7 @@ class AsyncAgents(AsyncBaseSDK):
                     {
                         "label": "get",
                         "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
                     },
                     {
                         "label": "get",
@@ -1508,7 +1508,7 @@ class AsyncAgents(AsyncBaseSDK):
                     {
                         "label": "delete",
                         "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
                     },
                     {
                         "label": "delete",
