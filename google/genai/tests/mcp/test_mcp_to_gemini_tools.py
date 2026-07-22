@@ -285,6 +285,28 @@ def test_update_endpoint_labels_conversion():
     assert 'additionalProperties' in labels_schema
 
 
+def test_additional_properties_boolean_conversion():
+    """Test boolean additionalProperties schemas are preserved."""
+
+    mcp_tools = [
+        mcp_types.Tool(
+            name='test_func',
+            description='Test function.',
+            inputSchema={
+                'type': 'object',
+                'properties': {
+                    'arg1': {'type': 'string'},
+                },
+                'additionalProperties': False,
+            },
+        ),
+    ]
+    result = _mcp_utils.mcp_to_gemini_tools(mcp_tools, is_agent_platform=True)
+    schema = result[0].function_declarations[0].parameters_json_schema
+
+    assert schema['additionalProperties'] is False
+
+
 def test_agent_platform_preserves_unknown_fields():
     """Test that Agent Platform translation passes all schema fields directly
     to the backend.
