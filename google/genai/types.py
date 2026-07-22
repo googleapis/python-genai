@@ -405,6 +405,8 @@ class HarmCategory(_common.CaseInSensitiveEnum):
   """Content that promotes, facilitates, or enables dangerous activities."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
   """Deprecated: Election filter is not longer supported. The harm category is civic integrity."""
+  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
+  """Prompts designed to bypass safety filters."""
   HARM_CATEGORY_IMAGE_HATE = 'HARM_CATEGORY_IMAGE_HATE'
   """Images that contain hate speech. This enum value is not supported in Gemini API."""
   HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT = (
@@ -417,8 +419,6 @@ class HarmCategory(_common.CaseInSensitiveEnum):
       'HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT'
   )
   """Images that contain sexually explicit content. This enum value is not supported in Gemini API."""
-  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
-  """Prompts designed to bypass safety filters. This enum value is not supported in Gemini API."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -969,6 +969,66 @@ class ServiceTier(_common.CaseInSensitiveEnum):
   """Priority service tier."""
 
 
+class ActivityHandling(_common.CaseInSensitiveEnum):
+  """Defines what effect activity has.
+
+  This enum is not supported in Vertex AI.
+  """
+
+  ACTIVITY_HANDLING_UNSPECIFIED = 'ACTIVITY_HANDLING_UNSPECIFIED'
+  """If unspecified, the default behavior is `START_OF_ACTIVITY_INTERRUPTS`."""
+  START_OF_ACTIVITY_INTERRUPTS = 'START_OF_ACTIVITY_INTERRUPTS'
+  """If true, start of activity will interrupt the model's response (also called "barge in"). The model's current response will be cut-off in the moment of the interruption. This is the default behavior."""
+  NO_INTERRUPTION = 'NO_INTERRUPTION'
+  """The model's response will not be interrupted."""
+
+
+class TurnCoverage(_common.CaseInSensitiveEnum):
+  """Defines which input is included in the user's turn.
+
+  This enum is not supported in Vertex AI.
+  """
+
+  TURN_COVERAGE_UNSPECIFIED = 'TURN_COVERAGE_UNSPECIFIED'
+  """If unspecified, a default behavior is selected based on the model. E.g., for Gemini 2.5, the default is `TURN_INCLUDES_ONLY_ACTIVITY`, while for Gemini 3.1 and onwards, it's `TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO`."""
+  TURN_INCLUDES_ONLY_ACTIVITY = 'TURN_INCLUDES_ONLY_ACTIVITY'
+  """Includes activity since the last turn, excluding inactivity (e.g. silence on the audio stream)."""
+  TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
+  """Includes all realtime input since the last turn, including inactivity (e.g. silence on the audio stream)."""
+  TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO = (
+      'TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO'
+  )
+  """Includes audio activity and all video since the last turn. With automatic activity detection, audio activity means speech and excludes silence."""
+
+
+class EndSensitivity(_common.CaseInSensitiveEnum):
+  """Determines how likely detected speech is ended.
+
+  This enum is not supported in Vertex AI.
+  """
+
+  END_SENSITIVITY_UNSPECIFIED = 'END_SENSITIVITY_UNSPECIFIED'
+  """The default is END_SENSITIVITY_HIGH."""
+  END_SENSITIVITY_HIGH = 'END_SENSITIVITY_HIGH'
+  """Automatic detection ends speech more often."""
+  END_SENSITIVITY_LOW = 'END_SENSITIVITY_LOW'
+  """Automatic detection ends speech less often."""
+
+
+class StartSensitivity(_common.CaseInSensitiveEnum):
+  """Determines how likely speech is to be detected.
+
+  This enum is not supported in Vertex AI.
+  """
+
+  START_SENSITIVITY_UNSPECIFIED = 'START_SENSITIVITY_UNSPECIFIED'
+  """The default is START_SENSITIVITY_HIGH."""
+  START_SENSITIVITY_HIGH = 'START_SENSITIVITY_HIGH'
+  """Automatic detection will detect the start of speech more often."""
+  START_SENSITIVITY_LOW = 'START_SENSITIVITY_LOW'
+  """Automatic detection will detect the start of speech less often."""
+
+
 class RubricContentType(_common.CaseInSensitiveEnum):
   """Represents the rubric content type."""
 
@@ -1329,54 +1389,6 @@ class VoiceActivityType(_common.CaseInSensitiveEnum):
   """Start of sentence signal."""
   ACTIVITY_END = 'ACTIVITY_END'
   """End of sentence signal."""
-
-
-class StartSensitivity(_common.CaseInSensitiveEnum):
-  """Start of speech sensitivity."""
-
-  START_SENSITIVITY_UNSPECIFIED = 'START_SENSITIVITY_UNSPECIFIED'
-  """The default is START_SENSITIVITY_LOW for Gemini Enterprise Agent Platform and START_SENSITIVITY_HIGH for Gemini Live."""
-  START_SENSITIVITY_HIGH = 'START_SENSITIVITY_HIGH'
-  """Automatic detection will detect the start of speech more often."""
-  START_SENSITIVITY_LOW = 'START_SENSITIVITY_LOW'
-  """Automatic detection will detect the start of speech less often."""
-
-
-class EndSensitivity(_common.CaseInSensitiveEnum):
-  """End of speech sensitivity."""
-
-  END_SENSITIVITY_UNSPECIFIED = 'END_SENSITIVITY_UNSPECIFIED'
-  """The default is END_SENSITIVITY_LOW for Gemini Enterprise Agent Platform and END_SENSITIVITY_HIGH for Gemini Live."""
-  END_SENSITIVITY_HIGH = 'END_SENSITIVITY_HIGH'
-  """Automatic detection ends speech more often."""
-  END_SENSITIVITY_LOW = 'END_SENSITIVITY_LOW'
-  """Automatic detection ends speech less often."""
-
-
-class ActivityHandling(_common.CaseInSensitiveEnum):
-  """The different ways of handling user activity."""
-
-  ACTIVITY_HANDLING_UNSPECIFIED = 'ACTIVITY_HANDLING_UNSPECIFIED'
-  """If unspecified, the default behavior is `START_OF_ACTIVITY_INTERRUPTS`."""
-  START_OF_ACTIVITY_INTERRUPTS = 'START_OF_ACTIVITY_INTERRUPTS'
-  """If true, start of activity will interrupt the model's response (also called "barge in"). The model's current response will be cut-off in the moment of the interruption. This is the default behavior."""
-  NO_INTERRUPTION = 'NO_INTERRUPTION'
-  """The model's response will not be interrupted."""
-
-
-class TurnCoverage(_common.CaseInSensitiveEnum):
-  """Options about which input is included in the user's turn."""
-
-  TURN_COVERAGE_UNSPECIFIED = 'TURN_COVERAGE_UNSPECIFIED'
-  """If unspecified, the default behavior is `TURN_INCLUDES_ONLY_ACTIVITY`."""
-  TURN_INCLUDES_ONLY_ACTIVITY = 'TURN_INCLUDES_ONLY_ACTIVITY'
-  """The users turn only includes activity since the last turn, excluding inactivity (e.g. silence on the audio stream). This is the default behavior."""
-  TURN_INCLUDES_ALL_INPUT = 'TURN_INCLUDES_ALL_INPUT'
-  """The users turn includes all realtime input since the last turn, including inactivity (e.g. silence on the audio stream)."""
-  TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO = (
-      'TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO'
-  )
-  """Includes audio activity and all video since the last turn. With automatic activity detection, audio activity means speech and excludes silence."""
 
 
 class Scale(_common.CaseInSensitiveEnum):
@@ -4968,6 +4980,14 @@ class ToolParallelAiSearch(_common.BaseModel):
       default=None,
       description="""Optional. Custom configs for ParallelAiSearch. This field can be used to pass any parameter from the Parallel.ai Search API. See the Parallel.ai documentation for the full list of available parameters and their usage: https://docs.parallel.ai/api-reference/search-beta/search Currently only `source_policy`, `excerpts`, `max_results`, `mode`, `fetch_policy` can be set via this field. For example: { "source_policy": { "include_domains": ["google.com", "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds": 3600 } }""",
   )
+  enable_data_retention: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used.""",
+  )
+  enable_zero_data_retention: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used.""",
+  )
 
 
 class ToolParallelAiSearchDict(TypedDict, total=False):
@@ -4982,6 +5002,12 @@ class ToolParallelAiSearchDict(TypedDict, total=False):
 
   custom_configs: Optional[dict[str, Any]]
   """Optional. Custom configs for ParallelAiSearch. This field can be used to pass any parameter from the Parallel.ai Search API. See the Parallel.ai documentation for the full list of available parameters and their usage: https://docs.parallel.ai/api-reference/search-beta/search Currently only `source_policy`, `excerpts`, `max_results`, `mode`, `fetch_policy` can be set via this field. For example: { "source_policy": { "include_domains": ["google.com", "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds": 3600 } }"""
+
+  enable_data_retention: Optional[bool]
+  """Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used."""
+
+  enable_zero_data_retention: Optional[bool]
+  """Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used."""
 
 
 ToolParallelAiSearchOrDict = Union[
@@ -6156,13 +6182,19 @@ ModelArmorConfigOrDict = Union[ModelArmorConfig, ModelArmorConfigDict]
 
 
 class LanguageAuto(_common.BaseModel):
-  """Indicates the language of the audio should be automatically detected."""
+  """Indicates the language of the audio should be automatically detected.
+
+  This data type is not supported in Vertex AI.
+  """
 
   pass
 
 
 class LanguageAutoDict(TypedDict, total=False):
-  """Indicates the language of the audio should be automatically detected."""
+  """Indicates the language of the audio should be automatically detected.
+
+  This data type is not supported in Vertex AI.
+  """
 
   pass
 
@@ -6171,19 +6203,24 @@ LanguageAutoOrDict = Union[LanguageAuto, LanguageAutoDict]
 
 
 class LanguageHints(_common.BaseModel):
-  """Provides hints to the model about possible languages present in the audio."""
+  """Provides hints to the model about possible languages present in the audio.
+
+  This data type is not supported in Vertex AI.
+  """
 
   language_codes: Optional[list[str]] = Field(
-      default=None,
-      description="""BCP-47 language codes. At least one must be specified.""",
+      default=None, description="""Required. BCP-47 language codes."""
   )
 
 
 class LanguageHintsDict(TypedDict, total=False):
-  """Provides hints to the model about possible languages present in the audio."""
+  """Provides hints to the model about possible languages present in the audio.
+
+  This data type is not supported in Vertex AI.
+  """
 
   language_codes: Optional[list[str]]
-  """BCP-47 language codes. At least one must be specified."""
+  """Required. BCP-47 language codes."""
 
 
 LanguageHintsOrDict = Union[LanguageHints, LanguageHintsDict]
@@ -11251,7 +11288,7 @@ class GenerationConfig(_common.BaseModel):
   )
   enable_affective_dialog: Optional[bool] = Field(
       default=None,
-      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response. This field is not supported in Gemini API.""",
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response.""",
   )
   frequency_penalty: Optional[float] = Field(
       default=None,
@@ -11357,7 +11394,7 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. The number of candidate responses to generate. A higher `candidate_count` can provide more options to choose from, but it also consumes more resources. This can be useful for generating a variety of responses and selecting the best one."""
 
   enable_affective_dialog: Optional[bool]
-  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response. This field is not supported in Gemini API."""
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response."""
 
   frequency_penalty: Optional[float]
   """Optional. Penalizes tokens based on their frequency in the generated text. A positive value helps to reduce the repetition of words and phrases. Valid values can range from [-2.0, 2.0]."""
@@ -13476,6 +13513,10 @@ class ReinforcementTuningHyperParameters(_common.BaseModel):
       default=None,
       description="""Optional. The thinking budget for the tuning job to optimize for (Gemini 2.5 only). * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in tokens If not set, default to -1 (dynamic thinking).""",
   )
+  step_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).""",
+  )
 
 
 class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
@@ -13510,6 +13551,9 @@ class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
 
   thinking_budget: Optional[int]
   """Optional. The thinking budget for the tuning job to optimize for (Gemini 2.5 only). * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in tokens If not set, default to -1 (dynamic thinking)."""
+
+  step_count: Optional[int]
+  """Optional. Number of steps for the tuning job (mutually exclusive with epoch_count)."""
 
 
 ReinforcementTuningHyperParametersOrDict = Union[
@@ -20639,9 +20683,7 @@ class SessionResumptionConfig(_common.BaseModel):
 
   handle: Optional[str] = Field(
       default=None,
-      description="""Session resumption handle of previous session (session to restore).
-
-If not present new session will be started.""",
+      description="""The handle of a previous session. If not present then a new session is created. Session handles come from `SessionResumptionUpdate.token` values in previous connections.""",
   )
   transparent: Optional[bool] = Field(
       default=None,
@@ -20657,9 +20699,7 @@ class SessionResumptionConfigDict(TypedDict, total=False):
   """
 
   handle: Optional[str]
-  """Session resumption handle of previous session (session to restore).
-
-If not present new session will be started."""
+  """The handle of a previous session. If not present then a new session is created. Session handles come from `SessionResumptionUpdate.token` values in previous connections."""
 
   transparent: Optional[bool]
   """If set the server will send `last_consumed_client_message_index` in the `session_resumption_update` messages to allow for transparent reconnections."""
@@ -20667,64 +20707,6 @@ If not present new session will be started."""
 
 SessionResumptionConfigOrDict = Union[
     SessionResumptionConfig, SessionResumptionConfigDict
-]
-
-
-class SlidingWindow(_common.BaseModel):
-  """Context window will be truncated by keeping only suffix of it.
-
-  Context window will always be cut at start of USER role turn. System
-  instructions and `BidiGenerateContentSetup.prefix_turns` will not be
-  subject to the sliding window mechanism, they will always stay at the
-  beginning of context window.
-  """
-
-  target_tokens: Optional[int] = Field(
-      default=None,
-      description="""Session reduction target -- how many tokens we should keep. Window shortening operation has some latency costs, so we should avoid running it on every turn. Should be < trigger_tokens. If not set, trigger_tokens/2 is assumed.""",
-  )
-
-
-class SlidingWindowDict(TypedDict, total=False):
-  """Context window will be truncated by keeping only suffix of it.
-
-  Context window will always be cut at start of USER role turn. System
-  instructions and `BidiGenerateContentSetup.prefix_turns` will not be
-  subject to the sliding window mechanism, they will always stay at the
-  beginning of context window.
-  """
-
-  target_tokens: Optional[int]
-  """Session reduction target -- how many tokens we should keep. Window shortening operation has some latency costs, so we should avoid running it on every turn. Should be < trigger_tokens. If not set, trigger_tokens/2 is assumed."""
-
-
-SlidingWindowOrDict = Union[SlidingWindow, SlidingWindowDict]
-
-
-class ContextWindowCompressionConfig(_common.BaseModel):
-  """Enables context window compression -- mechanism managing model context window so it does not exceed given length."""
-
-  trigger_tokens: Optional[int] = Field(
-      default=None,
-      description="""Number of tokens (before running turn) that triggers context window compression mechanism.""",
-  )
-  sliding_window: Optional[SlidingWindow] = Field(
-      default=None, description="""Sliding window compression mechanism."""
-  )
-
-
-class ContextWindowCompressionConfigDict(TypedDict, total=False):
-  """Enables context window compression -- mechanism managing model context window so it does not exceed given length."""
-
-  trigger_tokens: Optional[int]
-  """Number of tokens (before running turn) that triggers context window compression mechanism."""
-
-  sliding_window: Optional[SlidingWindowDict]
-  """Sliding window compression mechanism."""
-
-
-ContextWindowCompressionConfigOrDict = Union[
-    ContextWindowCompressionConfig, ContextWindowCompressionConfigDict
 ]
 
 
@@ -20749,33 +20731,6 @@ class ProactivityConfigDict(TypedDict, total=False):
 
 
 ProactivityConfigOrDict = Union[ProactivityConfig, ProactivityConfigDict]
-
-
-class HistoryConfig(_common.BaseModel):
-  """Configuration for history exchange between client and server."""
-
-  initial_history_in_client_content: Optional[bool] = Field(
-      default=None,
-      description="""If true, after sending `setup_complete`, the server will wait
-      and at first process `client_content` messages until `turn_complete` is
-      `true`. This initial history will not trigger a model call and
-      may end with model content. After `turn_complete` is `true`, the client
-      can start the realtime conversation via `realtime_input`.""",
-  )
-
-
-class HistoryConfigDict(TypedDict, total=False):
-  """Configuration for history exchange between client and server."""
-
-  initial_history_in_client_content: Optional[bool]
-  """If true, after sending `setup_complete`, the server will wait
-      and at first process `client_content` messages until `turn_complete` is
-      `true`. This initial history will not trigger a model call and
-      may end with model content. After `turn_complete` is `true`, the client
-      can start the realtime conversation via `realtime_input`."""
-
-
-HistoryConfigOrDict = Union[HistoryConfig, HistoryConfigDict]
 
 
 class CustomizedAvatar(_common.BaseModel):
@@ -20841,6 +20796,99 @@ class AvatarConfigDict(TypedDict, total=False):
 
 
 AvatarConfigOrDict = Union[AvatarConfig, AvatarConfigDict]
+
+
+class SlidingWindow(_common.BaseModel):
+  """The SlidingWindow method operates by discarding content at the beginning of the context window.
+
+  The resulting context will always begin at the start of a USER role turn.
+  System instructions and any `BidiGenerateContentSetup.prefix_turns` will
+  always remain at the beginning of the result. This data type is not supported
+  in Vertex AI.
+  """
+
+  target_tokens: Optional[int] = Field(
+      default=None,
+      description="""The target number of tokens to keep. The default value is trigger_tokens/2. Discarding parts of the context window causes a temporary latency increase so this value should be calibrated to avoid frequent compression operations.""",
+  )
+
+
+class SlidingWindowDict(TypedDict, total=False):
+  """The SlidingWindow method operates by discarding content at the beginning of the context window.
+
+  The resulting context will always begin at the start of a USER role turn.
+  System instructions and any `BidiGenerateContentSetup.prefix_turns` will
+  always remain at the beginning of the result. This data type is not supported
+  in Vertex AI.
+  """
+
+  target_tokens: Optional[int]
+  """The target number of tokens to keep. The default value is trigger_tokens/2. Discarding parts of the context window causes a temporary latency increase so this value should be calibrated to avoid frequent compression operations."""
+
+
+SlidingWindowOrDict = Union[SlidingWindow, SlidingWindowDict]
+
+
+class ContextWindowCompressionConfig(_common.BaseModel):
+  """Enables context window compression — a mechanism for managing the model's context window so that it does not exceed a given length.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  trigger_tokens: Optional[int] = Field(
+      default=None,
+      description="""The number of tokens (before running a turn) required to trigger a context window compression. This can be used to balance quality against latency as shorter context windows may result in faster model responses. However, any compression operation will cause a temporary latency increase, so they should not be triggered frequently. If not set, the default is 80% of the model's context window limit. This leaves 20% for the next user request/model response.""",
+  )
+  sliding_window: Optional[SlidingWindow] = Field(
+      default=None, description="""A sliding-window mechanism."""
+  )
+
+
+class ContextWindowCompressionConfigDict(TypedDict, total=False):
+  """Enables context window compression — a mechanism for managing the model's context window so that it does not exceed a given length.
+
+  This data type is not supported in Vertex AI.
+  """
+
+  trigger_tokens: Optional[int]
+  """The number of tokens (before running a turn) required to trigger a context window compression. This can be used to balance quality against latency as shorter context windows may result in faster model responses. However, any compression operation will cause a temporary latency increase, so they should not be triggered frequently. If not set, the default is 80% of the model's context window limit. This leaves 20% for the next user request/model response."""
+
+  sliding_window: Optional[SlidingWindowDict]
+  """A sliding-window mechanism."""
+
+
+ContextWindowCompressionConfigOrDict = Union[
+    ContextWindowCompressionConfig, ContextWindowCompressionConfigDict
+]
+
+
+class HistoryConfig(_common.BaseModel):
+  """History configuration.
+
+  This message is included in the session configuration as
+  `BidiGenerateContentSetup.history_config`. Configures the exchange of history
+  messages. This data type is not supported in Vertex AI.
+  """
+
+  initial_history_in_client_content: Optional[bool] = Field(
+      default=None,
+      description="""Optional. If true, after sending `setup_complete`, the server will wait and at first process `client_content` messages until `turn_complete` is `true`. This initial history will not trigger a model call and may end with role `MODEL`. After `turn_complete` is `true`, the client can start the realtime conversation via `realtime_input`.""",
+  )
+
+
+class HistoryConfigDict(TypedDict, total=False):
+  """History configuration.
+
+  This message is included in the session configuration as
+  `BidiGenerateContentSetup.history_config`. Configures the exchange of history
+  messages. This data type is not supported in Vertex AI.
+  """
+
+  initial_history_in_client_content: Optional[bool]
+  """Optional. If true, after sending `setup_complete`, the server will wait and at first process `client_content` messages until `turn_complete` is `true`. This initial history will not trigger a model call and may end with role `MODEL`. After `turn_complete` is `true`, the client can start the realtime conversation via `realtime_input`."""
+
+
+HistoryConfigOrDict = Union[HistoryConfig, HistoryConfigDict]
 
 
 class LiveClientSetup(_common.BaseModel):
@@ -21268,47 +21316,53 @@ LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
 
 
 class AutomaticActivityDetection(_common.BaseModel):
-  """Configures automatic detection of activity."""
+  """Configures automatic detection of activity.
+
+  This data type is not supported in Vertex AI.
+  """
 
   disabled: Optional[bool] = Field(
       default=None,
-      description="""If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals.""",
+      description="""Optional. If enabled (the default), detected voice and text input count as activity. If disabled, the client must send activity signals.""",
   )
   start_of_speech_sensitivity: Optional[StartSensitivity] = Field(
       default=None,
-      description="""Determines how likely speech is to be detected.""",
+      description="""Optional. Determines how likely speech is to be detected.""",
   )
   end_of_speech_sensitivity: Optional[EndSensitivity] = Field(
       default=None,
-      description="""Determines how likely detected speech is ended.""",
+      description="""Optional. Determines how likely detected speech is ended.""",
   )
   prefix_padding_ms: Optional[int] = Field(
       default=None,
-      description="""The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives.""",
+      description="""Optional. The required duration of detected speech before start-of-speech is committed. The lower this value, the more sensitive the start-of-speech detection is and shorter speech can be recognized. However, this also increases the probability of false positives.""",
   )
   silence_duration_ms: Optional[int] = Field(
       default=None,
-      description="""The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
+      description="""Optional. The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency.""",
   )
 
 
 class AutomaticActivityDetectionDict(TypedDict, total=False):
-  """Configures automatic detection of activity."""
+  """Configures automatic detection of activity.
+
+  This data type is not supported in Vertex AI.
+  """
 
   disabled: Optional[bool]
-  """If enabled, detected voice and text input count as activity. If disabled, the client must send activity signals."""
+  """Optional. If enabled (the default), detected voice and text input count as activity. If disabled, the client must send activity signals."""
 
   start_of_speech_sensitivity: Optional[StartSensitivity]
-  """Determines how likely speech is to be detected."""
+  """Optional. Determines how likely speech is to be detected."""
 
   end_of_speech_sensitivity: Optional[EndSensitivity]
-  """Determines how likely detected speech is ended."""
+  """Optional. Determines how likely detected speech is ended."""
 
   prefix_padding_ms: Optional[int]
-  """The required duration of detected speech before start-of-speech is committed. The lower this value the more sensitive the start-of-speech detection is and the shorter speech can be recognized. However, this also increases the probability of false positives."""
+  """Optional. The required duration of detected speech before start-of-speech is committed. The lower this value, the more sensitive the start-of-speech detection is and shorter speech can be recognized. However, this also increases the probability of false positives."""
 
   silence_duration_ms: Optional[int]
-  """The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
+  """Optional. The required duration of detected non-speech (e.g. silence) before end-of-speech is committed. The larger this value, the longer speech gaps can be without interrupting the user's activity but this will increase the model's latency."""
 
 
 AutomaticActivityDetectionOrDict = Union[
@@ -21317,40 +21371,39 @@ AutomaticActivityDetectionOrDict = Union[
 
 
 class RealtimeInputConfig(_common.BaseModel):
-  """Marks the end of user activity.
+  """Configures the realtime input behavior in `BidiGenerateContent`.
 
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
+  This data type is not supported in Vertex AI.
   """
 
   automatic_activity_detection: Optional[AutomaticActivityDetection] = Field(
       default=None,
-      description="""If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
+      description="""Optional. If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.""",
   )
   activity_handling: Optional[ActivityHandling] = Field(
-      default=None, description="""Defines what effect activity has."""
+      default=None,
+      description="""Optional. Defines what effect activity has.""",
   )
   turn_coverage: Optional[TurnCoverage] = Field(
       default=None,
-      description="""Defines which input is included in the user's turn.""",
+      description="""Optional. Defines which input is included in the user's turn.""",
   )
 
 
 class RealtimeInputConfigDict(TypedDict, total=False):
-  """Marks the end of user activity.
+  """Configures the realtime input behavior in `BidiGenerateContent`.
 
-  This can only be sent if automatic (i.e. server-side) activity detection is
-  disabled.
+  This data type is not supported in Vertex AI.
   """
 
   automatic_activity_detection: Optional[AutomaticActivityDetectionDict]
-  """If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
+  """Optional. If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals."""
 
   activity_handling: Optional[ActivityHandling]
-  """Defines what effect activity has."""
+  """Optional. Defines what effect activity has."""
 
   turn_coverage: Optional[TurnCoverage]
-  """Defines which input is included in the user's turn."""
+  """Optional. Defines which input is included in the user's turn."""
 
 
 RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
@@ -22192,11 +22245,125 @@ LiveMusicSetWeightedPromptsParametersOrDict = Union[
 ]
 
 
+class BidiGenerateContentSetup(_common.BaseModel):
+  """Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`.
+
+  Contains configuration that will apply for the duration of the streaming RPC.
+  Clients should wait for a `BidiGenerateContentSetupComplete` message before
+  sending any additional messages. This data type is not supported in Vertex AI.
+  """
+
+  context_window_compression: Optional[ContextWindowCompressionConfig] = Field(
+      default=None,
+      description="""Optional. Configures a context window compression mechanism. If included, the server will automatically reduce the size of the context when it exceeds the configured length.""",
+  )
+  generation_config: Optional[GenerationConfig] = Field(
+      default=None,
+      description="""Optional. Generation config. The following fields are not supported: - `response_logprobs` - `response_mime_type` - `logprobs` - `response_schema` - `response_json_schema` - `stop_sequence` - `skip_response_cache` - `routing_config` - `audio_timestamp`""",
+  )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Optional. Configures the exchange of history between the client and the server.""",
+  )
+  input_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""Optional. If set, enables transcription of voice input. The transcription aligns with the input audio language, if configured.""",
+  )
+  model: Optional[str] = Field(
+      default=None,
+      description="""Required. The model's resource name. This serves as an ID for the Model to use. Format: `models/{model}`""",
+  )
+  output_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""Optional. If set, enables transcription of the model's audio output. The transcription aligns with the language code specified for the output audio, if configured.""",
+  )
+  realtime_input_config: Optional[RealtimeInputConfig] = Field(
+      default=None,
+      description="""Optional. Configures the handling of realtime input.""",
+  )
+  session_resumption: Optional[SessionResumptionConfig] = Field(
+      default=None,
+      description="""Optional. Configures session resumption mechanism. If included, the server will send `SessionResumptionUpdate` messages.""",
+  )
+  system_instruction: Optional[Content] = Field(
+      default=None,
+      description="""Optional. The user provided system instructions for the model. Note: Only text should be used in parts and content in each part will be in a separate paragraph.""",
+  )
+  tools: Optional[list[Tool]] = Field(
+      default=None,
+      description="""Optional. A list of `Tools` the model may use to generate the next response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model.""",
+  )
+
+
+class BidiGenerateContentSetupDict(TypedDict, total=False):
+  """Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`.
+
+  Contains configuration that will apply for the duration of the streaming RPC.
+  Clients should wait for a `BidiGenerateContentSetupComplete` message before
+  sending any additional messages. This data type is not supported in Vertex AI.
+  """
+
+  context_window_compression: Optional[ContextWindowCompressionConfigDict]
+  """Optional. Configures a context window compression mechanism. If included, the server will automatically reduce the size of the context when it exceeds the configured length."""
+
+  generation_config: Optional[GenerationConfigDict]
+  """Optional. Generation config. The following fields are not supported: - `response_logprobs` - `response_mime_type` - `logprobs` - `response_schema` - `response_json_schema` - `stop_sequence` - `skip_response_cache` - `routing_config` - `audio_timestamp`"""
+
+  history_config: Optional[HistoryConfigDict]
+  """Optional. Configures the exchange of history between the client and the server."""
+
+  input_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """Optional. If set, enables transcription of voice input. The transcription aligns with the input audio language, if configured."""
+
+  model: Optional[str]
+  """Required. The model's resource name. This serves as an ID for the Model to use. Format: `models/{model}`"""
+
+  output_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """Optional. If set, enables transcription of the model's audio output. The transcription aligns with the language code specified for the output audio, if configured."""
+
+  realtime_input_config: Optional[RealtimeInputConfigDict]
+  """Optional. Configures the handling of realtime input."""
+
+  session_resumption: Optional[SessionResumptionConfigDict]
+  """Optional. Configures session resumption mechanism. If included, the server will send `SessionResumptionUpdate` messages."""
+
+  system_instruction: Optional[ContentDict]
+  """Optional. The user provided system instructions for the model. Note: Only text should be used in parts and content in each part will be in a separate paragraph."""
+
+  tools: Optional[list[ToolDict]]
+  """Optional. A list of `Tools` the model may use to generate the next response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model."""
+
+
+BidiGenerateContentSetupOrDict = Union[
+    BidiGenerateContentSetup, BidiGenerateContentSetupDict
+]
+
+
 class AuthToken(_common.BaseModel):
   """Config for auth_tokens.create parameters."""
 
   name: Optional[str] = Field(
-      default=None, description="""The name of the auth token."""
+      default=None, description="""Output only. Identifier. The token itself."""
+  )
+  bidi_generate_content_setup: Optional[BidiGenerateContentSetup] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. Configuration specific to `BidiGenerateContent`.""",
+  )
+  expire_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. An optional time after which, when using the resulting token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively close the session after this time.) If not set then this defaults to 30 minutes in the future. If set, this value must be less than 20 hours in the future.""",
+  )
+  field_mask: Optional[str] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. If field_mask is empty, and `bidi_generate_content_setup` is not present, then the effective `BidiGenerateContentSetup` message is taken from the Live API connection. If field_mask is empty, and `bidi_generate_content_setup` _is_ present, then the effective `BidiGenerateContentSetup` message is taken entirely from `bidi_generate_content_setup` in this request. The setup message from the Live API connection is ignored. If field_mask is not empty, then the corresponding fields from `bidi_generate_content_setup` will overwrite the fields from the setup message in the Live API connection.""",
+  )
+  new_session_expire_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The time after which new Live API sessions using the token resulting from this request will be rejected. If not set this defaults to 60 seconds in the future. If set, this value must be less than 20 hours in the future.""",
+  )
+  uses: Optional[int] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The number of times the token can be used. If this value is zero then no limit is applied. Resuming a Live API session does not count as a use. If unspecified, the default is 1.""",
   )
 
 
@@ -22204,7 +22371,22 @@ class AuthTokenDict(TypedDict, total=False):
   """Config for auth_tokens.create parameters."""
 
   name: Optional[str]
-  """The name of the auth token."""
+  """Output only. Identifier. The token itself."""
+
+  bidi_generate_content_setup: Optional[BidiGenerateContentSetupDict]
+  """Optional. Input only. Immutable. Configuration specific to `BidiGenerateContent`."""
+
+  expire_time: Optional[datetime.datetime]
+  """Optional. Input only. Immutable. An optional time after which, when using the resulting token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively close the session after this time.) If not set then this defaults to 30 minutes in the future. If set, this value must be less than 20 hours in the future."""
+
+  field_mask: Optional[str]
+  """Optional. Input only. Immutable. If field_mask is empty, and `bidi_generate_content_setup` is not present, then the effective `BidiGenerateContentSetup` message is taken from the Live API connection. If field_mask is empty, and `bidi_generate_content_setup` _is_ present, then the effective `BidiGenerateContentSetup` message is taken entirely from `bidi_generate_content_setup` in this request. The setup message from the Live API connection is ignored. If field_mask is not empty, then the corresponding fields from `bidi_generate_content_setup` will overwrite the fields from the setup message in the Live API connection."""
+
+  new_session_expire_time: Optional[datetime.datetime]
+  """Optional. Input only. Immutable. The time after which new Live API sessions using the token resulting from this request will be rejected. If not set this defaults to 60 seconds in the future. If set, this value must be less than 20 hours in the future."""
+
+  uses: Optional[int]
+  """Optional. Input only. Immutable. The number of times the token can be used. If this value is zero then no limit is applied. Resuming a Live API session does not count as a use. If unspecified, the default is 1."""
 
 
 AuthTokenOrDict = Union[AuthToken, AuthTokenDict]
