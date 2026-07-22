@@ -65,10 +65,12 @@ def test_unknown_field_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={},
-                  ),
+                  parameters_json_schema={
+                      'type': 'object',
+                      'properties': {},
+                      'unknown_field': 'unknownField',
+                      'unknown_object': {},
+                  },
               ),
           ],
       ),
@@ -104,16 +106,16 @@ def test_items_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='ARRAY',
-                      items=types.Schema(
-                          type='OBJECT',
-                          properties={
-                              'key1': types.Schema(type='STRING'),
-                              'key2': types.Schema(type='NUMBER'),
+                  parameters_json_schema={
+                      'type': 'array',
+                      'items': {
+                          'type': 'object',
+                          'properties': {
+                              'key1': {'type': 'string'},
+                              'key2': {'type': 'number'},
                           },
-                      ),
-                  ),
+                      },
+                  },
               ),
           ],
       ),
@@ -146,13 +148,13 @@ def test_any_of_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      any_of=[
-                          types.Schema(type='STRING'),
-                          types.Schema(type='NUMBER'),
+                  parameters_json_schema={
+                      'type': 'object',
+                      'any_of': [
+                          {'type': 'string'},
+                          {'type': 'number'},
                       ],
-                  ),
+                  },
               ),
           ],
       ),
@@ -185,13 +187,13 @@ def test_properties_conversion():
               types.FunctionDeclaration(
                   name='tool',
                   description='tool-description',
-                  parameters=types.Schema(
-                      type='OBJECT',
-                      properties={
-                          'key1': types.Schema(type='STRING'),
-                          'key2': types.Schema(type='NUMBER'),
+                  parameters_json_schema={
+                      'type': 'object',
+                      'properties': {
+                          'key1': {'type': 'string'},
+                          'key2': {'type': 'number'},
                       },
-                  ),
+                  },
               ),
           ],
       ),

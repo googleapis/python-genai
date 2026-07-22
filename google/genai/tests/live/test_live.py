@@ -1203,6 +1203,10 @@ async def test_bidi_setup_to_api_with_tools_function_behavior(vertexai):
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='private serialized into camelCase but public keeps snake_case',
+)
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_config_mcp_tools(
@@ -1216,11 +1220,11 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
           'model': 'models/test_model',
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parameters_json_schema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1242,11 +1246,11 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
           ),
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parameters_json_schema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1280,6 +1284,10 @@ async def test_bidi_setup_to_api_with_config_mcp_tools(
   )
 
 
+@pytest.mark.skipif(
+    'config.getoption("--private")',
+    reason='private serialized into camelCase but public keeps snake_case',
+)
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_config_mcp_session(
@@ -1313,11 +1321,11 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
           'model': 'models/test_model',
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parameters_json_schema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1339,11 +1347,11 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
           ),
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parameters_json_schema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                           },
                       },
                   },
@@ -1360,6 +1368,7 @@ async def test_bidi_setup_to_api_with_config_mcp_session(
           'tools': [MockMcpClientSession()],
       },
   )
+
 
   assert (
       result == expected_result_vertexai

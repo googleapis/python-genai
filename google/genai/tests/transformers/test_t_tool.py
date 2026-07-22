@@ -62,14 +62,14 @@ def test_function(client):
       function_declarations=[
           types.FunctionDeclaration(
               name='test_func',
-              parameters=types.Schema(
-                  type='OBJECT',
-                  properties={
-                      'arg1': types.Schema(type='STRING'),
-                      'arg2': types.Schema(type='INTEGER'),
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'arg1': {'type': 'string'},
+                      'arg2': {'type': 'integer'},
                   },
-                  required=['arg1', 'arg2'],
-              ),
+                  'required': ['arg1', 'arg2'],
+              },
           )
       ]
   )
@@ -125,13 +125,13 @@ def test_mcp_tool(client):
           types.FunctionDeclaration(
               name='tool',
               description='tool-description',
-              parameters=types.Schema(
-                  type='OBJECT',
-                  properties={
-                      'key1': types.Schema(type='STRING'),
-                      'key2': types.Schema(type='NUMBER'),
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'key1': {'type': 'string'},
+                      'key2': {'type': 'number'},
                   },
-              ),
+              },
           )
       ]
   )

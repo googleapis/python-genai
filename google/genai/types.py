@@ -1040,22 +1040,6 @@ class ResourceScope(_common.CaseInSensitiveEnum):
       "https://aiplatform.googleapis.com/publishers/google/models/gemini-3-pro-preview"""
 
 
-class JSONSchemaType(Enum):
-  """The type of the data supported by JSON Schema.
-
-  The values of the enums are lower case strings, while the values of the enums
-  for the Type class are upper case strings.
-  """
-
-  NULL = 'null'
-  BOOLEAN = 'boolean'
-  OBJECT = 'object'
-  ARRAY = 'array'
-  NUMBER = 'number'
-  INTEGER = 'integer'
-  STRING = 'string'
-
-
 class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   """Options for feature selection preference."""
 
@@ -2578,173 +2562,6 @@ class HttpOptionsDict(TypedDict, total=False):
 HttpOptionsOrDict = Union[HttpOptions, HttpOptionsDict]
 
 
-class JSONSchema(_common.BaseModel):
-  """A subset of JSON Schema according to 2020-12 JSON Schema draft.
-
-  Represents a subset of a JSON Schema object that is used by the Gemini model.
-  The difference between this class and the Schema class is that this class is
-  compatible with OpenAPI 3.1 schema objects. And the Schema class is used to
-  make API call to Gemini model.
-  """
-
-  type: Optional[Union[JSONSchemaType, list[JSONSchemaType]]] = Field(
-      default=None,
-      description="""Validation succeeds if the type of the instance matches the type represented by the given type, or matches at least one of the given types.""",
-  )
-  format: Optional[str] = Field(
-      default=None,
-      description='Define semantic information about a string instance.',
-  )
-  title: Optional[str] = Field(
-      default=None,
-      description=(
-          'A preferably short description about the purpose of the instance'
-          ' described by the schema.'
-      ),
-  )
-  description: Optional[str] = Field(
-      default=None,
-      description=(
-          'An explanation about the purpose of the instance described by the'
-          ' schema.'
-      ),
-  )
-  default: Optional[Any] = Field(
-      default=None,
-      description=(
-          'This keyword can be used to supply a default JSON value associated'
-          ' with a particular schema.'
-      ),
-  )
-  items: Optional['JSONSchema'] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if each element of the instance not covered by'
-          ' prefixItems validates against this schema.'
-      ),
-  )
-  min_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is greater than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  max_items: Optional[int] = Field(
-      default=None,
-      description=(
-          'An array instance is valid if its size is less than, or equal to,'
-          ' the value of this keyword.'
-      ),
-  )
-  enum: Optional[list[Any]] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the instance is equal to one of the elements'
-          ' in this keyword’s array value.'
-      ),
-  )
-  properties: Optional[dict[str, 'JSONSchema']] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if, for each name that appears in both the'
-          ' instance and as a name within this keyword’s value, the child'
-          ' instance for that name successfully validates against the'
-          ' corresponding schema.'
-      ),
-  )
-  required: Optional[list[str]] = Field(
-      default=None,
-      description=(
-          'An object instance is valid against this keyword if every item in'
-          ' the array is the name of a property in the instance.'
-      ),
-  )
-  min_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is greater'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_properties: Optional[int] = Field(
-      default=None,
-      description=(
-          'An object instance is valid if its number of properties is less'
-          ' than, or equal to, the value of this keyword.'
-      ),
-  )
-  minimum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is greater than or equal'
-          ' to the given number.'
-      ),
-  )
-  maximum: Optional[float] = Field(
-      default=None,
-      description=(
-          'Validation succeeds if the numeric instance is less than or equal to'
-          ' the given number.'
-      ),
-  )
-  min_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' greater than, or equal to, the value of this keyword.'
-      ),
-  )
-  max_length: Optional[int] = Field(
-      default=None,
-      description=(
-          'A string instance is valid against this keyword if its length is'
-          ' less than, or equal to, the value of this keyword.'
-      ),
-  )
-  pattern: Optional[str] = Field(
-      default=None,
-      description=(
-          'A string instance is considered valid if the regular expression'
-          ' matches the instance successfully.'
-      ),
-  )
-  additional_properties: Optional[Any] = Field(
-      default=None,
-      description="""Can either be a boolean or an object; controls the presence of additional properties.""",
-  )
-  any_of: Optional[list['JSONSchema']] = Field(
-      default=None,
-      description=(
-          'An instance validates successfully against this keyword if it'
-          ' validates successfully against at least one schema defined by this'
-          ' keyword’s value.'
-      ),
-  )
-  unique_items: Optional[bool] = Field(
-      default=None,
-      description="""Boolean value that indicates whether the items in an array are unique.""",
-  )
-  ref: Optional[str] = Field(
-      default=None,
-      alias='$ref',
-      description="""Allows indirect references between schema nodes.""",
-  )
-  defs: Optional[dict[str, 'JSONSchema']] = Field(
-      default=None,
-      alias='$defs',
-      description="""Schema definitions to be used with $ref.""",
-  )
-  one_of: Optional[list['JSONSchema']] = Field(
-      default=None,
-      description=(
-          'An instance validates successfully against this keyword if it'
-          ' validates successfully against exactly one schema defined by this'
-          " keyword's value."
-      ),
-  )
-
-
 class Schema(_common.BaseModel):
   """Schema is used to define the format of input/output data.
 
@@ -2851,482 +2668,6 @@ class Schema(_common.BaseModel):
   type: Optional[Type] = Field(
       default=None, description="""Optional. Data type of the schema field."""
   )
-
-  @property
-  def json_schema(self) -> 'JSONSchema':
-    """Converts the Schema object to a JSONSchema object, that is compatible with 2020-12 JSON Schema draft.
-
-     Note: Conversion of fields that are not included in the JSONSchema class
-     are ignored.
-     Json Schema is now supported natively by both Gemini Enterprise Agent
-     Platform and Gemini API. Users
-     are recommended to pass/receive Json Schema directly to/from the API. For
-     example:
-     1. the counter part of GenerateContentConfig.response_schema is
-        GenerateContentConfig.response_json_schema, which accepts [JSON
-       Schema](https://json-schema.org/)
-     2. the counter part of FunctionDeclaration.parameters is
-        FunctionDeclaration.parameters_json_schema, which accepts [JSON
-        Schema](https://json-schema.org/)
-     3. the counter part of FunctionDeclaration.response is
-        FunctionDeclaration.response_json_schema, which accepts [JSON
-    Schema](https://json-schema.org/)
-    """
-
-    global _json_schema_warning_logged
-    if not _json_schema_warning_logged:
-      info_message = """
-Note: Conversion of fields that are not included in the JSONSchema class are
-ignored.
-Json Schema is now supported natively by both Gemini Enterprise Agent Platform and Gemini API. Users
-are recommended to pass/receive Json Schema directly to/from the API. For example:
-1. the counter part of GenerateContentConfig.response_schema is
-   GenerateContentConfig.response_json_schema, which accepts [JSON
-  Schema](https://json-schema.org/)
-2. the counter part of FunctionDeclaration.parameters is
-   FunctionDeclaration.parameters_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-3. the counter part of FunctionDeclaration.response is
-   FunctionDeclaration.response_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-"""
-      logger.info(info_message)
-      _json_schema_warning_logged = True
-
-    json_schema_field_names: set[str] = set(JSONSchema.model_fields.keys())
-    schema_field_names: tuple[str] = (
-        'items',
-    )  # 'additional_properties' to come
-    list_schema_field_names: tuple[str] = (
-        'any_of',  # 'one_of', 'all_of', 'not' to come
-    )
-    dict_schema_field_names: tuple[str] = ('properties',)  # 'defs' to come
-
-    def convert_schema(schema: Union['Schema', dict[str, Any]]) -> 'JSONSchema':
-      if isinstance(schema, pydantic.BaseModel):
-        schema_dict = schema.model_dump(exclude_none=True)
-      else:
-        schema_dict = schema
-      json_schema = JSONSchema()
-      for field_name, field_value in schema_dict.items():
-        if field_value is None:
-          continue
-        elif field_name == 'nullable':
-          if json_schema.type is None:
-            json_schema.type = JSONSchemaType.NULL
-          elif isinstance(json_schema.type, JSONSchemaType):
-            current_type: JSONSchemaType = json_schema.type
-            json_schema.type = [current_type, JSONSchemaType.NULL]
-          elif isinstance(json_schema.type, list):
-            json_schema.type.append(JSONSchemaType.NULL)
-        elif field_name not in json_schema_field_names:
-          continue
-        elif field_name == 'type':
-          if field_value == Type.TYPE_UNSPECIFIED:
-            continue
-          json_schema_type = JSONSchemaType(field_value.lower())
-          if json_schema.type is None:
-            json_schema.type = json_schema_type
-          elif isinstance(json_schema.type, JSONSchemaType):
-            existing_type: JSONSchemaType = json_schema.type
-            json_schema.type = [existing_type, json_schema_type]
-          elif isinstance(json_schema.type, list):
-            json_schema.type.append(json_schema_type)
-        elif field_name in schema_field_names:
-          schema_field_value: 'JSONSchema' = convert_schema(field_value)
-          setattr(json_schema, field_name, schema_field_value)
-        elif field_name in list_schema_field_names:
-          list_schema_field_value: list['JSONSchema'] = [
-              convert_schema(this_field_value)
-              for this_field_value in field_value
-          ]
-          setattr(json_schema, field_name, list_schema_field_value)
-        elif field_name in dict_schema_field_names:
-          dict_schema_field_value: dict[str, 'JSONSchema'] = {
-              key: convert_schema(value) for key, value in field_value.items()
-          }
-          setattr(json_schema, field_name, dict_schema_field_value)
-        else:
-          setattr(json_schema, field_name, field_value)
-
-      return json_schema
-
-    return convert_schema(self)
-
-  @classmethod
-  def from_json_schema(
-      cls,
-      *,
-      json_schema: 'JSONSchema',
-      api_option: Literal['VERTEX_AI', 'GEMINI_API'] = 'GEMINI_API',
-      raise_error_on_unsupported_field: bool = False,
-  ) -> 'Schema':
-    """Converts a JSONSchema object to a Schema object.
-
-     Note: Conversion of fields that are not included in the JSONSchema class
-     are ignored.
-     Json Schema is now supported natively by both Gemini Enterprise Agent
-     Platform and Gemini API. Users
-     are recommended to pass/receive Json Schema directly to/from the API. For
-     example:
-     1. the counter part of GenerateContentConfig.response_schema is
-        GenerateContentConfig.response_json_schema, which accepts [JSON
-       Schema](https://json-schema.org/)
-     2. the counter part of FunctionDeclaration.parameters is
-        FunctionDeclaration.parameters_json_schema, which accepts [JSON
-        Schema](https://json-schema.org/)
-     3. the counter part of FunctionDeclaration.response is
-        FunctionDeclaration.response_json_schema, which accepts [JSON
-    Schema](https://json-schema.org/)
-     The JSONSchema is compatible with 2020-12 JSON Schema draft, specified by
-     OpenAPI 3.1.
-
-     Args:
-         json_schema: JSONSchema object to be converted.
-         api_option: API option to be used. If set to 'VERTEX_AI', the
-           JSONSchema will be converted to a Schema object that is compatible
-           with Gemini Enterprise Agent Platform API. If set to 'GEMINI_API',
-           the JSONSchema will be converted to a Schema object that is
-           compatible with Gemini API. Default is 'GEMINI_API'.
-         raise_error_on_unsupported_field: If set to True, an error will be
-           raised if the JSONSchema contains any unsupported fields. Default is
-           False.
-
-     Returns:
-         Schema object that is compatible with the specified API option.
-     Raises:
-         ValueError: If the JSONSchema contains any unsupported fields and
-           raise_error_on_unsupported_field is set to True. Or if the JSONSchema
-           is not compatible with the specified API option.
-    """
-    global _from_json_schema_warning_logged
-    if not _from_json_schema_warning_logged:
-      info_message = """
-Note: Conversion of fields that are not included in the JSONSchema class are ignored.
-Json Schema is now supported natively by both Gemini Enterprise Agent Platform and Gemini API. Users
-are recommended to pass/receive Json Schema directly to/from the API. For example:
-1. the counter part of GenerateContentConfig.response_schema is
-   GenerateContentConfig.response_json_schema, which accepts [JSON
-  Schema](https://json-schema.org/)
-2. the counter part of FunctionDeclaration.parameters is
-   FunctionDeclaration.parameters_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-3. the counter part of FunctionDeclaration.response is
-   FunctionDeclaration.response_json_schema, which accepts [JSON
-   Schema](https://json-schema.org/)
-"""
-      logger.info(info_message)
-      _from_json_schema_warning_logged = True
-
-    google_schema_field_names: set[str] = set(cls.model_fields.keys())
-    schema_field_names: tuple[str, ...] = (
-        'items',
-    )  # 'additional_properties' to come
-    list_schema_field_names: tuple[str, ...] = (
-        'any_of',  # 'one_of', 'all_of', 'not' to come
-    )
-    dict_schema_field_names: tuple[str, ...] = ('properties',)
-
-    related_field_names_by_type: dict[str, tuple[str, ...]] = {
-        JSONSchemaType.NUMBER.value: (
-            'description',
-            'enum',
-            'format',
-            'maximum',
-            'minimum',
-            'title',
-        ),
-        JSONSchemaType.STRING.value: (
-            'description',
-            'enum',
-            'format',
-            'max_length',
-            'min_length',
-            'pattern',
-            'title',
-        ),
-        JSONSchemaType.OBJECT.value: (
-            'any_of',
-            'description',
-            'max_properties',
-            'min_properties',
-            'properties',
-            'required',
-            'title',
-        ),
-        JSONSchemaType.ARRAY.value: (
-            'description',
-            'items',
-            'max_items',
-            'min_items',
-            'title',
-        ),
-        JSONSchemaType.BOOLEAN.value: (
-            'description',
-            'title',
-        ),
-    }
-    # Treat `INTEGER` like `NUMBER`.
-    related_field_names_by_type[JSONSchemaType.INTEGER.value] = (
-        related_field_names_by_type[JSONSchemaType.NUMBER.value]
-    )
-
-    # placeholder for potential gemini api unsupported fields
-    gemini_api_unsupported_field_names: tuple[str, ...] = ()
-
-    def _resolve_ref(
-        ref_path: str, root_schema_dict: dict[str, Any]
-    ) -> dict[str, Any]:
-      """Helper to resolve a $ref path."""
-      current = root_schema_dict
-      for part in ref_path.lstrip('#/').split('/'):
-        if part == '$defs':
-          part = 'defs'
-        current = current[part]
-      current.pop('title', None)
-      if 'properties' in current and current['properties'] is not None:
-        for prop_schema in current['properties'].values():
-          if isinstance(prop_schema, dict):
-            prop_schema.pop('title', None)
-
-      return current
-
-    def normalize_json_schema_type(
-        json_schema_type: Optional[
-            Union[JSONSchemaType, Sequence[JSONSchemaType], str, Sequence[str]]
-        ],
-    ) -> tuple[list[str], bool]:
-      """Returns (non_null_types, nullable)"""
-      if json_schema_type is None:
-        return [], False
-      type_sequence: Sequence[Union[JSONSchemaType, str]]
-      if isinstance(json_schema_type, str) or not isinstance(
-          json_schema_type, Sequence
-      ):
-        type_sequence = [json_schema_type]
-      else:
-        type_sequence = json_schema_type
-      non_null_types = []
-      nullable = False
-      for type_value in type_sequence:
-        if isinstance(type_value, JSONSchemaType):
-          type_value = type_value.value
-        if type_value == JSONSchemaType.NULL.value:
-          nullable = True
-        else:
-          non_null_types.append(type_value)
-      return non_null_types, nullable
-
-    def raise_error_if_cannot_convert(
-        json_schema_dict: dict[str, Any],
-        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
-        raise_error_on_unsupported_field: bool,
-    ) -> None:
-      """Raises an error if the JSONSchema cannot be converted to the specified Schema object."""
-      if not raise_error_on_unsupported_field:
-        return
-      for field_name, field_value in json_schema_dict.items():
-        if field_value is None:
-          continue
-        if field_name not in google_schema_field_names and field_name not in [
-            'ref',
-            'defs',
-        ]:
-          raise ValueError(
-              f'JSONSchema field "{field_name}" is not supported by the Schema'
-              ' object. And the "raise_error_on_unsupported_field" argument is'
-              ' set to True. If you still want to convert it into the Schema'
-              f' object, please either remove the field "{field_name}" from the'
-              ' JSONSchema object, leave the'
-              ' "raise_error_on_unsupported_field" unset, or try using'
-              ' response_json_schema instead.'
-          )
-        if (
-            field_name in gemini_api_unsupported_field_names
-            and api_option == 'GEMINI_API'
-        ):
-          raise ValueError(
-              f'The "{field_name}" field is not supported by the Schema '
-              'object for GEMINI_API.'
-          )
-
-    def copy_schema_fields(
-        json_schema_dict: dict[str, Any],
-        related_fields_to_copy: tuple[str, ...],
-        sub_schema_in_any_of: dict[str, Any],
-    ) -> None:
-      """Copies the fields from json_schema_dict to sub_schema_in_any_of."""
-      for field_name in related_fields_to_copy:
-        sub_schema_in_any_of[field_name] = json_schema_dict.get(
-            field_name, None
-        )
-
-    def convert_json_schema(
-        current_json_schema: 'JSONSchema',
-        root_json_schema_dict: dict[str, Any],
-        api_option: Literal['VERTEX_AI', 'GEMINI_API'],
-        raise_error_on_unsupported_field: bool,
-        visited_refs: Optional[set[str]] = None,
-    ) -> 'Schema':
-      if visited_refs is None:
-        visited_refs = set()
-
-      schema = Schema()
-      json_schema_dict = current_json_schema.model_dump()
-
-      ref = json_schema_dict.get('ref')
-      if ref:
-        if ref in visited_refs:
-          return Schema()
-        visited_refs.add(ref)
-        json_schema_dict = _resolve_ref(ref, root_json_schema_dict)
-
-      raise_error_if_cannot_convert(
-          json_schema_dict=json_schema_dict,
-          api_option=api_option,
-          raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-      )
-
-      # At the highest level of the logic, there are two passes:
-      # Pass 1: the JSONSchema.type is union-like,
-      #         e.g. ['null', 'string', 'array'].
-      #         for this case, we need to split the JSONSchema into multiple
-      #         sub-schemas, and copy them into the any_of field of the Schema.
-      #         And when we copy the non-type fields into any_of field,
-      #         we only copy the fields related to the specific type.
-      #         Detailed logic is commented below with `Pass 1` keyword tag.
-      # Pass 2: the JSONSchema.type is not union-like,
-      #         e.g. 'string', ['string'], ['null', 'string'].
-      #         for this case, no splitting is needed. Detailed
-      #         logic is commented below with `Pass 2` keyword tag.
-      #
-      #
-      # Pass 1: the JSONSchema.type is union-like
-      #         e.g. ['null', 'string', 'array'].
-      non_null_types, nullable = normalize_json_schema_type(
-          json_schema_dict.get('type', None)
-      )
-      is_union_like_type = len(non_null_types) > 1
-      if len(non_null_types) > 1:
-        logger.warning(
-            'JSONSchema type is union-like, e.g. ["null", "string", "array"]. '
-            'Converting it into multiple sub-schemas, and copying them into '
-            'the any_of field of the Schema. The value of `default` field is '
-            'ignored because it is ambiguous to tell which sub-schema it '
-            'belongs to.'
-        )
-        reformed_json_schema = JSONSchema()
-        # start splitting the JSONSchema into multiple sub-schemas
-        any_of = []
-        if nullable:
-          schema.nullable = True
-        for normalized_type in non_null_types:
-          sub_schema_in_any_of = {'type': normalized_type}
-          related_field_names = related_field_names_by_type.get(normalized_type)
-          if related_field_names is not None:
-            copy_schema_fields(
-                json_schema_dict=json_schema_dict,
-                related_fields_to_copy=related_field_names,
-                sub_schema_in_any_of=sub_schema_in_any_of,
-            )
-          any_of.append(JSONSchema(**sub_schema_in_any_of))
-        reformed_json_schema.any_of = any_of
-        json_schema_dict = reformed_json_schema.model_dump()
-
-      # Pass 2: the JSONSchema.type is not union-like,
-      # e.g. 'string', ['string'], ['null', 'string'].
-      for field_name, field_value in json_schema_dict.items():
-        if field_value is None or field_name == 'defs':
-          continue
-        if field_name in schema_field_names:
-          if field_name == 'items' and not field_value:
-            continue
-          schema_field_value: 'Schema' = convert_json_schema(
-              current_json_schema=JSONSchema(**field_value),
-              root_json_schema_dict=root_json_schema_dict,
-              api_option=api_option,
-              raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-              visited_refs=visited_refs,
-          )
-          setattr(schema, field_name, schema_field_value)
-        elif field_name in list_schema_field_names:
-          list_schema_field_value: list['Schema'] = [
-              convert_json_schema(
-                  current_json_schema=JSONSchema(**this_field_value),
-                  root_json_schema_dict=root_json_schema_dict,
-                  api_option=api_option,
-                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-                  visited_refs=visited_refs,
-              )
-              for this_field_value in field_value
-          ]
-          setattr(schema, field_name, list_schema_field_value)
-          if not schema.type and not is_union_like_type and not schema.any_of:
-            schema.type = Type('OBJECT')
-        elif field_name in dict_schema_field_names:
-          dict_schema_field_value: dict[str, 'Schema'] = {
-              key: convert_json_schema(
-                  current_json_schema=JSONSchema(**value),
-                  root_json_schema_dict=root_json_schema_dict,
-                  api_option=api_option,
-                  raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-                  visited_refs=visited_refs,
-              )
-              for key, value in field_value.items()
-          }
-          setattr(schema, field_name, dict_schema_field_value)
-        elif field_name == 'type':
-          non_null_types, nullable = normalize_json_schema_type(field_value)
-          if nullable:
-            schema.nullable = True
-          if non_null_types:
-            schema.type = Type(non_null_types[0])
-        else:
-          if (
-              hasattr(schema, field_name)
-              and field_name != 'additional_properties'
-          ):
-            setattr(schema, field_name, field_value)
-
-      if (
-          schema.type == 'ARRAY'
-          and schema.items
-          and not schema.items.model_dump(exclude_unset=True)
-      ):
-        schema.items = None
-
-      if schema.any_of and len(schema.any_of) == 2:
-        nullable_part = None
-        type_part = None
-        for part in schema.any_of:
-          # A schema representing `None` will either be of type NULL or just be nullable.
-          part_dict = part.model_dump(exclude_unset=True)
-          if part_dict == {'nullable': True} or part_dict == {'type': 'NULL'}:
-            nullable_part = part
-          else:
-            type_part = part
-
-        # If we found both parts, unwrap them into a single schema.
-        if nullable_part and type_part:
-          default_value = schema.default
-          schema = type_part
-          schema.nullable = True
-          # Carry the default value over to the unwrapped schema
-          if default_value is not None:
-            schema.default = default_value
-
-      if ref:
-        visited_refs.remove(ref)
-      return schema
-
-    # This is the initial call to the recursive function.
-    root_schema_dict = json_schema.model_dump()
-    return convert_json_schema(
-        current_json_schema=json_schema,
-        root_json_schema_dict=root_schema_dict,
-        api_option=api_option,
-        raise_error_on_unsupported_field=raise_error_on_unsupported_field,
-    )
 
 
 class SchemaDict(TypedDict, total=False):
@@ -4602,39 +3943,26 @@ class FunctionDeclaration(_common.BaseModel):
           f'Unsupported api_option value: {api_option}. Supported api_option'
           f' value is one of: {supported_api_options}.'
       )
-    from . import _automatic_function_calling_util
 
-    parameters_properties = {}
-    parameters_json_schema = {}
+    from . import _automatic_function_calling_util
+    from . import _extra_utils
+
     annotation_under_future = typing.get_type_hints(callable)
-    try:
-      for name, param in inspect.signature(callable).parameters.items():
-        if param.kind in (
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            inspect.Parameter.KEYWORD_ONLY,
-            inspect.Parameter.POSITIONAL_ONLY,
-        ):
+    parameters_properties_json_schema = {}
+    for name, param in inspect.signature(callable).parameters.items():
+      if param.kind in (
+          inspect.Parameter.POSITIONAL_OR_KEYWORD,
+          inspect.Parameter.KEYWORD_ONLY,
+          inspect.Parameter.POSITIONAL_ONLY,
+      ):
+        try:
           param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
               param, annotation_under_future, name
           )
-          schema = (
-              _automatic_function_calling_util._parse_schema_from_parameter(
-                  api_option, param, callable.__name__
-              )
-          )
-          parameters_properties[name] = schema
-    except ValueError:
-      parameters_properties = {}
-      for name, param in inspect.signature(callable).parameters.items():
-        if param.kind in (
-            inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            inspect.Parameter.KEYWORD_ONLY,
-            inspect.Parameter.POSITIONAL_ONLY,
-        ):
-          try:
-            param = _automatic_function_calling_util._handle_params_as_deferred_annotations(
-                param, annotation_under_future, name
-            )
+          json_schema_dict = {}
+          if _extra_utils.is_annotation_pydantic_model(param.annotation):
+            json_schema_dict = param.annotation.model_json_schema()
+          else:
             param_schema_adapter = pydantic.TypeAdapter(
                 param.annotation,
                 config=pydantic.ConfigDict(arbitrary_types_allowed=True),
@@ -4643,36 +3971,17 @@ class FunctionDeclaration(_common.BaseModel):
             json_schema_dict = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
                 json_schema_dict
             )
-            if 'prefixItems' in json_schema_dict:
-              parameters_json_schema[name] = json_schema_dict
-              continue
-
-            union_args = typing.get_args(param.annotation)
-            has_primitive = any(
-                _automatic_function_calling_util._is_builtin_primitive_or_compound(
-                    arg
-                )
-                for arg in union_args
-            )
-            if (
-                '$ref' in json_schema_dict or '$defs' in json_schema_dict
-            ) and has_primitive:
-              # This is a complex schema with a primitive (e.g., str | MyModel)
-              # that is better represented by raw JSON schema.
-              parameters_json_schema[name] = json_schema_dict
-              continue
-
-            schema = Schema.from_json_schema(
-                json_schema=JSONSchema(**json_schema_dict),
-                api_option=api_option,
-            )
-            if param.default is not inspect.Parameter.empty:
-              schema.default = param.default
-            parameters_properties[name] = schema
-          except Exception as e:
-            _automatic_function_calling_util._raise_for_unsupported_param(
-                param, callable.__name__, e
-            )
+          # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
+          # but Vertex requires it.
+          if not 'type' in json_schema_dict and 'anyOf' in json_schema_dict:
+            json_schema_dict['type'] = 'object'
+          if param.default is not inspect._empty:
+            json_schema_dict['default'] = param.default
+          parameters_properties_json_schema[name] = json_schema_dict
+        except Exception as e:
+          _automatic_function_calling_util._raise_for_unsupported_param(
+              param, callable.__name__, e
+          )
 
     declaration = FunctionDeclaration(
         name=callable.__name__,
@@ -4681,21 +3990,16 @@ class FunctionDeclaration(_common.BaseModel):
         else callable.__doc__,
         behavior=behavior,
     )
-    if parameters_properties:
-      declaration.parameters = Schema(
-          type='OBJECT',
-          properties=parameters_properties,
-      )
-      declaration.parameters.required = (
+    if parameters_properties_json_schema:
+      declaration.parameters_json_schema = {
+          'type': 'object',
+          'properties': parameters_properties_json_schema,
+      }
+      declaration.parameters_json_schema['required'] = (
           _automatic_function_calling_util._get_required_fields(
-              declaration.parameters
+              declaration.parameters_json_schema
           )
       )
-    elif parameters_json_schema:
-      declaration.parameters_json_schema = parameters_json_schema
-    # TODO: b/421991354 - Remove this check once the bug is fixed.
-    if api_option == 'GEMINI_API':
-      return declaration
 
     return_annotation = inspect.signature(callable).return_annotation
     if return_annotation is inspect._empty:
@@ -4712,39 +4016,29 @@ class FunctionDeclaration(_common.BaseModel):
       return_value = return_value.replace(
           annotation=annotation_under_future['return']
       )
-    response_schema: Optional[Schema] = None
-    response_json_schema: Optional[Union[dict[str, Any], Schema]] = {}
+    response_json_schema: dict[str, Any] = {}
     try:
-      response_schema = (
-          _automatic_function_calling_util._parse_schema_from_parameter(
-              api_option,
-              return_value,
-              callable.__name__,
-          )
-      )
-      if response_schema.any_of is not None:
-        # To handle any_of, we need to use responseJsonSchema
-        response_json_schema = response_schema
-        response_schema = None
-    except ValueError:
-      try:
+      if _extra_utils.is_annotation_pydantic_model(return_value.annotation):
+        response_json_schema = return_value.annotation.model_json_schema()
+      else:
         return_value_schema_adapter = pydantic.TypeAdapter(
             return_value.annotation,
             config=pydantic.ConfigDict(arbitrary_types_allowed=True),
         )
         response_json_schema = return_value_schema_adapter.json_schema()
-        response_json_schema = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
-            response_json_schema
-        )
-      except Exception as e:
-        _automatic_function_calling_util._raise_for_unsupported_param(
-            return_value, callable.__name__, e
-        )
+      response_json_schema = _automatic_function_calling_util._add_unevaluated_items_to_fixed_len_tuple_schema(
+          response_json_schema
+      )
+      # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
+      # but Vertex requires it.
+      if not 'type' in response_json_schema and 'anyOf' in response_json_schema:
+        response_json_schema['type'] = 'object'
+    except Exception as e:
+      _automatic_function_calling_util._raise_for_unsupported_param(
+          return_value, callable.__name__, e
+      )
 
-    if response_schema:
-      declaration.response = response_schema
-    elif response_json_schema:
-      declaration.response_json_schema = response_json_schema
+    declaration.response_json_schema = response_json_schema
     return declaration
 
   @classmethod
