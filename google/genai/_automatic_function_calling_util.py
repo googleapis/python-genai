@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import enum
 import inspect
 import sys
 import types as builtin_types
@@ -152,6 +153,29 @@ def _parse_schema_from_parameter(  # type: ignore[return]
       f' {func_name} is not compatible with the parameter annotation'
       f' {param.annotation}.'
   )
+  if inspect.isclass(param.annotation) and issubclass(param.annotation, enum.Enum):
+    member_values = [member.value for member in param.annotation]
+    if all(isinstance(value, str) for value in member_values):
+      schema.type = _py_builtin_type_to_schema_type[str]
+      schema.enum = member_values
+    elif all(isinstance(value, int) for value in member_values):
+      schema.type = _py_builtin_type_to_schema_type[int]
+      schema.enum = [str(value) for value in member_values]
+    else:
+      raise ValueError(
+          f'Enum type {param.annotation} must have members that are all'
+          ' strings or all integers.'
+      )
+
+    if param.default is not inspect.Parameter.empty:
+      default_value = param.default
+      if isinstance(default_value, param.annotation):
+        default_value = default_value.value
+
+      if default_value not in member_values:
+        raise ValueError(default_value_error_msg)
+      schema.default = default_value
+    return schema
   if _is_builtin_primitive_or_compound(param.annotation):
     if param.default is not inspect.Parameter.empty:
       if not _is_default_value_compatible(param.default, param.annotation):
