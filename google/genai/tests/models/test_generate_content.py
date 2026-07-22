@@ -2583,3 +2583,24 @@ def test_response_json_schema_with_one_of(client):
   assert resource_config['size'] == 10
   assert 'tier' not in resource_config
   assert set(resource_config.keys()) == {'size'}
+
+
+@pytest.mark.asyncio
+async def test_audio_transcription(client):
+  if client.vertexai:
+    return
+  config = types.GenerateContentConfig(
+      audio_transcription_config=types.AudioTranscriptionConfig(
+          diarization=True,
+          word_timestamp=True,
+          language_hints=types.LanguageHints(language_codes=['en-US']),
+      )
+  )
+
+  response = await client.aio.models.generate_content(
+      model='gemini-3.1-pro-preview',
+      contents='Transcribe this audio',
+      config=config
+  )
+
+  assert response is not None
