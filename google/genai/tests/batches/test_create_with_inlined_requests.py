@@ -21,7 +21,9 @@ import datetime
 import os
 
 import pytest
+from unittest import mock
 
+from ... import batches as batches_module
 from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
@@ -256,6 +258,163 @@ pytestmark = [
         test_table=test_table,
     ),
 ]
+
+
+def test_inlined_requests_include_internal_order_metadata(
+    use_vertex, replays_prefix, http_options
+):
+  del use_vertex, replays_prefix, http_options
+  request_payload = {
+      'inlined_requests': [
+          {'contents': [{'parts': [{'text': 'first'}], 'role': 'user'}]},
+          {
+              'contents': [{'parts': [{'text': 'second'}], 'role': 'user'}],
+              'metadata': {'caller': 'external'},
+          },
+      ]
+  }
+
+  converted = batches_module._BatchJobSource_to_mldev(
+      mock.MagicMock(), request_payload
+  )
+  requests = converted['requests']['requests']
+  key = batches_module._INLINED_REQUEST_ORDER_METADATA_KEY
+
+  assert requests[0]['metadata'][key] == '0'
+  assert requests[1]['metadata'][key] == '1'
+  assert requests[1]['metadata']['caller'] == 'external'
+
+
+def test_inlined_requests_internal_order_metadata_overrides_reserved_key(
+    use_vertex, replays_prefix, http_options
+):
+  del use_vertex, replays_prefix, http_options
+  key = batches_module._INLINED_REQUEST_ORDER_METADATA_KEY
+  request_payload = {
+      'inlined_requests': [
+          {
+              'contents': [{'parts': [{'text': 'first'}], 'role': 'user'}],
+              'metadata': {key: '999', 'caller': 'external'},
+          },
+      ]
+  }
+
+  converted = batches_module._BatchJobSource_to_mldev(
+      mock.MagicMock(), request_payload
+  )
+  request = converted['requests']['requests'][0]
+
+  assert request['metadata'][key] == '0'
+  assert request['metadata']['caller'] == 'external'
+
+
+def test_inlined_responses_are_reordered_by_internal_order_metadata(
+    use_vertex, replays_prefix, http_options
+):
+  del use_vertex, replays_prefix, http_options
+  key = batches_module._INLINED_REQUEST_ORDER_METADATA_KEY
+  response_payload = {
+      'inlinedResponses': {
+          'inlinedResponses': [
+              {
+                  'metadata': {'request_key': 'two', key: '2'},
+                  'response': {'candidates': []},
+              },
+              {
+                  'metadata': {'request_key': 'zero', key: '0'},
+                  'response': {'candidates': []},
+              },
+              {
+                  'metadata': {'request_key': 'one', key: '1'},
+                  'response': {'candidates': []},
+              },
+          ]
+      }
+  }
+
+  converted = batches_module._BatchJobDestination_from_mldev(response_payload)
+  responses = converted['inlined_responses']
+
+  assert [item['metadata']['request_key'] for item in responses] == [
+      'zero',
+      'one',
+      'two',
+  ]
+  assert all(key not in item['metadata'] for item in responses)
+
+
+def test_inlined_responses_keep_input_order_when_metadata_missing(
+    use_vertex, replays_prefix, http_options
+):
+  del use_vertex, replays_prefix, http_options
+  key = batches_module._INLINED_REQUEST_ORDER_METADATA_KEY
+  response_payload = {
+      'inlinedResponses': {
+          'inlinedResponses': [
+              {
+                  'metadata': {'request_key': 'two', key: '2'},
+                  'response': {'candidates': []},
+              },
+              {
+                  'metadata': {'request_key': 'zero'},
+                  'response': {'candidates': []},
+              },
+              {
+                  'metadata': {'request_key': 'one', key: '1'},
+                  'response': {'candidates': []},
+              },
+          ]
+      }
+  }
+
+  converted = batches_module._BatchJobDestination_from_mldev(response_payload)
+  responses = converted['inlined_responses']
+
+  assert [item['metadata']['request_key'] for item in responses] == [
+      'two',
+      'zero',
+      'one',
+  ]
+  assert responses[0]['metadata'][key] == '2'
+  assert key not in responses[1]['metadata']
+  assert responses[2]['metadata'][key] == '1'
+
+
+def test_inlined_responses_keep_input_order_when_metadata_non_numeric(
+    use_vertex, replays_prefix, http_options
+):
+  del use_vertex, replays_prefix, http_options
+  key = batches_module._INLINED_REQUEST_ORDER_METADATA_KEY
+  response_payload = {
+      'inlinedResponses': {
+          'inlinedResponses': [
+              {
+                  'metadata': {'request_key': 'two', key: '2'},
+                  'response': {'candidates': []},
+              },
+              {
+                  'metadata': {'request_key': 'bad', key: 'not-a-number'},
+                  'response': {'candidates': []},
+              },
+              {
+                  'metadata': {'request_key': 'one', key: '1'},
+                  'response': {'candidates': []},
+              },
+          ]
+      }
+  }
+
+  converted = batches_module._BatchJobDestination_from_mldev(response_payload)
+  responses = converted['inlined_responses']
+
+  assert [item['metadata']['request_key'] for item in responses] == [
+      'two',
+      'bad',
+      'one',
+  ]
+  assert responses[0]['metadata'][key] == '2'
+  assert responses[1]['metadata'][key] == 'not-a-number'
+  assert responses[2]['metadata'][key] == '1'
 
 
 @pytest.mark.asyncio
