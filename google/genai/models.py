@@ -21,6 +21,7 @@ import json
 import logging
 from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
 from urllib.parse import urlencode
+import warnings
 
 from . import _api_module
 from . import _base_transformers as base_t
@@ -6362,6 +6363,8 @@ class Models(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  _logged_generate_videos_deprecation_warning = False
+
   def embed_content(
       self,
       *,
@@ -6802,6 +6805,14 @@ class Models(_api_module.BaseModule):
           automatic_function_calling_history.append(func_call_content)
         automatic_function_calling_history.append(func_response_content)
 
+  @_common.experimental_warning(
+      'The generate_images method is deprecated and will be removed in the '
+      'next major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models'
+      ' and '
+      'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images',
+  )
   def generate_images(
       self,
       *,
@@ -6857,6 +6868,12 @@ class Models(_api_module.BaseModule):
     )
     return response
 
+  @_common.experimental_warning(
+      'The edit_image method is deprecated and will be removed in the next '
+      'major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/gemini-edit-images#edit-an-image',
+  )
   def edit_image(
       self,
       *,
@@ -7036,11 +7053,21 @@ class Models(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
-    if (prompt or image or video) and source:
-      raise ValueError(
-          'Source and prompt/image/video are mutually exclusive.'
-          + ' Please only use source.'
-      )
+    if prompt or image or video:
+      if source:
+        raise ValueError(
+            'Source and prompt/image/video are mutually exclusive.'
+            + ' Please only use source.'
+        )
+      if not Models._logged_generate_videos_deprecation_warning:
+        warnings.warn(
+            'The generate_videos method with prompt/image/video arguments is'
+            ' deprecated and will be removed in a future major release (not'
+            ' before 2026-07-31). Please use the source argument instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        Models._logged_generate_videos_deprecation_warning = True
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:
@@ -8572,6 +8599,8 @@ class AsyncModels(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  _logged_generate_videos_deprecation_warning = False
+
   async def generate_content(
       self,
       *,
@@ -9078,6 +9107,12 @@ class AsyncModels(_api_module.BaseModule):
 
     return stream_generator()  # type: ignore[no-untyped-call, no-any-return]
 
+  @_common.experimental_warning(
+      'The edit_image method is deprecated and will be removed in the next '
+      'major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/gemini-edit-images#edit-an-image',
+  )
   async def edit_image(
       self,
       *,
@@ -9186,6 +9221,14 @@ class AsyncModels(_api_module.BaseModule):
         config,
     )
 
+  @_common.experimental_warning(
+      'The generate_images method is deprecated and will be removed in the '
+      'next major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models'
+      ' and '
+      'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images',
+  )
   async def generate_images(
       self,
       *,
@@ -9364,11 +9407,21 @@ class AsyncModels(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
-    if (prompt or image or video) and source:
-      raise ValueError(
-          'Source and prompt/image/video are mutually exclusive.'
-          + ' Please only use source.'
-      )
+    if prompt or image or video:
+      if source:
+        raise ValueError(
+            'Source and prompt/image/video are mutually exclusive.'
+            + ' Please only use source.'
+        )
+      if not AsyncModels._logged_generate_videos_deprecation_warning:
+        warnings.warn(
+            'The generate_videos method with prompt/image/video arguments is'
+            ' deprecated and will be removed in a future major release (not'
+            ' before 2026-07-31). Please use the source argument instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        AsyncModels._logged_generate_videos_deprecation_warning = True
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:

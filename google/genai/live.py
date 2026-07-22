@@ -1191,8 +1191,8 @@ async def _t_live_connect_config(
   if parameter_model_copy.generation_config is not None:
     warnings.warn(
         'Setting `LiveConnectConfig.generation_config` is deprecated, '
-        'please set the fields on `LiveConnectConfig` directly. This will '
-        'become an error in a future version (not before Q3 2025)',
+        'please set the fields on `LiveConnectConfig` directly. It will be '
+        'removed in the next major version (not before 7/31/2026).',
         DeprecationWarning,
         stacklevel=4,
     )
