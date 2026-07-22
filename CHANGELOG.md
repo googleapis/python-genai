@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.14.0](https://github.com/googleapis/python-genai/compare/v2.13.0...v2.14.0) (2026-07-22)
+
+
+### Features
+
+* [GenerateContentConfig] Add GenerationConfig.audio_transcription_config and Part.audio_transcription. ([dc3d78d](https://github.com/googleapis/python-genai/commit/dc3d78dc228709c0968554694a884f9fe17a36bc))
+
+
+### Bug Fixes
+
+* Add deprecation warnings to Imagen generate_images, edit_images, generate_videos (if using prompt/text/image args), LiveConnectConfig.GenerationConfig which will be removed in the next major version ([4905918](https://github.com/googleapis/python-genai/commit/49059181ea0452e160ec61135c29f9c177f19160))
+
+
+### Documentation
+
+* Regenerate docs for 2.13.0 ([097a99e](https://github.com/googleapis/python-genai/commit/097a99e6c79f752af1ad055b6daffa384f6d6bc3))
+
 ## [2.13.0](https://github.com/googleapis/python-genai/compare/v2.12.1...v2.13.0) (2026-07-21)
 
 
