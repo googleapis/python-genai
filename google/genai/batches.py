@@ -34,6 +34,46 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.batches')
 
 
+def _AudioTranscriptionConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    raise ValueError(
+        'language_codes parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['language_auto']) is not None:
+    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
+
+  if getv(from_object, ['language_hints']) is not None:
+    setv(to_object, ['languageHints'], getv(from_object, ['language_hints']))
+
+  if getv(from_object, ['custom_vocabulary']) is not None:
+    setv(
+        to_object,
+        ['customVocabulary'],
+        getv(from_object, ['custom_vocabulary']),
+    )
+
+  if getv(from_object, ['adaptation_phrases']) is not None:
+    setv(
+        to_object,
+        ['adaptationPhrases'],
+        getv(from_object, ['adaptation_phrases']),
+    )
+
+  if getv(from_object, ['word_timestamp']) is not None:
+    setv(to_object, ['wordTimestamp'], getv(from_object, ['word_timestamp']))
+
+  if getv(from_object, ['diarization']) is not None:
+    setv(to_object, ['diarization'], getv(from_object, ['diarization']))
+
+  return to_object
+
+
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1182,6 +1222,15 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['service_tier']) is not None:
     setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
 
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        _AudioTranscriptionConfig_to_mldev(
+            getv(from_object, ['audio_transcription_config']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -1605,6 +1654,13 @@ def _Part_to_mldev(
 
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
 
   return to_object
 
