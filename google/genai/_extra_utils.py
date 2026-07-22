@@ -31,6 +31,7 @@ from . import _mcp_utils
 from . import _transformers as t
 from . import errors
 from . import types
+from . import version as public_version
 from ._adapters import McpToGenAiToolAdapter
 
 
@@ -701,7 +702,7 @@ def get_usage_header(
     usage: str = 'afc',
 ) -> types.GenerateContentConfig:
   """Sets the afc version label."""
-  usage_header = f'google-genai-sdk/{usage}'
+  usage_header = f'google-genai-sdk/{public_version.__version__}+{usage}'
   if not config:
     config_model = types.GenerateContentConfig()
   elif isinstance(config, dict):
@@ -712,15 +713,22 @@ def get_usage_header(
   if not config_model.http_options:
     config_model.http_options = types.HttpOptions()
   existing_headers = config_model.http_options.headers or {}
-  if 'user-agent' in existing_headers:
-    if usage_header not in existing_headers['user-agent']:
-      existing_headers['user-agent'] += f' {usage_header}'
-  else:
-    existing_headers['user-agent'] = usage_header
-  if 'x-goog-api-client' in existing_headers:
-    if usage_header not in existing_headers['x-goog-api-client']:
-      existing_headers['x-goog-api-client'] += f' {usage_header}'
-  else:
-    existing_headers['x-goog-api-client'] = usage_header
+  for header_key in ('user-agent', 'x-goog-api-client'):
+    if header_key in existing_headers:
+      if (
+          f'+{usage}' not in existing_headers[header_key]
+          and usage_header not in existing_headers[header_key]
+      ):
+        if (
+            f'google-genai-sdk/{public_version.__version__}'
+            in existing_headers[header_key]
+        ):
+          existing_headers[header_key] = existing_headers[header_key].replace(
+              f'google-genai-sdk/{public_version.__version__}', usage_header
+          )
+        else:
+          existing_headers[header_key] += f' {usage_header}'
+    else:
+      existing_headers[header_key] = usage_header
   config_model.http_options.headers = existing_headers
   return config_model
