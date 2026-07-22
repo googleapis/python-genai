@@ -641,13 +641,10 @@ class BaseApiClient:
         self.vertexai = env_vertexai
 
     # Validate explicitly set initializer values.
-    if (project or location) and api_key:
-      # API cannot consume both project/location and api_key.
-      raise ValueError(
-          'Project/location and API key are mutually exclusive in the client'
-          ' initializer.'
-      )
-    elif credentials and api_key:
+    if (project or location) and not self.vertexai:
+      raise ValueError('Gemini API does not support project/location.')
+
+    if credentials and api_key:
       # API cannot consume both credentials and api_key.
       raise ValueError(
           'Credentials and API key are mutually exclusive in the client'
@@ -699,7 +696,12 @@ class BaseApiClient:
             + ' over the API key from the environment variable.'
         )
         self.api_key = None
-      elif (env_location or env_project) and api_key:
+      elif (
+          api_key
+          and not project
+          and not location
+          and (env_project or env_location)
+      ):
         # Explicit api_key takes precedence over implicit project/location.
         logger.info(
             'The user provided Vertex AI API key will take precedence over the'
@@ -707,14 +709,20 @@ class BaseApiClient:
         )
         self.project = None
         self.location = None
-      elif (project or location) and env_api_key:
+      elif (project or location) and not api_key and env_api_key:
         # Explicit project/location takes precedence over implicit api_key.
         logger.info(
             'The user provided project/location will take precedence over the'
             + ' Vertex AI API key from the environment variable.'
         )
         self.api_key = None
-      elif (env_location or env_project) and env_api_key:
+      elif (
+          not project
+          and not location
+          and not api_key
+          and (env_project or env_location)
+          and env_api_key
+      ):
         # Implicit project/location takes precedence over implicit api_key.
         logger.info(
             'The project/location from the environment variables will take'
@@ -755,7 +763,7 @@ class BaseApiClient:
             'Project or API key must be set when using the Vertex AI API.'
         )
       if (
-          self.api_key or self.location == 'global'
+          (self.api_key and not self.location) or self.location == 'global'
       ) and not self.custom_base_url:
         self._http_options.base_url = f'https://aiplatform.googleapis.com/'
       elif (
@@ -1412,7 +1420,7 @@ class BaseApiClient:
   ) -> HttpResponse:
     data: Optional[Union[str, bytes]] = None
     # If using proj/location, fetch ADC
-    if self.vertexai and (self.project or self.location):
+    if self.vertexai and (self.project or self.location) and not self.api_key:
       http_request.headers['Authorization'] = f'Bearer {self._access_token()}'
       if self._credentials and self._credentials.quota_project_id:
         http_request.headers['x-goog-user-project'] = (
@@ -1492,7 +1500,7 @@ class BaseApiClient:
     data: Optional[bytes] = None
 
     # If using proj/location, fetch ADC
-    if self.vertexai and (self.project or self.location):
+    if self.vertexai and (self.project or self.location) and not self.api_key:
       http_request.headers['Authorization'] = (
           f'Bearer {await self._async_access_token()}'
       )
