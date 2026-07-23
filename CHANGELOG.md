@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.1](https://github.com/googleapis/python-genai/compare/v2.14.0...v2.14.1) (2026-07-23)
+
+
+### Documentation
+
+* Regenerate docs for 2.14.0 ([3d3850a](https://github.com/googleapis/python-genai/commit/3d3850a2a6578603adf5ede92cba085dd9be908e))
+
 ## [2.14.0](https://github.com/googleapis/python-genai/compare/v2.13.0...v2.14.0) (2026-07-22)
 
 
