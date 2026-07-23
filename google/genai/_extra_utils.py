@@ -608,6 +608,57 @@ def append_chunk_contents(
   return contents
 
 
+# application/* MIME types the Gemini API accepts even for textual content, so
+# they should not be downgraded to text/plain.
+_TEXT_COMPATIBLE_APPLICATION_MIME_TYPES = frozenset({
+    'application/json',
+    'application/xml',
+    'application/rtf',
+})
+
+
+def _is_utf8_text_file(fs_path: str, sample_size: int = 8192) -> bool:
+  """Returns True if the file starts with UTF-8 text and no NUL bytes."""
+  try:
+    with open(fs_path, 'rb') as f:
+      sample = f.read(sample_size)
+  except OSError:
+    return False
+  if b'\x00' in sample:
+    return False
+  try:
+    sample.decode('utf-8')
+  except UnicodeDecodeError as e:
+    # Tolerate a multi-byte character split across the sample boundary.
+    return e.start >= len(sample) - 3
+  return True
+
+
+def _resolve_upload_mime_type(fs_path: str) -> Optional[str]:
+  """Guesses the upload MIME type, falling back to text/plain for text files.
+
+  mimetypes maps many source extensions to types the API rejects (e.g. .cu ->
+  application/cu-seeme); see github.com/googleapis/python-genai/issues/744.
+  """
+  mime_type, _ = mimetypes.guess_type(fs_path)
+  if mime_type is not None:
+    main_type, _, sub_type = mime_type.partition('/')
+    if main_type in ('image', 'audio', 'video'):
+      return mime_type
+    if main_type == 'text' and not (
+        sub_type.startswith('x-') or sub_type.startswith('vnd.')
+    ):
+      return mime_type
+    if main_type == 'application' and (
+        mime_type in _TEXT_COMPATIBLE_APPLICATION_MIME_TYPES
+        or not _is_utf8_text_file(fs_path)
+    ):
+      return mime_type
+  if _is_utf8_text_file(fs_path):
+    return 'text/plain'
+  return mime_type
+
+
 def prepare_resumable_upload(
     file: Union[str, os.PathLike[str], io.IOBase],
     user_http_options: Optional[types.HttpOptionsOrDict] = None,
@@ -644,7 +695,7 @@ def prepare_resumable_upload(
       raise FileNotFoundError(f'{file} is not a valid file path.')
     size_bytes = os.path.getsize(fs_path)
     if mime_type is None:
-      mime_type, _ = mimetypes.guess_type(fs_path)
+      mime_type = _resolve_upload_mime_type(fs_path)
     if mime_type is None:
       raise ValueError(
           'Unknown mime type: Could not determine the mimetype for your'
