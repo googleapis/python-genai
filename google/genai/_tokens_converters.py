@@ -54,12 +54,6 @@ def _AudioTranscriptionConfig_to_mldev(
         getv(from_object, ['adaptation_phrases']),
     )
 
-  if getv(from_object, ['word_timestamp']) is not None:
-    setv(to_object, ['wordTimestamp'], getv(from_object, ['word_timestamp']))
-
-  if getv(from_object, ['diarization']) is not None:
-    setv(to_object, ['diarization'], getv(from_object, ['diarization']))
-
   return to_object
 
 
@@ -607,13 +601,6 @@ def _Part_to_mldev(
 
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
-
-  if getv(from_object, ['audio_transcription']) is not None:
-    setv(
-        to_object,
-        ['audioTranscription'],
-        getv(from_object, ['audio_transcription']),
-    )
 
   return to_object
 

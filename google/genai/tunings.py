@@ -1242,13 +1242,6 @@ def _GenerationConfig_from_vertex(
         [item for item in getv(from_object, ['responseFormat'])],
     )
 
-  if getv(from_object, ['audioTranscriptionConfig']) is not None:
-    setv(
-        to_object,
-        ['audio_transcription_config'],
-        getv(from_object, ['audioTranscriptionConfig']),
-    )
-
   return to_object
 
 
@@ -1381,13 +1374,6 @@ def _GenerationConfig_to_vertex(
     raise ValueError(
         'translation_config parameter is only supported in Gemini Developer API'
         ' mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  if getv(from_object, ['audio_transcription_config']) is not None:
-    setv(
-        to_object,
-        ['audioTranscriptionConfig'],
-        getv(from_object, ['audio_transcription_config']),
     )
 
   return to_object
@@ -1579,13 +1565,6 @@ def _Part_to_vertex(
     raise ValueError(
         'part_metadata parameter is only supported in Gemini Developer API'
         ' mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  if getv(from_object, ['audio_transcription']) is not None:
-    setv(
-        to_object,
-        ['audioTranscription'],
-        getv(from_object, ['audio_transcription']),
     )
 
   return to_object
