@@ -6495,9 +6495,18 @@ class Models(_api_module.BaseModule):
     if t.t_is_vertex_embed_content_model(model):
       normalized_contents = t.t_contents(contents)
       if len(normalized_contents) > 1:
-        raise ValueError(
-            'The embedContent API for this model only supports one content at a'
-            ' time.'
+        # Multimodal embeddings (e.g. gemini-embedding-2 with image
+        # parts) accept multiple contents per the public docs. Route
+        # through the PREDICT endpoint with the full contents list.
+        # The single-content embedContent path (text-only one-shot)
+        # still caps at 1.
+        # Fix for #2567.
+        return self._embed_content(
+            model=model,
+            content=None,
+            contents=contents,
+            embedding_api_type=types.EmbeddingApiType.PREDICT,
+            config=config,
         )
       return self._embed_content(
           model=model,
@@ -8732,7 +8741,27 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      # Pydantic v2's model_copy(deep=True) pickles the tree, which
+      # fails on unpicklable subtrees like a live MCP ``ClientSession``
+      # (which holds an internal ``_asyncio.Future``). The downstream
+      # code only reassigns ``parsed_config.tools`` (it does not mutate
+      # individual tools in place), so a shallow ``model_copy()``
+      # suffices. Fall back to ``copy.deepcopy`` only when the configs
+      # do not contain unpicklable subtrees; on those rare cases the
+      # standard deep-copy mechanism still works.
+      #
+      # Fix for #2669.
+      import copy as _copy_lib
+      try:
+        parsed_config = config.model_copy(deep=True)
+      except TypeError as _pickle_err:
+        if "pickle" not in str(_pickle_err) and "cannot pickle" not in str(_pickle_err):
+          raise
+        # Shallow copy is sufficient for downstream semantics (replace,
+        # don't mutate). The shallow copy shares tool references with
+        # the source config — fine because the caller doesn't reuse
+        # the config after the call.
+        parsed_config = config.model_copy()
 
     # Use AsyncExitStack to keep MCP connections alive across the entire AFC loop
     async with contextlib.AsyncExitStack() as stack:
@@ -8837,7 +8866,7 @@ class AsyncModels(_api_module.BaseModule):
             is_caller_method_async=True,
         )
         final_parsed_config_to_call = (
-            final_parsed_config.model_copy(deep=True)
+            final_parsed_config.model_copy()
             if final_parsed_config
             else None
         )
