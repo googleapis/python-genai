@@ -9023,6 +9023,13 @@ class EmbedContentResponse(_common.BaseModel):
       description="""Gemini Enterprise Agent Platform only. Metadata about the request.
       """,
   )
+  usage_metadata: Optional["UsageMetadata"] = Field(
+      default=None,
+      description="""Usage metadata about the embed_content request, including token counts.
+      Used to surface the wire-format ``usageMetadata`` field that the API
+      returns but the type previously discarded. Fix for #2658.
+      """,
+  )
 
 
 class EmbedContentResponseDict(TypedDict, total=False):
@@ -9038,6 +9045,11 @@ class EmbedContentResponseDict(TypedDict, total=False):
 
   metadata: Optional[EmbedContentMetadataDict]
   """Gemini Enterprise Agent Platform only. Metadata about the request.
+      """
+
+  usage_metadata: Optional["UsageMetadataDict"]
+  """Usage metadata about the embed_content request. Mirrors the
+      wire-format ``usageMetadata`` field. Fix for #2658.
       """
 
 

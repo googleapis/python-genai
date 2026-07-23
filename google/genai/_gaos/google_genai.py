@@ -294,7 +294,7 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             api_version: Optional[str] = None,
             include_input: Any = None,
             last_event_id: Any = None,
-            stream: Any = False,
+            stream: Optional[bool] = None,
             extra_headers: Optional[Mapping[str, str]] = None,
             extra_query: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
@@ -302,7 +302,11 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             interactions.Interaction,
             eventstreaming.Stream[interactions.InteractionSSEEvent],
         ]:
-            stream_bool = bool(_optional_bool(stream, default=False))
+            # Preserve the caller's stream value (None → not sent) so callers
+            # can opt out of serializing 'stream' on the wire. The earlier
+            # bool(...) wrapper collapsed None to False and forced serialization.
+            # Fix for #2661.
+            stream_bool = _optional_bool(stream, default=None)
             response = wrap_sdk_call(
                 super().get,
                 id=id,
@@ -446,7 +450,7 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             api_version: Optional[str] = None,
             include_input: Any = None,
             last_event_id: Any = None,
-            stream: Any = False,
+            stream: Optional[bool] = None,
             extra_headers: Optional[Mapping[str, str]] = None,
             extra_query: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
@@ -454,7 +458,11 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             interactions.Interaction,
             eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
         ]:
-            stream_bool = bool(_optional_bool(stream, default=False))
+            # Preserve the caller's stream value (None → not sent) so callers
+            # can opt out of serializing 'stream' on the wire. The earlier
+            # bool(...) wrapper collapsed None to False and forced serialization.
+            # Fix for #2661.
+            stream_bool = _optional_bool(stream, default=None)
             response = await async_wrap_sdk_call(
                 super().get,
                 id=id,
@@ -954,6 +962,20 @@ def _is_step_block(value: dict[str, Any]) -> bool:
 
 
 def _optional_bool(value: Any, default: Optional[bool] = None) -> Optional[bool]:
+    """Coerce a value to a bool-or-None, preserving None as 'omit'.
+
+    Pre-fix semantics: any non-bool input (including None) was collapsed to
+    the ``default``. That defeated callers who wanted to opt out of
+    serializing an Optional query param by passing ``stream=None`` — the
+    None was forced to False and shipped as ``?stream=false``.
+
+    Fix #2661: explicitly distinguish None (preserve as None → "omit this
+    query param") from "no argument supplied" (use default). A None input
+    now returns None regardless of the default; only falsy-but-defined
+    values like 0 or "" continue to be coerced via the default.
+    """
+    if value is None:
+        return None
     if isinstance(value, bool):
         return value
     return default
