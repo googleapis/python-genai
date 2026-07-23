@@ -1243,8 +1243,10 @@ print(response)
 ### Imagen
 
 #### Generate Images
+> **Note:** Maximum images per request is 4. For more than 4 images, send multiple parallel requests using `asyncio`. See the asyncio example below.
 
 ```python
+
 from google.genai import types
 
 response1 = client.models.generate_images(
