@@ -1038,13 +1038,11 @@ class BaseApiClient:
     verify = 'verify'
     args = options.client_args
     async_args = options.async_client_args
-    ctx = (
-        args.get(verify)
-        if args
-        else None or async_args.get(verify)
-        if async_args
-        else None
-    )
+    ctx = None
+    if args and args.get(verify) is not None:
+      ctx = args[verify]
+    elif async_args and async_args.get(verify) is not None:
+      ctx = async_args[verify]
 
     if ctx is None:
       # Initialize the SSL context for the httpx client.
@@ -1067,21 +1065,21 @@ class BaseApiClient:
 
     def _maybe_set(
         args: Optional[_common.StringDict],
-        ctx: ssl.SSLContext,
+        ctx: Any,
     ) -> _common.StringDict:
-      """Sets the SSL context in the client args if not set.
+      """Sets the SSL option in the client args if not set.
 
-      Does not override the SSL context if it is already set.
+      Does not override the SSL option if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
-        ctx: The SSL context to set.
+        args: The client args to to check for SSL option.
+        ctx: The SSL option to set.
 
       Returns:
-        The client args with the SSL context included.
+        The client args with the SSL option included.
       """
       args = (args or {}).copy()
-      if not args.get(verify):
+      if args.get(verify) is None:
         args[verify] = ctx
       if 'timeout' not in args:
         args['timeout'] = None
@@ -1134,21 +1132,21 @@ class BaseApiClient:
 
     def _maybe_set(
         args: Optional[_common.StringDict],
-        ctx: ssl.SSLContext,
+        ctx: Any,
     ) -> _common.StringDict:
-      """Sets the SSL context in the client args if not set.
+      """Sets the SSL option in the client args if not set.
 
-      Does not override the SSL context if it is already set.
+      Does not override the SSL option if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
-        ctx: The SSL context to set.
+        args: The client args to to check for SSL option.
+        ctx: The SSL option to set.
 
       Returns:
-        The client args with the SSL context included.
+        The client args with the SSL option included.
       """
-      if not args or not args.get(verify):
-        args = (args or {}).copy()
+      args = (args or {}).copy()
+      if args.get(verify) is None:
         args[verify] = ctx
       # Drop the args that isn't in the aiohttp RequestOptions.
       copied_args = args.copy()
@@ -1205,21 +1203,21 @@ class BaseApiClient:
 
     def _maybe_set(
         args: Optional[_common.StringDict],
-        ctx: ssl.SSLContext,
+        ctx: Any,
     ) -> _common.StringDict:
-      """Sets the SSL context in the client args if not set.
+      """Sets the SSL option in the client args if not set.
 
-      Does not override the SSL context if it is already set.
+      Does not override the SSL option if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
-        ctx: The SSL context to set.
+        args: The client args to to check for SSL option.
+        ctx: The SSL option to set.
 
       Returns:
-        The client args with the SSL context included.
+        The client args with the SSL option included.
       """
-      if not args or not args.get(verify):
-        args = (args or {}).copy()
+      args = (args or {}).copy()
+      if args.get(verify) is None:
         args[verify] = ctx
       # Drop the args that isn't in the aiohttp RequestOptions.
       copied_args = args.copy()
