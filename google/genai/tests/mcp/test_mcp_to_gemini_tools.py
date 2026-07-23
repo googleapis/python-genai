@@ -198,6 +198,45 @@ def test_properties_conversion():
   ]
 
 
+def test_additional_properties_boolean_conversion():
+  """Test conversion of MCP tools with boolean additionalProperties."""
+  mcp_tools = [
+      mcp_types.Tool(
+          name='tool',
+          description='tool-description',
+          inputSchema={
+              'type': 'object',
+              'properties': {
+                  'key1': {
+                      'type': 'object',
+                      'additionalProperties': False,
+                  },
+              },
+              'additionalProperties': False,
+          },
+      ),
+  ]
+
+  result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
+
+  assert result == [
+      types.Tool(
+          function_declarations=[
+              types.FunctionDeclaration(
+                  name='tool',
+                  description='tool-description',
+                  parameters=types.Schema(
+                      type='OBJECT',
+                      properties={
+                          'key1': types.Schema(type='OBJECT'),
+                      },
+                  ),
+              ),
+          ],
+      ),
+  ]
+
+
 def test_defs_conversion():
     """Test conversion of MCP tools with shared definitions ($defs)."""
     mcp_tools = [
