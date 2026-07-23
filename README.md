@@ -44,6 +44,51 @@ pip install google-genai
 uv pip install google-genai
 ```
 
+## Migrate from google-generativeai
+
+A codemod tool automates migration from the legacy `google-generativeai` SDK to `google-genai`. Install with the migrate extra and run on your codebase:
+
+```sh
+pip install google-genai[migrate]
+```
+
+```sh
+# Preview changes (unified diff)
+genai-migrate ./my_app/ --diff
+
+# Apply changes in-place
+genai-migrate ./my_app/ --in-place
+```
+
+**Before (legacy):**
+```python
+import google.generativeai as genai
+genai.configure(api_key="YOUR_API_KEY")
+model = genai.GenerativeModel("gemini-1.5-flash")
+response = model.generate_content("Hello")
+```
+
+**After (migrated):**
+```python
+from google import genai
+client = genai.Client(api_key="YOUR_API_KEY")
+model = genai.GenerativeModel("gemini-1.5-flash")
+response = client.models.generate_content(model="gemini-1.5-flash", contents="Hello")
+```
+
+**Supported transforms:**
+
+| Legacy pattern | New pattern |
+|---|---|
+| `import google.generativeai as genai` | `from google import genai` |
+| `genai.configure(api_key=...)` | `client = genai.Client(api_key=...)` |
+| `genai.GenerativeModel(...)` | `client.models.generate_content(model=..., ...)` |
+| `model.generate_content(...)` | `client.models.generate_content(model=..., contents=...)` |
+| `model.start_chat(...)` | `client.chats.create(model=..., config=...)` |
+| `model.count_tokens(...)` | `client.models.count_tokens(model=..., contents=...)` |
+
+**Known limitations:** `generation_config`/`safety_settings` folding into `config=` is not yet automated; `history=` in `start_chat` is stubbed.
+
 ## Imports
 
 ```python
