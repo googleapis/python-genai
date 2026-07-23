@@ -19,8 +19,12 @@ from . import interactions
 from . import types
 from . import version
 from .client import Client
-
+from google.genai._fallback import FallbackPolicy, APIError
 
 __version__ = version.__version__
 
-__all__ = ['Client']
+__all__ = [
+    'Client',
+    "FallbackPolicy",
+    "APIError",
+]
