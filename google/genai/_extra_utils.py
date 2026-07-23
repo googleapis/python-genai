@@ -47,6 +47,11 @@ else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
 
+def _sanitize_header_value(value: str) -> str:
+  """Strips CR and LF characters to prevent HTTP header injection."""
+  return value.replace('\r', '').replace('\n', '')
+
+
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
 logger = logging.getLogger('google_genai.models')
@@ -661,7 +666,7 @@ def prepare_resumable_upload(
         'X-Goog-Upload-Protocol': 'resumable',
         'X-Goog-Upload-Command': 'start',
         'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
-        'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+        'X-Goog-Upload-Header-Content-Type': _sanitize_header_value(mime_type),
     }
   else:
     http_options = types.HttpOptions(
@@ -671,13 +676,13 @@ def prepare_resumable_upload(
             'X-Goog-Upload-Protocol': 'resumable',
             'X-Goog-Upload-Command': 'start',
             'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
-            'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+            'X-Goog-Upload-Header-Content-Type': _sanitize_header_value(mime_type),
         },
     )
   if isinstance(file, (str, os.PathLike)):
     if http_options.headers is None:
         http_options.headers = {}
-    http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
+    http_options.headers['X-Goog-Upload-File-Name'] = _sanitize_header_value(os.path.basename(str(file)))
   return http_options, size_bytes, mime_type
 
 
