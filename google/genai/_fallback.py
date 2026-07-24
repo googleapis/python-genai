@@ -4,7 +4,7 @@ import asyncio
 import copy
 import logging
 import time
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 try:
     from google.genai.errors import APIError
@@ -17,6 +17,8 @@ except ImportError:
             super().__init__(f"APIError {code}: {response_json}")
 
 
+__all__ = ["FallbackPolicy", "APIError"]
+
 logger = logging.getLogger("google.genai.fallback")
 
 T = TypeVar("T")
@@ -24,15 +26,19 @@ T = TypeVar("T")
 
 def _extract_status_code(exc: Exception) -> Optional[int]:
     """Extracts HTTP status code across APIError, httpx, and requests exceptions."""
-    if hasattr(exc, "code") and isinstance(getattr(exc, "code"), int):
-        return getattr(exc, "code")
-    if hasattr(exc, "status_code") and isinstance(getattr(exc, "status_code"), int):
-        return getattr(exc, "status_code")
+    if hasattr(exc, "code"):
+        code_val = getattr(exc, "code")
+        if isinstance(code_val, int):
+            return code_val
+    if hasattr(exc, "status_code"):
+        status_val = getattr(exc, "status_code")
+        if isinstance(status_val, int):
+            return status_val
     response = getattr(exc, "response", None)
     if response is not None and hasattr(response, "status_code"):
-        code = getattr(response, "status_code")
-        if isinstance(code, int):
-            return code
+        resp_code = getattr(response, "status_code")
+        if isinstance(resp_code, int):
+            return resp_code
     return None
 
 
@@ -68,7 +74,7 @@ class FallbackPolicy:
         is_retryable: Optional[Callable[[Exception], bool]] = None,
         max_retries: int = 3,
         backoff_factor: float = 0.0,
-        on_fallback: Optional[Callable[[Exception, int, dict], None]] = None,
+        on_fallback: Optional[Callable[[Exception, int, Dict[str, Any]], None]] = None,
     ):
         if max_retries < 1:
             raise ValueError("max_retries must be at least 1")
@@ -86,7 +92,7 @@ class FallbackPolicy:
             return self.is_retryable_custom(exc)
         return _default_is_retryable(exc, self.retry_status_codes)
 
-    def _build_attempts_plan(self, kwargs: dict) -> List[dict]:
+    def _build_attempts_plan(self, kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Builds a sequence of kwarg dictionary payloads to attempt sequentially."""
         primary_model = kwargs.get("model")
         primary_location = kwargs.get("location")
@@ -138,7 +144,11 @@ class FallbackPolicy:
         return plan[: self.max_retries]
 
     def _notify_and_delay_sync(
-        self, exc: Exception, attempt_idx: int, total_attempts: int, next_payload: dict
+        self,
+        exc: Exception,
+        attempt_idx: int,
+        total_attempts: int,
+        next_payload: Dict[str, Any],
     ) -> None:
         logger.warning(
             f"[GenAI Fallback] Attempt {attempt_idx}/{total_attempts} failed "
@@ -155,7 +165,11 @@ class FallbackPolicy:
             time.sleep(delay)
 
     async def _notify_and_delay_async(
-        self, exc: Exception, attempt_idx: int, total_attempts: int, next_payload: dict
+        self,
+        exc: Exception,
+        attempt_idx: int,
+        total_attempts: int,
+        next_payload: Dict[str, Any],
     ) -> None:
         logger.warning(
             f"[GenAI Fallback Async] Attempt {attempt_idx}/{total_attempts} failed "
