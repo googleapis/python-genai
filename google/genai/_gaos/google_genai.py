@@ -52,6 +52,8 @@ from .triggers import AsyncTriggers as GeneratedAsyncTriggers
 from .triggers import Triggers as GeneratedTriggers
 from .webhooks import AsyncWebhooks as GeneratedAsyncWebhooks
 from .webhooks import Webhooks as GeneratedWebhooks
+from .environments import AsyncEnvironments as GeneratedAsyncEnvironments
+from .environments import Environments as GeneratedEnvironments
 
 
 GOOGLE_GENAI_API_REVISION = _GOOGLE_GENAI_API_REVISION
@@ -759,6 +761,100 @@ class AsyncGeminiNextGenTriggers(GeneratedAsyncTriggers):
             return await async_wrap_sdk_call(super().list_executions, *args, **kwargs)
 
 
+class GeminiNextGenEnvironments(GeneratedEnvironments):
+    """Public environments resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create_environment(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().create_environment, *args, **kwargs)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            if 'environment' in kwargs and isinstance(kwargs['environment'], dict):
+                kwargs.update(kwargs.pop('environment'))
+            return self.create_environment(*args, **kwargs)
+
+        def list_environments(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().list_environments, *args, **kwargs)
+
+        def list(self, *args: Any, **kwargs: Any) -> Any:
+            return self.list_environments(*args, **kwargs)
+
+        def get_environment(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().get_environment, *args, **kwargs)
+
+        def get(self, *args: Any, **kwargs: Any) -> Any:
+            return self.get_environment(*args, **kwargs)
+
+        def delete_environment(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().delete_environment, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return self.delete_environment(*args, **kwargs)
+
+        def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().get_environment_files, *args, **kwargs)
+
+        # NOTE: update_environment, patch_environment are handled by fallback if they exist, but we assume they aren't generated based on our openapi.json.
+
+
+class AsyncGeminiNextGenEnvironments(GeneratedAsyncEnvironments):
+    """Async public environments resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_async_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create_environment(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().create_environment, *args, **kwargs)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            if 'environment' in kwargs and isinstance(kwargs['environment'], dict):
+                kwargs.update(kwargs.pop('environment'))
+            return await self.create_environment(*args, **kwargs)
+
+        async def list_environments(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().list_environments, *args, **kwargs)
+
+        async def list(self, *args: Any, **kwargs: Any) -> Any:
+            return await self.list_environments(*args, **kwargs)
+
+        async def get_environment(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().get_environment, *args, **kwargs)
+
+        async def get(self, *args: Any, **kwargs: Any) -> Any:
+            return await self.get_environment(*args, **kwargs)
+
+        async def delete_environment(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().delete_environment, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return await self.delete_environment(*args, **kwargs)
+
+        async def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().get_environment_files, *args, **kwargs)
+
+
 def _add_output_properties_if_interaction(value: Any) -> Any:
     normalized = _normalize_interaction_shape(value)
     if normalized is None:
@@ -835,7 +931,6 @@ def _output_properties_from_steps(steps: list[Any]) -> dict[str, Any]:
                 break
         if should_stop:
             break
-
     updates: dict[str, Any] = {}
     output_text = ''.join(reversed(text_parts))
     if output_text:
@@ -878,6 +973,7 @@ def _get_value(value: Any, name: str) -> Any:
     if isinstance(value, dict):
         return value.get(name)
     return getattr(value, name, None)
+
 
 # Allowed create() body keys, derived from the generated request models so the
 # set tracks the schema; output-only fields are excluded.
