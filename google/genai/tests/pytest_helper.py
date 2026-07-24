@@ -79,6 +79,13 @@ def base_test_function(
       assert False, 'Should have raised exception in Vertex.'
     client._api_client.close()
   except Exception as e:
+    # Gracefully skip the test if we hit a live API quota limit
+    if getattr(e, 'code', None) == 429 and client._api_client._mode == 'api':
+      pytest.skip(
+          'Resource Exhausted (429). Skipping test instead of'
+          f' failing: {e}'
+      )
+
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
       if test_table_item.exception_if_mldev not in str(e):
         raise AssertionError(
