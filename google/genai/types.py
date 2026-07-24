@@ -9309,10 +9309,10 @@ class Image(_common.BaseModel):
       try:
         from IPython import display as IPython_display
       except ImportError:
-        IPython_display = None
+        IPython_display = None  # type: ignore[assignment]
 
       if IPython_display:
-        IPython_display.display(self._pil_image)
+        IPython_display.display(self._pil_image)  # type: ignore[no-untyped-call]
     else:
       img = self._pil_image
       if img is not None:
@@ -11726,11 +11726,11 @@ class Video(_common.BaseModel):
     try:
       from IPython import display as IPython_display
     except ImportError:
-      IPython_display = None
+      IPython_display = None  # type: ignore[assignment]
 
     if IPython_display:
-      IPython_display.display(
-          IPython_display.Video(
+      IPython_display.display(  # type: ignore[no-untyped-call]
+          IPython_display.Video(  # type: ignore[no-untyped-call]
               data=self.video_bytes, mimetype=mime_type, embed=True
           )
       )
