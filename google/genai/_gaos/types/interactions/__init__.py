@@ -303,7 +303,11 @@ if TYPE_CHECKING:
     from .ragretrievalconfig import RagRetrievalConfig, RagRetrievalConfigParam
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
     from .ranking import Ranking, RankingParam
-    from .responseformat import ResponseFormat, ResponseFormatParam
+    from .responseformat import (
+        ResponseFormat,
+        ResponseFormatParam,
+        UnknownResponseFormat,
+    )
     from .responsemodality import ResponseModality
     from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
     from .retrievalcallarguments import (
@@ -739,6 +743,7 @@ __all__ = [
     "UnknownFunctionResultSubcontent",
     "UnknownInteractionAgentConfig",
     "UnknownInteractionSSEEvent",
+    "UnknownResponseFormat",
     "UnknownStep",
     "UnknownStepDeltaData",
     "UnknownThoughtSummaryContent",
@@ -1023,6 +1028,7 @@ _dynamic_imports: dict[str, str] = {
     "RankingParam": ".ranking",
     "ResponseFormat": ".responseformat",
     "ResponseFormatParam": ".responseformat",
+    "UnknownResponseFormat": ".responseformat",
     "ResponseModality": ".responsemodality",
     "Retrieval": ".retrieval",
     "RetrievalParam": ".retrieval",
