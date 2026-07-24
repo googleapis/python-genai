@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, current_exclude_none, serialize_with_info
+from ...utils.unions import dispatch_open_union_members
 from ..basemodel import current_filtered_dump
 from .environment import Environment, EnvironmentParam
 from .generationconfig import GenerationConfig, GenerationConfigParam
@@ -30,6 +31,7 @@ from .safetysetting import SafetySetting, SafetySettingParam
 from .servicetier import ServiceTier
 from .tool import Tool, ToolParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
+from functools import partial
 import pydantic
 from pydantic import model_serializer
 from typing import Dict, List, Optional, Union
@@ -64,7 +66,16 @@ the JSON schema specified in this field.
 
 
 CreateModelInteractionResponseFormat = TypeAliasType(
-    "CreateModelInteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
+    "CreateModelInteractionResponseFormat",
+    Annotated[
+        Union[ResponseFormat, List[ResponseFormat]],
+        pydantic.WrapValidator(
+            partial(
+                dispatch_open_union_members,
+                members=(ResponseFormat, List[ResponseFormat]),
+            )
+        ),
+    ],
 )
 r"""Enforces that the generated response is a JSON object that complies with
 the JSON schema specified in this field.
