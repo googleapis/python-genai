@@ -32,6 +32,50 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.tunings')
 
 
+def _AudioTranscriptionConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    setv(to_object, ['languageCodes'], getv(from_object, ['language_codes']))
+
+  if getv(from_object, ['language_auto']) is not None:
+    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
+
+  if getv(from_object, ['language_hints']) is not None:
+    setv(
+        to_object,
+        ['languageHints'],
+        _LanguageHints_to_vertex(
+            getv(from_object, ['language_hints']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['custom_vocabulary']) is not None:
+    setv(
+        to_object,
+        ['customVocabulary'],
+        getv(from_object, ['custom_vocabulary']),
+    )
+
+  if getv(from_object, ['adaptation_phrases']) is not None:
+    setv(
+        to_object,
+        ['adaptationPhrases'],
+        getv(from_object, ['adaptation_phrases']),
+    )
+
+  if getv(from_object, ['word_timestamp']) is not None:
+    setv(to_object, ['wordTimestamp'], getv(from_object, ['word_timestamp']))
+
+  if getv(from_object, ['diarization']) is not None:
+    setv(to_object, ['diarization'], getv(from_object, ['diarization']))
+
+  return to_object
+
+
 def _AutoraterConfig_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1387,7 +1431,11 @@ def _GenerationConfig_to_vertex(
     setv(
         to_object,
         ['audioTranscriptionConfig'],
-        getv(from_object, ['audio_transcription_config']),
+        _AudioTranscriptionConfig_to_vertex(
+            getv(from_object, ['audio_transcription_config']),
+            to_object,
+            root_object,
+        ),
     )
 
   return to_object
@@ -1413,6 +1461,21 @@ def _GetTuningJobParameters_to_vertex(
   to_object: dict[str, Any] = {}
   if getv(from_object, ['name']) is not None:
     setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
+
+  return to_object
+
+
+def _LanguageHints_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    raise ValueError(
+        'language_codes parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
 
   return to_object
 

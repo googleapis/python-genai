@@ -63,6 +63,49 @@ def _AudioTranscriptionConfig_to_mldev(
   return to_object
 
 
+def _AudioTranscriptionConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    setv(to_object, ['languageCodes'], getv(from_object, ['language_codes']))
+
+  if getv(from_object, ['language_auto']) is not None:
+    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
+
+  if getv(from_object, ['language_hints']) is not None:
+    setv(
+        to_object,
+        ['languageHints'],
+        _LanguageHints_to_vertex(
+            getv(from_object, ['language_hints']), to_object
+        ),
+    )
+
+  if getv(from_object, ['custom_vocabulary']) is not None:
+    setv(
+        to_object,
+        ['customVocabulary'],
+        getv(from_object, ['custom_vocabulary']),
+    )
+
+  if getv(from_object, ['adaptation_phrases']) is not None:
+    setv(
+        to_object,
+        ['adaptationPhrases'],
+        getv(from_object, ['adaptation_phrases']),
+    )
+
+  if getv(from_object, ['word_timestamp']) is not None:
+    setv(to_object, ['wordTimestamp'], getv(from_object, ['word_timestamp']))
+
+  if getv(from_object, ['diarization']) is not None:
+    setv(to_object, ['diarization'], getv(from_object, ['diarization']))
+
+  return to_object
+
+
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -219,6 +262,26 @@ def _Content_to_vertex(
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
+def _ContextWindowCompressionConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['trigger_tokens']) is not None:
+    raise ValueError(
+        'trigger_tokens parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['sliding_window']) is not None:
+    raise ValueError(
+        'sliding_window parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
 
   return to_object
 
@@ -426,7 +489,9 @@ def _GenerationConfig_to_vertex(
     setv(
         to_object,
         ['audioTranscriptionConfig'],
-        getv(from_object, ['audio_transcription_config']),
+        _AudioTranscriptionConfig_to_vertex(
+            getv(from_object, ['audio_transcription_config']), to_object
+        ),
     )
 
   return to_object
@@ -473,6 +538,35 @@ def _GoogleSearch_to_mldev(
   if getv(from_object, ['time_range_filter']) is not None:
     setv(
         to_object, ['timeRangeFilter'], getv(from_object, ['time_range_filter'])
+    )
+
+  return to_object
+
+
+def _HistoryConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['initial_history_in_client_content']) is not None:
+    raise ValueError(
+        'initial_history_in_client_content parameter is only supported in'
+        ' Gemini Developer API mode, not in Gemini Enterprise Agent Platform'
+        ' mode.'
+    )
+
+  return to_object
+
+
+def _LanguageHints_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    raise ValueError(
+        'language_codes parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -816,28 +910,36 @@ def _LiveClientSetup_to_vertex(
     setv(
         to_object,
         ['sessionResumption'],
-        getv(from_object, ['session_resumption']),
+        _SessionResumptionConfig_to_vertex(
+            getv(from_object, ['session_resumption']), to_object
+        ),
     )
 
   if getv(from_object, ['context_window_compression']) is not None:
     setv(
         to_object,
         ['contextWindowCompression'],
-        getv(from_object, ['context_window_compression']),
+        _ContextWindowCompressionConfig_to_vertex(
+            getv(from_object, ['context_window_compression']), to_object
+        ),
     )
 
   if getv(from_object, ['input_audio_transcription']) is not None:
     setv(
         to_object,
         ['inputAudioTranscription'],
-        getv(from_object, ['input_audio_transcription']),
+        _AudioTranscriptionConfig_to_vertex(
+            getv(from_object, ['input_audio_transcription']), to_object
+        ),
     )
 
   if getv(from_object, ['output_audio_transcription']) is not None:
     setv(
         to_object,
         ['outputAudioTranscription'],
-        getv(from_object, ['output_audio_transcription']),
+        _AudioTranscriptionConfig_to_vertex(
+            getv(from_object, ['output_audio_transcription']), to_object
+        ),
     )
 
   if getv(from_object, ['proactivity']) is not None:
@@ -851,7 +953,13 @@ def _LiveClientSetup_to_vertex(
     )
 
   if getv(from_object, ['history_config']) is not None:
-    setv(to_object, ['historyConfig'], getv(from_object, ['history_config']))
+    setv(
+        to_object,
+        ['historyConfig'],
+        _HistoryConfig_to_vertex(
+            getv(from_object, ['history_config']), to_object
+        ),
+    )
 
   if getv(from_object, ['avatar_config']) is not None:
     setv(to_object, ['avatarConfig'], getv(from_object, ['avatar_config']))
@@ -1169,35 +1277,45 @@ def _LiveConnectConfig_to_vertex(
     setv(
         parent_object,
         ['setup', 'sessionResumption'],
-        getv(from_object, ['session_resumption']),
+        _SessionResumptionConfig_to_vertex(
+            getv(from_object, ['session_resumption']), to_object
+        ),
     )
 
   if getv(from_object, ['input_audio_transcription']) is not None:
     setv(
         parent_object,
         ['setup', 'inputAudioTranscription'],
-        getv(from_object, ['input_audio_transcription']),
+        _AudioTranscriptionConfig_to_vertex(
+            getv(from_object, ['input_audio_transcription']), to_object
+        ),
     )
 
   if getv(from_object, ['output_audio_transcription']) is not None:
     setv(
         parent_object,
         ['setup', 'outputAudioTranscription'],
-        getv(from_object, ['output_audio_transcription']),
+        _AudioTranscriptionConfig_to_vertex(
+            getv(from_object, ['output_audio_transcription']), to_object
+        ),
     )
 
   if getv(from_object, ['realtime_input_config']) is not None:
     setv(
         parent_object,
         ['setup', 'realtimeInputConfig'],
-        getv(from_object, ['realtime_input_config']),
+        _RealtimeInputConfig_to_vertex(
+            getv(from_object, ['realtime_input_config']), to_object
+        ),
     )
 
   if getv(from_object, ['context_window_compression']) is not None:
     setv(
         parent_object,
         ['setup', 'contextWindowCompression'],
-        getv(from_object, ['context_window_compression']),
+        _ContextWindowCompressionConfig_to_vertex(
+            getv(from_object, ['context_window_compression']), to_object
+        ),
     )
 
   if getv(from_object, ['proactivity']) is not None:
@@ -1218,7 +1336,9 @@ def _LiveConnectConfig_to_vertex(
     setv(
         parent_object,
         ['setup', 'historyConfig'],
-        getv(from_object, ['history_config']),
+        _HistoryConfig_to_vertex(
+            getv(from_object, ['history_config']), to_object
+        ),
     )
 
   if getv(from_object, ['avatar_config']) is not None:
@@ -1807,6 +1927,32 @@ def _Part_to_vertex(
   return to_object
 
 
+def _RealtimeInputConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['automatic_activity_detection']) is not None:
+    raise ValueError(
+        'automatic_activity_detection parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['activity_handling']) is not None:
+    raise ValueError(
+        'activity_handling parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['turn_coverage']) is not None:
+    raise ValueError(
+        'turn_coverage parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
 def _ReplicatedVoiceConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1870,6 +2016,23 @@ def _SessionResumptionConfig_to_mldev(
         'transparent parameter is only supported in Gemini Enterprise Agent'
         ' Platform mode, not in Gemini Developer API mode.'
     )
+
+  return to_object
+
+
+def _SessionResumptionConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['handle']) is not None:
+    raise ValueError(
+        'handle parameter is only supported in Gemini Developer API mode, not'
+        ' in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['transparent']) is not None:
+    setv(to_object, ['transparent'], getv(from_object, ['transparent']))
 
   return to_object
 
