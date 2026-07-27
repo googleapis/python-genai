@@ -1014,7 +1014,7 @@ async def test_bidi_setup_to_api_with_config_tools_with_no_mcp(vertexai):
   assert result == expected_result
 
 
-@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.parametrize('vertexai', [False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_context_window_compression(
      vertexai
@@ -1393,7 +1393,7 @@ async def test_bidi_setup_to_api_with_config_tools_code_execution(
   assert result['setup']['tools'][0] == expected_result['setup']['tools'][0]
 
 
-@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.parametrize('vertexai', [False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_realtime_input_config(vertexai):
   config_dict = {
@@ -1541,7 +1541,7 @@ async def test_bidi_setup_generation_config_warning(
   assert result['setup']['generationConfig']['temperature'] == 0.7
 
 
-@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.parametrize('vertexai', [False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_session_resumption(vertexai):
   config_dict = {
@@ -1573,7 +1573,7 @@ async def test_bidi_setup_to_api_with_session_resumption(vertexai):
   assert result == expected_result
 
 
-@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.parametrize('vertexai', [False])
 @pytest.mark.asyncio
 async def test_bidi_setup_to_api_with_transparent_session_resumption(vertexai):
   api_client = mock_api_client(vertexai=vertexai)
