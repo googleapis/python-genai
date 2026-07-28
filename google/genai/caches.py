@@ -789,6 +789,13 @@ def _Part_to_mldev(
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
 
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
+
   return to_object
 
 
@@ -868,6 +875,13 @@ def _Part_to_vertex(
     raise ValueError(
         'part_metadata parameter is only supported in Gemini Developer API'
         ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
     )
 
   return to_object

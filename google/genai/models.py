@@ -21,6 +21,7 @@ import json
 import logging
 from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
 from urllib.parse import urlencode
+import warnings
 
 from . import _api_module
 from . import _base_transformers as base_t
@@ -62,6 +63,47 @@ def _VideoGenerationReferenceType_to_mldev_enum_validate(
         f'{enum_value} enum value is only supported in Gemini Enterprise Agent'
         ' Platform mode, not in Gemini Developer API mode.'
     )
+
+
+def _AudioTranscriptionConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['language_codes']) is not None:
+    raise ValueError(
+        'language_codes parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['language_auto']) is not None:
+    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
+
+  if getv(from_object, ['language_hints']) is not None:
+    setv(to_object, ['languageHints'], getv(from_object, ['language_hints']))
+
+  if getv(from_object, ['custom_vocabulary']) is not None:
+    setv(
+        to_object,
+        ['customVocabulary'],
+        getv(from_object, ['custom_vocabulary']),
+    )
+
+  if getv(from_object, ['adaptation_phrases']) is not None:
+    setv(
+        to_object,
+        ['adaptationPhrases'],
+        getv(from_object, ['adaptation_phrases']),
+    )
+
+  if getv(from_object, ['word_timestamp']) is not None:
+    setv(to_object, ['wordTimestamp'], getv(from_object, ['word_timestamp']))
+
+  if getv(from_object, ['diarization']) is not None:
+    setv(to_object, ['diarization'], getv(from_object, ['diarization']))
+
+  return to_object
 
 
 def _AuthConfig_to_mldev(
@@ -1462,6 +1504,17 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['service_tier']) is not None:
     setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
 
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        _AudioTranscriptionConfig_to_mldev(
+            getv(from_object, ['audio_transcription_config']),
+            to_object,
+            root_object,
+        ),
+    )
+
   return to_object
 
 
@@ -1651,6 +1704,13 @@ def _GenerateContentConfig_to_vertex(
 
   if getv(from_object, ['service_tier']) is not None:
     setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
+
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        getv(from_object, ['audio_transcription_config']),
+    )
 
   return to_object
 
@@ -2999,6 +3059,13 @@ def _GenerationConfig_to_vertex(
         ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        getv(from_object, ['audio_transcription_config']),
+    )
+
   return to_object
 
 
@@ -3673,6 +3740,13 @@ def _Part_to_mldev(
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
 
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
+
   return to_object
 
 
@@ -3753,6 +3827,13 @@ def _Part_to_vertex(
     raise ValueError(
         'part_metadata parameter is only supported in Gemini Developer API'
         ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
     )
 
   return to_object
@@ -6362,6 +6443,8 @@ class Models(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  _logged_generate_videos_deprecation_warning = False
+
   def embed_content(
       self,
       *,
@@ -6802,6 +6885,14 @@ class Models(_api_module.BaseModule):
           automatic_function_calling_history.append(func_call_content)
         automatic_function_calling_history.append(func_response_content)
 
+  @_common.experimental_warning(
+      'The generate_images method is deprecated and will be removed in the '
+      'next major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models'
+      ' and '
+      'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images',
+  )
   def generate_images(
       self,
       *,
@@ -6857,6 +6948,12 @@ class Models(_api_module.BaseModule):
     )
     return response
 
+  @_common.experimental_warning(
+      'The edit_image method is deprecated and will be removed in the next '
+      'major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/gemini-edit-images#edit-an-image',
+  )
   def edit_image(
       self,
       *,
@@ -7036,11 +7133,21 @@ class Models(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
-    if (prompt or image or video) and source:
-      raise ValueError(
-          'Source and prompt/image/video are mutually exclusive.'
-          + ' Please only use source.'
-      )
+    if prompt or image or video:
+      if source:
+        raise ValueError(
+            'Source and prompt/image/video are mutually exclusive.'
+            + ' Please only use source.'
+        )
+      if not Models._logged_generate_videos_deprecation_warning:
+        warnings.warn(
+            'The generate_videos method with prompt/image/video arguments is'
+            ' deprecated and will be removed in a future major release (not'
+            ' before 2026-07-31). Please use the source argument instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        Models._logged_generate_videos_deprecation_warning = True
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:
@@ -8572,6 +8679,8 @@ class AsyncModels(_api_module.BaseModule):
     self._api_client._verify_response(return_value)
     return return_value
 
+  _logged_generate_videos_deprecation_warning = False
+
   async def generate_content(
       self,
       *,
@@ -9078,6 +9187,12 @@ class AsyncModels(_api_module.BaseModule):
 
     return stream_generator()  # type: ignore[no-untyped-call, no-any-return]
 
+  @_common.experimental_warning(
+      'The edit_image method is deprecated and will be removed in the next '
+      'major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/gemini-edit-images#edit-an-image',
+  )
   async def edit_image(
       self,
       *,
@@ -9186,6 +9301,14 @@ class AsyncModels(_api_module.BaseModule):
         config,
     )
 
+  @_common.experimental_warning(
+      'The generate_images method is deprecated and will be removed in the '
+      'next major release (not before Jan. 1 2027). Please use the '
+      'generate_content method with image models instead. '
+      'See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models'
+      ' and '
+      'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images',
+  )
   async def generate_images(
       self,
       *,
@@ -9364,11 +9487,21 @@ class AsyncModels(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
-    if (prompt or image or video) and source:
-      raise ValueError(
-          'Source and prompt/image/video are mutually exclusive.'
-          + ' Please only use source.'
-      )
+    if prompt or image or video:
+      if source:
+        raise ValueError(
+            'Source and prompt/image/video are mutually exclusive.'
+            + ' Please only use source.'
+        )
+      if not AsyncModels._logged_generate_videos_deprecation_warning:
+        warnings.warn(
+            'The generate_videos method with prompt/image/video arguments is'
+            ' deprecated and will be removed in a future major release (not'
+            ' before 2026-07-31). Please use the source argument instead.',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        AsyncModels._logged_generate_videos_deprecation_warning = True
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:

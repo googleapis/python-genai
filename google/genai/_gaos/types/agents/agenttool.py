@@ -58,20 +58,20 @@ class UnknownAgentTool(BaseModel):
 
 _AGENT_TOOL_VARIANTS: dict[str, Any] = {
     "code_execution": interactions_codeexecution.CodeExecution,
-    "google_search": interactions_googlesearch.GoogleSearch,
-    "url_context": interactions_urlcontext.URLContext,
-    "mcp_server": interactions_mcpserver.MCPServer,
     "function": interactions_function.Function,
+    "google_search": interactions_googlesearch.GoogleSearch,
+    "mcp_server": interactions_mcpserver.MCPServer,
+    "url_context": interactions_urlcontext.URLContext,
 }
 
 
 AgentTool = Annotated[
     Union[
         interactions_codeexecution.CodeExecution,
-        interactions_googlesearch.GoogleSearch,
-        interactions_urlcontext.URLContext,
-        interactions_mcpserver.MCPServer,
         interactions_function.Function,
+        interactions_googlesearch.GoogleSearch,
+        interactions_mcpserver.MCPServer,
+        interactions_urlcontext.URLContext,
         UnknownAgentTool,
     ],
     BeforeValidator(

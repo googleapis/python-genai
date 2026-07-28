@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.14.0](https://github.com/googleapis/python-genai/compare/v2.13.0...v2.14.0) (2026-07-22)
+
+
+### Features
+
+* [GenerateContentConfig] Add GenerationConfig.audio_transcription_config and Part.audio_transcription. ([dc3d78d](https://github.com/googleapis/python-genai/commit/dc3d78dc228709c0968554694a884f9fe17a36bc))
+
+
+### Bug Fixes
+
+* Add deprecation warnings to Imagen generate_images, edit_images, generate_videos (if using prompt/text/image args), LiveConnectConfig.GenerationConfig which will be removed in the next major version ([4905918](https://github.com/googleapis/python-genai/commit/49059181ea0452e160ec61135c29f9c177f19160))
+
+
+### Documentation
+
+* Regenerate docs for 2.13.0 ([097a99e](https://github.com/googleapis/python-genai/commit/097a99e6c79f752af1ad055b6daffa384f6d6bc3))
+
+## [2.13.0](https://github.com/googleapis/python-genai/compare/v2.12.1...v2.13.0) (2026-07-21)
+
+
+### Features
+
+* A new field `custom_vocabulary` is added to message `.google.cloud.aiplatform.v1beta1.BidiGenerateContentSetup` ([4eeb1ad](https://github.com/googleapis/python-genai/commit/4eeb1ade8dedb9ccdabe00892d4ff2119b54a444))
+* Add model selector ([bf3dba4](https://github.com/googleapis/python-genai/commit/bf3dba460092d2f3af7a2b29abe2f0778ff8334d))
+* **interaction-api:** Add queued status to interaction proto ([87f1650](https://github.com/googleapis/python-genai/commit/87f1650e169a35cae45e415ad9b9c48e3e53f143))
+* Make ASR fields public in v1main and Interactions ([5b52faa](https://github.com/googleapis/python-genai/commit/5b52faaca37744c6a79b2bb37b3204229c445121))
+* Support mTLS in custom client using google auth mtls.get_default_ssl_context ([7270e6d](https://github.com/googleapis/python-genai/commit/7270e6d5c2854731e953fce04488fcf46bbb4c60))
+
+
+### Documentation
+
+* Regenerate docs for 2.11.0 and 2.12.0 ([dddd7c6](https://github.com/googleapis/python-genai/commit/dddd7c6a2e7b3f3eabcda4417ebb5fa1a0207526))
+
 ## [2.12.1](https://github.com/googleapis/python-genai/compare/v2.12.0...v2.12.1) (2026-07-16)
 
 
