@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.16.0](https://github.com/googleapis/python-genai/compare/v2.15.0...v2.16.0) (2026-07-29)
+
+
+### Features
+
+* Add environment resource ([615b6c3](https://github.com/googleapis/python-genai/commit/615b6c3795f3ac005a7ed9517ddc2c86b2b7a043))
+* Support GoogleMaps Tool grounding_types places and routing ([95a335d](https://github.com/googleapis/python-genai/commit/95a335d809d75b987303d5a52e533a938585b7b5))
+* Wire environment service into genai sdk ([361292e](https://github.com/googleapis/python-genai/commit/361292ea6b5bfab276cbd6d55e7969119f9821ee))
+
+
+### Documentation
+
+* Communicate on upcoming updates in the next major version ([f63b366](https://github.com/googleapis/python-genai/commit/f63b366babf7e8549b15a7afa02c035ec78078a1))
+* Regenerate docs for 2.15.0 ([7c0e1bb](https://github.com/googleapis/python-genai/commit/7c0e1bb49a087ce1ac658ab494528379393b728a))
+
 ## [2.15.0](https://github.com/googleapis/python-genai/compare/v2.14.0...v2.15.0) (2026-07-28)
 
 
