@@ -21,7 +21,6 @@ import json
 import logging
 from typing import Any, AsyncIterator, Awaitable, Iterator, Optional, Union
 from urllib.parse import urlencode
-import warnings
 
 from . import _api_module
 from . import _base_transformers as base_t
@@ -2561,23 +2560,6 @@ def _GenerateVideosParameters_to_mldev(
         t.t_model(api_client, getv(from_object, ['model'])),
     )
 
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
-    )
-
   if getv(from_object, ['source']) is not None:
     _GenerateVideosSource_to_mldev(
         getv(from_object, ['source']), to_object, root_object
@@ -2603,23 +2585,6 @@ def _GenerateVideosParameters_to_vertex(
         to_object,
         ['_url', 'model'],
         t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_vertex(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'video'],
-        _Video_to_vertex(getv(from_object, ['video']), to_object, root_object),
     )
 
   if getv(from_object, ['source']) is not None:
@@ -6313,19 +6278,13 @@ class Models(_api_module.BaseModule):
       self,
       *,
       model: str,
-      prompt: Optional[str] = None,
-      image: Optional[types.ImageOrDict] = None,
-      video: Optional[types.VideoOrDict] = None,
-      source: Optional[types.GenerateVideosSourceOrDict] = None,
+      source: types.GenerateVideosSourceOrDict,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Private method for generating videos."""
 
     parameter_model = types._GenerateVideosParameters(
         model=model,
-        prompt=prompt,
-        image=image,
-        video=video,
         source=source,
         config=config,
     )
@@ -7049,10 +7008,7 @@ class Models(_api_module.BaseModule):
       self,
       *,
       model: str,
-      prompt: Optional[str] = None,
-      image: Optional[types.ImageOrDict] = None,
-      video: Optional[types.VideoOrDict] = None,
-      source: Optional[types.GenerateVideosSourceOrDict] = None,
+      source: types.GenerateVideosSourceOrDict,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -7066,14 +7022,6 @@ class Models(_api_module.BaseModule):
 
     Args:
       model: The model to use.
-      prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases. This argument is deprecated, please
-        use source instead.
-      image: The input image for generating the videos. Optional if prompt is
-        provided. This argument is deprecated, please use source instead.
-      video: The input video for video extension use cases. Optional if prompt
-        or image is provided. This argument is deprecated, please use source
-        instead.
       source: The input source for generating the videos (prompt, image, and/or
         video)
       config: Configuration for generation.
@@ -7094,34 +7042,9 @@ class Models(_api_module.BaseModule):
       operation.response.generated_videos[0].video.uri
       ```
     """
-    if prompt or image or video:
-      if source:
-        raise ValueError(
-            'Source and prompt/image/video are mutually exclusive.'
-            + ' Please only use source.'
-        )
-      if not Models._logged_generate_videos_deprecation_warning:
-        warnings.warn(
-            'The generate_videos method with prompt/image/video arguments is'
-            ' deprecated and will be removed in a future major release (not'
-            ' before 2026-07-31). Please use the source argument instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        Models._logged_generate_videos_deprecation_warning = True
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
-    if not self._api_client.vertexai and video:
-      if isinstance(video, types.Video):
-        video_dct = video.model_dump()
-      else:
-        video_dct = dict(video)
-
-      if video_dct.get('uri') and video_dct.get('video_bytes'):
-        video = types.Video(
-            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
-        )
-    elif not self._api_client.vertexai and source:
+    if not self._api_client.vertexai and source:
       if isinstance(source, types.GenerateVideosSource):
         source_dct = source.model_dump()
         video_dct = source_dct.get('video', {})
@@ -7141,9 +7064,6 @@ class Models(_api_module.BaseModule):
         )
     return self._generate_videos(
         model=model,
-        prompt=prompt,
-        image=image,
-        video=video,
         source=source,
         config=config,
     )
@@ -8549,19 +8469,13 @@ class AsyncModels(_api_module.BaseModule):
       self,
       *,
       model: str,
-      prompt: Optional[str] = None,
-      image: Optional[types.ImageOrDict] = None,
-      video: Optional[types.VideoOrDict] = None,
-      source: Optional[types.GenerateVideosSourceOrDict] = None,
+      source: types.GenerateVideosSourceOrDict,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Private method for generating videos asynchronously."""
 
     parameter_model = types._GenerateVideosParameters(
         model=model,
-        prompt=prompt,
-        image=image,
-        video=video,
         source=source,
         config=config,
     )
@@ -9403,10 +9317,7 @@ class AsyncModels(_api_module.BaseModule):
       self,
       *,
       model: str,
-      prompt: Optional[str] = None,
-      image: Optional[types.ImageOrDict] = None,
-      video: Optional[types.VideoOrDict] = None,
-      source: Optional[types.GenerateVideosSourceOrDict] = None,
+      source: types.GenerateVideosSourceOrDict,
       config: Optional[types.GenerateVideosConfigOrDict] = None,
   ) -> types.GenerateVideosOperation:
     """Generates videos based on an input (text, image, or video) and configuration.
@@ -9420,14 +9331,6 @@ class AsyncModels(_api_module.BaseModule):
 
     Args:
       model: The model to use.
-      prompt: The text prompt for generating the videos. Optional for image to
-        video and video extension use cases. This argument is deprecated, please
-        use source instead.
-      image: The input image for generating the videos. Optional if prompt is
-        provided. This argument is deprecated, please use source instead.
-      video: The input video for video extension use cases. Optional if prompt
-        or image is provided. This argument is deprecated, please use source
-        instead.
       source: The input source for generating the videos (prompt, image, and/or
         video)
       config: Configuration for generation.
@@ -9448,34 +9351,9 @@ class AsyncModels(_api_module.BaseModule):
       operation.result.generated_videos[0].video.uri
       ```
     """
-    if prompt or image or video:
-      if source:
-        raise ValueError(
-            'Source and prompt/image/video are mutually exclusive.'
-            + ' Please only use source.'
-        )
-      if not AsyncModels._logged_generate_videos_deprecation_warning:
-        warnings.warn(
-            'The generate_videos method with prompt/image/video arguments is'
-            ' deprecated and will be removed in a future major release (not'
-            ' before 2026-07-31). Please use the source argument instead.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        AsyncModels._logged_generate_videos_deprecation_warning = True
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
-    if not self._api_client.vertexai and video:
-      if isinstance(video, types.Video):
-        video_dct = video.model_dump()
-      else:
-        video_dct = dict(video)
-
-      if video_dct.get('uri') and video_dct.get('video_bytes'):
-        video = types.Video(
-            uri=video_dct.get('uri'), mime_type=video_dct.get('mime_type')
-        )
-    elif not self._api_client.vertexai and source:
+    if not self._api_client.vertexai and source:
       if isinstance(source, types.GenerateVideosSource):
         source_dct = source.model_dump()
         video_dct = source_dct.get('video', {})
@@ -9495,9 +9373,6 @@ class AsyncModels(_api_module.BaseModule):
         )
     return await self._generate_videos(
         model=model,
-        prompt=prompt,
-        image=image,
-        video=video,
         source=source,
         config=config,
     )
