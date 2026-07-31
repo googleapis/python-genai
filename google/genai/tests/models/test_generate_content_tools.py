@@ -638,6 +638,32 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
+        name='test_google_maps_places_routing',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.5-flash',
+            contents=t.t_contents(
+                'How long does it take to drive from SFO to LAX?'
+            ),
+            config={
+                'tools': [{'google_maps': {'grounding_types': {'places': {}}}}]
+            },
+        ),
+        exception_if_mldev='only supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_google_maps_routing',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.5-flash',
+            contents=t.t_contents(
+                'Give me directions from SFO to LAX.'
+            ),
+            config={
+                'tools': [{'google_maps': {'grounding_types': {'routing': {}}}}]
+            },
+        ),
+        exception_if_mldev='only supported in',
+    ),
+    pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations',
         parameters=types._GenerateContentParameters(
             model='gemini-3.1-pro-preview',

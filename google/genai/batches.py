@@ -1182,6 +1182,13 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['service_tier']) is not None:
     setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
 
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        getv(from_object, ['audio_transcription_config']),
+    )
+
   return to_object
 
 
@@ -1269,6 +1276,12 @@ def _GoogleMaps_to_mldev(
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  if getv(from_object, ['grounding_types']) is not None:
+    raise ValueError(
+        'grounding_types parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -1605,6 +1618,13 @@ def _Part_to_mldev(
 
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
 
   return to_object
 

@@ -2103,6 +2103,95 @@ class VideoMetadataDict(TypedDict, total=False):
 VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
 
 
+class WordInfo(_common.BaseModel):
+  """Information about a single recognized word."""
+
+  word: Optional[str] = Field(
+      default=None,
+      description="""Transcript of the word.
+      """,
+  )
+  start_offset: Optional[str] = Field(
+      default=None,
+      description="""Start offset in time of the word relative to the start of the audio.
+      """,
+  )
+  end_offset: Optional[str] = Field(
+      default=None,
+      description="""End offset in time of the word relative to the start of the audio.
+      """,
+  )
+
+
+class WordInfoDict(TypedDict, total=False):
+  """Information about a single recognized word."""
+
+  word: Optional[str]
+  """Transcript of the word.
+      """
+
+  start_offset: Optional[str]
+  """Start offset in time of the word relative to the start of the audio.
+      """
+
+  end_offset: Optional[str]
+  """End offset in time of the word relative to the start of the audio.
+      """
+
+
+WordInfoOrDict = Union[WordInfo, WordInfoDict]
+
+
+class Transcription(_common.BaseModel):
+  """Audio transcription in Server Content."""
+
+  text: Optional[str] = Field(
+      default=None, description="""Optional. Transcription text."""
+  )
+  finished: Optional[bool] = Field(
+      default=None,
+      description="""Optional. The bool indicates the end of the transcription.""",
+  )
+  language_code: Optional[str] = Field(
+      default=None,
+      description="""The BCP-47 language code of the transcription.""",
+  )
+  speaker_label: Optional[str] = Field(
+      default=None,
+      description="""A label identifying the speaker of this audio segment (e.g. "spk_1", "spk_2").
+      """,
+  )
+  words: Optional[list[WordInfo]] = Field(
+      default=None,
+      description="""Detailed word-level transcriptions and timing details.
+      """,
+  )
+
+
+class TranscriptionDict(TypedDict, total=False):
+  """Audio transcription in Server Content."""
+
+  text: Optional[str]
+  """Optional. Transcription text."""
+
+  finished: Optional[bool]
+  """Optional. The bool indicates the end of the transcription."""
+
+  language_code: Optional[str]
+  """The BCP-47 language code of the transcription."""
+
+  speaker_label: Optional[str]
+  """A label identifying the speaker of this audio segment (e.g. "spk_1", "spk_2").
+      """
+
+  words: Optional[list[WordInfoDict]]
+  """Detailed word-level transcriptions and timing details.
+      """
+
+
+TranscriptionOrDict = Union[Transcription, TranscriptionDict]
+
+
 class Part(_common.BaseModel):
   """A datatype containing media content.
 
@@ -2167,6 +2256,10 @@ class Part(_common.BaseModel):
   part_metadata: Optional[dict[str, Any]] = Field(
       default=None,
       description="""Custom metadata associated with the Part. Agents using genai.Part as content representation may need to keep track of the additional information. For example it can be name of a file/source from which the Part originates or a way to multiplex multiple Part streams. This field is not supported in Vertex AI.""",
+  )
+  audio_transcription: Optional[Transcription] = Field(
+      default=None,
+      description="""Output only. The transcription of the audio part.""",
   )
 
   def __init__(
@@ -2398,6 +2491,9 @@ class PartDict(TypedDict, total=False):
 
   part_metadata: Optional[dict[str, Any]]
   """Custom metadata associated with the Part. Agents using genai.Part as content representation may need to keep track of the additional information. For example it can be name of a file/source from which the Part originates or a way to multiplex multiple Part streams. This field is not supported in Vertex AI."""
+
+  audio_transcription: Optional[TranscriptionDict]
+  """Output only. The transcription of the audio part."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -3657,6 +3753,84 @@ class AuthConfigDict(TypedDict, total=False):
 AuthConfigOrDict = Union[AuthConfig, AuthConfigDict]
 
 
+class GoogleMapsPlaces(_common.BaseModel):
+  """Grounding with Google Maps Places data (e.g.
+
+  QueryPlaces). This is the default Google Maps grounding type when no other
+  type is specified. This data type is not supported in Gemini API.
+  """
+
+  pass
+
+
+class GoogleMapsPlacesDict(TypedDict, total=False):
+  """Grounding with Google Maps Places data (e.g.
+
+  QueryPlaces). This is the default Google Maps grounding type when no other
+  type is specified. This data type is not supported in Gemini API.
+  """
+
+  pass
+
+
+GoogleMapsPlacesOrDict = Union[GoogleMapsPlaces, GoogleMapsPlacesDict]
+
+
+class GoogleMapsRouting(_common.BaseModel):
+  """Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).
+
+  This data type is not supported in Gemini API.
+  """
+
+  pass
+
+
+class GoogleMapsRoutingDict(TypedDict, total=False):
+  """Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).
+
+  This data type is not supported in Gemini API.
+  """
+
+  pass
+
+
+GoogleMapsRoutingOrDict = Union[GoogleMapsRouting, GoogleMapsRoutingDict]
+
+
+class GoogleMapsGroundingTypes(_common.BaseModel):
+  """Defines the types of Google Maps grounding that can be enabled and their configurations.
+
+  This data type is not supported in Gemini API.
+  """
+
+  places: Optional[GoogleMapsPlaces] = Field(
+      default=None,
+      description="""Optional. Enables grounding with Google Maps Places. This is the default grounding type when no `GroundingTypes` are specified.""",
+  )
+  routing: Optional[GoogleMapsRouting] = Field(
+      default=None,
+      description="""Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).""",
+  )
+
+
+class GoogleMapsGroundingTypesDict(TypedDict, total=False):
+  """Defines the types of Google Maps grounding that can be enabled and their configurations.
+
+  This data type is not supported in Gemini API.
+  """
+
+  places: Optional[GoogleMapsPlacesDict]
+  """Optional. Enables grounding with Google Maps Places. This is the default grounding type when no `GroundingTypes` are specified."""
+
+  routing: Optional[GoogleMapsRoutingDict]
+  """Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute)."""
+
+
+GoogleMapsGroundingTypesOrDict = Union[
+    GoogleMapsGroundingTypes, GoogleMapsGroundingTypesDict
+]
+
+
 class GoogleMaps(_common.BaseModel):
   """Tool to retrieve knowledge from Google Maps."""
 
@@ -3668,6 +3842,10 @@ class GoogleMaps(_common.BaseModel):
       default=None,
       description="""Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response.""",
   )
+  grounding_types: Optional[GoogleMapsGroundingTypes] = Field(
+      default=None,
+      description="""Optional. Specifies the types of Google Maps grounding to enable. This field is not supported in Gemini API.""",
+  )
 
 
 class GoogleMapsDict(TypedDict, total=False):
@@ -3678,6 +3856,9 @@ class GoogleMapsDict(TypedDict, total=False):
 
   enable_widget: Optional[bool]
   """Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response."""
+
+  grounding_types: Optional[GoogleMapsGroundingTypesDict]
+  """Optional. Specifies the types of Google Maps grounding to enable. This field is not supported in Gemini API."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
@@ -6059,6 +6240,106 @@ class ModelArmorConfigDict(TypedDict, total=False):
 ModelArmorConfigOrDict = Union[ModelArmorConfig, ModelArmorConfigDict]
 
 
+class LanguageAuto(_common.BaseModel):
+  """Deprecated: Language auto-detection is now the default when language_codes is omitted."""
+
+  pass
+
+
+class LanguageAutoDict(TypedDict, total=False):
+  """Deprecated: Language auto-detection is now the default when language_codes is omitted."""
+
+  pass
+
+
+LanguageAutoOrDict = Union[LanguageAuto, LanguageAutoDict]
+
+
+class LanguageHints(_common.BaseModel):
+  """Deprecated: Use AudioTranscriptionConfig.language_codes instead."""
+
+  language_codes: Optional[list[str]] = Field(
+      default=None, description="""Deprecated. BCP-47 language codes."""
+  )
+
+
+class LanguageHintsDict(TypedDict, total=False):
+  """Deprecated: Use AudioTranscriptionConfig.language_codes instead."""
+
+  language_codes: Optional[list[str]]
+  """Deprecated. BCP-47 language codes."""
+
+
+LanguageHintsOrDict = Union[LanguageHints, LanguageHintsDict]
+
+
+class AudioTranscriptionConfig(_common.BaseModel):
+  """The audio transcription configuration in Setup."""
+
+  language_codes: Optional[list[str]] = Field(
+      default=None,
+      description="""BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.""",
+  )
+  language_auto: Optional[LanguageAuto] = Field(
+      default=None,
+      description="""Deprecated: Auto-detection is now the default when language_codes is omitted. This field will be removed in a future version.""",
+  )
+  language_hints: Optional[LanguageHints] = Field(
+      default=None,
+      description="""Deprecated: Use top-level language_codes instead. This field will be removed in a future version.""",
+  )
+  custom_vocabulary: Optional[list[str]] = Field(
+      default=None,
+      description="""A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms.""",
+  )
+  adaptation_phrases: Optional[list[str]] = Field(
+      default=None,
+      description="""Deprecated. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms.""",
+  )
+  word_timestamp: Optional[bool] = Field(
+      default=None,
+      description="""Configures word-level timestamp generation.
+      """,
+  )
+  diarization: Optional[bool] = Field(
+      default=None,
+      description="""Configures speaker diarization.
+      """,
+  )
+
+
+class AudioTranscriptionConfigDict(TypedDict, total=False):
+  """The audio transcription configuration in Setup."""
+
+  language_codes: Optional[list[str]]
+  """BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection."""
+
+  language_auto: Optional[LanguageAutoDict]
+  """Deprecated: Auto-detection is now the default when language_codes is omitted. This field will be removed in a future version."""
+
+  language_hints: Optional[LanguageHintsDict]
+  """Deprecated: Use top-level language_codes instead. This field will be removed in a future version."""
+
+  custom_vocabulary: Optional[list[str]]
+  """A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms."""
+
+  adaptation_phrases: Optional[list[str]]
+  """Deprecated. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms."""
+
+  word_timestamp: Optional[bool]
+  """Configures word-level timestamp generation.
+      """
+
+  diarization: Optional[bool]
+  """Configures speaker diarization.
+      """
+
+
+AudioTranscriptionConfigOrDict = Union[
+    AudioTranscriptionConfig, AudioTranscriptionConfigDict
+]
+
+
 class GenerateContentConfig(_common.BaseModel):
   """Optional model configuration parameters.
 
@@ -6284,6 +6565,11 @@ class GenerateContentConfig(_common.BaseModel):
       default=None,
       description="""The service tier to use for the request. For example, ServiceTier.FLEX.""",
   )
+  audio_transcription_config: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""Optional. Configuration for audio transcription (speech recognition).
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6500,6 +6786,10 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   service_tier: Optional[ServiceTier]
   """The service tier to use for the request. For example, ServiceTier.FLEX."""
+
+  audio_transcription_config: Optional[AudioTranscriptionConfigDict]
+  """Optional. Configuration for audio transcription (speech recognition).
+      """
 
 
 GenerateContentConfigOrDict = Union[
@@ -11126,6 +11416,11 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. Config for translation. This field is not supported in Vertex AI.""",
   )
+  audio_transcription_config: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""Optional. Configuration for audio transcription (speech recognition).
+      """,
+  )
 
 
 class GenerationConfigDict(TypedDict, total=False):
@@ -11207,6 +11502,10 @@ class GenerationConfigDict(TypedDict, total=False):
 
   translation_config: Optional[TranslationConfigDict]
   """Optional. Config for translation. This field is not supported in Vertex AI."""
+
+  audio_transcription_config: Optional[AudioTranscriptionConfigDict]
+  """Optional. Configuration for audio transcription (speech recognition).
+      """
 
 
 GenerationConfigOrDict = Union[GenerationConfig, GenerationConfigDict]
@@ -19890,38 +20189,6 @@ LiveServerSetupCompleteOrDict = Union[
 ]
 
 
-class Transcription(_common.BaseModel):
-  """Audio transcription in Server Content."""
-
-  text: Optional[str] = Field(
-      default=None, description="""Optional. Transcription text."""
-  )
-  finished: Optional[bool] = Field(
-      default=None,
-      description="""Optional. The bool indicates the end of the transcription.""",
-  )
-  language_code: Optional[str] = Field(
-      default=None,
-      description="""The BCP-47 language code of the transcription.""",
-  )
-
-
-class TranscriptionDict(TypedDict, total=False):
-  """Audio transcription in Server Content."""
-
-  text: Optional[str]
-  """Optional. Transcription text."""
-
-  finished: Optional[bool]
-  """Optional. The bool indicates the end of the transcription."""
-
-  language_code: Optional[str]
-  """The BCP-47 language code of the transcription."""
-
-
-TranscriptionOrDict = Union[Transcription, TranscriptionDict]
-
-
 class LiveServerContent(_common.BaseModel):
   """Incremental server update generated by the model in response to client messages.
 
@@ -20542,89 +20809,6 @@ class ContextWindowCompressionConfigDict(TypedDict, total=False):
 
 ContextWindowCompressionConfigOrDict = Union[
     ContextWindowCompressionConfig, ContextWindowCompressionConfigDict
-]
-
-
-class LanguageAuto(_common.BaseModel):
-  """Indicates the language of the audio should be automatically detected."""
-
-  pass
-
-
-class LanguageAutoDict(TypedDict, total=False):
-  """Indicates the language of the audio should be automatically detected."""
-
-  pass
-
-
-LanguageAutoOrDict = Union[LanguageAuto, LanguageAutoDict]
-
-
-class LanguageHints(_common.BaseModel):
-  """Provides hints to the model about possible languages present in the audio."""
-
-  language_codes: Optional[list[str]] = Field(
-      default=None,
-      description="""BCP-47 language codes. At least one must be specified.""",
-  )
-
-
-class LanguageHintsDict(TypedDict, total=False):
-  """Provides hints to the model about possible languages present in the audio."""
-
-  language_codes: Optional[list[str]]
-  """BCP-47 language codes. At least one must be specified."""
-
-
-LanguageHintsOrDict = Union[LanguageHints, LanguageHintsDict]
-
-
-class AudioTranscriptionConfig(_common.BaseModel):
-  """The audio transcription configuration in Setup."""
-
-  language_codes: Optional[list[str]] = Field(
-      default=None,
-      description="""Deprecated: use LanguageAuto or LanguageHints instead.""",
-  )
-  language_auto: Optional[LanguageAuto] = Field(
-      default=None,
-      description="""The model will detect the language automatically. Do not use together with LanguageHints.""",
-  )
-  language_hints: Optional[LanguageHints] = Field(
-      default=None,
-      description="""Specifies one or more languages in the audio. Do not use together with LanguageAuto.""",
-  )
-  custom_vocabulary: Optional[list[str]] = Field(
-      default=None,
-      description="""A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms.""",
-  )
-  adaptation_phrases: Optional[list[str]] = Field(
-      default=None,
-      description="""Deprecated. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms.""",
-  )
-
-
-class AudioTranscriptionConfigDict(TypedDict, total=False):
-  """The audio transcription configuration in Setup."""
-
-  language_codes: Optional[list[str]]
-  """Deprecated: use LanguageAuto or LanguageHints instead."""
-
-  language_auto: Optional[LanguageAutoDict]
-  """The model will detect the language automatically. Do not use together with LanguageHints."""
-
-  language_hints: Optional[LanguageHintsDict]
-  """Specifies one or more languages in the audio. Do not use together with LanguageAuto."""
-
-  custom_vocabulary: Optional[list[str]]
-  """A list of custom vocabulary phrases, which biases the ASR model to improve recognition of these specific terms."""
-
-  adaptation_phrases: Optional[list[str]]
-  """Deprecated. A list of phrases used for speech adaptation, which biases the ASR model to improve recognition of these specific terms."""
-
-
-AudioTranscriptionConfigOrDict = Union[
-    AudioTranscriptionConfig, AudioTranscriptionConfigDict
 ]
 
 
