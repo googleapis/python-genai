@@ -15,11 +15,21 @@ the [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
 APIs.
 
 > [!WARNING]
-> **Upcoming Breaking Change to Automatic Function Calling (AFC):**
-> We will introduce a breaking change to the Automatic Function Calling (AFC)
-> feature in the next major version. Specifically, users will not be able to
+> **Updates to Automatic Function Calling (AFC) in upcoming SDK version:**
+> We are changing AFC behavior in the next major version.
+> Specifically, users will not be able to
 > invoke AFC from direct calls to `Models.generate_content` or its stream and
-> async variants. Instead, users should invoke AFC from `chats` modules.
+> async variants. Instead, users should invoke AFC from `Chats` modules.
+>
+> | Methods/fields to be removed | migration guide |
+> | --- | --- |
+> | `Live.send` | Use `send_client_content`, `send_realtime_input`, or `send_tool_response` instead |
+> | `Live.start_stream` | Use `receive` and `send_realtime_input` instead |
+> | `LiveConnectConfig.generation_config` | Set fields on `LiveConnectConfig` directly |
+> | `prompt`/`text`/`image` arguments in `Models.generate_videos` (and async variants) | Use `source` argument instead |
+> | `GenerationConfigThinkingConfig` | Use `ThinkingConfig` instead |
+>
+> To avoid unexpected updates, pin the SDK version to `< 3.0.0`.
 
 ## Agent Skills
 

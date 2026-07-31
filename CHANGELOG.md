@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.16.0](https://github.com/googleapis/python-genai/compare/v2.15.0...v2.16.0) (2026-07-29)
+
+
+### Features
+
+* Add environment resource ([615b6c3](https://github.com/googleapis/python-genai/commit/615b6c3795f3ac005a7ed9517ddc2c86b2b7a043))
+* Support GoogleMaps Tool grounding_types places and routing ([95a335d](https://github.com/googleapis/python-genai/commit/95a335d809d75b987303d5a52e533a938585b7b5))
+* Wire environment service into genai sdk ([361292e](https://github.com/googleapis/python-genai/commit/361292ea6b5bfab276cbd6d55e7969119f9821ee))
+
+
+### Documentation
+
+* Communicate on upcoming updates in the next major version ([f63b366](https://github.com/googleapis/python-genai/commit/f63b366babf7e8549b15a7afa02c035ec78078a1))
+* Regenerate docs for 2.15.0 ([7c0e1bb](https://github.com/googleapis/python-genai/commit/7c0e1bb49a087ce1ac658ab494528379393b728a))
+
+## [2.15.0](https://github.com/googleapis/python-genai/compare/v2.14.0...v2.15.0) (2026-07-28)
+
+
+### Features
+
+* [GenerateContentConfig] Add GenerationConfig.audio_transcription_config and Part.audio_transcription. ([0f775f1](https://github.com/googleapis/python-genai/commit/0f775f11ee7fd84433dd16252fe37698beebe296))
+* Add flat `language_codes` field to `AudioTranscriptionConfig`. ([fc282b3](https://github.com/googleapis/python-genai/commit/fc282b359a7e9e16219587266c94d2bdc506164a))
+* Allow api key + proj/location for enterprise mode ([e8714ca](https://github.com/googleapis/python-genai/commit/e8714cafa739045481aedf639783f151e6a0d1e9))
+
+
+### Documentation
+
+* Regenerate docs for 2.14.0 ([3d3850a](https://github.com/googleapis/python-genai/commit/3d3850a2a6578603adf5ede92cba085dd9be908e))
+
 ## [2.14.0](https://github.com/googleapis/python-genai/compare/v2.13.0...v2.14.0) (2026-07-22)
 
 

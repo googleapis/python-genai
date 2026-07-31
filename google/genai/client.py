@@ -41,10 +41,12 @@ from . import _common
 
 from ._gaos.google_genai import (
     AsyncGeminiNextGenAgents,
+    AsyncGeminiNextGenEnvironments,
     AsyncGeminiNextGenInteractions,
     AsyncGeminiNextGenTriggers,
     AsyncGeminiNextGenWebhooks,
     GeminiNextGenAgents,
+    GeminiNextGenEnvironments,
     GeminiNextGenInteractions,
     GeminiNextGenTriggers,
     GeminiNextGenWebhooks,
@@ -56,6 +58,7 @@ from ._gaos.sdk import GenAI as GeminiNextGenAPI
 
 _agent_experimental_warned = False
 _trigger_experimental_warned = False
+_environment_experimental_warned = False
 
 
 class AsyncClient:
@@ -78,6 +81,7 @@ class AsyncClient:
     self._interactions: Optional[AsyncGeminiNextGenInteractions] = None
     self._webhooks: Optional[AsyncGeminiNextGenWebhooks] = None
     self._triggers: Optional[AsyncGeminiNextGenTriggers] = None
+    self._environments: Optional[AsyncGeminiNextGenEnvironments] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
@@ -126,6 +130,22 @@ class AsyncClient:
     if self._triggers is None:
       self._triggers = AsyncGeminiNextGenTriggers(self._api_client)
     return self._triggers
+
+  @property
+  def environments(self) -> AsyncGeminiNextGenEnvironments:
+    """Environments resource."""
+    global _environment_experimental_warned
+    if not _environment_experimental_warned:
+      _environment_experimental_warned = True
+      warnings.warn(
+          'Environments usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    if self._environments is None:
+      self._environments = AsyncGeminiNextGenEnvironments(self._api_client)
+    return self._environments
+
 
   @property
   def models(self) -> AsyncModels:
@@ -380,6 +400,7 @@ class Client:
     self._interactions: Optional[GeminiNextGenInteractions] = None
     self._webhooks: Optional[GeminiNextGenWebhooks] = None
     self._triggers: Optional[GeminiNextGenTriggers] = None
+    self._environments: Optional[GeminiNextGenEnvironments] = None
 
   @staticmethod
   def _get_api_client(
@@ -464,6 +485,20 @@ class Client:
     if self._triggers is None:
       self._triggers = GeminiNextGenTriggers(self._api_client)
     return self._triggers
+
+  @property
+  def environments(self) -> GeminiNextGenEnvironments:
+    global _environment_experimental_warned
+    if not _environment_experimental_warned:
+      _environment_experimental_warned = True
+      warnings.warn(
+          'Environments usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
+    if self._environments is None:
+      self._environments = GeminiNextGenEnvironments(self._api_client)
+    return self._environments
 
   @property
   def chats(self) -> Chats:
