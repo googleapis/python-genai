@@ -5592,6 +5592,15 @@ class AutomaticFunctionCallingConfig(_common.BaseModel):
       GenerateContentResponse.automatic_function_calling_history.
       """,
   )
+  enable: Optional[bool] = Field(
+      default=None,
+      description="""Whether to enable automatic function calling.
+      If not set or set to False, will not enable automatic function calling.
+      If set to True, will enable automatic function calling.
+      NOTE: This field takes precedence over the `disable` field. the `disable`
+      field will be deprecated.
+      """,
+  )
 
 
 class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
@@ -5616,6 +5625,14 @@ class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
       If not set, SDK will set ignore_call_history to false,
       and will append the call history to
       GenerateContentResponse.automatic_function_calling_history.
+      """
+
+  enable: Optional[bool]
+  """Whether to enable automatic function calling.
+      If not set or set to False, will not enable automatic function calling.
+      If set to True, will enable automatic function calling.
+      NOTE: This field takes precedence over the `disable` field. the `disable`
+      field will be deprecated.
       """
 
 
@@ -22532,6 +22549,22 @@ class EmbedContentParametersDict(TypedDict, total=False):
 EmbedContentParametersOrDict = Union[
     EmbedContentParameters, EmbedContentParametersDict
 ]
+
+
+class ChatConfig(GenerateContentConfig):
+  """Configuration for chat.
+
+  This is a sub class of `GenerateContentConfig`, it supports all the
+  configurations in `GenerateContentConfig`.
+  """
+
+  automatic_function_calling_config: Optional[
+      AutomaticFunctionCallingConfig
+  ] = Field(
+      default=None,
+      description="""The configuration for automatic function calling.
+      """,
+  )
 
 
 class UserContent(Content):

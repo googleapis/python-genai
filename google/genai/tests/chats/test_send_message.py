@@ -945,3 +945,30 @@ async def test_async_server_side_mcp_tools(client):
     await chat.send_message(
         'What is the weather in San Francisco on 02/02/2026?'
     )
+
+
+def test_afc_chat_config(client):
+
+  def get_weather(location: str) -> str:
+    return f'The weather in {location} is sunny and 70 degrees.'
+
+  chat = client.chats.create(
+      model='gemini-3.1-pro-preview',
+      config=types.ChatConfig(
+          tools=[get_weather],
+          automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+              enable=True
+          ),
+      ),
+  )
+  response = chat.send_message('What is the weather in Boston?')
+  history = chat.get_history()
+  assert len(history) == 4
+  assert history[0].role == 'user'
+  assert history[1].role == 'model'
+  assert history[1].parts[0].function_call.name == 'get_weather'
+  assert history[1].parts[0].function_call.args == {'location': 'Boston'}
+  assert history[2].role == 'user'
+  assert history[2].parts[0].function_response.name == 'get_weather'
+  assert history[3].role == 'model'
+  assert '70' in history[3].parts[0].text

@@ -22,7 +22,16 @@ from . import _extra_utils
 from . import _transformers as t
 from . import types
 from .models import AsyncModels, Models
-from .types import Content, ContentOrDict, GenerateContentConfigOrDict, GenerateContentResponse, Part, PartUnionDict
+from .types import (
+    ChatConfig,
+    Content,
+    ContentOrDict,
+    GenerateContentConfig,
+    GenerateContentConfigOrDict,
+    GenerateContentResponse,
+    Part,
+    PartUnionDict,
+)
 
 
 if sys.version_info >= (3, 10):
@@ -104,6 +113,21 @@ def _extract_curated_history(
   return curated_history
 
 
+def _extract_generate_content_config(
+    chat_config: Optional[ChatConfig] = None,
+) -> Optional[GenerateContentConfig]:
+  """Slices a ChatConfig instance to a GenerateContentConfig instance.
+  """
+  if not chat_config:
+    return None
+
+  generate_content_config_kwargs = {
+      field: getattr(chat_config, field)
+      for field in GenerateContentConfig.model_fields
+  }
+  return GenerateContentConfig(**generate_content_config_kwargs)
+
+
 class _BaseChat:
   """Base chat session."""
 
@@ -111,13 +135,18 @@ class _BaseChat:
       self,
       *,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
       history: list[ContentOrDict],
   ):
     self._model = model
-    self._config = _extra_utils.get_usage_header(
+    if isinstance(config, ChatConfig):
+      self._config = _extra_utils.get_usage_header(
+          config, types.ChatConfig, usage="chat",  # type: ignore[arg-type]
+      )
+    else:
+      self._config = _extra_utils.get_usage_header(
         config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
-    )
+      )
     content_models = []
     for content in history:
       if not isinstance(content, Content):
@@ -214,7 +243,7 @@ class Chat(_BaseChat):
       *,
       modules: Models,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
       history: list[ContentOrDict],
   ):
     self._modules = modules
@@ -227,7 +256,7 @@ class Chat(_BaseChat):
   def send_message(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns the model's response.
 
@@ -254,6 +283,18 @@ class Chat(_BaseChat):
       )
     input_content = t.t_content(message)
     method_config = config if config else self._config
+
+    # tmp workaround before the next major version update
+    # extract afc config from ChatConfig and merge it into GenerateContentConfig
+    if isinstance(method_config, ChatConfig):
+      afc_config = method_config.automatic_function_calling_config
+      if afc_config.enable is not None:
+        afc_config.disable = not afc_config.enable
+      gc_config = _extract_generate_content_config(method_config)
+      gc_config.automatic_function_calling = afc_config
+      method_config = gc_config
+
+
     method_config = _extra_utils.get_usage_header(
         method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
@@ -283,7 +324,7 @@ class Chat(_BaseChat):
   def send_message_stream(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
   ) -> Iterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
@@ -315,6 +356,17 @@ class Chat(_BaseChat):
     is_valid = True
     chunk = None
     method_config = config if config else self._config
+
+    # tmp workaround before the next major version update
+    # extract afc config from ChatConfig and merge it into GenerateContentConfig
+    if isinstance(method_config, ChatConfig):
+      afc_config = method_config.automatic_function_calling_config
+      if afc_config.enable is not None:
+        afc_config.disable = not afc_config.enable
+      gc_config = _extract_generate_content_config(method_config)
+      gc_config.automatic_function_calling = afc_config
+      method_config = gc_config
+
     method_config = _extra_utils.get_usage_header(
         method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
@@ -356,7 +408,7 @@ class Chats:
       self,
       *,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
       history: Optional[list[ContentOrDict]] = None,
   ) -> Chat:
     """Creates a new chat session.
@@ -385,7 +437,7 @@ class AsyncChat(_BaseChat):
       *,
       modules: AsyncModels,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
       history: list[ContentOrDict],
   ):
     self._modules = modules
@@ -398,7 +450,7 @@ class AsyncChat(_BaseChat):
   async def send_message(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns model's response.
 
@@ -424,6 +476,17 @@ class AsyncChat(_BaseChat):
       )
     input_content = t.t_content(message)
     method_config = config if config else self._config
+
+    # tmp workaround before the next major version update
+    # extract afc config from ChatConfig and merge it into GenerateContentConfig
+    if isinstance(method_config, ChatConfig):
+      afc_config = method_config.automatic_function_calling_config
+      if afc_config.enable is not None:
+        afc_config.disable = not afc_config.enable
+      gc_config = _extract_generate_content_config(method_config)
+      gc_config.automatic_function_calling = afc_config
+      method_config = gc_config
+
     method_config = _extra_utils.get_usage_header(
         method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
@@ -453,7 +516,7 @@ class AsyncChat(_BaseChat):
   async def send_message_stream(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
   ) -> AsyncIterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
@@ -482,6 +545,17 @@ class AsyncChat(_BaseChat):
     input_content = t.t_content(message)
 
     method_config = config if config else self._config
+
+    # tmp workaround before the next major version update
+    # extract afc config from ChatConfig and merge it into GenerateContentConfig
+    if isinstance(method_config, ChatConfig):
+      afc_config = method_config.automatic_function_calling_config
+      if afc_config.enable is not None:
+        afc_config.disable = not afc_config.enable
+      gc_config = _extract_generate_content_config(method_config)
+      gc_config.automatic_function_calling = afc_config
+      method_config = gc_config
+
     method_config = _extra_utils.get_usage_header(
         method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
@@ -529,7 +603,7 @@ class AsyncChats:
       self,
       *,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[Union[GenerateContentConfigOrDict, ChatConfig]] = None,
       history: Optional[list[ContentOrDict]] = None,
   ) -> AsyncChat:
     """Creates a new chat session.
