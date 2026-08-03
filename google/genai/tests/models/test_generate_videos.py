@@ -77,17 +77,12 @@ GCS_REMOVE_STATIC_MASK = types.Image(
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
-        name="test_simple_prompt",
-        parameters=types._GenerateVideosParameters(
-            model=VEO_MODEL_LATEST,
-            prompt="Man with a dog",
-        ),
-    ),
-    pytest_helper.TestTableItem(
         name="test_all_parameters_vertex",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
-            prompt="A neon hologram of a cat driving at top speed",
+            source=types.GenerateVideosSource(
+                prompt="A neon hologram of a cat driving at top speed",
+            ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
                 output_gcs_uri=OUTPUT_GCS_URI,
@@ -206,7 +201,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_all_parameters_mldev",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_2,
-            prompt="A neon hologram of a cat driving at top speed",
+            source=types.GenerateVideosSource(
+                prompt="A neon hologram of a cat driving at top speed",
+            ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
                 duration_seconds=6,
@@ -221,7 +218,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_all_parameters_veo3_mldev",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
-            prompt="A neon hologram of a cat driving at top speed",
+            source=types.GenerateVideosSource(
+                prompt="A neon hologram of a cat driving at top speed",
+            ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
                 aspect_ratio="16:9",
@@ -234,7 +233,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_reference_to_video",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
-            prompt="Rain",
+            source=types.GenerateVideosSource(
+                prompt="Rain",
+            ),
             config=types.GenerateVideosConfig(
                 output_gcs_uri=OUTPUT_GCS_URI,
                 reference_images=[
@@ -253,7 +254,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_with_webhook_config",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
-            prompt="Man with a dog",
+            source=types.GenerateVideosSource(
+                prompt="Man with a dog",
+            ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
                 webhook_config=types.WebhookConfig(
@@ -270,7 +273,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_with_webhook_config_dict",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
-            prompt="Man with a dog",
+            source=types.GenerateVideosSource(
+                prompt="Man with a dog",
+            ),
             config={
                 "number_of_videos": 1,
                 "webhook_config": {
@@ -295,7 +300,9 @@ pytestmark = pytest_helper.setup(
 def test_text_to_video_poll(client):
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="A neon hologram of a cat driving at top speed",
+      source=types.GenerateVideosSource(
+          prompt="A neon hologram of a cat driving at top speed",
+      ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
@@ -312,7 +319,9 @@ def test_text_to_video_poll(client):
 def test_image_to_video_poll(client):
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+      source=types.GenerateVideosSource(
+          image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+      ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
@@ -329,8 +338,10 @@ def test_image_to_video_poll(client):
 def test_text_and_image_to_video_poll(client):
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="Lightning storm",
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+      source=types.GenerateVideosSource(
+          prompt="Lightning storm",
+          image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+      ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
           resize_mode=(types.ImageResizeMode.CROP
@@ -353,9 +364,11 @@ def test_video_to_video_poll(client):
 
   operation = client.models.generate_videos(
       model=VEO_MODEL_2,
-      video=types.Video(
-          uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
-          mime_type="video/mp4",
+      source=types.GenerateVideosSource(
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+              mime_type="video/mp4",
+          ),
       ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI,
@@ -377,10 +390,12 @@ def test_text_and_video_to_video_poll(client):
 
   operation = client.models.generate_videos(
       model=VEO_MODEL_2,
-      prompt="Rain",
-      video=types.Video(
-          uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
-          mime_type="video/mp4",
+      source=types.GenerateVideosSource(
+          prompt="Rain",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+              mime_type="video/mp4",
+          ),
       ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI,
@@ -394,50 +409,6 @@ def test_text_and_video_to_video_poll(client):
 
   assert operation.result.generated_videos[0].video.uri
 
-
-def test_generated_video_extension_poll(client):
-  # Gemini API only supports video extension on generated videos.
-  if client.vertexai:
-    return
-
-  operation1 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation1.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation1 = client.operations.get(operation=operation1)
-
-  video1 = operation1.result.generated_videos[0].video
-  assert video1.uri
-  client.files.download(file=video1)
-  assert video1.video_bytes
-
-  operation2 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Sun",
-      video=video1,
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation2.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation2 = client.operations.get(operation=operation2)
-
-  video2 = operation2.result.generated_videos[0].video
-  assert video2.uri
-  client.files.download(file=video2)
-  assert video2.video_bytes
-
-
 def test_generated_video_extension_from_source_poll(client):
   # Gemini API only supports video extension on generated videos.
   if client.vertexai:
@@ -445,7 +416,9 @@ def test_generated_video_extension_from_source_poll(client):
 
   operation1 = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="Rain",
+      source=types.GenerateVideosSource(
+          prompt="Rain",
+      ),
       config=types.GenerateVideosConfig(
           number_of_videos=1,
       ),
@@ -490,7 +463,9 @@ def test_generated_video_extension_from_source_dict_poll(client):
 
   operation1 = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="Rain",
+      source=types.GenerateVideosSource(
+          prompt="Rain",
+      ),
       config=types.GenerateVideosConfig(
           number_of_videos=1,
       ),
@@ -508,10 +483,10 @@ def test_generated_video_extension_from_source_dict_poll(client):
 
   operation2 = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      source={
-          "prompt": "Sun",
-          "video": video1,
-      },
+      source=types.GenerateVideosSource(
+          prompt="Sun",
+          video=video1,
+      ),
       config=types.GenerateVideosConfig(
           number_of_videos=1,
       ),
@@ -531,8 +506,10 @@ def test_generated_video_extension_from_source_dict_poll(client):
 def test_image_to_video_frame_interpolation_poll(client):
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+      source=types.GenerateVideosSource(
+          prompt="Rain",
+          image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+      ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
           last_frame=GCS_IMAGE2 if client.vertexai else LOCAL_IMAGE_DOG,
@@ -550,7 +527,9 @@ def test_image_to_video_frame_interpolation_poll(client):
 def test_reference_images_to_video_poll(client):
   operation = client.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="Chirping birds in a colorful forest",
+      source=types.GenerateVideosSource(
+          prompt="Chirping birds in a colorful forest"
+      ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
           reference_images=[
@@ -719,20 +698,13 @@ def test_create_operation_to_poll(client):
   assert operation.result.generated_videos[0].video.uri
 
 
-def test_source_and_prompt_raises(client):
-  with pytest.raises(ValueError):
-    client.models.generate_videos(
-        model=VEO_MODEL_LATEST,
-        prompt="Prompt 1",
-        source=types.GenerateVideosSource(prompt="Prompt 2"),
-    )
-
-
 @pytest.mark.asyncio
 async def test_text_to_video_poll_async(client):
   operation = await client.aio.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="A neon hologram of a cat driving at top speed",
+      source=types.GenerateVideosSource(
+          prompt="A neon hologram of a cat driving at top speed",
+      ),
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
       ),
@@ -754,7 +726,9 @@ async def test_generated_video_extension_from_source_poll_async(client):
 
   operation1 = await client.aio.models.generate_videos(
       model=VEO_MODEL_LATEST,
-      prompt="Rain",
+      source=types.GenerateVideosSource(
+          prompt="Rain",
+      ),
       config=types.GenerateVideosConfig(
           number_of_videos=1,
       ),

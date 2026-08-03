@@ -27,7 +27,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_simple_prompt_vertex",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST_VERTEX,
-            prompt="Man with a dog",
+            source=types.GenerateVideosSource(
+                prompt="Man with a dog",
+            ),
             config=types.GenerateVideosConfig(
                 http_options=types.HttpOptions(
                     retry_options=types.HttpRetryOptions(
@@ -46,7 +48,9 @@ test_table: list[pytest_helper.TestTableItem] = [
         name="test_simple_prompt_gemini",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST_GEMINI,
-            prompt="Man with a dog",
+            source=types.GenerateVideosSource(
+                prompt="Man with a dog",
+            ),
             config=types.GenerateVideosConfig(
                 http_options=types.HttpOptions(
                     retry_options=types.HttpRetryOptions(

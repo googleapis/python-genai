@@ -12168,21 +12168,6 @@ class _GenerateVideosParameters(_common.BaseModel):
       description="""ID of the model to use. For a list of models, see `Google models
     <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_.""",
   )
-  prompt: Optional[str] = Field(
-      default=None,
-      description="""The text prompt for generating the videos.
-      Optional if image or video is provided.""",
-  )
-  image: Optional[Image] = Field(
-      default=None,
-      description="""The input image for generating the videos.
-      Optional if prompt is provided. Not allowed if video is provided.""",
-  )
-  video: Optional[Video] = Field(
-      default=None,
-      description="""The input video for video extension use cases.
-      Optional if prompt is provided. Not allowed if image is provided.""",
-  )
   source: Optional[GenerateVideosSource] = Field(
       default=None,
       description="""A set of source input(s) for video generation.""",
@@ -12198,18 +12183,6 @@ class _GenerateVideosParametersDict(TypedDict, total=False):
   model: Optional[str]
   """ID of the model to use. For a list of models, see `Google models
     <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models>`_."""
-
-  prompt: Optional[str]
-  """The text prompt for generating the videos.
-      Optional if image or video is provided."""
-
-  image: Optional[ImageDict]
-  """The input image for generating the videos.
-      Optional if prompt is provided. Not allowed if video is provided."""
-
-  video: Optional[VideoDict]
-  """The input video for video extension use cases.
-      Optional if prompt is provided. Not allowed if image is provided."""
 
   source: Optional[GenerateVideosSourceDict]
   """A set of source input(s) for video generation."""
