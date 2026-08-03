@@ -405,6 +405,8 @@ class HarmCategory(_common.CaseInSensitiveEnum):
   """Content that promotes, facilitates, or enables dangerous activities."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
   """Deprecated: Election filter is not longer supported. The harm category is civic integrity."""
+  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
+  """Prompts designed to bypass safety filters."""
   HARM_CATEGORY_IMAGE_HATE = 'HARM_CATEGORY_IMAGE_HATE'
   """Images that contain hate speech. This enum value is not supported in Gemini API."""
   HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT = (
@@ -417,8 +419,6 @@ class HarmCategory(_common.CaseInSensitiveEnum):
       'HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT'
   )
   """Images that contain sexually explicit content. This enum value is not supported in Gemini API."""
-  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
-  """Prompts designed to bypass safety filters. This enum value is not supported in Gemini API."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -1578,7 +1578,7 @@ class CodeExecutionResult(_common.BaseModel):
   )
   id: Optional[str] = Field(
       default=None,
-      description="""Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id. This field is not supported in Vertex AI.""",
+      description="""Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id.""",
   )
 
 
@@ -1595,7 +1595,7 @@ class CodeExecutionResultDict(TypedDict, total=False):
   """Optional. Contains stdout when code execution is successful, stderr or other description otherwise."""
 
   id: Optional[str]
-  """Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id. This field is not supported in Vertex AI."""
+  """Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id."""
 
 
 CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
@@ -1618,7 +1618,7 @@ class ExecutableCode(_common.BaseModel):
   )
   id: Optional[str] = Field(
       default=None,
-      description="""Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`. This field is not supported in Vertex AI.""",
+      description="""Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`.""",
   )
 
 
@@ -1637,7 +1637,7 @@ class ExecutableCodeDict(TypedDict, total=False):
   """Required. Programming language of the `code`."""
 
   id: Optional[str]
-  """Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`. This field is not supported in Vertex AI."""
+  """Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`."""
 
 
 ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
@@ -3846,7 +3846,7 @@ class GoogleMaps(_common.BaseModel):
   )
   grounding_types: Optional[GoogleMapsGroundingTypes] = Field(
       default=None,
-      description="""Optional. Specifies the types of Google Maps grounding to enable. This field is not supported in Gemini API.""",
+      description="""Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset. This field is not supported in Gemini API.""",
   )
 
 
@@ -3860,7 +3860,7 @@ class GoogleMapsDict(TypedDict, total=False):
   """Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response."""
 
   grounding_types: Optional[GoogleMapsGroundingTypesDict]
-  """Optional. Specifies the types of Google Maps grounding to enable. This field is not supported in Gemini API."""
+  """Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset. This field is not supported in Gemini API."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
@@ -5055,6 +5055,14 @@ class ToolParallelAiSearch(_common.BaseModel):
       default=None,
       description="""Optional. Custom configs for ParallelAiSearch. This field can be used to pass any parameter from the Parallel.ai Search API. See the Parallel.ai documentation for the full list of available parameters and their usage: https://docs.parallel.ai/api-reference/search-beta/search Currently only `source_policy`, `excerpts`, `max_results`, `mode`, `fetch_policy` can be set via this field. For example: { "source_policy": { "include_domains": ["google.com", "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds": 3600 } }""",
   )
+  enable_data_retention: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used.""",
+  )
+  enable_zero_data_retention: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used.""",
+  )
 
 
 class ToolParallelAiSearchDict(TypedDict, total=False):
@@ -5069,6 +5077,12 @@ class ToolParallelAiSearchDict(TypedDict, total=False):
 
   custom_configs: Optional[dict[str, Any]]
   """Optional. Custom configs for ParallelAiSearch. This field can be used to pass any parameter from the Parallel.ai Search API. See the Parallel.ai documentation for the full list of available parameters and their usage: https://docs.parallel.ai/api-reference/search-beta/search Currently only `source_policy`, `excerpts`, `max_results`, `mode`, `fetch_policy` can be set via this field. For example: { "source_policy": { "include_domains": ["google.com", "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds": 3600 } }"""
+
+  enable_data_retention: Optional[bool]
+  """Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used."""
+
+  enable_zero_data_retention: Optional[bool]
+  """Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used."""
 
 
 ToolParallelAiSearchOrDict = Union[
@@ -11337,7 +11351,7 @@ class GenerationConfig(_common.BaseModel):
   )
   enable_affective_dialog: Optional[bool] = Field(
       default=None,
-      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response. This field is not supported in Gemini API.""",
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response.""",
   )
   frequency_penalty: Optional[float] = Field(
       default=None,
@@ -11443,7 +11457,7 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. The number of candidate responses to generate. A higher `candidate_count` can provide more options to choose from, but it also consumes more resources. This can be useful for generating a variety of responses and selecting the best one."""
 
   enable_affective_dialog: Optional[bool]
-  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response. This field is not supported in Gemini API."""
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response."""
 
   frequency_penalty: Optional[float]
   """Optional. Penalizes tokens based on their frequency in the generated text. A positive value helps to reduce the repetition of words and phrases. Valid values can range from [-2.0, 2.0]."""
@@ -13562,6 +13576,10 @@ class ReinforcementTuningHyperParameters(_common.BaseModel):
       default=None,
       description="""Optional. The thinking budget for the tuning job to optimize for (Gemini 2.5 only). * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in tokens If not set, default to -1 (dynamic thinking).""",
   )
+  step_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).""",
+  )
 
 
 class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
@@ -13596,6 +13614,9 @@ class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
 
   thinking_budget: Optional[int]
   """Optional. The thinking budget for the tuning job to optimize for (Gemini 2.5 only). * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in tokens If not set, default to -1 (dynamic thinking)."""
+
+  step_count: Optional[int]
+  """Optional. Number of steps for the tuning job (mutually exclusive with epoch_count)."""
 
 
 ReinforcementTuningHyperParametersOrDict = Union[
@@ -22278,11 +22299,129 @@ LiveMusicSetWeightedPromptsParametersOrDict = Union[
 ]
 
 
+class BidiGenerateContentSetup(_common.BaseModel):
+  """Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`.
+
+  Contains configuration that will apply for the duration of the streaming RPC.
+  Clients should wait for a `BidiGenerateContentSetupComplete` message before
+  sending any additional messages. This data type is not supported in Vertex AI.
+  """
+
+  context_window_compression: Optional[ContextWindowCompressionConfig] = Field(
+      default=None,
+      description="""Optional. Configures a context window compression mechanism. If included, the server will automatically reduce the size of the context when it exceeds the configured length.""",
+  )
+  generation_config: Optional[GenerationConfig] = Field(
+      default=None,
+      description="""Optional. Generation config. The following fields are not supported: - `response_logprobs` - `response_mime_type` - `logprobs` - `response_schema` - `response_json_schema` - `stop_sequence` - `skip_response_cache` - `routing_config` - `audio_timestamp`""",
+  )
+  history_config: Optional[HistoryConfig] = Field(
+      default=None,
+      description="""Optional. Configures the exchange of history between the client and the server.""",
+  )
+  input_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""Optional. If set, enables transcription of voice input. The transcription aligns with the input audio language, if configured.""",
+  )
+  model: Optional[str] = Field(
+      default=None,
+      description="""Required. The model's resource name. This serves as an ID for the Model to use. Format: `models/{model}`""",
+  )
+  output_audio_transcription: Optional[AudioTranscriptionConfig] = Field(
+      default=None,
+      description="""Optional. If set, enables transcription of the model's audio output. The transcription aligns with the language code specified for the output audio, if configured.""",
+  )
+  realtime_input_config: Optional[RealtimeInputConfig] = Field(
+      default=None,
+      description="""Optional. Configures the handling of realtime input.""",
+  )
+  session_resumption: Optional[SessionResumptionConfig] = Field(
+      default=None,
+      description="""Optional. Configures session resumption mechanism. If included, the server will send `SessionResumptionUpdate` messages.""",
+  )
+  system_instruction: Optional[Content] = Field(
+      default=None,
+      description="""Optional. The user provided system instructions for the model. Note: Only text should be used in parts and content in each part will be in a separate paragraph.""",
+  )
+  tools: Optional[list[Tool]] = Field(
+      default=None,
+      description="""Optional. A list of `Tools` the model may use to generate the next response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model.""",
+  )
+
+
+class BidiGenerateContentSetupDict(TypedDict, total=False):
+  """Message to be sent in the first (and only in the first) `BidiGenerateContentClientMessage`.
+
+  Contains configuration that will apply for the duration of the streaming RPC.
+  Clients should wait for a `BidiGenerateContentSetupComplete` message before
+  sending any additional messages. This data type is not supported in Vertex AI.
+  """
+
+  context_window_compression: Optional[ContextWindowCompressionConfigDict]
+  """Optional. Configures a context window compression mechanism. If included, the server will automatically reduce the size of the context when it exceeds the configured length."""
+
+  generation_config: Optional[GenerationConfigDict]
+  """Optional. Generation config. The following fields are not supported: - `response_logprobs` - `response_mime_type` - `logprobs` - `response_schema` - `response_json_schema` - `stop_sequence` - `skip_response_cache` - `routing_config` - `audio_timestamp`"""
+
+  history_config: Optional[HistoryConfigDict]
+  """Optional. Configures the exchange of history between the client and the server."""
+
+  input_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """Optional. If set, enables transcription of voice input. The transcription aligns with the input audio language, if configured."""
+
+  model: Optional[str]
+  """Required. The model's resource name. This serves as an ID for the Model to use. Format: `models/{model}`"""
+
+  output_audio_transcription: Optional[AudioTranscriptionConfigDict]
+  """Optional. If set, enables transcription of the model's audio output. The transcription aligns with the language code specified for the output audio, if configured."""
+
+  realtime_input_config: Optional[RealtimeInputConfigDict]
+  """Optional. Configures the handling of realtime input."""
+
+  session_resumption: Optional[SessionResumptionConfigDict]
+  """Optional. Configures session resumption mechanism. If included, the server will send `SessionResumptionUpdate` messages."""
+
+  system_instruction: Optional[ContentDict]
+  """Optional. The user provided system instructions for the model. Note: Only text should be used in parts and content in each part will be in a separate paragraph."""
+
+  tools: Optional[list[ToolDict]]
+  """Optional. A list of `Tools` the model may use to generate the next response. A `Tool` is a piece of code that enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model."""
+
+
+BidiGenerateContentSetupOrDict = Union[
+    BidiGenerateContentSetup, BidiGenerateContentSetupDict
+]
+
+
 class AuthToken(_common.BaseModel):
   """Config for auth_tokens.create parameters."""
 
   name: Optional[str] = Field(
-      default=None, description="""The name of the auth token."""
+      default=None, description="""Output only. Identifier. The token itself."""
+  )
+  bidi_generate_content_setup: Optional[BidiGenerateContentSetup] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. Configuration specific to `BidiGenerateContent`.""",
+  )
+  expire_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. An optional time after which, when using the resulting token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively close the session after this time.) If not set then this defaults to 30 minutes in the future. If set, this value must be less than 20 hours in the future.""",
+  )
+  field_mask: Optional[str] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. If field_mask is empty, and `bidi_generate_content_setup` is not present, then the effective `BidiGenerateContentSetup` message is taken from the Live API connection. If field_mask is empty, and `bidi_generate_content_setup` _is_ present, then the effective `BidiGenerateContentSetup` message is taken entirely from `bidi_generate_content_setup` in this request. The setup message from the Live API connection is ignored. If field_mask is not empty, then the corresponding fields from `bidi_generate_content_setup` will overwrite the fields from the setup message in the Live API connection.""",
+  )
+  interaction_id: Optional[str] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The interaction ID that this token is scoped to. Specific to the Live Interactions API.""",
+  )
+  new_session_expire_time: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The time after which new Live API sessions using the token resulting from this request will be rejected. If not set this defaults to 60 seconds in the future. If set, this value must be less than 20 hours in the future.""",
+  )
+  uses: Optional[int] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The number of times the token can be used. If this value is zero then no limit is applied. Resuming a Live API session does not count as a use. If unspecified, the default is 1.""",
   )
 
 
@@ -22290,7 +22429,25 @@ class AuthTokenDict(TypedDict, total=False):
   """Config for auth_tokens.create parameters."""
 
   name: Optional[str]
-  """The name of the auth token."""
+  """Output only. Identifier. The token itself."""
+
+  bidi_generate_content_setup: Optional[BidiGenerateContentSetupDict]
+  """Optional. Input only. Immutable. Configuration specific to `BidiGenerateContent`."""
+
+  expire_time: Optional[datetime.datetime]
+  """Optional. Input only. Immutable. An optional time after which, when using the resulting token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively close the session after this time.) If not set then this defaults to 30 minutes in the future. If set, this value must be less than 20 hours in the future."""
+
+  field_mask: Optional[str]
+  """Optional. Input only. Immutable. If field_mask is empty, and `bidi_generate_content_setup` is not present, then the effective `BidiGenerateContentSetup` message is taken from the Live API connection. If field_mask is empty, and `bidi_generate_content_setup` _is_ present, then the effective `BidiGenerateContentSetup` message is taken entirely from `bidi_generate_content_setup` in this request. The setup message from the Live API connection is ignored. If field_mask is not empty, then the corresponding fields from `bidi_generate_content_setup` will overwrite the fields from the setup message in the Live API connection."""
+
+  interaction_id: Optional[str]
+  """Optional. Input only. Immutable. The interaction ID that this token is scoped to. Specific to the Live Interactions API."""
+
+  new_session_expire_time: Optional[datetime.datetime]
+  """Optional. Input only. Immutable. The time after which new Live API sessions using the token resulting from this request will be rejected. If not set this defaults to 60 seconds in the future. If set, this value must be less than 20 hours in the future."""
+
+  uses: Optional[int]
+  """Optional. Input only. Immutable. The number of times the token can be used. If this value is zero then no limit is applied. Resuming a Live API session does not count as a use. If unspecified, the default is 1."""
 
 
 AuthTokenOrDict = Union[AuthToken, AuthTokenDict]
