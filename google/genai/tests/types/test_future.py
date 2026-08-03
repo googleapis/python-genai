@@ -42,53 +42,62 @@ def test_future_annotation_simple_type():
   def func_under_test(param_1: str, param_2: int) -> str:
     return '123'
 
-  expected_schema_mldev = types.FunctionDeclaration(
+  expected_schema = types.FunctionDeclaration(
       name='func_under_test',
-      parameters=types.Schema(
-          type='OBJECT',
-          properties={
-              'param_1': types.Schema(type='STRING'),
-              'param_2': types.Schema(type='INTEGER'),
+      parameters_json_schema={
+          'type': 'object',
+          'properties': {
+              'param_1': {'type': 'string'},
+              'param_2': {'type': 'integer'},
           },
-          required=['param_1', 'param_2'],
-      ),
+          'required': ['param_1', 'param_2'],
+      },
+      response_json_schema={
+          'type': 'string',
+      },
   )
-  expected_schema_vertex = copy.deepcopy(expected_schema_mldev)
-  expected_schema_vertex.response = types.Schema(type='STRING')
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
       client=mldev_client, callable=func_under_test
   )
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
-  assert actual_schema_mldev == expected_schema_mldev
-  assert actual_schema_vertex == expected_schema_vertex
+  assert actual_schema_mldev == expected_schema
+  assert actual_schema_vertex == expected_schema
 
 
 def test_future_annotation_complex_type():
   def func_under_test(param_1: ComplexType, param_2: int) -> str:
     return '123'
 
-  expected_schema_mldev = types.FunctionDeclaration(
+  expected_schema = types.FunctionDeclaration(
       name='func_under_test',
-      parameters=types.Schema(
-          type='OBJECT',
-          properties={
-              'param_1': types.Schema(
-                  type='OBJECT',
-                  properties={
-                      'param_x': types.Schema(type='STRING'),
-                      'param_y': types.Schema(type='INTEGER'),
+      parameters_json_schema={
+          'type': 'object',
+          'properties': {
+              'param_1': {
+                  'properties': {
+                      'param_x': {
+                          'title': 'Param X',
+                          'type': 'string',
+                      },
+                      'param_y': {
+                          'title': 'Param Y',
+                          'type': 'integer',
+                      },
                   },
-                  required=['param_x', 'param_y'],
-              ),
-              'param_2': types.Schema(type='INTEGER'),
+                  'required': ['param_x', 'param_y'],
+                  'title': 'ComplexType',
+                  'type': 'object',
+              },
+              'param_2': {'type': 'integer'},
           },
-          required=['param_1', 'param_2'],
-      )
+          'required': ['param_1', 'param_2'],
+      },
+      response_json_schema={
+          'type': 'string',
+      },
   )
-  expected_schema_vertex = copy.deepcopy(expected_schema_mldev)
-  expected_schema_vertex.response = types.Schema(type='STRING')
 
   actual_schema_mldev = types.FunctionDeclaration.from_callable(
       client=mldev_client, callable=func_under_test
@@ -96,6 +105,5 @@ def test_future_annotation_complex_type():
   actual_schema_vertex = types.FunctionDeclaration.from_callable(
       client=vertex_client, callable=func_under_test
   )
-
-  assert actual_schema_mldev == expected_schema_mldev
-  assert actual_schema_vertex == expected_schema_vertex
+  assert actual_schema_mldev == expected_schema
+  assert actual_schema_vertex == expected_schema
