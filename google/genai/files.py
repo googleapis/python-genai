@@ -736,33 +736,45 @@ class Files(_api_module.BaseModule):
   def register_files(
       self,
       *,
-      auth: google.auth.credentials.Credentials,
       uris: builtins.list[str],
       config: Optional[types.RegisterFilesConfigOrDict] = None,
+      auth: Optional[google.auth.credentials.Credentials] = None,
   ) -> types.RegisterFilesResponse:
-    """Registers gcs files with the file service."""
-    if not isinstance(auth, google.auth.credentials.Credentials):
-      raise ValueError(
-          'auth must be a google.auth.credentials.Credentials object.'
-      )
+    """Registers gcs files with the file service.
+
+    The ``auth`` parameter is now optional. When omitted (or None),
+    the client's configured credentials (typically the Gemini API Key
+    set via ``Client(api_key=...)``) are used. Supplying a Credentials
+    object **in addition** to an API Key on the client triggers
+    ``OVERLOADED_CREDENTIALS`` at the backend — see #2535. The
+    workaround of calling the private ``_register_files`` is no
+    longer needed when callers don't need a quota-project override.
+
+    Fix for #2535.
+    """
     if config is None:
       config = types.RegisterFilesConfig()
     else:
       config = types.RegisterFilesConfig.model_validate(config)
       config = config.model_copy(deep=True)
 
-    http_options = config.http_options or types.HttpOptions()
-    headers = http_options.headers or {}
-    headers = {k.lower(): v for k, v in headers.items()}
+    if auth is not None:
+      if not isinstance(auth, google.auth.credentials.Credentials):
+        raise ValueError(
+            'auth must be a google.auth.credentials.Credentials object.'
+        )
+      http_options = config.http_options or types.HttpOptions()
+      headers = http_options.headers or {}
+      headers = {k.lower(): v for k, v in headers.items()}
 
-    token = _api_client.get_token_from_credentials(self._api_client, auth)
-    headers['authorization'] = f'Bearer {token}'
+      token = _api_client.get_token_from_credentials(self._api_client, auth)
+      headers['authorization'] = f'Bearer {token}'
 
-    if auth.quota_project_id:
-      headers['x-goog-user-project'] = auth.quota_project_id
+      if auth.quota_project_id:
+        headers['x-goog-user-project'] = auth.quota_project_id
 
-    http_options.headers = headers
-    config.http_options = http_options
+      http_options.headers = headers
+      config.http_options = http_options
 
     return self._register_files(uris=uris, config=config)
 
@@ -1347,35 +1359,47 @@ class AsyncFiles(_api_module.BaseModule):
   async def register_files(
       self,
       *,
-      auth: google.auth.credentials.Credentials,
       uris: builtins.list[str],
       config: Optional[types.RegisterFilesConfigOrDict] = None,
+      auth: Optional[google.auth.credentials.Credentials] = None,
   ) -> types.RegisterFilesResponse:
-    """Registers gcs files with the file service."""
-    if not isinstance(auth, google.auth.credentials.Credentials):
-      raise ValueError(
-          'auth must be a google.auth.credentials.Credentials object.'
-      )
+    """Registers gcs files with the file service.
+
+    The ``auth`` parameter is now optional. When omitted (or None),
+    the client's configured credentials (typically the Gemini API Key
+    set via ``Client(api_key=...)``) are used. Supplying a Credentials
+    object **in addition** to an API Key on the client triggers
+    ``OVERLOADED_CREDENTIALS`` at the backend — see #2535. The
+    workaround of calling the private ``_register_files`` is no
+    longer needed when callers don't need a quota-project override.
+
+    Fix for #2535.
+    """
     if config is None:
       config = types.RegisterFilesConfig()
     else:
       config = types.RegisterFilesConfig.model_validate(config)
       config = config.model_copy(deep=True)
 
-    http_options = config.http_options or types.HttpOptions()
-    headers = http_options.headers or {}
-    headers = {k.lower(): v for k, v in headers.items()}
+    if auth is not None:
+      if not isinstance(auth, google.auth.credentials.Credentials):
+        raise ValueError(
+            'auth must be a google.auth.credentials.Credentials object.'
+        )
+      http_options = config.http_options or types.HttpOptions()
+      headers = http_options.headers or {}
+      headers = {k.lower(): v for k, v in headers.items()}
 
-    token = await _api_client.async_get_token_from_credentials(
-        self._api_client, auth
-    )
-    headers['authorization'] = f'Bearer {token}'
+      token = await _api_client.async_get_token_from_credentials(
+          self._api_client, auth
+      )
+      headers['authorization'] = f'Bearer {token}'
 
-    if auth.quota_project_id:
-      headers['x-goog-user-project'] = auth.quota_project_id
+      if auth.quota_project_id:
+        headers['x-goog-user-project'] = auth.quota_project_id
 
-    http_options.headers = headers
-    config.http_options = http_options
+      http_options.headers = headers
+      config.http_options = http_options
 
     return await self._register_files(uris=uris, config=config)
 
