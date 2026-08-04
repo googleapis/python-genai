@@ -144,6 +144,12 @@ def _get_serialized_params(
 
     serialization = metadata.serialization
     if serialization == "json":
+        # Skip None: serialize None would marshal to "null", which the
+        # query-string layer ships as e.g. "?stream=null". For Optional
+        # query params, callers use None to mean "omit this parameter
+        # from the wire" — see #2661.
+        if obj is None:
+            return params
         params[field_name] = marshal_json(obj, typ)
 
     return params
