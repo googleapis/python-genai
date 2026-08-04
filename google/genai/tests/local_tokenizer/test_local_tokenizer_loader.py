@@ -76,6 +76,24 @@ class TestGetTokenizerName(unittest.TestCase):
     ):
       loader.get_tokenizer_name("unsupported-model")
 
+  def test_get_huggingface_tokenizer_missing_deps_message(self):
+    with patch.dict('sys.modules', {'transformers': None}):
+      # Force import failure even if transformers is installed in the env.
+      import builtins
+
+      real_import = builtins.__import__
+
+      def _fake_import(name, *args, **kwargs):
+        if name == 'transformers' or name.startswith('transformers.'):
+          raise ImportError('No module named transformers')
+        return real_import(name, *args, **kwargs)
+
+      with patch('builtins.__import__', side_effect=_fake_import):
+        with self.assertRaisesRegex(
+            ImportError, r'local-tokenizer-gemma4'
+        ):
+          loader.get_huggingface_tokenizer('gemma4')
+
 
 @patch("genai._local_tokenizer_loader.os.rename")
 @patch("genai._local_tokenizer_loader.os.makedirs")
