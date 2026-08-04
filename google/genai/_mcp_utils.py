@@ -20,7 +20,7 @@ import sys
 
 from importlib.metadata import PackageNotFoundError, version
 import typing
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Union
 
 import google.auth
 from google.auth.transport.requests import Request
@@ -28,6 +28,11 @@ from google.auth.transport.requests import Request
 from . import _common
 from . import types
 from ._api_client import _MULTI_REGIONAL_LOCATIONS
+
+if sys.version_info >= (3, 10):
+  from typing import TypeGuard
+else:
+  from typing_extensions import TypeGuard
 
 def _is_mcp_loaded() -> bool:
   return "mcp" in sys.modules
@@ -121,7 +126,9 @@ def with_allowed_tools(
   return AllowedToolsMcpSession(session, allowed_tools)
 
 
-def is_mcp_client_session(obj: Any) -> bool:
+def is_mcp_client_session(
+    obj: Any,
+) -> TypeGuard[Union[McpClientSession, AllowedToolsMcpSession]]:
   """Returns True if ``obj`` is an MCP ClientSession or allowlist wrapper."""
   if isinstance(obj, AllowedToolsMcpSession):
     return True
