@@ -16,11 +16,18 @@
 
 """Tests for get_function_response_parts."""
 
+import asyncio
+import time
 import typing
 from typing import Any
 import pytest
-from ..._extra_utils import get_function_response_parts, get_function_response_parts_async
+from ..._extra_utils import (
+    get_function_response_parts,
+    get_function_response_parts_async,
+    should_run_afc_concurrently,
+)
 from ...errors import UnsupportedFunctionError
+from ... import types
 from ...types import Candidate
 from ...types import Content
 from ...types import FunctionCall
@@ -275,3 +282,151 @@ async def test_mcp_tool_error():
     assert actual_part.model_dump_json(
         exclude_none=True
     ) == expected_part.model_dump_json(exclude_none=True)
+
+
+def test_should_run_afc_concurrently():
+  assert should_run_afc_concurrently(None) is False
+  assert should_run_afc_concurrently(types.GenerateContentConfig()) is False
+  assert (
+      should_run_afc_concurrently(
+          types.GenerateContentConfig(
+              automatic_function_calling=types.AutomaticFunctionCallingConfig()
+          )
+      )
+      is False
+  )
+  assert (
+      should_run_afc_concurrently(
+          types.GenerateContentConfig(
+              automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                  run_concurrently=True
+              )
+          )
+      )
+      is True
+  )
+
+
+def _multi_function_response() -> GenerateContentResponse:
+  return GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              name='slow_a',
+                              args={},
+                          )
+                      ),
+                      Part(
+                          function_call=FunctionCall(
+                              name='slow_b',
+                              args={},
+                          )
+                      ),
+                  ]
+              )
+          )
+      ]
+  )
+
+
+@pytest.mark.asyncio
+async def test_async_run_concurrently_preserves_order_and_results():
+  async def slow_a() -> str:
+    await asyncio.sleep(0.05)
+    return 'a'
+
+  async def slow_b() -> str:
+    await asyncio.sleep(0.01)
+    return 'b'
+
+  response = _multi_function_response()
+  function_map = {'slow_a': slow_a, 'slow_b': slow_b}
+  config = types.GenerateContentConfig(
+      automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          run_concurrently=True
+      )
+  )
+  actual_parts = await get_function_response_parts_async(
+      response, function_map, config
+  )
+  assert [p.function_response.name for p in actual_parts] == [
+      'slow_a',
+      'slow_b',
+  ]
+  assert actual_parts[0].function_response is not None
+  assert actual_parts[1].function_response is not None
+  assert actual_parts[0].function_response.response == {'result': 'a'}
+  assert actual_parts[1].function_response.response == {'result': 'b'}
+
+
+@pytest.mark.asyncio
+async def test_async_run_concurrently_is_faster_than_sequential():
+  async def slow_a() -> str:
+    await asyncio.sleep(0.1)
+    return 'a'
+
+  async def slow_b() -> str:
+    await asyncio.sleep(0.1)
+    return 'b'
+
+  response = _multi_function_response()
+  function_map = {'slow_a': slow_a, 'slow_b': slow_b}
+  concurrent_config = types.GenerateContentConfig(
+      automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          run_concurrently=True
+      )
+  )
+  sequential_config = types.GenerateContentConfig(
+      automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          run_concurrently=False
+      )
+  )
+
+  start = time.perf_counter()
+  await get_function_response_parts_async(
+      response, function_map, sequential_config
+  )
+  sequential_elapsed = time.perf_counter() - start
+
+  start = time.perf_counter()
+  await get_function_response_parts_async(
+      response, function_map, concurrent_config
+  )
+  concurrent_elapsed = time.perf_counter() - start
+
+  # Concurrent should finish near one sleep; sequential near the sum.
+  assert concurrent_elapsed < sequential_elapsed
+  assert concurrent_elapsed < 0.18
+  assert sequential_elapsed >= 0.18
+
+
+@pytest.mark.asyncio
+async def test_async_run_concurrently_default_remains_sequential():
+  in_flight = 0
+  max_in_flight = 0
+  lock = asyncio.Lock()
+
+  async def tracked(name: str) -> str:
+    nonlocal in_flight, max_in_flight
+    async with lock:
+      in_flight += 1
+      max_in_flight = max(max_in_flight, in_flight)
+    await asyncio.sleep(0.05)
+    async with lock:
+      in_flight -= 1
+    return name
+
+  async def slow_a() -> str:
+    return await tracked('a')
+
+  async def slow_b() -> str:
+    return await tracked('b')
+
+  response = _multi_function_response()
+  await get_function_response_parts_async(
+      response, {'slow_a': slow_a, 'slow_b': slow_b}
+  )
+  assert max_in_flight == 1

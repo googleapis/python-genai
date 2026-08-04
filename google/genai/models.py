@@ -8836,7 +8836,7 @@ class AsyncModels(_api_module.BaseModule):
           break
         func_response_parts = (
             await _extra_utils.get_function_response_parts_async(
-                response, function_map
+                response, function_map, final_parsed_config
             )
         )
         if not func_response_parts:
@@ -9104,7 +9104,7 @@ class AsyncModels(_api_module.BaseModule):
                   break
                 func_response_parts = (
                     await _extra_utils.get_function_response_parts_async(
-                        chunk, function_map
+                        chunk, function_map, final_parsed_config
                     )
                 )
                 if not func_response_parts:
@@ -9131,7 +9131,7 @@ class AsyncModels(_api_module.BaseModule):
               break
             func_response_parts = (
                 await _extra_utils.get_function_response_parts_async(
-                    chunk, function_map
+                    chunk, function_map, final_parsed_config
                 )
             )
 

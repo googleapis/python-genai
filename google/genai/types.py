@@ -5592,6 +5592,15 @@ class AutomaticFunctionCallingConfig(_common.BaseModel):
       GenerateContentResponse.automatic_function_calling_history.
       """,
   )
+  run_concurrently: Optional[bool] = Field(
+      default=None,
+      description="""If automatic function calling is enabled on the async
+      client, whether to execute multiple function calls from a single model
+      response concurrently (via ``asyncio.gather``).
+      If not set or set to False, function calls are executed sequentially.
+      This field has no effect on the sync client.
+      """,
+  )
 
 
 class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
@@ -5616,6 +5625,13 @@ class AutomaticFunctionCallingConfigDict(TypedDict, total=False):
       If not set, SDK will set ignore_call_history to false,
       and will append the call history to
       GenerateContentResponse.automatic_function_calling_history.
+      """
+
+  run_concurrently: Optional[bool]
+  """If automatic function calling is enabled on the async client, whether to
+      execute multiple function calls from a single model response concurrently
+      (via ``asyncio.gather``). If not set or set to False, function calls are
+      executed sequentially. This field has no effect on the sync client.
       """
 
 
