@@ -443,9 +443,30 @@ class AsyncSession:
           print(message)
     """
     # TODO(b/365983264) Handle intermittent issues for the user.
+    # After turn_complete, drain any trailing non-content updates
+    # (sessionResumptionUpdate, goAway, interruption metadata, etc.)
+    # before yielding the final turn_complete. Pre-fix, the loop broke
+    # on turn_complete and silently dropped a trailing
+    # sessionResumptionUpdate. Fix for #2527.
     while result := await self._receive():
       if result.server_content and result.server_content.turn_complete:
         yield result
+        # Drain trailing non-content updates by reading up to N more
+        # websocket messages. The server typically has at most a few
+        # trailing messages (handle update, go_away); N=8 is generous
+        # but bounded to avoid pathological hangs.
+        for _ in range(8):
+          try:
+            trailing = await self._receive()
+          except Exception:
+            break
+          if trailing is None:
+            break
+          yield trailing
+          # Don't drain past another turn_complete
+          if trailing.server_content and trailing.server_content.turn_complete:
+            # Recurse: enter the normal yield loop for the new turn
+            break
         break
       yield result
 
