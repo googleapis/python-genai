@@ -388,6 +388,7 @@ async def _execute_function_call_async(
       part.function_call.args if part.function_call.args is not None else {}
   )
   args = convert_number_values_for_dict_function_call_args(raw_args)
+  func_response: _common.StringDict
   try:
     if isinstance(func, McpToGenAiToolAdapter):
       mcp_tool_response = await func.call_tool(
@@ -408,7 +409,7 @@ async def _execute_function_call_async(
           )
       }
   except Exception as e:  # pylint: disable=broad-except
-    func_response = {'error': str(e)}  # type: ignore[assignment]
+    func_response = {'error': str(e)}
   return types.Part.from_function_response(
       name=func_name, response=func_response
   )
