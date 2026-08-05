@@ -6596,7 +6596,9 @@ class Models(_api_module.BaseModule):
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
         parsed_config_to_call = _extra_utils.get_usage_header(
-            parsed_config_to_call
+            parsed_config_to_call,
+            types.GenerateContentConfig,
+            'afc',
         )
       i += 1
       response = self._generate_content(
@@ -6771,7 +6773,7 @@ class Models(_api_module.BaseModule):
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
         parsed_config_to_call = _extra_utils.get_usage_header(
-            parsed_config_to_call
+            parsed_config_to_call, types.GenerateContentConfig, 'afc'
         )
       i += 1
       response = self._generate_content_stream(
@@ -7109,6 +7111,11 @@ class Models(_api_module.BaseModule):
             stacklevel=2,
         )
         Models._logged_generate_videos_deprecation_warning = True
+      _extra_utils.get_usage_header(
+          config,  # type: ignore[arg-type]
+          types.GenerateVideosConfig,
+          'nonsource',
+      )
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:
@@ -8804,7 +8811,9 @@ class AsyncModels(_api_module.BaseModule):
         )
         if function_map:
           final_parsed_config_to_call = _extra_utils.get_usage_header(
-              final_parsed_config_to_call
+              final_parsed_config_to_call,
+              types.GenerateContentConfig,
+              usage='afc',
           )
         response = await self._generate_content(
             model=model, contents=contents, config=final_parsed_config_to_call
@@ -9058,7 +9067,9 @@ class AsyncModels(_api_module.BaseModule):
           )
           if function_map:
             final_parsed_config_to_call = _extra_utils.get_usage_header(
-                final_parsed_config_to_call
+                final_parsed_config_to_call,
+                types.GenerateContentConfig,
+                usage='afc',
             )
 
           i += 1
@@ -9463,7 +9474,12 @@ class AsyncModels(_api_module.BaseModule):
             stacklevel=2,
         )
         AsyncModels._logged_generate_videos_deprecation_warning = True
-    # Gemini Developer API does not support video bytes.
+        # Gemini Developer API does not support video bytes.
+      _extra_utils.get_usage_header(
+          config,  # type: ignore[arg-type]
+          types.GenerateVideosConfig,
+          'nonsource',
+      )
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:
       if isinstance(video, types.Video):

@@ -121,7 +121,12 @@ class CreateModelInteraction(BaseModel):
     tools: Optional[List[Tool]] = None
     r"""A list of tool declarations the model may call during interaction."""
 
-    response_modalities: Optional[List[ResponseModality]] = None
+    response_modalities: Annotated[
+        Optional[List[ResponseModality]],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     response_mime_type: Annotated[

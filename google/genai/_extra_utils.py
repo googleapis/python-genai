@@ -19,11 +19,12 @@ import asyncio
 import inspect
 import io
 import logging
-import sys
-import typing
-from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
 import mimetypes
 import os
+import sys
+import typing
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
+
 import pydantic
 
 from . import _common
@@ -46,6 +47,9 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
+
+
+C = TypeVar('C', bound='_common.BaseModel')
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -698,21 +702,29 @@ def has_agent_platform_mcp_servers(
 
 
 def get_usage_header(
-    config: Optional[types.GenerateContentConfigOrDict] = None,
-    usage: str = 'afc',
-) -> types.GenerateContentConfig:
-  """Sets the afc version label."""
+    config: Optional[Union[dict[str, Any], C]], config_cls: Type[C], usage: str
+) -> C:
+  """Returns the usage header for the config."""
   usage_header = f'google-genai-sdk/{public_version.__version__}+{usage}'
   if not config:
-    config_model = types.GenerateContentConfig()
+    config_model = config_cls()
   elif isinstance(config, dict):
-    config_model = types.GenerateContentConfig(**config)
+    config_model = config_cls(**config)
   else:
     config_model = config
 
-  if not config_model.http_options:
-    config_model.http_options = types.HttpOptions()
-  existing_headers = config_model.http_options.headers or {}
+  # Many configs have http_options, safely initialize it if it's missing
+  if not hasattr(config_model, 'http_options'):
+    return config_model
+
+  http_options = getattr(config_model, 'http_options', None)
+  if http_options is None:
+    http_options = types.HttpOptions()
+    setattr(config_model, 'http_options', http_options)
+
+  http_options = typing.cast(types.HttpOptions, http_options)
+  existing_headers = http_options.headers or {}
+
   for header_key in ('user-agent', 'x-goog-api-client'):
     if header_key in existing_headers:
       if (
@@ -730,5 +742,6 @@ def get_usage_header(
           existing_headers[header_key] += f' {usage_header}'
     else:
       existing_headers[header_key] = usage_header
-  config_model.http_options.headers = existing_headers
+
+  http_options.headers = existing_headers
   return config_model
