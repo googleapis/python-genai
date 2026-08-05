@@ -15,11 +15,21 @@ the [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
 APIs.
 
 > [!WARNING]
-> **Upcoming Breaking Change to Automatic Function Calling (AFC):**
-> We will introduce a breaking change to the Automatic Function Calling (AFC)
-> feature in the next major version. Specifically, users will not be able to
+> **Updates to Automatic Function Calling (AFC) in upcoming SDK version:**
+> We are changing AFC behavior in the next major version.
+> Specifically, users will not be able to
 > invoke AFC from direct calls to `Models.generate_content` or its stream and
-> async variants. Instead, users should invoke AFC from `chats` modules.
+> async variants. Instead, users should invoke AFC from `Chats` modules.
+>
+> | Methods/fields to be removed | migration guide |
+> | --- | --- |
+> | `Live.send` | Use `send_client_content`, `send_realtime_input`, or `send_tool_response` instead |
+> | `Live.start_stream` | Use `receive` and `send_realtime_input` instead |
+> | `LiveConnectConfig.generation_config` | Set fields on `LiveConnectConfig` directly |
+> | `prompt`/`text`/`image` arguments in `Models.generate_videos` (and async variants) | Use `source` argument instead |
+> | `GenerationConfigThinkingConfig` | Use `ThinkingConfig` instead |
+>
+> To avoid unexpected updates, pin the SDK version to `< 3.0.0`.
 
 ## Agent Skills
 
@@ -1327,7 +1337,9 @@ from google.genai import types
 # Create operation
 operation = client.models.generate_videos(
     model='veo-3.1-generate-preview',
-    prompt='A neon hologram of a cat driving at top speed',
+    source=types.GenerateVideosSource(
+        prompt='A neon hologram of a cat driving at top speed',
+    ),
     config=types.GenerateVideosConfig(
         number_of_videos=1,
         duration_seconds=5,
@@ -1355,9 +1367,11 @@ image = types.Image.from_file(location="local/path/file.png")
 # Create operation
 operation = client.models.generate_videos(
     model='veo-3.1-generate-preview',
-    # Prompt is optional if image is provided
-    prompt='Night sky',
-    image=image,
+    source=types.GenerateVideosSource(
+        # Prompt is optional if image is provided
+        prompt='Night sky',
+        image=image,
+    ),
     config=types.GenerateVideosConfig(
         number_of_videos=1,
         duration_seconds=5,
@@ -1389,11 +1403,13 @@ video = types.Video.from_file("local/path/video.mp4")
 # Create operation
 operation = client.models.generate_videos(
     model='veo-3.1-generate-preview',
-    # Prompt is optional if Video is provided
-    prompt='Night sky',
-    # Input video must be in GCS for Gemini Enterprise Agent Platform or a URI for Gemini
-    video=types.Video(
-        uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
+    source=types.GenerateVideosSource(
+        # Prompt is optional if Video is provided
+        prompt='Night sky',
+        # Input video must be in GCS for Gemini Enterprise Agent Platform or a URI for Gemini
+        video=types.Video(
+            uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
+        ),
     ),
     config=types.GenerateVideosConfig(
         number_of_videos=1,

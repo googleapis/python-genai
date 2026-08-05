@@ -29,6 +29,7 @@ from .deepresearchagentconfig import (
 )
 from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
 from .environment import Environment, EnvironmentParam
+from .error import Error, ErrorTypedDict
 from .generationconfig import GenerationConfig, GenerationConfigParam
 from .imagecontent import ImageContent, ImageContentParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
@@ -166,6 +167,8 @@ class InteractionTypedDict(TypedDict):
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
     r"""A list of tool declarations the model may call during interaction."""
+    errors: NotRequired[List[ErrorTypedDict]]
+    r"""Output only. Diagnostic faults / platform errors recorded on the interaction."""
     usage: NotRequired[UsageTypedDict]
     r"""Statistics on the interaction request's token usage."""
     response_modalities: NotRequired[List[ResponseModality]]
@@ -241,10 +244,18 @@ class Interaction(BaseModel):
     tools: Optional[List[Tool]] = None
     r"""A list of tool declarations the model may call during interaction."""
 
+    errors: Optional[List[Error]] = None
+    r"""Output only. Diagnostic faults / platform errors recorded on the interaction."""
+
     usage: Optional[Usage] = None
     r"""Statistics on the interaction request's token usage."""
 
-    response_modalities: Optional[List[ResponseModality]] = None
+    response_modalities: Annotated[
+        Optional[List[ResponseModality]],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
 
     response_mime_type: Annotated[
@@ -318,6 +329,7 @@ class Interaction(BaseModel):
                 "updated",
                 "system_instruction",
                 "tools",
+                "errors",
                 "usage",
                 "response_modalities",
                 "response_mime_type",

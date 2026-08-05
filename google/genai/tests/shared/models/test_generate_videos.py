@@ -28,6 +28,15 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST_VERTEX,
             prompt="Man with a dog",
+            config=types.GenerateVideosConfig(
+                http_options=types.HttpOptions(
+                    retry_options=types.HttpRetryOptions(
+                        attempts=2,
+                        initial_delay=10.0,
+                        http_status_codes=[429, 500, 502, 503, 504],
+                    ),
+                ),
+            ),
         ),
         exception_if_mldev=(
             "models/veo-3.1-lite-generate-001 is not found for API version v1beta"
@@ -38,6 +47,15 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST_GEMINI,
             prompt="Man with a dog",
+            config=types.GenerateVideosConfig(
+                http_options=types.HttpOptions(
+                    retry_options=types.HttpRetryOptions(
+                        attempts=2,
+                        initial_delay=10.0,
+                        http_status_codes=[429, 500, 502, 503, 504],
+                    ),
+                ),
+            ),
         ),
         exception_if_vertex=(
             "404 NOT_FOUND"

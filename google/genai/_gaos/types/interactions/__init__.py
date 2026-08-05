@@ -336,7 +336,6 @@ if TYPE_CHECKING:
     from .stepdeltametadata import StepDeltaMetadata, StepDeltaMetadataTypedDict
     from .stepstart import StepStart, StepStartTypedDict
     from .stepstop import StepStop, StepStopTypedDict
-    from .streammetadata import StreamMetadata, StreamMetadataTypedDict
     from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDict
     from .textcontent import TextContent, TextContentParam
     from .textdelta import TextDelta, TextDeltaTypedDict
@@ -679,8 +678,6 @@ __all__ = [
     "StepStartTypedDict",
     "StepStop",
     "StepStopTypedDict",
-    "StreamMetadata",
-    "StreamMetadataTypedDict",
     "Task",
     "TextAnnotationDelta",
     "TextAnnotationDeltaTypedDict",
@@ -1064,8 +1061,6 @@ _dynamic_imports: dict[str, str] = {
     "StepStartTypedDict": ".stepstart",
     "StepStop": ".stepstop",
     "StepStopTypedDict": ".stepstop",
-    "StreamMetadata": ".streammetadata",
-    "StreamMetadataTypedDict": ".streammetadata",
     "TextAnnotationDelta": ".textannotationdelta",
     "TextAnnotationDeltaTypedDict": ".textannotationdelta",
     "TextContent": ".textcontent",

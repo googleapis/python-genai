@@ -19,7 +19,6 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 from .usage import Usage, UsageTypedDict
 import pydantic
 from pydantic import model_serializer
@@ -35,7 +34,6 @@ class StepStopTypedDict(TypedDict):
     this event.
     """
     event_type: Literal["step.stop"]
-    metadata: NotRequired[StreamMetadataTypedDict]
     step_usage: NotRequired[UsageTypedDict]
     r"""Statistics on the interaction request's token usage."""
     usage: NotRequired[UsageTypedDict]
@@ -55,8 +53,6 @@ class StepStop(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "step.stop"
 
-    metadata: Optional[StreamMetadata] = None
-
     step_usage: Optional[Usage] = None
     r"""Statistics on the interaction request's token usage."""
 
@@ -65,7 +61,7 @@ class StepStop(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id", "metadata", "step_usage", "usage"])
+        optional_fields = set(["event_id", "step_usage", "usage"])
         serialized = handler(self)
         m = {}
 
