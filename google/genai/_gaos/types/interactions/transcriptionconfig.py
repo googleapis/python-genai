@@ -27,11 +27,6 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class TranscriptionConfigParam(TypedDict):
     r"""Configuration for speech recognition (transcription)."""
 
-    language_hints: List[str]
-    r"""Required. BCP-47 language codes providing hints about the languages present in the
-    audio. At least one must be specified, or set to [\"auto\"] to enable
-    automatic language detection.
-    """
     adaptation_phrases: NotRequired[List[str]]
     r"""Optional. A list of phrases to bias the ASR model towards."""
     custom_vocabulary: NotRequired[List[str]]
@@ -40,6 +35,10 @@ class TranscriptionConfigParam(TypedDict):
     """
     diarization_mode: NotRequired[str]
     r"""Optional. Configures speaker diarization. Supported values: \"speaker\"."""
+    language_codes: NotRequired[List[str]]
+    r"""Optional. BCP-47 language codes providing hints about the languages present in the
+    audio. If omitted or empty, defaults to automatic language detection.
+    """
     timestamp_granularities: NotRequired[List[str]]
     r"""Optional. The granularity of timestamps to include in the transcription output.
     Supported values: \"word\". If empty, no timestamps are generated.
@@ -48,12 +47,6 @@ class TranscriptionConfigParam(TypedDict):
 
 class TranscriptionConfig(BaseModel):
     r"""Configuration for speech recognition (transcription)."""
-
-    language_hints: List[str]
-    r"""Required. BCP-47 language codes providing hints about the languages present in the
-    audio. At least one must be specified, or set to [\"auto\"] to enable
-    automatic language detection.
-    """
 
     adaptation_phrases: Annotated[
         Optional[List[str]],
@@ -71,6 +64,11 @@ class TranscriptionConfig(BaseModel):
     diarization_mode: Optional[str] = None
     r"""Optional. Configures speaker diarization. Supported values: \"speaker\"."""
 
+    language_codes: Optional[List[str]] = None
+    r"""Optional. BCP-47 language codes providing hints about the languages present in the
+    audio. If omitted or empty, defaults to automatic language detection.
+    """
+
     timestamp_granularities: Optional[List[str]] = None
     r"""Optional. The granularity of timestamps to include in the transcription output.
     Supported values: \"word\". If empty, no timestamps are generated.
@@ -83,6 +81,7 @@ class TranscriptionConfig(BaseModel):
                 "adaptation_phrases",
                 "custom_vocabulary",
                 "diarization_mode",
+                "language_codes",
                 "timestamp_granularities",
             ]
         )

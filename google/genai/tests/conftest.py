@@ -56,23 +56,22 @@ def use_vertex():
 
 
 @pytest.fixture(autouse=True)
-def skip_vertex_in_api_mode(request):
+def skip_based_on_api_mode_env_vars(request):
   mode = request.config.getoption('--mode')
-  if mode == 'api' and not os.environ.get(
-      'GOOGLE_GENAI_RUN_VERTEX_IN_API_MODE'
-  ):
+  if mode == 'api':
+    use_vertex = None
     if hasattr(request, 'node') and hasattr(request.node, 'callspec'):
-      if request.node.callspec.params.get('use_vertex') is True:
-        pytest.skip(
-            'Skipping Vertex AI tests in API mode (no GCP credentials'
-            ' configured).'
-        )
+      use_vertex = request.node.callspec.params.get('use_vertex')
     elif 'use_vertex' in request.fixturenames:
-      if request.getfixturevalue('use_vertex') is True:
-        pytest.skip(
-            'Skipping Vertex AI tests in API mode (no GCP credentials'
-            ' configured).'
-        )
+      use_vertex = request.getfixturevalue('use_vertex')
+
+    run_vertex_only = os.environ.get('GOOGLE_GENAI_RUN_VERTEX_ONLY_IN_API_MODE')
+    run_gemini_only = os.environ.get('GOOGLE_GENAI_RUN_GEMINI_ONLY_IN_API_MODE')
+
+    if use_vertex is True and run_gemini_only:
+      pytest.skip('Skipping Vertex AI tests in API mode (GEMINI ONLY config enabled).')
+    elif use_vertex is False and run_vertex_only:
+      pytest.skip('Skipping Gemini API tests in API mode (VERTEX ONLY config enabled).')
 
 
 # Overridden at the module level for each test file.
@@ -135,19 +134,29 @@ def client(use_vertex, replays_prefix, http_options, request):
     os.environ['GOOGLE_GENAI_REPLAYS_DIRECTORY'] = replays_root_directory
   # Get private arg.
   private = request.config.getoption('--private')
+
+  location_override = None
+  if use_vertex and 'tunings' in replays_prefix:
+    if os.environ.get('GOOGLE_CLOUD_LOCATION') == 'global':
+      location_override = 'us-central1'
+
   replay_client = _replay_api_client.ReplayApiClient(
       mode=mode,
       replay_id=replay_id,
       vertexai=use_vertex,
       http_options=http_options,
       private=private,
+      location=location_override,
   )
 
   with mock.patch.object(
       google_genai_client_module.Client, '_get_api_client'
   ) as patch_method:
     patch_method.return_value = replay_client
-    google_genai_client = google_genai_client_module.Client(vertexai=use_vertex)
+    kwargs = {'vertexai': use_vertex}
+    if location_override:
+      kwargs['location'] = location_override
+    google_genai_client = google_genai_client_module.Client(**kwargs)
 
     # Yield the client so that cleanup can be completed at the end of the test.
     yield google_genai_client

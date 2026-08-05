@@ -65,47 +65,6 @@ def _VideoGenerationReferenceType_to_mldev_enum_validate(
     )
 
 
-def _AudioTranscriptionConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['language_codes']) is not None:
-    raise ValueError(
-        'language_codes parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['language_auto']) is not None:
-    setv(to_object, ['languageAuto'], getv(from_object, ['language_auto']))
-
-  if getv(from_object, ['language_hints']) is not None:
-    setv(to_object, ['languageHints'], getv(from_object, ['language_hints']))
-
-  if getv(from_object, ['custom_vocabulary']) is not None:
-    setv(
-        to_object,
-        ['customVocabulary'],
-        getv(from_object, ['custom_vocabulary']),
-    )
-
-  if getv(from_object, ['adaptation_phrases']) is not None:
-    setv(
-        to_object,
-        ['adaptationPhrases'],
-        getv(from_object, ['adaptation_phrases']),
-    )
-
-  if getv(from_object, ['word_timestamp']) is not None:
-    setv(to_object, ['wordTimestamp'], getv(from_object, ['word_timestamp']))
-
-  if getv(from_object, ['diarization']) is not None:
-    setv(to_object, ['diarization'], getv(from_object, ['diarization']))
-
-  return to_object
-
-
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1508,11 +1467,7 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['audioTranscriptionConfig'],
-        _AudioTranscriptionConfig_to_mldev(
-            getv(from_object, ['audio_transcription_config']),
-            to_object,
-            root_object,
-        ),
+        getv(from_object, ['audio_transcription_config']),
     )
 
   return to_object
@@ -3120,6 +3075,12 @@ def _GoogleMaps_to_mldev(
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  if getv(from_object, ['grounding_types']) is not None:
+    raise ValueError(
+        'grounding_types parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -6635,7 +6596,9 @@ class Models(_api_module.BaseModule):
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
         parsed_config_to_call = _extra_utils.get_usage_header(
-            parsed_config_to_call
+            parsed_config_to_call,
+            types.GenerateContentConfig,
+            'afc',
         )
       i += 1
       response = self._generate_content(
@@ -6810,7 +6773,7 @@ class Models(_api_module.BaseModule):
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
         parsed_config_to_call = _extra_utils.get_usage_header(
-            parsed_config_to_call
+            parsed_config_to_call, types.GenerateContentConfig, 'afc'
         )
       i += 1
       response = self._generate_content_stream(
@@ -7148,6 +7111,11 @@ class Models(_api_module.BaseModule):
             stacklevel=2,
         )
         Models._logged_generate_videos_deprecation_warning = True
+      _extra_utils.get_usage_header(
+          config,  # type: ignore[arg-type]
+          types.GenerateVideosConfig,
+          'nonsource',
+      )
     # Gemini Developer API does not support video bytes.
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:
@@ -8843,7 +8811,9 @@ class AsyncModels(_api_module.BaseModule):
         )
         if function_map:
           final_parsed_config_to_call = _extra_utils.get_usage_header(
-              final_parsed_config_to_call
+              final_parsed_config_to_call,
+              types.GenerateContentConfig,
+              usage='afc',
           )
         response = await self._generate_content(
             model=model, contents=contents, config=final_parsed_config_to_call
@@ -9097,7 +9067,9 @@ class AsyncModels(_api_module.BaseModule):
           )
           if function_map:
             final_parsed_config_to_call = _extra_utils.get_usage_header(
-                final_parsed_config_to_call
+                final_parsed_config_to_call,
+                types.GenerateContentConfig,
+                usage='afc',
             )
 
           i += 1
@@ -9502,7 +9474,12 @@ class AsyncModels(_api_module.BaseModule):
             stacklevel=2,
         )
         AsyncModels._logged_generate_videos_deprecation_warning = True
-    # Gemini Developer API does not support video bytes.
+        # Gemini Developer API does not support video bytes.
+      _extra_utils.get_usage_header(
+          config,  # type: ignore[arg-type]
+          types.GenerateVideosConfig,
+          'nonsource',
+      )
     video_dct: dict[str, Any] = {}
     if not self._api_client.vertexai and video:
       if isinstance(video, types.Video):

@@ -115,7 +115,9 @@ class _BaseChat:
       history: list[ContentOrDict],
   ):
     self._model = model
-    self._config = _extra_utils.get_usage_header(config, usage="chat")
+    self._config = _extra_utils.get_usage_header(
+        config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
+    )
     content_models = []
     for content in history:
       if not isinstance(content, Content):
@@ -253,7 +255,7 @@ class Chat(_BaseChat):
     input_content = t.t_content(message)
     method_config = config if config else self._config
     method_config = _extra_utils.get_usage_header(
-        method_config, usage="chat"
+        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
     response = self._modules.generate_content(
         model=self._model,
@@ -314,7 +316,7 @@ class Chat(_BaseChat):
     chunk = None
     method_config = config if config else self._config
     method_config = _extra_utils.get_usage_header(
-        method_config, usage="chat"
+        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
     if isinstance(self._modules, Models):
       for chunk in self._modules.generate_content_stream(
@@ -423,7 +425,7 @@ class AsyncChat(_BaseChat):
     input_content = t.t_content(message)
     method_config = config if config else self._config
     method_config = _extra_utils.get_usage_header(
-        method_config, usage="chat"
+        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
     response = await self._modules.generate_content(
         model=self._model,
@@ -481,7 +483,7 @@ class AsyncChat(_BaseChat):
 
     method_config = config if config else self._config
     method_config = _extra_utils.get_usage_header(
-        method_config, usage="chat"
+        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
 
     async def async_generator():  # type: ignore[no-untyped-def]

@@ -65,6 +65,8 @@ Model = Union[
         "lyria-3-pro-preview",
         # Gemini Robotics-ER 1.6 Preview
         "gemini-robotics-er-1.6-preview",
+        # Gemini Robotics Embodied Reasoning 2 Preview
+        "gemini-robotics-er-2-preview",
     ],
     UnrecognizedStr,
 ]
