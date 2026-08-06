@@ -62,6 +62,12 @@ from ....types.interactions.thoughtsignaturedelta import (
 from ....types.interactions.thoughtsummarydelta import (
     ThoughtSummaryDelta as ThoughtSummary,
 )
+from ....types.interactions.toolsearchcalldelta import (
+    ToolSearchCallDelta as ToolSearchCall,
+)
+from ....types.interactions.toolsearchresultdelta import (
+    ToolSearchResultDelta as ToolSearchResult,
+)
 from ....types.interactions.urlcontextcalldelta import (
     URLContextCallDelta as URLContextCall,
 )
@@ -91,6 +97,8 @@ __all__ = [
     "TextAnnotationDelta",
     "ThoughtSignature",
     "ThoughtSummary",
+    "ToolSearchCall",
+    "ToolSearchResult",
     "URLContextCall",
     "URLContextResult",
     "Video",

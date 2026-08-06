@@ -32,6 +32,8 @@ class MCPServerParam(TypedDict):
 
     allowed_tools: NotRequired[List[AllowedToolsParam]]
     r"""The allowed tools."""
+    defer_loading: NotRequired[bool]
+    r"""If true, loading of tools on this MCP server is deferred."""
     headers: NotRequired[Dict[str, str]]
     r"""Optional: Fields for authentication headers, timeouts, etc., if needed."""
     name: NotRequired[str]
@@ -48,6 +50,9 @@ class MCPServer(BaseModel):
 
     allowed_tools: Optional[List[AllowedTools]] = None
     r"""The allowed tools."""
+
+    defer_loading: Optional[bool] = None
+    r"""If true, loading of tools on this MCP server is deferred."""
 
     headers: Optional[Dict[str, str]] = None
     r"""Optional: Fields for authentication headers, timeouts, etc., if needed."""
@@ -67,7 +72,9 @@ class MCPServer(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["allowed_tools", "headers", "name", "url"])
+        optional_fields = set(
+            ["allowed_tools", "defer_loading", "headers", "name", "url"]
+        )
         serialized = handler(self)
         m = {}
 

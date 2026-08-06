@@ -53,6 +53,8 @@ from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDi
 from .textdelta import TextDelta, TextDeltaTypedDict
 from .thoughtsignaturedelta import ThoughtSignatureDelta, ThoughtSignatureDeltaTypedDict
 from .thoughtsummarydelta import ThoughtSummaryDelta, ThoughtSummaryDeltaTypedDict
+from .toolsearchcalldelta import ToolSearchCallDelta, ToolSearchCallDeltaTypedDict
+from .toolsearchresultdelta import ToolSearchResultDelta, ToolSearchResultDeltaTypedDict
 from .urlcontextcalldelta import URLContextCallDelta, URLContextCallDeltaTypedDict
 from .urlcontextresultdelta import URLContextResultDelta, URLContextResultDeltaTypedDict
 from .videodelta import VideoDelta, VideoDeltaTypedDict
@@ -80,13 +82,15 @@ StepDeltaDataTypedDict = TypeAliasType(
         GoogleMapsResultDeltaTypedDict,
         GoogleSearchCallDeltaTypedDict,
         URLContextCallDeltaTypedDict,
+        ToolSearchResultDeltaTypedDict,
+        ToolSearchCallDeltaTypedDict,
         CodeExecutionCallDeltaTypedDict,
         GoogleSearchResultDeltaTypedDict,
-        MCPServerToolResultDeltaTypedDict,
         RetrievalCallDeltaTypedDict,
-        MCPServerToolCallDeltaTypedDict,
         DocumentDeltaTypedDict,
         CodeExecutionResultDeltaTypedDict,
+        MCPServerToolResultDeltaTypedDict,
+        MCPServerToolCallDeltaTypedDict,
         URLContextResultDeltaTypedDict,
         ImageDeltaTypedDict,
         FunctionResultDeltaTypedDict,
@@ -128,6 +132,8 @@ _STEP_DELTA_DATA_VARIANTS: dict[str, Any] = {
     "text": TextDelta,
     "thought_signature": ThoughtSignatureDelta,
     "thought_summary": ThoughtSummaryDelta,
+    "tool_search_call": ToolSearchCallDelta,
+    "tool_search_result": ToolSearchResultDelta,
     "url_context_call": URLContextCallDelta,
     "url_context_result": URLContextResultDelta,
     "video": VideoDelta,
@@ -157,6 +163,8 @@ StepDeltaData = Annotated[
         TextDelta,
         ThoughtSignatureDelta,
         ThoughtSummaryDelta,
+        ToolSearchCallDelta,
+        ToolSearchResultDelta,
         URLContextCallDelta,
         URLContextResultDelta,
         VideoDelta,

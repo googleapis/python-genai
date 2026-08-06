@@ -365,6 +365,16 @@ if TYPE_CHECKING:
     from .tool import Tool, ToolParam, UnknownTool
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
+    from .toolsearch import Execution, ToolSearch, ToolSearchParam
+    from .toolsearchcalldelta import ToolSearchCallDelta, ToolSearchCallDeltaTypedDict
+    from .toolsearchcallsteparguments import (
+        ToolSearchCallStepArguments,
+        ToolSearchCallStepArgumentsTypedDict,
+    )
+    from .toolsearchresultdelta import (
+        ToolSearchResultDelta,
+        ToolSearchResultDeltaTypedDict,
+    )
     from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
@@ -488,6 +498,7 @@ __all__ = [
     "ErrorTypedDict",
     "ExaAISearchConfig",
     "ExaAISearchConfigParam",
+    "Execution",
     "FileCitation",
     "FileCitationParam",
     "FileContent",
@@ -730,6 +741,14 @@ __all__ = [
     "ToolChoiceParam",
     "ToolChoiceType",
     "ToolParam",
+    "ToolSearch",
+    "ToolSearchCallDelta",
+    "ToolSearchCallDeltaTypedDict",
+    "ToolSearchCallStepArguments",
+    "ToolSearchCallStepArgumentsTypedDict",
+    "ToolSearchParam",
+    "ToolSearchResultDelta",
+    "ToolSearchResultDeltaTypedDict",
     "TranscriptionConfig",
     "TranscriptionConfigParam",
     "Transform",
@@ -1115,6 +1134,15 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceConfig": ".toolchoiceconfig",
     "ToolChoiceConfigParam": ".toolchoiceconfig",
     "ToolChoiceType": ".toolchoicetype",
+    "Execution": ".toolsearch",
+    "ToolSearch": ".toolsearch",
+    "ToolSearchParam": ".toolsearch",
+    "ToolSearchCallDelta": ".toolsearchcalldelta",
+    "ToolSearchCallDeltaTypedDict": ".toolsearchcalldelta",
+    "ToolSearchCallStepArguments": ".toolsearchcallsteparguments",
+    "ToolSearchCallStepArgumentsTypedDict": ".toolsearchcallsteparguments",
+    "ToolSearchResultDelta": ".toolsearchresultdelta",
+    "ToolSearchResultDeltaTypedDict": ".toolsearchresultdelta",
     "TranscriptionConfig": ".transcriptionconfig",
     "TranscriptionConfigParam": ".transcriptionconfig",
     "URLCitation": ".urlcitation",

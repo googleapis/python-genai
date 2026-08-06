@@ -23,6 +23,7 @@ from ....types.interactions.googlemaps import GoogleMaps
 from ....types.interactions.googlesearch import GoogleSearch
 from ....types.interactions.mcpserver import MCPServer
 from ....types.interactions.retrieval import Retrieval
+from ....types.interactions.toolsearch import ToolSearch
 from ....types.interactions.urlcontext import URLContext
 from . import retrieval
 
@@ -34,6 +35,7 @@ __all__ = [
     "GoogleSearch",
     "MCPServer",
     "Retrieval",
+    "ToolSearch",
     "URLContext",
     "retrieval",
 ]
