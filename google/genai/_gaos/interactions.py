@@ -1203,6 +1203,163 @@ class Interactions(BaseSDK):
                 parse_exc_,
             )
 
+    def list(
+        self,
+        *,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        api_version: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> models.ListInteractionsResponse:
+        r"""List interactions.
+
+        :param page_size: Optional. The maximum number of `Interactions` to return (per page).
+        :param page_token: Optional. A page token, received from a previous `ListInteractions` call.
+        :param api_version: Which version of the API to use.
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = models.ListInteractionsRequest(
+            page_size=page_size,
+            page_token=page_token,
+            api_version=api_version,
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request(
+            method="GET",
+            path="/{api_version}/interactions:list",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=False,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.ListInteractionsGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        def _speakeasy_parse_response(http_res):
+            if utils.match_response(http_res, "200", "application/json"):
+                return unmarshal_json_response(
+                    interactions.ListInteractionsResponse, http_res, validate=False
+                )
+            if utils.match_response(http_res, "4XX", "*"):
+                http_res_text = utils.stream_to_text(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "5XX", "*"):
+                http_res_text = utils.stream_to_text(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    models.ListInteractionsResponseBody, http_res, validate=False
+                )
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="listInteractions",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=None,
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
+        )
+        http_res = self.do_request(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.StreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.APIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                ),
+            )
+        try:
+            return _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            response_helpers.raise_parse_error(
+                self.sdk_configuration.__dict__["_hooks"],
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
     def cancel(
         self,
         id: str,
@@ -1403,6 +1560,7 @@ class InteractionsWithRawResponse:
         self.delete = response_helpers.to_raw_response_wrapper(
             sdk.delete, "extra_headers"
         )
+        self.list = response_helpers.to_raw_response_wrapper(sdk.list, "extra_headers")
         self.cancel = response_helpers.to_raw_response_wrapper(
             sdk.cancel, "extra_headers"
         )
@@ -1419,6 +1577,9 @@ class InteractionsWithStreamingResponse:
         )
         self.delete = response_helpers.to_streamed_response_wrapper(
             sdk.delete, "extra_headers"
+        )
+        self.list = response_helpers.to_streamed_response_wrapper(
+            sdk.list, "extra_headers"
         )
         self.cancel = response_helpers.to_streamed_response_wrapper(
             sdk.cancel, "extra_headers"
@@ -2610,6 +2771,166 @@ class AsyncInteractions(AsyncBaseSDK):
                 parse_exc_,
             )
 
+    async def list(
+        self,
+        *,
+        page_size: Optional[int] = None,
+        page_token: Optional[str] = None,
+        api_version: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> models.ListInteractionsResponse:
+        r"""List interactions.
+
+        :param page_size: Optional. The maximum number of `Interactions` to return (per page).
+        :param page_token: Optional. A page token, received from a previous `ListInteractions` call.
+        :param api_version: Which version of the API to use.
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = models.ListInteractionsRequest(
+            page_size=page_size,
+            page_token=page_token,
+            api_version=api_version,
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request_async(
+            method="GET",
+            path="/{api_version}/interactions:list",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=False,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.ListInteractionsGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        async def _speakeasy_parse_response(http_res):
+            if utils.match_response(http_res, "200", "application/json"):
+                return unmarshal_json_response(
+                    interactions.ListInteractionsResponse, http_res, validate=False
+                )
+            if utils.match_response(http_res, "4XX", "*"):
+                http_res_text = await utils.stream_to_text_async(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "5XX", "*"):
+                http_res_text = await utils.stream_to_text_async(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    models.ListInteractionsResponseBody, http_res, validate=False
+                )
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="listInteractions",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=None,
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
+        )
+        http_res = await self.do_request_async(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.AsyncStreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.AsyncAPIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                    async_hooks=self.sdk_configuration.__dict__.get("_async_hooks"),
+                ),
+            )
+        try:
+            return await _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            await response_helpers.raise_parse_error_async(
+                self.sdk_configuration.__dict__.get("_async_hooks"),
+                self.sdk_configuration.__dict__.get("_hooks"),
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
     async def cancel(
         self,
         id: str,
@@ -2815,6 +3136,9 @@ class AsyncInteractionsWithRawResponse:
         self.delete = response_helpers.async_to_raw_response_wrapper(
             sdk.delete, "extra_headers"
         )
+        self.list = response_helpers.async_to_raw_response_wrapper(
+            sdk.list, "extra_headers"
+        )
         self.cancel = response_helpers.async_to_raw_response_wrapper(
             sdk.cancel, "extra_headers"
         )
@@ -2831,6 +3155,9 @@ class AsyncInteractionsWithStreamingResponse:
         )
         self.delete = response_helpers.async_to_streamed_response_wrapper(
             sdk.delete, "extra_headers"
+        )
+        self.list = response_helpers.async_to_streamed_response_wrapper(
+            sdk.list, "extra_headers"
         )
         self.cancel = response_helpers.async_to_streamed_response_wrapper(
             sdk.cancel, "extra_headers"

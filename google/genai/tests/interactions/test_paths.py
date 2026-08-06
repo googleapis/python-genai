@@ -65,6 +65,13 @@ def test_interactions_paths(mock_auth_default, client):
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
 
+        mock_send.reset_mock()
+        mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"interaction_metadatas": []}')
+        client.interactions.list(page_size=10, page_token='token-123')
+        mock_send.assert_called_once()
+        request = mock_send.call_args[0][0]
+        assert str(request.url) == f'{expected_base_url}/interactions:list?page_size=10&page_token=token-123'
+
 @pytest.mark.asyncio
 @mock.patch.object(google.auth, "default", autospec=True)
 async def test_async_interactions_paths(mock_auth_default, client):
@@ -105,6 +112,13 @@ async def test_async_interactions_paths(mock_auth_default, client):
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}'
+
+        mock_send.reset_mock()
+        mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"interaction_metadatas": []}')
+        await client.aio.interactions.list(page_size=10, page_token='token-123')
+        mock_send.assert_called_once()
+        request = mock_send.call_args[0][0]
+        assert str(request.url) == f'{expected_base_url}/interactions:list?page_size=10&page_token=token-123'
 
 pytestmark = pytest_helper.setup(
     file=__file__,
