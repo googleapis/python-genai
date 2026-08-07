@@ -559,6 +559,10 @@ class BaseModel(pydantic.BaseModel):
       ser_json_bytes='base64',
       val_json_bytes='base64',
       ignored_types=(typing.TypeVar,),
+      # Most of the ~770 models defined in `types` are never used by any single
+      # application, so build each model's validator and serializer the first time
+      # the model is actually used rather than when `google.genai` is imported.
+      defer_build=True,
   )
 
   @pydantic.model_validator(mode='before')
