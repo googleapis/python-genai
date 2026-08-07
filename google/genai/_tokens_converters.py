@@ -70,6 +70,113 @@ def _AuthConfig_to_mldev(
   return to_object
 
 
+def _AuthToken_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['bidiGenerateContentSetup']) is not None:
+    setv(
+        to_object,
+        ['bidi_generate_content_setup'],
+        _BidiGenerateContentSetup_from_mldev(
+            getv(from_object, ['bidiGenerateContentSetup']), to_object
+        ),
+    )
+
+  if getv(from_object, ['expireTime']) is not None:
+    setv(to_object, ['expire_time'], getv(from_object, ['expireTime']))
+
+  if getv(from_object, ['fieldMask']) is not None:
+    setv(to_object, ['field_mask'], getv(from_object, ['fieldMask']))
+
+  if getv(from_object, ['interactionId']) is not None:
+    setv(to_object, ['interaction_id'], getv(from_object, ['interactionId']))
+
+  if getv(from_object, ['newSessionExpireTime']) is not None:
+    setv(
+        to_object,
+        ['new_session_expire_time'],
+        getv(from_object, ['newSessionExpireTime']),
+    )
+
+  if getv(from_object, ['uses']) is not None:
+    setv(to_object, ['uses'], getv(from_object, ['uses']))
+
+  return to_object
+
+
+def _BidiGenerateContentSetup_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['contextWindowCompression']) is not None:
+    setv(
+        to_object,
+        ['context_window_compression'],
+        getv(from_object, ['contextWindowCompression']),
+    )
+
+  if getv(from_object, ['generationConfig']) is not None:
+    setv(
+        to_object,
+        ['generation_config'],
+        _GenerationConfig_from_mldev(
+            getv(from_object, ['generationConfig']), to_object
+        ),
+    )
+
+  if getv(from_object, ['historyConfig']) is not None:
+    setv(to_object, ['history_config'], getv(from_object, ['historyConfig']))
+
+  if getv(from_object, ['inputAudioTranscription']) is not None:
+    setv(
+        to_object,
+        ['input_audio_transcription'],
+        getv(from_object, ['inputAudioTranscription']),
+    )
+
+  if getv(from_object, ['model']) is not None:
+    setv(to_object, ['model'], getv(from_object, ['model']))
+
+  if getv(from_object, ['outputAudioTranscription']) is not None:
+    setv(
+        to_object,
+        ['output_audio_transcription'],
+        getv(from_object, ['outputAudioTranscription']),
+    )
+
+  if getv(from_object, ['realtimeInputConfig']) is not None:
+    setv(
+        to_object,
+        ['realtime_input_config'],
+        getv(from_object, ['realtimeInputConfig']),
+    )
+
+  if getv(from_object, ['sessionResumption']) is not None:
+    setv(
+        to_object,
+        ['session_resumption'],
+        getv(from_object, ['sessionResumption']),
+    )
+
+  if getv(from_object, ['systemInstruction']) is not None:
+    setv(
+        to_object,
+        ['system_instruction'],
+        getv(from_object, ['systemInstruction']),
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(to_object, ['tools'], [item for item in getv(from_object, ['tools'])])
+
+  return to_object
+
+
 def _Blob_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -228,6 +335,130 @@ def _FunctionCall_to_mldev(
     raise ValueError(
         'will_continue parameter is only supported in Gemini Enterprise Agent'
         ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  return to_object
+
+
+def _GenerationConfig_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+
+  if getv(from_object, ['responseJsonSchema']) is not None:
+    setv(
+        to_object,
+        ['response_json_schema'],
+        t.t_json_schema(getv(from_object, ['responseJsonSchema'])),
+    )
+
+  if getv(from_object, ['candidateCount']) is not None:
+    setv(to_object, ['candidate_count'], getv(from_object, ['candidateCount']))
+
+  if getv(from_object, ['enableAffectiveDialog']) is not None:
+    setv(
+        to_object,
+        ['enable_affective_dialog'],
+        getv(from_object, ['enableAffectiveDialog']),
+    )
+
+  if getv(from_object, ['frequencyPenalty']) is not None:
+    setv(
+        to_object,
+        ['frequency_penalty'],
+        getv(from_object, ['frequencyPenalty']),
+    )
+
+  if getv(from_object, ['logprobs']) is not None:
+    setv(to_object, ['logprobs'], getv(from_object, ['logprobs']))
+
+  if getv(from_object, ['maxOutputTokens']) is not None:
+    setv(
+        to_object, ['max_output_tokens'], getv(from_object, ['maxOutputTokens'])
+    )
+
+  if getv(from_object, ['mediaResolution']) is not None:
+    setv(
+        to_object, ['media_resolution'], getv(from_object, ['mediaResolution'])
+    )
+
+  if getv(from_object, ['presencePenalty']) is not None:
+    setv(
+        to_object, ['presence_penalty'], getv(from_object, ['presencePenalty'])
+    )
+
+  if getv(from_object, ['responseLogprobs']) is not None:
+    setv(
+        to_object,
+        ['response_logprobs'],
+        getv(from_object, ['responseLogprobs']),
+    )
+
+  if getv(from_object, ['responseMimeType']) is not None:
+    setv(
+        to_object,
+        ['response_mime_type'],
+        getv(from_object, ['responseMimeType']),
+    )
+
+  if getv(from_object, ['responseModalities']) is not None:
+    setv(
+        to_object,
+        ['response_modalities'],
+        getv(from_object, ['responseModalities']),
+    )
+
+  if getv(from_object, ['responseSchema']) is not None:
+    setv(to_object, ['response_schema'], getv(from_object, ['responseSchema']))
+
+  if getv(from_object, ['seed']) is not None:
+    setv(to_object, ['seed'], getv(from_object, ['seed']))
+
+  if getv(from_object, ['speechConfig']) is not None:
+    setv(to_object, ['speech_config'], getv(from_object, ['speechConfig']))
+
+  if getv(from_object, ['stopSequences']) is not None:
+    setv(to_object, ['stop_sequences'], getv(from_object, ['stopSequences']))
+
+  if getv(from_object, ['temperature']) is not None:
+    setv(to_object, ['temperature'], getv(from_object, ['temperature']))
+
+  if getv(from_object, ['thinkingConfig']) is not None:
+    setv(to_object, ['thinking_config'], getv(from_object, ['thinkingConfig']))
+
+  if getv(from_object, ['topK']) is not None:
+    setv(to_object, ['top_k'], getv(from_object, ['topK']))
+
+  if getv(from_object, ['topP']) is not None:
+    setv(to_object, ['top_p'], getv(from_object, ['topP']))
+
+  if getv(from_object, ['enableEnhancedCivicAnswers']) is not None:
+    setv(
+        to_object,
+        ['enable_enhanced_civic_answers'],
+        getv(from_object, ['enableEnhancedCivicAnswers']),
+    )
+
+  if getv(from_object, ['responseFormat']) is not None:
+    setv(
+        to_object,
+        ['response_format'],
+        [item for item in getv(from_object, ['responseFormat'])],
+    )
+
+  if getv(from_object, ['translationConfig']) is not None:
+    setv(
+        to_object,
+        ['translation_config'],
+        getv(from_object, ['translationConfig']),
+    )
+
+  if getv(from_object, ['audioTranscriptionConfig']) is not None:
+    setv(
+        to_object,
+        ['audio_transcription_config'],
+        getv(from_object, ['audioTranscriptionConfig']),
     )
 
   return to_object
