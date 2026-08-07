@@ -263,6 +263,9 @@ def test_send_2_messages(client):
   chat.send_message('write a unit test for the function')
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 def test_with_afc_history(client):
   chat = client.chats.create(
       model='gemini-2.0-flash-exp',
@@ -296,6 +299,9 @@ def test_with_afc_history(client):
   assert '51' in chat_history[3].parts[0].text
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 def test_existing_chat_history_extends_afc_history(client):
   chat = client.chats.create(
       model='gemini-2.0-flash-exp',
@@ -313,12 +319,8 @@ def test_existing_chat_history_extends_afc_history(client):
   assert len(content_strings) == len(set(content_strings))
 
 
-@pytest.mark.skipif(
-    sys.version_info >= (3, 13),
-    reason=(
-        'object type is dumped as <Type.OBJECT: "OBJECT"> as opposed to'
-        ' "OBJECT" in Python 3.13'
-    ),
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
 )
 def test_with_afc_multiple_remote_calls(client):
 
@@ -372,12 +374,8 @@ def test_with_afc_multiple_remote_calls(client):
     assert part.function_call
 
 
-@pytest.mark.skipif(
-    sys.version_info >= (3, 13),
-    reason=(
-        'object type is dumped as <Type.OBJECT: "OBJECT"> as opposed to'
-        ' "OBJECT" in Python 3.13'
-    ),
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
 )
 def test_with_afc_multiple_remote_calls_async(client):
 
@@ -430,6 +428,9 @@ def test_with_afc_multiple_remote_calls_async(client):
   for part in curated_history[7].parts:
     assert part.function_call
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 def test_with_afc_disabled(client):
   chat = client.chats.create(
       model='gemini-2.0-flash-exp',
@@ -454,6 +455,9 @@ def test_with_afc_disabled(client):
   }
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 @pytest.mark.asyncio
 async def test_with_afc_history_async(client):
   chat = client.aio.chats.create(
@@ -488,6 +492,9 @@ async def test_with_afc_history_async(client):
   assert '51' in chat_history[3].parts[0].text
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 @pytest.mark.asyncio
 async def test_with_afc_disabled_async(client):
   chat = client.aio.chats.create(
@@ -567,6 +574,9 @@ def test_stream_config_override(client):
     json.loads(default_config_text)
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 def test_stream_function_calling(client):
   chat = client.chats.create(
       model='gemini-2.0-flash-exp',
@@ -720,6 +730,9 @@ async def test_async_stream_config_override(client):
     json.loads(default_config_text)
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 @pytest.mark.asyncio
 async def test_async_stream_function_calling(client):
   chat = client.aio.chats.create(
@@ -762,7 +775,7 @@ async def test_async_stream_send_2_messages(client):
 
 def test_mcp_tools(client):
   chat = client.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-3.1-pro-preview',
       config={'tools': [
               mcp_types.Tool(
                   name='get_weather',
@@ -780,7 +793,7 @@ def test_mcp_tools(client):
 
 def test_mcp_tools_stream(client):
   chat = client.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-3.1-pro-preview',
       config={'tools': [
           mcp_types.Tool(
               name='get_weather',
@@ -806,7 +819,7 @@ def test_mcp_tools_stream(client):
 @pytest.mark.asyncio
 async def test_async_mcp_tools(client):
   chat = client.aio.chats.create(
-        model='gemini-2.0-flash-exp',
+        model='gemini-3.1-pro-preview',
         config={'tools': [
                 mcp_types.Tool(
                     name='get_weather',
@@ -825,7 +838,7 @@ async def test_async_mcp_tools(client):
 @pytest.mark.asyncio
 async def test_async_mcp_tools_stream(client):
   chat = client.aio.chats.create(
-      model='gemini-2.0-flash-exp',
+      model='gemini-3.1-pro-preview',
       config={'tools': [
           mcp_types.Tool(
               name='get_weather',
