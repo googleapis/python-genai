@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.17.0](https://github.com/googleapis/python-genai/compare/v2.16.0...v2.17.0) (2026-08-06)
+
+
+### Features
+
+* Add the Gemini Robotics ER 2 Preview model ([61d4645](https://github.com/googleapis/python-genai/commit/61d4645c6f7acab5fdc1dd6a4f6943fe8c937347))
+* Add TOO_MANY_TOOL_CALLS to FinishReason enum. ([a8ec86e](https://github.com/googleapis/python-genai/commit/a8ec86eab28c2806205fc8ec746b492110113c44))
+* Add top-level errors array to Interaction resource (iAPI) ([c74505b](https://github.com/googleapis/python-genai/commit/c74505b03f53e5bf54b0aed5741267f00703d218))
+
+
+### Bug Fixes
+
+* Add propertyOrdering auto-population for ResponseSchema and ResponseJsonSchema for Dotnet SDK ([3ec2081](https://github.com/googleapis/python-genai/commit/3ec20812f4e6228bfa8dc766167ede2e1f925526))
+
+
+### Documentation
+
+* Fix interactions ([80d80ff](https://github.com/googleapis/python-genai/commit/80d80ffb98e95b0c62590e5593df47c74ee6e0b7))
+* Regenerate docs for 2.16.0 ([f03ecfd](https://github.com/googleapis/python-genai/commit/f03ecfd7734e08b60d7ea5f2123152ff1b6bdfbf))
+* Update GenerateVideos docstrings and samples ([c41ba11](https://github.com/googleapis/python-genai/commit/c41ba1163f4bc7cb90d913674d1ba481d18d1248))
+
 ## [2.16.0](https://github.com/googleapis/python-genai/compare/v2.15.0...v2.16.0) (2026-07-29)
 
 
