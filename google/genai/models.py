@@ -6554,6 +6554,14 @@ class Models(_api_module.BaseModule):
       raise errors.UnsupportedFunctionError(
           'MCP sessions are not supported in synchronous methods.'
       )
+    if (
+        parsed_config
+        and parsed_config.automatic_function_calling
+        and parsed_config.automatic_function_calling.enable is not None
+    ):
+      parsed_config.automatic_function_calling.disable = (
+          not parsed_config.automatic_function_calling.enable
+      )
     if _extra_utils.should_disable_afc(parsed_config):
       return self._generate_content(
           model=model, contents=contents, config=parsed_config
@@ -6724,6 +6732,14 @@ class Models(_api_module.BaseModule):
     ):
       raise errors.UnsupportedFunctionError(
           'MCP sessions are not supported in synchronous methods.'
+      )
+    if (
+        parsed_config
+        and parsed_config.automatic_function_calling
+        and parsed_config.automatic_function_calling.enable is not None
+    ):
+      parsed_config.automatic_function_calling.disable = (
+          not parsed_config.automatic_function_calling.enable
       )
     if _extra_utils.should_disable_afc(parsed_config):
       yield from self._generate_content_stream(
@@ -8762,6 +8778,14 @@ class AsyncModels(_api_module.BaseModule):
           )
       )
 
+      if (
+          final_parsed_config
+          and final_parsed_config.automatic_function_calling
+          and final_parsed_config.automatic_function_calling.enable is not None
+      ):
+        final_parsed_config.automatic_function_calling.disable = (
+            not final_parsed_config.automatic_function_calling.enable
+        )
       if _extra_utils.should_disable_afc(final_parsed_config):
         return await self._generate_content(
             model=model, contents=contents, config=final_parsed_config
@@ -9000,6 +9024,16 @@ class AsyncModels(_api_module.BaseModule):
                 is_agent_platform=getattr(self._api_client, 'vertexai', False),
             )
         )
+
+        if (
+            final_parsed_config
+            and final_parsed_config.automatic_function_calling
+            and final_parsed_config.automatic_function_calling.enable
+            is not None
+        ):
+          final_parsed_config.automatic_function_calling.disable = (
+              not final_parsed_config.automatic_function_calling.enable
+          )
 
         if _extra_utils.should_disable_afc(final_parsed_config):
           response = await self._generate_content_stream(
