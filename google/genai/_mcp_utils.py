@@ -22,9 +22,6 @@ from importlib.metadata import PackageNotFoundError, version
 import typing
 from typing import Any
 
-import google.auth
-from google.auth.transport.requests import Request
-
 from . import _common
 from . import types
 from ._api_client import _MULTI_REGIONAL_LOCATIONS
@@ -148,7 +145,11 @@ def _filter_to_supported_schema(
   filtered_schema: dict[str, Any] = {}
   for field_name, field_value in schema.items():
     if field_name in schema_field_names:
-      filtered_schema[field_name] = _filter_to_supported_schema(field_value)
+      filtered_schema[field_name] = (
+          _filter_to_supported_schema(field_value)
+          if isinstance(field_value, dict)
+          else field_value
+      )
     elif field_name in list_schema_field_names:
       filtered_schema[field_name] = [
           _filter_to_supported_schema(value) for value in field_value
