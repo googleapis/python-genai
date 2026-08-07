@@ -57,8 +57,8 @@ logger = logging.getLogger('google_genai.models')
 
 
 def _create_generate_content_config_model(
-    config: types.GenerateContentConfigOrDict,
-) -> types.GenerateContentConfig:
+    config: Union[types.GenerateContentConfigOrDict, types.ChatConfig],
+) -> Union[types.GenerateContentConfig, types.ChatConfig]:
   if isinstance(config, dict):
     return types.GenerateContentConfig(**config)
   else:
@@ -118,7 +118,9 @@ def format_destination(
 
 
 def find_afc_incompatible_tool_indexes(
-    config: Optional[types.GenerateContentConfigOrDict] = None,
+    config: Optional[
+        Union[types.GenerateContentConfigOrDict, types.ChatConfig]
+    ] = None,
     is_agent_platform: bool = False,
 ) -> list[int]:
   """Checks if the config contains any AFC incompatible tools."""
@@ -412,82 +414,85 @@ async def get_function_response_parts_async(
   return func_response_parts
 
 
-def should_disable_afc(
-    config: Optional[types.GenerateContentConfigOrDict] = None,
+
+def should_enable_afc(
+    config: Optional[types.ChatConfig] = None,
 ) -> bool:
   """Returns whether automatic function calling is enabled."""
   if not config:
     return False
-  config_model = _create_generate_content_config_model(config)
+  else:
+    config_model = config
+
   # If max_remote_calls is less or equal to 0, warn and disable AFC.
   if (
       config_model
-      and config_model.automatic_function_calling
-      and config_model.automatic_function_calling.maximum_remote_calls
+      and config_model.automatic_function_calling_config
+      and config_model.automatic_function_calling_config.maximum_remote_calls
       is not None
-      and int(config_model.automatic_function_calling.maximum_remote_calls) <= 0
+      and int(config_model.automatic_function_calling_config.maximum_remote_calls) <= 0
   ):
     logger.warning(
         'max_remote_calls in automatic_function_calling_config'
-        f' {config_model.automatic_function_calling.maximum_remote_calls} is'
+        f' {config_model.automatic_function_calling_config.maximum_remote_calls} is'
         ' less than or equal to 0. Disabling automatic function calling.'
-        ' Please set max_remote_calls to a positive integer.'
     )
-    return True
+    return False
 
-  # Default to enable AFC if not specified.
+  # Default to disable AFC if not specified.
   if (
-      not config_model.automatic_function_calling
-      or config_model.automatic_function_calling.disable is None
+      not config_model.automatic_function_calling_config
+      or config_model.automatic_function_calling_config.enable is None
   ):
     return False
 
   if (
-      config_model.automatic_function_calling.disable
-      and config_model.automatic_function_calling.maximum_remote_calls
+      not config_model.automatic_function_calling_config.enable
+      and config_model.automatic_function_calling_config.maximum_remote_calls
       is not None
       # exclude the case where max_remote_calls is set to 10 by default.
       and 'maximum_remote_calls'
-      in config_model.automatic_function_calling.model_fields_set
-      and int(config_model.automatic_function_calling.maximum_remote_calls) > 0
+      in config_model.automatic_function_calling_config.model_fields_set
+      and int(config_model.automatic_function_calling_config.maximum_remote_calls) > 0
   ):
     logger.warning(
-        '`automatic_function_calling.disable` is set to `True`. And'
+        '`automatic_function_calling.enable` is set to `False`. And'
         ' `automatic_function_calling.maximum_remote_calls` is a'
         ' positive number'
-        f' {config_model.automatic_function_calling.maximum_remote_calls}.'
+        f' {config_model.automatic_function_calling_config.maximum_remote_calls}.'
         ' Disabling automatic function calling. If you want to enable'
         ' automatic function calling, please set'
-        ' `automatic_function_calling.disable` to `False` or leave it unset,'
-        ' and set `automatic_function_calling.maximum_remote_calls` to a'
-        ' positive integer or leave'
+        ' `automatic_function_calling.enable` to `True` and set'
+        ' `automatic_function_calling.maximum_remote_calls` to a positive'
+        ' integer or leave'
         ' `automatic_function_calling.maximum_remote_calls` unset.'
     )
+    return False
 
-  return config_model.automatic_function_calling.disable
+  return config_model.automatic_function_calling_config.enable
 
 
 def get_max_remote_calls_afc(
-    config: Optional[types.GenerateContentConfigOrDict] = None,
+    config: Optional[types.ChatConfig] = None,
 ) -> int:
   if not config:
     return _DEFAULT_MAX_REMOTE_CALLS_AFC
   """Returns the remaining remote calls for automatic function calling."""
-  if should_disable_afc(config):
+  if not should_enable_afc(config):
     raise ValueError(
         'automatic function calling is not enabled, but SDK is trying to get'
         ' max remote calls.'
     )
   config_model = _create_generate_content_config_model(config)
   if (
-      not config_model.automatic_function_calling
-      or config_model.automatic_function_calling.maximum_remote_calls is None
+      not config_model.automatic_function_calling_config  # type: ignore[attr-defined]
+      or config_model.automatic_function_calling_config.maximum_remote_calls is None  # type: ignore[attr-defined]
   ):
     return _DEFAULT_MAX_REMOTE_CALLS_AFC
-  return int(config_model.automatic_function_calling.maximum_remote_calls)
+  return int(config_model.automatic_function_calling_config.maximum_remote_calls)  # type: ignore[attr-defined]
 
 
-def raise_error_for_afc_incompatible_config(config: Optional[types.GenerateContentConfig]
+def raise_error_for_afc_incompatible_config(config: Optional[types.ChatConfig]
 ) -> None:
   """Raises an error if the config is not compatible with AFC."""
   if (
@@ -496,21 +501,22 @@ def raise_error_for_afc_incompatible_config(config: Optional[types.GenerateConte
       or not config.tool_config.function_calling_config
   ):
     return
-  afc_config = config.automatic_function_calling
-  disable_afc_config = afc_config.disable if afc_config else False
+  afc_config = config.automatic_function_calling_config
+  enable_afc = afc_config.enable if afc_config else False
   stream_function_call = (
       config.tool_config.function_calling_config.stream_function_call_arguments
   )
 
-  if stream_function_call and not disable_afc_config:
+  if stream_function_call and enable_afc:
     raise ValueError(
-        'Running in streaming mode with stream_function_call_arguments'
-        ' enabled, this feature is not compatible with automatic function'
-        ' calling (AFC). Please set config.automatic_function_calling.disable'
-        ' to True to disable AFC or leave config.tool_config.'
-        ' function_calling_config.stream_function_call_arguments to be empty'
-        ' or set to False to disable streaming function call arguments.'
+        'Running in streaming mode with stream_function_call_arguments enabled,'
+        ' this feature is not compatible with automatic function calling (AFC).'
+        ' Please set ChatConfig.automatic_function_calling_config.enable to'
+        ' False to disable AFC or leave config.tool_config.'
+        ' function_calling_config.stream_function_call_arguments to be empty or'
+        ' set to False to disable streaming function call arguments.'
     )
+
 
 def should_append_afc_history(
     config: Optional[types.GenerateContentConfigOrDict] = None,
@@ -518,14 +524,18 @@ def should_append_afc_history(
   if not config:
     return True
   config_model = _create_generate_content_config_model(config)
-  if not config_model.automatic_function_calling:
+  if not config_model.automatic_function_calling_config:  # type: ignore[attr-defined]
     return True
-  return not config_model.automatic_function_calling.ignore_call_history
+  return not config_model.automatic_function_calling_config.ignore_call_history  # type: ignore[attr-defined]
 
 
 def parse_config_for_mcp_usage(
-    config: Optional[types.GenerateContentConfigOrDict] = None,
-) -> Optional[types.GenerateContentConfig]:
+    config: Optional[
+        Union[
+            types.GenerateContentConfigOrDict, types.ChatConfig
+        ]
+    ] = None,
+) -> Optional[Union[types.GenerateContentConfig, types.ChatConfig]]:
   """Returns a parsed config with an appended MCP header if MCP tools or sessions are used."""
   if not config:
     return None
@@ -688,17 +698,17 @@ def prepare_resumable_upload(
 def has_agent_platform_mcp_servers(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
-    """Checks whether the configuration contains any MCP server requests."""
-    if not config:
-      return False
-    config_model = _create_generate_content_config_model(config)
-    if not config_model.tools:
-      return False
-
-    for tool in config_model.tools:
-      if getattr(tool, 'mcp_servers', None):
-        return True
+  """Checks whether the configuration contains any MCP server requests."""
+  if not config:
     return False
+  config_model = _create_generate_content_config_model(config)
+  if not config_model.tools:
+    return False
+
+  for tool in config_model.tools:
+    if getattr(tool, 'mcp_servers', None):
+      return True
+  return False
 
 
 def get_usage_header(

@@ -6542,9 +6542,6 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
-    incompatible_tools_indexes = (
-        _extra_utils.find_afc_incompatible_tool_indexes(config)
-    )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
     if (
         parsed_config
@@ -6554,98 +6551,9 @@ class Models(_api_module.BaseModule):
       raise errors.UnsupportedFunctionError(
           'MCP sessions are not supported in synchronous methods.'
       )
-    if _extra_utils.should_disable_afc(parsed_config):
-      return self._generate_content(
-          model=model, contents=contents, config=parsed_config
-      )
-    if incompatible_tools_indexes:
-      original_tools_length = 0
-      if isinstance(config, types.GenerateContentConfig):
-        if config.tools:
-          original_tools_length = len(config.tools)
-      elif isinstance(config, dict):
-        tools = config.get('tools', [])
-        if tools:
-          original_tools_length = len(tools)
-      if len(incompatible_tools_indexes) != original_tools_length:
-        indices_str = ', '.join(map(str, incompatible_tools_indexes))
-        logger.warning(
-            'Tools at indices [%s] are not compatible with automatic function '
-            'calling (AFC). AFC is disabled. If AFC is intended, please '
-            'include python callables in the tool list, and do not include '
-            'function declaration and MCP server in the tool list.',
-            indices_str,
-        )
-      return self._generate_content(
-          model=model, contents=contents, config=parsed_config
-      )
-
-    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
-        parsed_config
+    return self._generate_content(
+        model=model, contents=contents, config=parsed_config
     )
-    logger.info(
-        f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
-    )
-    automatic_function_calling_history: list[types.Content] = []
-    response = types.GenerateContentResponse()
-    i = 0
-    while remaining_remote_calls_afc > 0:
-      parsed_config_to_call = (
-          parsed_config.model_copy(deep=True) if parsed_config else None
-      )
-      function_map = _extra_utils.get_function_map(parsed_config)
-      if function_map:
-        parsed_config_to_call = _extra_utils.get_usage_header(
-            parsed_config_to_call,
-            types.GenerateContentConfig,
-            'afc',
-        )
-      i += 1
-      response = self._generate_content(
-          model=model, contents=contents, config=parsed_config_to_call
-      )
-
-      if not function_map:
-        break
-      if not response:
-        break
-      if (
-          not response.candidates
-          or not response.candidates[0].content
-          or not response.candidates[0].content.parts
-      ):
-        break
-      func_response_parts = _extra_utils.get_function_response_parts(
-          response, function_map
-      )
-      if not func_response_parts:
-        break
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
-
-      func_call_content = response.candidates[0].content
-      func_response_content = types.Content(
-          role='user',
-          parts=func_response_parts,
-      )
-      contents = t.t_contents(contents)  # type: ignore[assignment]
-      if not automatic_function_calling_history:
-        automatic_function_calling_history.extend(contents)  # type: ignore[arg-type]
-      if isinstance(contents, list):
-        contents.append(func_call_content)  # type: ignore[arg-type]
-        contents.append(func_response_content)  # type: ignore[arg-type]
-      automatic_function_calling_history.append(func_call_content)
-      automatic_function_calling_history.append(func_response_content)
-    if (
-        _extra_utils.should_append_afc_history(parsed_config)
-        and response is not None
-    ):
-      response.automatic_function_calling_history = (
-          automatic_function_calling_history
-      )
-    return response
 
   def generate_content_stream(
       self,
@@ -6713,9 +6621,6 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
-    incompatible_tools_indexes = (
-        _extra_utils.find_afc_incompatible_tool_indexes(config)
-    )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
     if (
         parsed_config
@@ -6725,128 +6630,10 @@ class Models(_api_module.BaseModule):
       raise errors.UnsupportedFunctionError(
           'MCP sessions are not supported in synchronous methods.'
       )
-    if _extra_utils.should_disable_afc(parsed_config):
-      yield from self._generate_content_stream(
-          model=model, contents=contents, config=parsed_config
-      )
-      return
-
-    if incompatible_tools_indexes:
-      original_tools_length = 0
-      if isinstance(config, types.GenerateContentConfig):
-        if config.tools:
-          original_tools_length = len(config.tools)
-      elif isinstance(config, dict):
-        tools = config.get('tools', [])
-        if tools:
-          original_tools_length = len(tools)
-      if len(incompatible_tools_indexes) != original_tools_length:
-        indices_str = ', '.join(map(str, incompatible_tools_indexes))
-        logger.warning(
-            'Tools at indices [%s] are not compatible with automatic function '
-            'calling. AFC will be disabled.',
-            indices_str,
-        )
-      yield from self._generate_content_stream(
-          model=model, contents=contents, config=parsed_config
-      )
-      return
-
-    # With tool compatibility confirmed, validate that the configuration are
-    # compatible with each other and raise an error if invalid.
-    _extra_utils.raise_error_for_afc_incompatible_config(parsed_config)
-
-    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
-        parsed_config
+    yield from self._generate_content_stream(
+        model=model, contents=contents, config=parsed_config
     )
-    logger.info(
-        f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
-    )
-    automatic_function_calling_history: list[types.Content] = []
-    chunk = None
-    func_response_parts = None
-    i = 0
-    while remaining_remote_calls_afc > 0:
-      parsed_config_to_call = (
-          parsed_config.model_copy(deep=True) if parsed_config else None
-      )
-      function_map = _extra_utils.get_function_map(parsed_config)
-      if function_map:
-        parsed_config_to_call = _extra_utils.get_usage_header(
-            parsed_config_to_call, types.GenerateContentConfig, 'afc'
-        )
-      i += 1
-      response = self._generate_content_stream(
-          model=model, contents=contents, config=parsed_config_to_call
-      )
-
-      if i == 1:
-        # First request gets a function call.
-        # Then get function response parts.
-        # Yield chunks only if there's no function response parts.
-        for chunk in response:
-          if not function_map:
-            contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
-            yield chunk
-          else:
-            if (
-                not chunk.candidates
-                or not chunk.candidates[0].content
-                or not chunk.candidates[0].content.parts
-            ):
-              break
-            func_response_parts = _extra_utils.get_function_response_parts(
-                chunk, function_map
-            )
-            if not func_response_parts:
-              contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
-              yield chunk
-
-      else:
-        #  Second request and beyond, yield chunks.
-        for chunk in response:
-          if _extra_utils.should_append_afc_history(parsed_config):
-            chunk.automatic_function_calling_history = (
-                automatic_function_calling_history
-            )
-          contents = _extra_utils.append_chunk_contents(contents, chunk)  # type: ignore[assignment]
-          yield chunk
-        if (
-            chunk is None
-            or not chunk.candidates
-            or not chunk.candidates[0].content
-            or not chunk.candidates[0].content.parts
-        ):
-          break
-        func_response_parts = _extra_utils.get_function_response_parts(
-            chunk, function_map
-        )
-
-      if not function_map:
-        break
-      if not func_response_parts:
-        break
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
-
-      # Append function response parts to contents for the next request.
-      if chunk is not None and chunk.candidates is not None:
-        func_call_content = chunk.candidates[0].content
-        func_response_content = types.Content(
-            role='user',
-            parts=func_response_parts,
-        )
-        contents = t.t_contents(contents)  # type: ignore[assignment]
-        if not automatic_function_calling_history:
-          automatic_function_calling_history.extend(contents)  # type: ignore[arg-type]
-        if isinstance(contents, list) and func_call_content is not None:
-          contents.append(func_call_content)  # type: ignore[arg-type]
-          contents.append(func_response_content)  # type: ignore[arg-type]
-        if func_call_content is not None:
-          automatic_function_calling_history.append(func_call_content)
-        automatic_function_calling_history.append(func_response_content)
+    return
 
   @_common.experimental_warning(
       'The generate_images method is deprecated and will be removed in the '
@@ -8687,14 +8474,6 @@ class AsyncModels(_api_module.BaseModule):
       print(response.text)
       # J'aime les bagels.
     """
-    # Retrieve and cache any MCP sessions if provided.
-    incompatible_tools_indexes = (
-        _extra_utils.find_afc_incompatible_tool_indexes(
-            config,
-            is_agent_platform=getattr(self._api_client, 'vertexai', False),
-        )
-    )
-
     if not config:
       parsed_config = None
     elif isinstance(config, dict):
@@ -8762,108 +8541,9 @@ class AsyncModels(_api_module.BaseModule):
           )
       )
 
-      if _extra_utils.should_disable_afc(final_parsed_config):
-        return await self._generate_content(
-            model=model, contents=contents, config=final_parsed_config
-        )
-
-      if incompatible_tools_indexes:
-        original_tools_length = 0
-        if isinstance(config, types.GenerateContentConfig):
-          if config.tools:
-            original_tools_length = len(config.tools)
-        elif isinstance(config, dict):
-          tools = config.get('tools', [])
-          if tools:
-            original_tools_length = len(tools)
-        if len(incompatible_tools_indexes) != original_tools_length:
-          indices_str = ', '.join(map(str, incompatible_tools_indexes))
-          logger.warning(
-              'Tools at indices [%s] are not compatible with automatic function'
-              ' calling (AFC). AFC is disabled. If AFC is intended, please'
-              ' include python callables in the tool list, and do not include'
-              ' function declaration and MCP server in the tool list.',
-              indices_str,
-          )
-        return await self._generate_content(
-            model=model, contents=contents, config=final_parsed_config
-        )
-
-      remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
-          final_parsed_config
+      return await self._generate_content(
+          model=model, contents=contents, config=final_parsed_config
       )
-      logger.info(
-          f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
-      )
-      automatic_function_calling_history: list[types.Content] = []
-      response = types.GenerateContentResponse()
-
-      while remaining_remote_calls_afc > 0:
-        function_map = _extra_utils.get_function_map(
-            final_parsed_config,
-            mcp_to_genai_tool_adapters,
-            is_caller_method_async=True,
-        )
-        final_parsed_config_to_call = (
-            final_parsed_config.model_copy(deep=True)
-            if final_parsed_config
-            else None
-        )
-        if function_map:
-          final_parsed_config_to_call = _extra_utils.get_usage_header(
-              final_parsed_config_to_call,
-              types.GenerateContentConfig,
-              usage='afc',
-          )
-        response = await self._generate_content(
-            model=model, contents=contents, config=final_parsed_config_to_call
-        )
-        remaining_remote_calls_afc -= 1
-        if remaining_remote_calls_afc == 0:
-          logger.info(
-              'Reached max remote calls for automatic function calling.'
-          )
-
-        if not function_map:
-          break
-        if not response:
-          break
-        if (
-            not response.candidates
-            or not response.candidates[0].content
-            or not response.candidates[0].content.parts
-        ):
-          break
-        func_response_parts = (
-            await _extra_utils.get_function_response_parts_async(
-                response, function_map
-            )
-        )
-        if not func_response_parts:
-          break
-        func_call_content = response.candidates[0].content
-        func_response_content = types.Content(
-            role='user',
-            parts=func_response_parts,
-        )
-        contents = t.t_contents(contents)  # type: ignore[assignment]
-        if not automatic_function_calling_history:
-          automatic_function_calling_history.extend(contents)  # type: ignore[arg-type]
-        if isinstance(contents, list):
-          contents.append(func_call_content)  # type: ignore[arg-type]
-          contents.append(func_response_content)  # type: ignore[arg-type]
-        automatic_function_calling_history.append(func_call_content)
-        automatic_function_calling_history.append(func_response_content)
-
-      if (
-          _extra_utils.should_append_afc_history(final_parsed_config)
-          and response is not None
-      ):
-        response.automatic_function_calling_history = (
-            automatic_function_calling_history
-        )
-
-      return response
 
   async def generate_content_stream(
       self,
@@ -8937,13 +8617,6 @@ class AsyncModels(_api_module.BaseModule):
     else:
       parsed_config = config.model_copy(deep=True)
 
-    incompatible_tools_indexes = (
-        _extra_utils.find_afc_incompatible_tool_indexes(
-            parsed_config,
-            is_agent_platform=getattr(self._api_client, 'vertexai', False),
-        )
-    )
-
     async def stream_generator():  # type: ignore[no-untyped-def]
       # Use AsyncExitStack to keep MCP connections alive across the entire stream
       async with contextlib.AsyncExitStack() as stack:
@@ -9001,161 +8674,12 @@ class AsyncModels(_api_module.BaseModule):
             )
         )
 
-        if _extra_utils.should_disable_afc(final_parsed_config):
-          response = await self._generate_content_stream(
-              model=model, contents=contents, config=final_parsed_config
-          )
-          async for chunk in response:  # type: ignore[attr-defined]
-            yield chunk
-          return
-
-        if incompatible_tools_indexes:
-          original_tools_length = 0
-          if isinstance(config, types.GenerateContentConfig):
-            if config.tools:
-              original_tools_length = len(config.tools)
-          elif isinstance(config, dict):
-            tools = config.get('tools', [])
-            if tools:
-              original_tools_length = len(tools)
-          if len(incompatible_tools_indexes) != original_tools_length:
-            indices_str = ', '.join(map(str, incompatible_tools_indexes))
-            logger.warning(
-                'Tools at indices [%s] are not compatible with automatic'
-                ' function calling (AFC). AFC is disabled. If AFC is intended,'
-                ' please include python callables in the tool list, and do not'
-                ' include function declaration and MCP server in the tool'
-                ' list.',
-                indices_str,
-            )
-          response = await self._generate_content_stream(
-              model=model, contents=contents, config=final_parsed_config
-          )
-          async for chunk in response:  # type: ignore[attr-defined]
-            yield chunk
-          return
-
-        _extra_utils.raise_error_for_afc_incompatible_config(
-            final_parsed_config
+        response = await self._generate_content_stream(
+            model=model, contents=contents, config=final_parsed_config
         )
-
-        remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
-            final_parsed_config
-        )
-        logger.info(
-            'AFC is enabled with max remote calls:'
-            f' {remaining_remote_calls_afc}.'
-        )
-        automatic_function_calling_history: list[types.Content] = []
-        func_response_parts = None
-        chunk = None
-        i = 0
-        loop_contents = contents
-
-        while remaining_remote_calls_afc > 0:
-
-          function_map = _extra_utils.get_function_map(
-              final_parsed_config,
-              mcp_to_genai_tool_adapters,
-              is_caller_method_async=True,
-          )
-
-          final_parsed_config_to_call = (
-              final_parsed_config.model_copy(deep=True)
-              if final_parsed_config
-              else None
-          )
-          if function_map:
-            final_parsed_config_to_call = _extra_utils.get_usage_header(
-                final_parsed_config_to_call,
-                types.GenerateContentConfig,
-                usage='afc',
-            )
-
-          i += 1
-
-          response = await self._generate_content_stream(
-              model=model,
-              contents=loop_contents,
-              config=final_parsed_config_to_call,
-          )
-
-          if i > 1:
-            logger.info(f'AFC remote call {i} is done.')
-          remaining_remote_calls_afc -= 1
-          if i > 1 and remaining_remote_calls_afc == 0:
-            logger.info(
-                'Reached max remote calls for automatic function calling.'
-            )
-
-          if i == 1:
-            async for chunk in response:  # type: ignore[attr-defined]
-              if not function_map:
-                loop_contents = _extra_utils.append_chunk_contents(
-                    loop_contents, chunk
-                )
-                yield chunk
-              else:
-                if (
-                    not chunk.candidates
-                    or not chunk.candidates[0].content
-                    or not chunk.candidates[0].content.parts
-                ):
-                  break
-                func_response_parts = (
-                    await _extra_utils.get_function_response_parts_async(
-                        chunk, function_map
-                    )
-                )
-                if not func_response_parts:
-                  loop_contents = _extra_utils.append_chunk_contents(
-                      loop_contents, chunk
-                  )
-                  yield chunk
-          else:
-            async for chunk in response:  # type: ignore[attr-defined]
-              if _extra_utils.should_append_afc_history(final_parsed_config):
-                chunk.automatic_function_calling_history = (
-                    automatic_function_calling_history
-                )
-              loop_contents = _extra_utils.append_chunk_contents(
-                  loop_contents, chunk
-              )
-              yield chunk
-            if (
-                chunk is None
-                or not chunk.candidates
-                or not chunk.candidates[0].content
-                or not chunk.candidates[0].content.parts
-            ):
-              break
-            func_response_parts = (
-                await _extra_utils.get_function_response_parts_async(
-                    chunk, function_map
-                )
-            )
-
-          if not function_map or not func_response_parts:
-            break
-
-          if chunk is None:
-            continue
-
-          # Append function response parts to contents for the next request.
-          func_call_content = chunk.candidates[0].content
-          func_response_content = types.Content(
-              role='user',
-              parts=func_response_parts,
-          )
-          loop_contents = t.t_contents(loop_contents)  # type: ignore[assignment]
-          if not automatic_function_calling_history:
-            automatic_function_calling_history.extend(loop_contents)  # type: ignore[arg-type]
-          if isinstance(loop_contents, list) and func_call_content is not None:
-            loop_contents.append(func_call_content)  # type: ignore[arg-type]
-            loop_contents.append(func_response_content)  # type: ignore[arg-type]
-          if func_call_content is not None:
-            automatic_function_calling_history.append(func_call_content)
-          automatic_function_calling_history.append(func_response_content)
+        async for chunk in response:  # type: ignore[attr-defined]
+          yield chunk
+        return
 
     return stream_generator()  # type: ignore[no-untyped-call, no-any-return]
 

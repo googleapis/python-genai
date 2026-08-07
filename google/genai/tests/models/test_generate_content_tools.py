@@ -513,6 +513,10 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex='only supported in Gemini Developer API mode',
+        skip_in_private=(
+            'disabled_safety_policies parameter is supported on Vertex AI in'
+            ' Private SDK'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_computer_use_multi_turn',
@@ -684,6 +688,10 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex=(
             'parameter is only supported in Gemini Developer API mode'
         ),
+        skip_in_private=(
+            'include_server_side_tool_invocations parameter is supported on'
+            ' Vertex AI in Private SDK'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_include_server_side_tool_invocations_with_tool_call_echo',
@@ -757,15 +765,10 @@ pytestmark = [
         test_method='models.generate_content',
         test_table=test_table,
     ),
-    pytest.mark.skipif(
-        "config.getoption('--private')",
-        reason='ComputerUse on Vertex API behaves differently between public and private modules.',
-    ),
 ]
 pytest_plugins = ('pytest_asyncio',)
 
 
-# Cannot be included in test_table because json serialization fails on function.
 def test_function_google_search(client):
   contents = 'What is the price of GOOG?.'
   config = types.GenerateContentConfig(
@@ -779,15 +782,18 @@ def test_function_google_search(client):
           function_calling_config=types.FunctionCallingConfig(mode='AUTO')
       ),
   )
-  # bad request to combine function call and google search retrieval
-  with pytest.raises(errors.ClientError):
+  with pytest_helper.exception_if_mldev(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-3.5-flash',
+        model='gemini-3.1-pro-preview',
         contents=contents,
         config=config,
     )
 
 
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="include_server_side_tool_invocations is supported on Vertex AI in Private SDK",
+)
 def test_function_google_search_server_side_tool_invocations(client):
   contents = (
       'What is the weather in Buenos Aires? If it is raining, schedule a'
@@ -823,6 +829,10 @@ def test_function_google_search_server_side_tool_invocations(client):
     )
 
 
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="include_server_side_tool_invocations is supported on Vertex AI in Private SDK",
+)
 def test_function_google_search_server_side_tool_invocations_one_tool(client):
   contents = (
       'What is the weather in Buenos Aires? If it is raining, schedule a'
@@ -870,635 +880,14 @@ def test_google_search_stream(client):
     pass
 
 
-@pytest.mark.skipif(
-    sys.version_info >= (3, 13),
-    reason=(
-        'object type is dumped as <Type.OBJECT: "OBJECT"> as opposed to'
-        ' "OBJECT" in Python 3.13'
-    ),
-)
 def test_function_calling_without_implementation(client):
   response = client.models.generate_content(
-      model='gemini-2.5-flash',
+      model='gemini-3.1-pro-preview',
       contents='What is the weather in Boston?',
       config={
           'tools': [get_weather_declaration_only],
-          'automatic_function_calling': {'ignore_call_history': True},
       },
   )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_2_function(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
-      config={
-          'tools': [get_weather, get_stock_price],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  assert '1000' in response.text
-  assert 'Boston' in response.text
-  assert 'sunny' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-@pytest.mark.asyncio
-async def test_2_function_async(client):
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
-      config={
-          'tools': [get_weather, get_stock_price],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  assert '1000' in response.text
-  assert 'Boston' in response.text
-  assert 'sunny' in response.text
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_customized_math_rule(client):
-  def customized_divide_integers(numerator: int, denominator: int) -> int:
-    """Divide two integers with customized math rule."""
-    return numerator // denominator + 1
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [customized_divide_integers],
-      },
-  )
-  assert '501' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert '500' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_with_async_function(client):
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1001.0/2.0?',
-      config={
-          'tools': [divide_floats_async],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert '500.5' in response.text
-
-
-def test_automatic_function_calling_stream(client):
-  response = client.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  chunks = 0
-  for part in response:
-    chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
-
-
-def test_disable_automatic_function_calling_stream(client):
-  # If AFC is disabled, the response should contain a function call.
-  response = client.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'disable': True},
-      },
-  )
-  chunks = 0
-  for chunk in response:
-    chunks += 1
-    assert chunk.parts[0].function_call is not None
-
-
-def test_automatic_function_calling_no_function_response_stream(client):
-  response = client.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the weather in Boston?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  chunks = 0
-  for part in response:
-    chunks += 1
-    assert part.text is not None or part.candidates[0].finish_reason
-
-
-@pytest.mark.asyncio
-async def test_disable_automatic_function_calling_stream_async(client):
-  # If AFC is disabled, the response should contain a function call.
-  response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'disable': True},
-      },
-  )
-  chunks = 0
-  async for chunk in response:
-    chunks += 1
-    assert chunk.parts[0].function_call is not None
-
-
-@pytest.mark.asyncio
-async def test_automatic_function_calling_no_function_response_stream_async(
-    client,
-):
-  response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the weather in Boston?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  chunks = 0
-  async for chunk in response:
-    chunks += 1
-    assert chunk.text is not None or chunk.candidates[0].finish_reason
-
-
-@pytest.mark.asyncio
-async def test_automatic_function_calling_stream_async(client):
-  response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  chunks = 0
-  async for chunk in response:
-    chunks += 1
-    assert chunk.text is not None or chunk.candidates[0].finish_reason
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_disable_afc(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': True,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_disable_afc_with_max_remote_calls(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': True,
-              'maximum_remote_calls': 2,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_disable_afc_with_max_remote_calls_negative(
-    client,
-):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': True,
-              'maximum_remote_calls': -1,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_disable_afc_with_max_remote_calls_zero(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': True,
-              'maximum_remote_calls': 0,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_enable_afc(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': False,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_enable_afc_with_max_remote_calls(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': False,
-              'maximum_remote_calls': 2,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_enable_afc_with_max_remote_calls_negative(
-    client,
-):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': False,
-              'maximum_remote_calls': -1,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_callable_tools_user_enable_afc_with_max_remote_calls_zero(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': False,
-              'maximum_remote_calls': 0,
-              'ignore_call_history': True,
-          },
-      },
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_exception(client):
-  client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/0?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_float_without_decimal(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000.0/2.0?',
-      config={
-          'tools': [divide_floats, divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert '500.0' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_pydantic_model(client):
-  class CityObject(pydantic.BaseModel):
-    city_name: str
-
-  def get_weather_pydantic_model(
-      city_object: CityObject, is_winter: bool
-  ) -> str:
-    if is_winter:
-      return f'The weather in {city_object.city_name} is cold and 10 degrees.'
-    else:
-      return f'The weather in {city_object.city_name} is sunny and 100 degrees.'
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='it is winter now, what is the weather in Boston?',
-      config={
-          'tools': [get_weather_pydantic_model],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert 'cold' in response.text and 'Boston' in response.text
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_pydantic_model_in_list_type(client):
-  class CityObject(pydantic.BaseModel):
-    city_name: str
-
-  def get_weather_from_list_of_cities(
-      city_object_list: list[CityObject], is_winter: bool
-  ) -> str:
-    result = ''
-    if is_winter:
-      for city_object in city_object_list:
-        result += (
-            f'The weather in {city_object.city_name} is cold and 10 degrees.\n'
-        )
-    else:
-      for city_object in city_object_list:
-        result += (
-            f'The weather in {city_object.city_name} is sunny and 100'
-            ' degrees.\n'
-        )
-    return result
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='it is winter now, what is the weather in Boston and New York?',
-      config={
-          'tools': [get_weather_from_list_of_cities],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert 'cold' in response.text and 'Boston' in response.text
-  assert 'cold' in response.text and 'New York' in response.text
-
-
-@pytest.mark.skip(
-    reason=(
-        'AFC is in progress of refactoring, this test is failing python 3.14'
-        ' b/512415555 will update once refactoring from yyyu@ is done'
-    ),
-)
-def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
-  class AnimalObject(pydantic.BaseModel):
-    name: str
-    age: int
-    species: str
-
-  class PlantObject(pydantic.BaseModel):
-    name: str
-    height: float
-    color: str
-
-  def get_information(
-      object_of_interest: typing.Union[AnimalObject, PlantObject],
-  ) -> str:
-    if isinstance(object_of_interest, AnimalObject):
-      return (
-          f'The animal is of {object_of_interest.species} species and is named'
-          f' {object_of_interest.name} is {object_of_interest.age} years old'
-      )
-    elif isinstance(object_of_interest, PlantObject):
-      return (
-          f'The plant is named {object_of_interest.name} and is'
-          f' {object_of_interest.height} meters tall and is'
-          f' {object_of_interest.color} color'
-      )
-    else:
-      return 'The animal is not supported'
-
-  with pytest_helper.exception_if_vertex(client, errors.ClientError):
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=(
-            'I have a one year old cat named Sundae, can you get the'
-            ' information of the cat for me?'
-        ),
-        config={
-            'system_instruction': (
-                'you answer questions based on the tools provided'
-            ),
-            'tools': [get_information],
-            'automatic_function_calling': {'ignore_call_history': True},
-        },
-    )
-    assert 'Sundae' in response.text
-    assert 'cat' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_union_operator(client):
-  class AnimalObject(pydantic.BaseModel):
-    name: str
-    age: int
-    species: str
-
-  def get_information(
-      object_of_interest: str | AnimalObject,
-  ) -> str:
-    if isinstance(object_of_interest, AnimalObject):
-      return (
-          f'The animal is of {object_of_interest.species} species and is named'
-          f' {object_of_interest.name} is {object_of_interest.age} years old'
-      )
-    else:
-      return f'The object of interest is {object_of_interest}'
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents=(
-          'I have a one year old cat named Sundae, can you get the'
-          ' information of the cat for me?'
-      ),
-      config={
-          'tools': [get_information],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  assert response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_tuple_param(client):
-  def output_latlng(
-      latlng: tuple[float, float],
-  ) -> str:
-    return f'The latitude is {latlng[0]} and the longitude is {latlng[1]}'
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents=(
-          'The coordinates are (51.509, -0.118). What is the latitude and longitude?'
-      ),
-      config={
-          'tools': [output_latlng],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  assert response.text
-
-
-@pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason='| is only supported in Python 3.10 and above.',
-)
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_union_operator_return_type(client):
-  def get_cheese_age(cheese: int) -> int | float:
-    """
-    Retrieves data about the age of the cheese given its ID.
-
-    Args:
-        cheese_id: The ID of the cheese.
-
-    Returns:
-        An int or float of the age of the cheese.
-    """
-    if cheese == 1:
-      return 2.5
-    elif cheese == 2:
-      return 3
-    else:
-      return 0.0
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='How old is the cheese with id 2?',
-      config={
-          'tools': [get_cheese_age],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  assert '3' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_parameterized_generic_union_type(
-    client,
-):
-  def describe_cities(
-      country: str,
-      cities: typing.Optional[list[str]] = None,
-  ) -> str:
-    'Given a country and an optional list of cities, describe the cities.'
-    if cities is None:
-      return 'There are no cities to describe.'
-    else:
-      return (
-          f'The cities in {country} are: {", ".join(cities)} and they are nice.'
-      )
-
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='Can you describe the city of San Francisco, USA?',
-      config={
-          'tools': [describe_cities],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-  assert 'San Francisco' in response.text
 
 
 @pytest.mark.asyncio
@@ -1522,19 +911,13 @@ def test_empty_tools(client):
   )
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
 def test_with_1_empty_tool(client):
-  # Bad request for empty tool.
   with pytest_helper.exception_if_vertex(client, errors.ClientError):
     client.models.generate_content(
-        model='gemini-2.5-flash',
+        model='gemini-3.1-pro-preview',
         contents='What is the price of GOOG?.',
         config={
             'tools': [{}, get_stock_price],
-            'automatic_function_calling': {'ignore_call_history': True},
         },
     )
 
@@ -1589,383 +972,6 @@ async def test_vai_search_stream_async(client):
     assert 'retrieval' in str(e)
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_automatic_function_calling_with_coroutine_function(client):
-  async def divide_integers(a: int, b: int) -> int:
-    return a // b
-
-  with pytest.raises(errors.UnsupportedFunctionError):
-    client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents='what is the result of 1000/2?',
-        config={
-            'tools': [divide_integers],
-            'automatic_function_calling': {'ignore_call_history': True},
-        },
-    )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_with_coroutine_function_async(
-    client,
-):
-  async def divide_integers(a: int, b: int) -> int:
-    return a // b
-
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert '500' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_async(client):
-  def divide_integers(a: int, b: int) -> int:
-    return a // b
-
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert '500' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_exception(client):
-  def mystery_function(a: int, b: int) -> int:
-    return a // b
-
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/0?',
-      config={
-          'tools': [divide_integers],
-          'system_instruction': (
-              'you must first look at the tools and then think about answers'
-          ),
-      },
-  )
-  assert response.automatic_function_calling_history
-  assert (
-      response.automatic_function_calling_history[-1]
-      .parts[0]
-      .function_response.response['error']
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_async_float_without_decimal(client):
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000.0/2.0?',
-      config={
-          'tools': [divide_floats, divide_integers],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert '500.0' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_pydantic_model(client):
-  class CityObject(pydantic.BaseModel):
-    city_name: str
-
-  def get_weather_pydantic_model(
-      city_object: CityObject, is_winter: bool
-  ) -> str:
-    if is_winter:
-      return f'The weather in {city_object.city_name} is cold and 10 degrees.'
-    else:
-      return f'The weather in {city_object.city_name} is sunny and 100 degrees.'
-
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='it is winter now, what is the weather in Boston?',
-      config={
-          'tools': [get_weather_pydantic_model],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  # ML Dev couldn't understand pydantic model
-  if client.vertexai:
-    assert 'cold' in response.text and 'Boston' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
-)
-@pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_async_function(client):
-  async def get_current_weather_async(city: str) -> str:
-    """Returns the current weather in the city."""
-
-    return 'windy'
-
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the weather in San Francisco?',
-      config={
-          'tools': [get_current_weather_async],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  assert 'windy' in response.text
-  assert 'San Francisco' in response.text
-
-
-@pytest.mark.asyncio
-async def test_automatic_function_calling_async_with_async_function_stream(
-    client,
-):
-  async def get_current_weather_async(city: str) -> str:
-    """Returns the current weather in the city."""
-
-    return 'windy'
-
-  response = await client.aio.models.generate_content_stream(
-      model='gemini-2.5-flash',
-      contents='what is the weather in San Francisco?',
-      config={
-          'tools': [get_current_weather_async],
-          'automatic_function_calling': {'ignore_call_history': True},
-      },
-  )
-
-  chunk = None
-  async for chunk in response:
-    if chunk.parts[0].function_call:
-      assert chunk.parts[0].function_call.name == 'get_current_weather_async'
-      assert chunk.parts[0].function_call.args['city'] == 'San Francisco'
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_2_function_with_history(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
-      config={
-          'tools': [get_weather, get_stock_price],
-          'automatic_function_calling': {'ignore_call_history': False},
-      },
-  )
-
-  actual_history = response.automatic_function_calling_history
-
-  assert actual_history[0].role == 'user'
-  assert (
-      actual_history[0].parts[0].text
-      == 'What is the price of GOOG? And what is the weather in Boston?'
-  )
-
-  assert actual_history[1].role == 'model'
-  assert actual_history[1].parts[0].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_stock_price',
-      args={'symbol': 'GOOG'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[1].parts[1].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_weather',
-      args={'city': 'Boston'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-
-  assert actual_history[2].role == 'user'
-  assert actual_history[2].parts[0].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_stock_price', response={'result': '1000'}
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[2].parts[1].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_weather',
-      response={'result': 'The weather in Boston is sunny and 100 degrees.'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
-)
-@pytest.mark.asyncio
-async def test_2_function_with_history_async(client):
-  response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='What is the price of GOOG? And what is the weather in Boston?',
-      config={
-          'tools': [get_weather, get_stock_price],
-          'automatic_function_calling': {'ignore_call_history': False},
-      },
-  )
-
-  actual_history = response.automatic_function_calling_history
-
-  assert actual_history[0].role == 'user'
-  assert (
-      actual_history[0].parts[0].text
-      == 'What is the price of GOOG? And what is the weather in Boston?'
-  )
-
-  assert actual_history[1].role == 'model'
-  assert actual_history[1].parts[0].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_stock_price',
-      args={'symbol': 'GOOG'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[1].parts[1].function_call.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionCall(
-      name='get_weather',
-      args={'city': 'Boston'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-
-  assert actual_history[2].role == 'user'
-  assert actual_history[2].parts[0].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_stock_price', response={'result': '1000'}
-  ).model_dump_json(
-      exclude_none=True
-  )
-  assert actual_history[2].parts[1].function_response.model_dump_json(
-      exclude_none=True
-  ) == types.FunctionResponse(
-      name='get_weather',
-      response={'result': 'The weather in Boston is sunny and 100 degrees.'},
-  ).model_dump_json(
-      exclude_none=True
-  )
-
-
-class FunctionHolder:
-  NAME = 'FunctionHolder'
-
-  def is_a_duck(self, number: int) -> str:
-    return self.NAME + 'says isOdd: ' + str(number % 2 == 1)
-
-  def is_a_rabbit(self, number: int) -> str:
-    return self.NAME + 'says isEven: ' + str(number % 2 == 0)
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_class_method_tools(client):
-  # This test is to make sure that instance method tools can be used in
-  # the generate_content request.
-
-  function_holder = FunctionHolder()
-  response = client.models.generate_content(
-      model='gemini-2.0-flash-exp',
-      contents=(
-          'Print the verbatim output of is_a_duck and is_a_rabbit for the'
-          ' number 100.'
-      ),
-      config={
-          'tools': [function_holder.is_a_duck, function_holder.is_a_rabbit],
-      },
-  )
-  assert 'FunctionHolder' in response.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_disable_afc_in_any_mode(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config=types.GenerateContentConfig(
-          tools=[divide_integers],
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
-              disable=True
-          ),
-          tool_config=types.ToolConfig(
-              function_calling_config=types.FunctionCallingConfig(mode='ANY')
-          ),
-      ),
-  )
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_afc_once_in_any_mode(client):
-  response = client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config=types.GenerateContentConfig(
-          tools=[divide_integers],
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
-              maximum_remote_calls=2
-          ),
-          tool_config=types.ToolConfig(
-              function_calling_config=types.FunctionCallingConfig(mode='ANY')
-          ),
-      ),
-  )
-
-
 def test_code_execution_tool(client):
   response = client.models.generate_content(
       model='gemini-2.0-flash-exp',
@@ -1985,64 +991,18 @@ def test_code_execution_tool(client):
   )
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_afc_logs_to_logger_instance(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='google_genai.models')
-  client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': False,
-              'maximum_remote_calls': 1,
-              'ignore_call_history': True,
-          },
-      },
-  )
-  for log in caplog.records:
-    assert log.levelname == 'INFO'
-    assert log.name == 'google_genai.models'
-
-  assert 'AFC is enabled with max remote calls: 1' in caplog.text
-  assert 'remote call 1 is done' in caplog.text
-  assert 'Reached max remote calls' in caplog.text
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
-def test_suppress_logs_with_sdk_logger(client, caplog):
-  caplog.set_level(logging.DEBUG, logger='google_genai.models')
-  sdk_logger = logging.getLogger('google_genai.models')
-  sdk_logger.setLevel(logging.ERROR)
-  client.models.generate_content(
-      model='gemini-2.5-flash',
-      contents='what is the result of 1000/2?',
-      config={
-          'tools': [divide_integers],
-          'automatic_function_calling': {
-              'disable': False,
-              'maximum_remote_calls': 2,
-              'ignore_call_history': True,
-          },
-      },
-  )
-  assert not caplog.text
-
-
 def test_tools_chat_curation(client, caplog):
   caplog.set_level(logging.DEBUG, logger='google_genai.models')
   sdk_logger = logging.getLogger('google_genai.models')
   sdk_logger.setLevel(logging.ERROR)
 
-  config = {
-      'tools': [{'function_declarations': function_declarations}],
-  }
+  config = types.ChatConfig(
+      tools=[
+          types.Tool(
+              function_declarations=function_declarations,
+          )
+      ],
+  )
 
   chat = client.chats.create(
       model='gemini-2.5-flash',
@@ -2061,13 +1021,9 @@ def test_tools_chat_curation(client, caplog):
   assert len(history) == 4
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
 def test_function_declaration_with_callable(client):
   response = client.models.generate_content(
-      model='gemini-2.5-pro',
+      model='gemini-3.1-pro-preview',
       contents=(
           'Divide 1000 by 2. And tell'
           ' me the weather in London.'
@@ -2084,7 +1040,7 @@ def test_function_declaration_with_callable(client):
 
 def test_function_declaration_with_callable_stream_now(client):
   for chunk in client.models.generate_content_stream(
-      model='gemini-2.5-pro',
+      model='gemini-3.1-pro-preview',
       contents='Divide 1000 by 2. And tell me the weather in London.',
       config={
           'tools': [
@@ -2099,7 +1055,7 @@ def test_function_declaration_with_callable_stream_now(client):
 @pytest.mark.asyncio
 async def test_function_declaration_with_callable_async(client):
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-pro',
+      model='gemini-3.1-pro-preview',
       contents=(
           'Divide 1000 by 2. And tell'
           ' me the weather in London.'
@@ -2117,7 +1073,7 @@ async def test_function_declaration_with_callable_async(client):
 @pytest.mark.asyncio
 async def test_function_declaration_with_callable_async_stream(client):
     async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.5-pro',
+        model='gemini-3.1-pro-preview',
         contents='Divide 1000 by 2. And tell me the weather in London.',
         config={
             'tools': [
