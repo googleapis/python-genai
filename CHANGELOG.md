@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.18.0](https://github.com/googleapis/python-genai/compare/v2.17.0...v2.18.0) (2026-08-07)
+
+
+### Features
+
+* Add interaction_status to LiveServerContent ([66e224c](https://github.com/googleapis/python-genai/commit/66e224c39c9527e0fef3a4f049ac33ec941e2f99))
+* **api:** Make the deferred service tier publicly available on Vertex ([e1f7c40](https://github.com/googleapis/python-genai/commit/e1f7c40f0a831f25ee71294fc8c195576d5fd126))
+* Enable json schema in FunctionDeclaration parser ([62d50d6](https://github.com/googleapis/python-genai/commit/62d50d6f172da5d6efa30838ab92da95b1327b5e))
+
 ## [2.16.0](https://github.com/googleapis/python-genai/compare/v2.15.0...v2.16.0) (2026-07-29)
 
 
