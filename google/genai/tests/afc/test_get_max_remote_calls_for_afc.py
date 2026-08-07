@@ -26,28 +26,16 @@ def test_config_is_none():
 
 
 def test_afc_unset_max_unset():
-  assert get_max_remote_calls_afc(types.GenerateContentConfig()) == 10
+  with pytest.raises(ValueError):
+    get_max_remote_calls_afc(types.ChatConfig()) == 10
 
 
 def test_afc_unset_max_set():
-  assert (
-      get_max_remote_calls_afc(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  maximum_remote_calls=20,
-              ),
-          )
-      )
-      == 20
-  )
-
-
-def test_afc_disabled_max_unset():
   with pytest.raises(ValueError):
       get_max_remote_calls_afc(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  disable=True,
+          types.ChatConfig(
+              automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                  maximum_remote_calls=20,
               ),
           )
       )
@@ -56,8 +44,8 @@ def test_afc_disabled_max_unset():
 def test_afc_disabled_max_set():
   with pytest.raises(ValueError):
     get_max_remote_calls_afc(
-        types.GenerateContentConfig(
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+        types.ChatConfig(
+            automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
                 disable=True,
                 maximum_remote_calls=20,
             ),
@@ -68,9 +56,9 @@ def test_afc_disabled_max_set():
 def test_afc_d_max_unset():
   assert (
       get_max_remote_calls_afc(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  disable=False,
+          types.ChatConfig(
+              automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                  enable=True,
               ),
           )
       )
@@ -81,9 +69,9 @@ def test_afc_d_max_unset():
 def test_afc_d_max_set():
   assert (
       get_max_remote_calls_afc(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  disable=False,
+          types.ChatConfig(
+              automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                  enable=True,
                   maximum_remote_calls=5,
               ),
           )
@@ -95,8 +83,8 @@ def test_afc_d_max_set():
 def test_afc_enabled_max_set_to_zero():
   with pytest.raises(ValueError):
     get_max_remote_calls_afc(
-        types.GenerateContentConfig(
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+        types.ChatConfig(
+          automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
                 disable=False,
                 maximum_remote_calls=0,
             ),
@@ -107,8 +95,8 @@ def test_afc_enabled_max_set_to_zero():
 def test_afc_enabled_max_set_to_negative():
   with pytest.raises(ValueError):
     get_max_remote_calls_afc(
-        types.GenerateContentConfig(
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+        types.ChatConfig(
+            automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
                 disable=False,
                 maximum_remote_calls=-1,
             ),
@@ -119,9 +107,9 @@ def test_afc_enabled_max_set_to_negative():
 def test_afc_enabled_max_set_to_float():
   assert (
       get_max_remote_calls_afc(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  disable=False,
+          types.ChatConfig(
+              automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                  enable=True,
                   maximum_remote_calls=5.0,
               ),
           )

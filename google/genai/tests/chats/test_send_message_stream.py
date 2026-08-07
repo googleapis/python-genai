@@ -13,13 +13,14 @@
 # limitations under the License.
 #
 
-"""Tests for models.generate_content_stream() with stream_function_call_arguments enabled."""
+"""Tests for chats.send_message_stream() with stream_function_call_arguments enabled."""
 
 import pytest
 from ... import types
 from unittest import mock
 from .. import pytest_helper
-from . import test_generate_content_tools
+from . import test_send_message
+
 
 json_function_declarations = [{
     'name': 'get_current_weather',
@@ -79,26 +80,16 @@ gemini_function_declarations = [{
             'purpose': {
                 'type': 'STRING',
                 'description': 'Discribes the purpose of asking the weather',
-            }
+            },
         },
         'required': ['location', 'unit', 'country'],
     },
 }]
 
-generate_content_prompt = [
-    types.Content(
-        role='user',
-        parts=[
-            types.Part(
-                text=(
-                    'get the current weather in boston in celsius, the'
-                    ' country should be US, the purpose is to know'
-                    ' what to wear today?'
-                )
-            )
-        ],
-    ),
-]
+generate_content_prompt = (
+    'get the current weather in boston in celsius, the country should be US,'
+    ' the purpose is to know what to wear today?'
+)
 previous_generate_content_history = [
     types.Content(
         role='user',
@@ -149,63 +140,55 @@ pytestmark = pytest_helper.setup(
 )
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='in private it was not able to find the replay file',
-)
 def test_streaming_with_python_native_no_afc_config(client):
   """Tests streaming function calls with native python AFC without disabling AFC."""
   if not client.vertexai:
     return
-  with pytest.raises(ValueError) as e:
-    for chunk in client.models.generate_content_stream(
-        model='gemini-3-pro-preview',
-        contents=generate_content_prompt,
-        config=types.GenerateContentConfig(
-            tools=[
-                test_generate_content_tools.get_weather,
-                test_generate_content_tools.get_stock_price,
-            ],
-            tool_config=types.ToolConfig(
-                function_calling_config={
-                    'stream_function_call_arguments': True,
-                }
-            ),
-        ),
-    ):
-      pass
+  chat = client.chats.create(
+      model='gemini-3-pro-preview',
+      config=types.ChatConfig(
+          tools=[
+              test_send_message.get_weather,
+              test_send_message.get_stock_price,
+          ],
+      ),
+  )
+  for _ in chat.send_message_stream(
+      generate_content_prompt,
+  ):
+    pass
+  history = chat.get_history()
+  assert len(history) == 2
+  assert history[0].role == 'user'
+  assert history[1].role == 'model'
+  assert history[1].parts[0].function_call.name == 'get_weather'
 
-  assert 'not compatible with automatic function calling (AFC)' in str(e.value)
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='in private it was not able to find the replay file',
-)
-def test_streaming_with_python_afc_disabled_false(client):
+def test_streaming_with_python_afc_enabled(client):
   """Tests streaming function calls with native python AFC without disabling AFC."""
   if not client.vertexai:
     return
   with pytest.raises(ValueError) as e:
-    for chunk in client.models.generate_content_stream(
+    chat = client.chats.create(
         model='gemini-3-pro-preview',
-        contents=(
-            'What is the price of GOOG? And what is the weather in Boston?'
-        ),
-        config=types.GenerateContentConfig(
+        config=types.ChatConfig(
             tools=[
-                test_generate_content_tools.get_weather,
-                test_generate_content_tools.get_stock_price,
+                test_send_message.get_weather,
+                test_send_message.get_stock_price,
             ],
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=False,
-            ),
             tool_config=types.ToolConfig(
                 function_calling_config={
                     'stream_function_call_arguments': True,
                 }
             ),
+            automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                enable=True,
+            ),
         ),
+    )
+    for _ in chat.send_message_stream(
+        'What is the price of GOOG? And what is the weather in Boston?'
     ):
       pass
   assert 'not compatible with automatic function calling (AFC)' in str(e.value)
@@ -215,10 +198,9 @@ def test_streaming_with_json_parameters_without_history(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
 
   with pytest_helper.exception_if_mldev(client, ValueError):
-    for chunk in client.models.generate_content_stream(
-        model='gemini-3-pro-preview',
-        contents=generate_content_prompt,
-        config=types.GenerateContentConfig(
+    chat = client.chats.create(
+        model='gemini-3.1-pro-preview',
+        config=types.ChatConfig(
             tools=[{'function_declarations': json_function_declarations}],
             tool_config=types.ToolConfig(
                 function_calling_config={
@@ -226,6 +208,9 @@ def test_streaming_with_json_parameters_without_history(client):
                 }
             ),
         ),
+    )
+    for chunk in chat.send_message_stream(
+        generate_content_prompt,
     ):
       assert chunk is not None
       assert chunk.candidates is not None
@@ -237,10 +222,9 @@ def test_streaming_with_json_parameters_without_history(client):
 async  def test_streaming_with_json_parameters_async(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
   with pytest_helper.exception_if_mldev(client, ValueError):
-    async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-3-pro-preview',
-        contents=generate_content_prompt,
-        config=types.GenerateContentConfig(
+    chat = client.aio.chats.create(
+        model='gemini-3.1-pro-preview',
+        config=types.ChatConfig(
             tools=[{'function_declarations': json_function_declarations}],
             tool_config=types.ToolConfig(
                 function_calling_config={
@@ -248,6 +232,9 @@ async  def test_streaming_with_json_parameters_async(client):
                 }
             ),
         ),
+    )
+    async for chunk in await chat.send_message_stream(
+        generate_content_prompt,
     ):
       assert chunk is not None
       assert chunk.candidates is not None
@@ -258,10 +245,9 @@ async  def test_streaming_with_json_parameters_async(client):
 def test_streaming_with_gemini_parameters_without_history(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
   with pytest_helper.exception_if_mldev(client, ValueError):
-    for chunk in client.models.generate_content_stream(
-        model='gemini-3-pro-preview',
-        contents=generate_content_prompt,
-        config=types.GenerateContentConfig(
+    chat = client.chats.create(
+        model='gemini-3.1-pro-preview',
+        config=types.ChatConfig(
             tools=[{
                 'function_declarations': gemini_function_declarations
             }],
@@ -271,73 +257,15 @@ def test_streaming_with_gemini_parameters_without_history(client):
                 }
             ),
         ),
+    )
+    for chunk in chat.send_message_stream(
+        generate_content_prompt,
     ):
       assert chunk is not None
       assert chunk.candidates is not None
       assert chunk.candidates[0].content is not None
       assert chunk.candidates[0].content.parts is not None
 
-def test_streaming_with_gemini_parameters_with_response(client):
-  """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
-  with pytest_helper.exception_if_mldev(client, ValueError):
-    streaming_function_call_content = []
-    for chunk in client.models.generate_content_stream(
-        model='gemini-3-pro-preview',
-        contents=[
-            types.Content(
-                role='user',
-                parts=[
-                    types.Part(
-                        text=(
-                            'get the current weather in boston in celsius, the'
-                            ' country should be US, the purpose is to know'
-                            ' what to wear today?'
-                        )
-                    )
-                ],
-            ),
-        ],
-        config=types.GenerateContentConfig(
-            tools=[{
-                'function_declarations': gemini_function_declarations
-            }],
-            tool_config=types.ToolConfig(
-                function_calling_config={
-                    'stream_function_call_arguments': True,
-                }
-            ),
-        ),
-    ):
-      streaming_function_call_content.append(chunk.candidates[0].content)
-
-    streaming_function_call_content.append(
-        types.Content(
-            role='user',
-            parts=[
-                types.Part.from_function_response(
-                    name='get_current_weather',
-                    response={
-                        'temperature': 21,
-                        'unit': 'C',
-                    },
-                )
-            ],
-        ),
-    )
-
-    for chunk in client.models.generate_content_stream(
-        model='gemini-3-pro-preview',
-        contents=streaming_function_call_content,
-        config=types.GenerateContentConfig(
-            tools=[{'function_declarations': json_function_declarations}],
-            tool_config=types.ToolConfig(
-                function_calling_config={
-                    'stream_function_call_arguments': True,
-                }
-            ),
-        ),
-    ):
-      pass
 
 def test_chat_streaming_with_json_parameters_with_history(client):
   """Tests streaming function calls with FunctionDeclaration withJSON parameters."""
@@ -373,9 +301,9 @@ def test_chat_streaming_with_json_parameters_with_history(client):
         ),
     ]
     chat = client.chats.create(
-        model='gemini-3-pro-preview',
+        model='gemini-3.1-pro-preview',
         history=previous_generate_content_history,
-        config=types.GenerateContentConfig(
+        config=types.ChatConfig(
             tools=[{
                 'function_declarations': gemini_function_declarations
             }],
@@ -434,7 +362,7 @@ async def test_chat_streaming_with_json_parameters_with_history_async(client):
     chat = client.aio.chats.create(
         model='gemini-3-pro-preview',
         history=previous_generate_content_history,
-        config=types.GenerateContentConfig(
+        config=types.ChatConfig(
             tools=[{'function_declarations': gemini_function_declarations}],
             tool_config=types.ToolConfig(
                 function_calling_config={

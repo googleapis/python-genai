@@ -14,21 +14,34 @@
 #
 
 from collections.abc import Iterator
+import contextlib
+import logging
+import pydantic
+from pydantic import BaseModel
 import sys
-from typing import AsyncIterator, Awaitable, Optional, Union, get_args
+from typing import Any, AsyncIterator,  get_args, Optional, Union
 
-
+from . import errors
 from . import _extra_utils
 from . import _transformers as t
 from . import types
-from .models import AsyncModels, Models
-from .types import Content, ContentOrDict, GenerateContentConfigOrDict, GenerateContentResponse, Part, PartUnionDict
+from .models import AsyncModels
+from .models import Models
+from .types import ChatConfig
+from .types import Content
+from .types import ContentOrDict
+from .types import GenerateContentConfig
+from .types import GenerateContentResponse
+from .types import Part
+from .types import PartUnionDict
 
 
 if sys.version_info >= (3, 10):
   from typing import TypeGuard
 else:
   from typing_extensions import TypeGuard
+
+logger = logging.getLogger("google_genai.chats")
 
 
 def _validate_content(content: Content) -> bool:
@@ -104,6 +117,21 @@ def _extract_curated_history(
   return curated_history
 
 
+def _extract_generate_content_config(
+    chat_config: Optional[ChatConfig] = None,
+) -> Optional[GenerateContentConfig]:
+  """Slices a ChatConfig instance to a GenerateContentConfig instance.
+  """
+  if not chat_config:
+    return None
+
+  generate_content_config_kwargs = {
+      field: getattr(chat_config, field)
+      for field in GenerateContentConfig.model_fields
+  }
+  return GenerateContentConfig(**generate_content_config_kwargs)
+
+
 class _BaseChat:
   """Base chat session."""
 
@@ -111,13 +139,13 @@ class _BaseChat:
       self,
       *,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
       history: list[ContentOrDict],
   ):
     self._model = model
-    self._config = _extra_utils.get_usage_header(
-        config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
-    )
+    self._config: ChatConfig = _extra_utils.get_usage_header(
+        config, types.ChatConfig, usage="chat"
+    )  # type: ignore[assignment]
     content_models = []
     for content in history:
       if not isinstance(content, Content):
@@ -136,7 +164,6 @@ class _BaseChat:
       self,
       user_input: Content,
       model_output: list[Content],
-      automatic_function_calling_history: list[Content],
       is_valid: bool,
   ) -> None:
     """Records the chat history.
@@ -147,20 +174,10 @@ class _BaseChat:
       user_input: The user's input content.
       model_output: A list of `Content` from the model's response. This can be
         an empty list if the model produced no output.
-      automatic_function_calling_history: A list of `Content` representing the
-        history of automatic function calls, including the user input as the
-        first entry.
       is_valid: A boolean flag indicating whether the current model output is
         considered valid.
     """
-    input_contents = (
-        # Because the AFC input contains the entire curated chat history in
-        # addition to the new user input, we need to truncate the AFC history
-        # to deduplicate the existing chat history.
-        automatic_function_calling_history[len(self._curated_history) :]
-        if automatic_function_calling_history
-        else [user_input]
-    )
+    input_contents = [user_input]
     # Appends an empty content when model returns empty response, so that the
     # history is always alternating between user and model.
     output_contents = (
@@ -214,7 +231,7 @@ class Chat(_BaseChat):
       *,
       modules: Models,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
       history: list[ContentOrDict],
   ):
     self._modules = modules
@@ -227,7 +244,7 @@ class Chat(_BaseChat):
   def send_message(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns the model's response.
 
@@ -246,44 +263,149 @@ class Chat(_BaseChat):
       chat = client.chats.create(model='gemini-2.0-flash')
       response = chat.send_message('tell me a story')
     """
+    method_config = config if config else self._config
+    generate_content_config = _extract_generate_content_config(method_config)
+    parsed_config = _extra_utils.parse_config_for_mcp_usage(
+        generate_content_config
+    )
+    if (
+        parsed_config
+        and parsed_config.tools
+        and _extra_utils._mcp_utils.has_mcp_session_usage(parsed_config.tools)  # type: ignore[attr-defined]
+    ):
+      raise errors.UnsupportedFunctionError(
+          "MCP sessions are not supported in synchronous methods."
+      )
 
     if not _is_part_type(message):
       raise ValueError(
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(message)
-    method_config = config if config else self._config
-    method_config = _extra_utils.get_usage_header(
-        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
+
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(generate_content_config)
     )
-    response = self._modules.generate_content(
-        model=self._model,
-        contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-        config=method_config,
+    user_input = t.t_content(message)
+    contents_to_model = self._curated_history + [user_input]  # type: ignore[arg-type]
+    if not _extra_utils.should_enable_afc(method_config):
+      response = self._modules.generate_content(
+          model=self._model,
+          contents=contents_to_model,  # type: ignore[arg-type]
+          config=generate_content_config,
+      )
+      model_output = (
+          [response.candidates[0].content]
+          if response.candidates and response.candidates[0].content
+          else []
+      )
+      self.record_history(
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=_validate_response(response),
+      )
+      return response
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if method_config.tools:
+        original_tools_length = len(method_config.tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ", ".join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            "Tools at indices [%s] are not compatible with automatic"
+            " function calling (AFC). AFC is disabled. If AFC is"
+            " intended, please include python callables in the tool"
+            " list, and do not include function declaration and MCP"
+            " server in the tool list.",
+            indices_str,
+        )
+
+      response = self._modules.generate_content(
+          model=self._model,
+          contents=contents_to_model,  # type: ignore[arg-type]
+          config=generate_content_config,
+      )
+      model_output = (
+          [response.candidates[0].content]
+          if response.candidates and response.candidates[0].content
+          else []
+      )
+      self.record_history(
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=_validate_response(response),
+      )
+      return response
+    # AFC handling
+    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+        method_config
     )
+    logger.info(
+        f"AFC is enabled with max remote calls: {remaining_remote_calls_afc}."
+    )
+    response = types.GenerateContentResponse()
+    function_map = _extra_utils.get_function_map(generate_content_config)
+    i = 0
+    while remaining_remote_calls_afc > 0:
+      if function_map:
+        generate_content_config = _extra_utils.get_usage_header(
+            generate_content_config, types.GenerateContentConfig, usage="afc"
+        )
+      i += 1
+      response = self._modules.generate_content(
+          model=self._model,
+          contents=contents_to_model,  # type: ignore[arg-type]
+          config=generate_content_config,
+      )
+      if (
+          not function_map
+          or not response
+          or not response.candidates
+          or not response.candidates[0].content
+          or not response.candidates[0].content.parts
+      ):
+        break
+
+      func_response_parts = _extra_utils.get_function_response_parts(
+          response, function_map
+      )
+      if not func_response_parts:
+        break
+      logger.info(f"AFC remote call {i} is done.")
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        logger.info("Reached max remote calls for automatic function calling.")
+      func_call_content = response.candidates[0].content
+      func_response_content = types.Content(
+          role="user", parts=func_response_parts
+      )
+      contents_to_model.append(func_call_content)
+      contents_to_model.append(func_response_content)
+      model_output = [func_call_content]
+      self.record_history(
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=_validate_response(response),
+      )
+      user_input = func_response_content
+
     model_output = (
         [response.candidates[0].content]
         if response.candidates and response.candidates[0].content
         else []
     )
-    automatic_function_calling_history = (
-        response.automatic_function_calling_history
-        if response.automatic_function_calling_history
-        else []
-    )
     self.record_history(
-        user_input=input_content,
+        user_input=user_input,
         model_output=model_output,
-        automatic_function_calling_history=automatic_function_calling_history,
         is_valid=_validate_response(response),
     )
     return response
 
+
   def send_message_stream(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
   ) -> Iterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
@@ -304,45 +426,155 @@ class Chat(_BaseChat):
         print(chunk.text)
     """
 
+    method_config = config if config else self._config
+    generate_content_config = _extract_generate_content_config(method_config)
+    parsed_config = _extra_utils.parse_config_for_mcp_usage(
+        generate_content_config
+    )
+    if (
+        parsed_config
+        and parsed_config.tools
+        and _extra_utils._mcp_utils.has_mcp_session_usage(parsed_config.tools)  # type: ignore[attr-defined]
+    ):
+      raise errors.UnsupportedFunctionError(
+          "MCP sessions are not supported in synchronous methods."
+      )
     if not _is_part_type(message):
       raise ValueError(
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(message)
-    output_contents = []
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(generate_content_config)
+    )
+    user_input = t.t_content(message)
+    contents_to_model = self._curated_history + [user_input]  # type: ignore[arg-type]
+    model_output = []
     finish_reason = None
     is_valid = True
-    chunk = None
-    method_config = config if config else self._config
-    method_config = _extra_utils.get_usage_header(
-        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
+    enable_afc = _extra_utils.should_enable_afc(method_config)
+    if enable_afc and incompatible_tools_indexes:
+      original_tools_length = 0
+      if method_config.tools:
+        original_tools_length = len(method_config.tools)
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ", ".join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            "Tools at indices [%s] are not compatible with automatic"
+            " function calling (AFC). AFC is disabled. If AFC is"
+            " intended, please include python callables in the tool"
+            " list, and do not include function declaration and MCP"
+            " server in the tool list.",
+            indices_str,
+        )
+      enable_afc = False
+
+    if not enable_afc:
+      if isinstance(self._modules, Models):
+        for chunk in self._modules.generate_content_stream(
+            model=self._model,
+            contents=contents_to_model,  # type: ignore[arg-type]
+            config=generate_content_config,
+        ):
+          if not _validate_response(chunk):
+            is_valid = False
+          if chunk.candidates and chunk.candidates[0].content:
+            model_output.append(chunk.candidates[0].content)
+          if chunk.candidates and chunk.candidates[0].finish_reason:
+            finish_reason = chunk.candidates[0].finish_reason
+          yield chunk
+        self.record_history(
+            user_input=user_input,
+            model_output=model_output,
+            is_valid=is_valid
+            and model_output is not None
+            and finish_reason is not None,
+        )
+      return
+
+    # AFC handling
+    _extra_utils.raise_error_for_afc_incompatible_config(method_config)
+    remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+        method_config
     )
+    logger.info(
+        f"AFC is enabled with max remote calls: {remaining_remote_calls_afc}."
+    )
+    function_map = _extra_utils.get_function_map(generate_content_config)
+    i = 0
     if isinstance(self._modules, Models):
-      for chunk in self._modules.generate_content_stream(
-          model=self._model,
-          contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-          config=method_config,
-      ):
-        if not _validate_response(chunk):
-          is_valid = False
-        if chunk.candidates and chunk.candidates[0].content:
-          output_contents.append(chunk.candidates[0].content)
-        if chunk.candidates and chunk.candidates[0].finish_reason:
-          finish_reason = chunk.candidates[0].finish_reason
-        yield chunk
-      automatic_function_calling_history = (
-          chunk.automatic_function_calling_history
-          if chunk is not None and chunk.automatic_function_calling_history
-          else []
-      )
+      while remaining_remote_calls_afc > 0:
+        i += 1
+        if function_map:
+          generate_content_config = _extra_utils.get_usage_header(
+              generate_content_config, types.GenerateContentConfig, usage="afc"
+          )
+        response_stream = self._modules.generate_content_stream(
+            model=self._model,
+            contents=contents_to_model,  # type: ignore[arg-type]
+            config=generate_content_config,
+        )
+
+        model_output = []
+        finish_reason = None
+        is_valid = True
+        func_response_parts = []
+        chunk = None  # type: ignore[assignment]
+
+        for chunk in response_stream:
+          if not _validate_response(chunk):
+            is_valid = False
+
+          if (
+              function_map
+              and chunk.candidates
+              and chunk.candidates[0].content
+              and chunk.candidates[0].content.parts
+          ):
+            chunk_func_response_parts = (
+                _extra_utils.get_function_response_parts(chunk, function_map)
+            )
+            if chunk_func_response_parts:
+              func_response_parts.extend(chunk_func_response_parts)
+
+          if chunk.candidates and chunk.candidates[0].content:
+            model_output.append(chunk.candidates[0].content)
+          if chunk.candidates and chunk.candidates[0].finish_reason:
+            finish_reason = chunk.candidates[0].finish_reason
+          yield chunk
+
+        if not function_map or not func_response_parts:
+          break
+
+        logger.info(f"AFC remote call {i} is done.")
+        remaining_remote_calls_afc -= 1
+        if remaining_remote_calls_afc == 0:
+          logger.info(
+              "Reached max remote calls for automatic function calling."
+          )
+
+        if chunk and chunk.candidates and chunk.candidates[0].content:
+          func_response_content = types.Content(
+              role="user", parts=func_response_parts
+          )
+          contents_to_model.extend(model_output)
+          contents_to_model.append(func_response_content)
+
+          self.record_history(
+              user_input=user_input,
+              model_output=model_output,
+              is_valid=is_valid,
+          )
+          user_input = func_response_content
+
       self.record_history(
-          user_input=input_content,
-          model_output=output_contents,
-          automatic_function_calling_history=automatic_function_calling_history,
-          is_valid=is_valid
-          and output_contents is not None
-          and finish_reason is not None,
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=bool(
+              is_valid
+              and model_output is not None
+              and finish_reason is not None
+          ),
       )
 
 
@@ -356,7 +588,7 @@ class Chats:
       self,
       *,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
       history: Optional[list[ContentOrDict]] = None,
   ) -> Chat:
     """Creates a new chat session.
@@ -385,7 +617,7 @@ class AsyncChat(_BaseChat):
       *,
       modules: AsyncModels,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
       history: list[ContentOrDict],
   ):
     self._modules = modules
@@ -398,7 +630,7 @@ class AsyncChat(_BaseChat):
   async def send_message(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns model's response.
 
@@ -417,43 +649,229 @@ class AsyncChat(_BaseChat):
       chat = client.aio.chats.create(model='gemini-2.0-flash')
       response = await chat.send_message('tell me a story')
     """
+    method_config = config if config else self._config
     if not _is_part_type(message):
       raise ValueError(
           f"Message must be a valid part type: {types.PartUnion} or"
           f" {types.PartUnionDict}, got {type(message)}"
       )
-    input_content = t.t_content(message)
-    method_config = config if config else self._config
-    method_config = _extra_utils.get_usage_header(
-        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
+
+    user_input = t.t_content(message)
+    contents_to_model = self._curated_history + [user_input]  # type: ignore[arg-type]
+
+    generate_content_config = _extract_generate_content_config(method_config)
+    if not _extra_utils.should_enable_afc(method_config):
+      response = await self._modules.generate_content(
+          model=self._model,
+          contents=contents_to_model,  # type: ignore[arg-type]
+          config=generate_content_config,
+      )
+      model_output = (
+          [response.candidates[0].content]
+          if response.candidates and response.candidates[0].content
+          else []
+      )
+      self.record_history(
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=_validate_response(response),
+      )
+      return response
+
+    incompatible_tools_indexes = (
+        _extra_utils.find_afc_incompatible_tool_indexes(
+            generate_content_config,
+            is_agent_platform=getattr(
+                self._modules._api_client, "vertexai", False
+            ),
+        )
     )
-    response = await self._modules.generate_content(
-        model=self._model,
-        contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-        config=method_config,
-    )
-    model_output = (
-        [response.candidates[0].content]
-        if response.candidates and response.candidates[0].content
-        else []
-    )
-    automatic_function_calling_history = (
-        response.automatic_function_calling_history
-        if response.automatic_function_calling_history
-        else []
-    )
-    self.record_history(
-        user_input=input_content,
-        model_output=model_output,
-        automatic_function_calling_history=automatic_function_calling_history,
-        is_valid=_validate_response(response),
-    )
-    return response
+
+    if not method_config:
+      parsed_config = None
+    else:
+      parsed_config = method_config.model_copy(deep=True)
+
+    if incompatible_tools_indexes:
+      original_tools_length = 0
+      if method_config.tools:
+        original_tools_length = len(method_config.tools)
+
+      if len(incompatible_tools_indexes) != original_tools_length:
+        indices_str = ", ".join(map(str, incompatible_tools_indexes))
+        logger.warning(
+            "Tools at indices [%s] are not compatible with automatic"
+            " function calling (AFC). AFC is disabled. If AFC is"
+            " intended, please include python callables in the tool"
+            " list, and do not include function declaration and MCP"
+            " server in the tool list.",
+            indices_str,
+        )
+
+      response = await self._modules.generate_content(
+          model=self._model,
+          contents=contents_to_model,  # type: ignore[arg-type]
+          config=generate_content_config,
+      )
+      model_output = (
+          [response.candidates[0].content]
+          if response.candidates and response.candidates[0].content
+          else []
+      )
+      self.record_history(
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=_validate_response(response),
+      )
+      return response
+
+    # AFC handling
+    async with contextlib.AsyncExitStack() as stack:
+      # Intercept Agent Platform MCP servers and open connections
+      if (
+          self._modules._api_client.vertexai
+          and _extra_utils.has_agent_platform_mcp_servers(
+              generate_content_config
+          )
+          and generate_content_config is not None
+      ):
+        new_tools: list[Any] = []
+        if generate_content_config.tools:
+          for tool in generate_content_config.tools:
+            if isinstance(tool, types.Tool) and tool.mcp_servers:
+              # Only keep the tool if it has fields besides mcp_servers
+              if (
+                  tool.function_declarations
+                  or tool.google_search
+                  or tool.retrieval
+                  or tool.google_search_retrieval
+                  or tool.code_execution
+              ):
+                tool_copy = tool.model_copy(update={'mcp_servers': None})
+                new_tools.append(tool_copy)
+
+              for server in tool.mcp_servers:
+                if (
+                    getattr(server, 'streamable_http_transport', None)
+                    is not None
+                ):
+                  raise ValueError(
+                      "The 'streamable_http_transport' parameter is only"
+                      ' supported in Gemini Developer API mode, not in Gemini'
+                      ' Enterprise Agent Platform mode.'
+                  )
+
+                # Open the stream and tie its lifespan to the AsyncExitStack
+                if server.name is not None:
+                  session = await stack.enter_async_context(
+                      _extra_utils._mcp_utils._connect_agent_platform_mcp(  # type: ignore[attr-defined]
+                          self._modules._api_client, server.name
+                      )
+                  )
+                  new_tools.append(session)
+                else:
+                  raise ValueError(
+                      "Agent Platform MCP servers require a 'name' field."
+                  )
+            else:
+              new_tools.append(tool)
+          generate_content_config.tools = new_tools
+
+      # Convert active sessions to tools and adapters
+      final_generate_content_config, mcp_to_genai_tool_adapters = (
+          await _extra_utils.parse_config_for_mcp_sessions(
+              generate_content_config,
+              is_agent_platform=getattr(
+                  self._modules._api_client, "vertexai", False
+              ),
+          )
+      )
+      remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+          method_config
+      )
+
+      logger.info(
+          f"AFC is enabled with max remote calls: {remaining_remote_calls_afc}."
+      )
+
+      response = types.GenerateContentResponse()
+      function_map = _extra_utils.get_function_map(
+          final_generate_content_config,
+          mcp_to_genai_tool_adapters,
+          is_caller_method_async=True,
+      )
+
+      i = 0
+      while remaining_remote_calls_afc > 0:
+        if function_map:
+          final_generate_content_config = _extra_utils.get_usage_header(
+              final_generate_content_config,
+              types.GenerateContentConfig,
+              usage="afc",
+          )
+        i += 1
+        response = await self._modules.generate_content(
+            model=self._model,
+            contents=contents_to_model,  # type: ignore[arg-type]
+            config=final_generate_content_config,
+        )
+        if (
+            not function_map
+            or not response
+            or not response.candidates
+            or not response.candidates[0].content
+            or not response.candidates[0].content.parts
+        ):
+          break
+
+        func_response_parts = (
+            await _extra_utils.get_function_response_parts_async(
+                response, function_map
+            )
+        )
+        if not func_response_parts:
+          break
+
+        logger.info(f"AFC remote call {i} is done.")
+        remaining_remote_calls_afc -= 1
+        if remaining_remote_calls_afc == 0:
+          logger.info(
+              "Reached max remote calls for automatic function calling."
+          )
+
+        func_call_content = response.candidates[0].content
+        func_response_content = types.Content(
+            role="user", parts=func_response_parts
+        )
+
+        contents_to_model.append(func_call_content)
+        contents_to_model.append(func_response_content)
+
+        model_output = [func_call_content]
+        self.record_history(
+            user_input=user_input,
+            model_output=model_output,
+            is_valid=_validate_response(response),
+        )
+        user_input = func_response_content
+
+      model_output = (
+          [response.candidates[0].content]
+          if response.candidates and response.candidates[0].content
+          else []
+      )
+      self.record_history(
+          user_input=user_input,
+          model_output=model_output,
+          is_valid=_validate_response(response),
+      )
+      return response
+
 
   async def send_message_stream(
       self,
       message: Union[list[PartUnionDict], PartUnionDict],
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
   ) -> AsyncIterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
@@ -473,7 +891,6 @@ class AsyncChat(_BaseChat):
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
-
     if not _is_part_type(message):
       raise ValueError(
           f"Message must be a valid part type: {types.PartUnion} or"
@@ -481,40 +898,225 @@ class AsyncChat(_BaseChat):
       )
     input_content = t.t_content(message)
 
-    method_config = config if config else self._config
-    method_config = _extra_utils.get_usage_header(
-        method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
-    )
-
     async def async_generator():  # type: ignore[no-untyped-def]
-      output_contents = []
-      finish_reason = None
-      is_valid = True
-      chunk = None
-      async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
-          model=self._model,
-          contents=self._curated_history + [input_content],  # type: ignore[arg-type]
-          config=method_config,
-      ):
-        if not _validate_response(chunk):
-          is_valid = False
-        if chunk.candidates and chunk.candidates[0].content:
-          output_contents.append(chunk.candidates[0].content)
-        if chunk.candidates and chunk.candidates[0].finish_reason:
-          finish_reason = chunk.candidates[0].finish_reason
-        yield chunk
-
-      if not output_contents or finish_reason is None:
-        is_valid = False
-
-      self.record_history(
-          user_input=input_content,
-          model_output=output_contents,
-          automatic_function_calling_history=chunk.automatic_function_calling_history
-          if chunk is not None and chunk.automatic_function_calling_history
-          else [],
-          is_valid=is_valid,
+      method_config = config if config else self._config
+      generate_content_config = _extract_generate_content_config(method_config)
+      parsed_generate_content_config = _extra_utils.parse_config_for_mcp_usage(
+          generate_content_config
       )
+      enable_afc = _extra_utils.should_enable_afc(method_config)
+      incompatible_tools_indexes = (
+          _extra_utils.find_afc_incompatible_tool_indexes(
+              parsed_generate_content_config,
+              is_agent_platform=getattr(
+                  self._modules._api_client, "vertexai", False
+              ),
+          )
+      )
+      user_input = input_content
+      contents_to_model = self._curated_history + [user_input]  # type: ignore[arg-type]
+      if enable_afc and incompatible_tools_indexes:
+        original_tools_length = 0
+        if method_config.tools:
+          original_tools_length = len(method_config.tools)
+        if len(incompatible_tools_indexes) != original_tools_length:
+          indices_str = ", ".join(map(str, incompatible_tools_indexes))
+          logger.warning(
+              "Tools at indices [%s] are not compatible with automatic"
+              " function calling (AFC). AFC is disabled. If AFC is"
+              " intended, please include python callables in the tool"
+              " list, and do not include function declaration and MCP"
+              " server in the tool list.",
+              indices_str,
+          )
+        enable_afc = False
+
+      if not enable_afc:
+        output_contents = []
+        finish_reason = None
+        is_valid = True
+        async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
+            model=self._model,
+            contents=contents_to_model,  # type: ignore[arg-type]
+            config=parsed_generate_content_config,
+        ):
+          if not _validate_response(chunk):
+            is_valid = False
+          if chunk.candidates and chunk.candidates[0].content:
+            output_contents.append(chunk.candidates[0].content)
+          if chunk.candidates and chunk.candidates[0].finish_reason:
+            finish_reason = chunk.candidates[0].finish_reason
+          yield chunk
+
+        if not output_contents or finish_reason is None:
+          is_valid = False
+
+        self.record_history(
+            user_input=user_input,
+            model_output=output_contents,
+            is_valid=is_valid,
+        )
+        return
+
+      # AFC handling
+      _extra_utils.raise_error_for_afc_incompatible_config(
+          method_config
+      )
+      async with contextlib.AsyncExitStack() as stack:
+        # Intercept Agent Platform MCP servers and open connections
+        if (
+            self._modules._api_client.vertexai
+            and _extra_utils.has_agent_platform_mcp_servers(
+                parsed_generate_content_config,
+            )
+            and parsed_generate_content_config is not None
+        ):
+          new_tools: list[Any] = []
+          if parsed_generate_content_config.tools:
+            for tool in parsed_generate_content_config.tools:
+              if isinstance(tool, types.Tool) and tool.mcp_servers:
+                # Only keep the tool if it has fields besides mcp_servers
+                if (
+                    tool.function_declarations
+                    or tool.google_search
+                    or tool.retrieval
+                    or tool.google_search_retrieval
+                    or tool.code_execution
+                ):
+                  tool_copy = tool.model_copy(update={'mcp_servers': None})
+                  new_tools.append(tool_copy)
+
+                for server in tool.mcp_servers:
+                  if (
+                      getattr(server, 'streamable_http_transport', None)
+                      is not None
+                  ):
+                    raise ValueError(
+                        "The 'streamable_http_transport' parameter is only"
+                        ' supported in Gemini Developer API mode, not in Gemini'
+                        ' Enterprise Agent Platform mode.'
+                    )
+
+                  # Open the stream and tie its lifespan to the AsyncExitStack
+                  if server.name is not None:
+                    session = await stack.enter_async_context(
+                        _extra_utils._mcp_utils._connect_agent_platform_mcp(  # type: ignore[attr-defined]
+                            self._modules._api_client, server.name
+                        )
+                    )
+                    new_tools.append(session)
+                  else:
+                    raise ValueError(
+                        "Agent Platform MCP servers require a 'name' field."
+                    )
+              else:
+                new_tools.append(tool)
+            parsed_generate_content_config.tools = new_tools
+
+        # Convert active sessions to tools and adapters
+        final_parsed_generate_content_config, mcp_to_genai_tool_adapters = (
+            await _extra_utils.parse_config_for_mcp_sessions(
+                parsed_generate_content_config,
+                is_agent_platform=getattr(
+                    self._modules._api_client, "vertexai", False
+                ),
+            )
+        )
+
+        remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
+            method_config
+        )
+
+        logger.info(
+            "AFC is enabled with max remote calls:"
+            f" {remaining_remote_calls_afc}."
+        )
+
+        function_map = _extra_utils.get_function_map(
+            final_parsed_generate_content_config,
+            mcp_to_genai_tool_adapters,
+            is_caller_method_async=True,
+        )
+
+        i = 0
+        while remaining_remote_calls_afc > 0:
+          i += 1
+          if function_map:
+            final_parsed_generate_content_config = (
+                _extra_utils.get_usage_header(
+                    final_parsed_generate_content_config,
+                    types.GenerateContentConfig,
+                    usage="afc",
+                )
+            )
+          response_stream = await self._modules.generate_content_stream(
+              model=self._model,
+              contents=contents_to_model,  # type: ignore[arg-type]
+              config=final_parsed_generate_content_config,
+          )
+
+          model_output: list[types.Content] = []
+          finish_reason = None
+          is_valid = True
+          func_response_parts: list[types.Part] = []
+
+          async for chunk in response_stream:
+            if not _validate_response(chunk):
+              is_valid = False
+
+            if (
+                function_map
+                and chunk.candidates
+                and chunk.candidates[0].content
+                and chunk.candidates[0].content.parts
+            ):
+              chunk_func_response_parts = (
+                  await _extra_utils.get_function_response_parts_async(
+                      chunk, function_map
+                  )
+              )
+              if chunk_func_response_parts:
+                func_response_parts.extend(chunk_func_response_parts)
+
+            if chunk.candidates and chunk.candidates[0].content:
+              model_output.append(chunk.candidates[0].content)
+            if chunk.candidates and chunk.candidates[0].finish_reason:
+              finish_reason = chunk.candidates[0].finish_reason
+            yield chunk
+
+          if not function_map or not func_response_parts:
+            break
+
+          logger.info(f"AFC remote call {i} is done.")
+          remaining_remote_calls_afc -= 1
+          if remaining_remote_calls_afc == 0:
+            logger.info(
+                "Reached max remote calls for automatic function calling."
+            )
+
+          func_response_content = types.Content(
+              role="user", parts=func_response_parts
+          )
+
+          contents_to_model.extend(model_output)
+          contents_to_model.append(func_response_content)
+
+          self.record_history(
+              user_input=user_input,
+              model_output=model_output,
+              is_valid=is_valid,
+          )
+          user_input = func_response_content
+
+        self.record_history(
+            user_input=user_input,
+            model_output=model_output,
+            is_valid=bool(
+                is_valid
+                and model_output
+                and finish_reason is not None
+            ),
+        )
 
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 
@@ -529,7 +1131,7 @@ class AsyncChats:
       self,
       *,
       model: str,
-      config: Optional[GenerateContentConfigOrDict] = None,
+      config: Optional[ChatConfig] = None,
       history: Optional[list[ContentOrDict]] = None,
   ) -> AsyncChat:
     """Creates a new chat session.

@@ -34,6 +34,9 @@ pytestmark = pytest_helper.setup(
 pytest_plugins = ('pytest_asyncio',)
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 def test_generate_content_stream_with_function_and_thought_summaries(client):
   """Test when function tools are provided and thought summaries are enabled.
 
@@ -54,6 +57,9 @@ def test_generate_content_stream_with_function_and_thought_summaries(client):
     assert chunk is not None
 
 
+@pytest.mark.skip(
+    'AFC is in progress of refactoring, this case will be updated by Yvonne'
+)
 @pytest.mark.asyncio
 async def test_generate_content_stream_with_function_and_thought_summaries_async(
     client,

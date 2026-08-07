@@ -27,9 +27,9 @@ def test_config_is_none():
 
 def test_tool_config_config_unset():
   assert (
-      raise_error_for_afc_incompatible_config(types.GenerateContentConfig(
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
-              disable=False,
+      raise_error_for_afc_incompatible_config(types.ChatConfig(
+          automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+              enable=True,
               maximum_remote_calls=1,
           ),
       ))
@@ -39,9 +39,9 @@ def test_tool_config_config_unset():
 
 def test_function_calling_config_unset():
   assert (
-      raise_error_for_afc_incompatible_config(types.GenerateContentConfig(
-          automatic_function_calling=types.AutomaticFunctionCallingConfig(
-              disable=False,
+      raise_error_for_afc_incompatible_config(types.ChatConfig(
+          automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+              enable=True,
               maximum_remote_calls=1,
           ),
           tool_config=types.ToolConfig(),
@@ -50,14 +50,10 @@ def test_function_calling_config_unset():
   )
 
 
-
 def test_compatible_config_afc_disabled():
   assert (
       raise_error_for_afc_incompatible_config(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  disable=True,
-              ),
+          types.ChatConfig(
               tool_config=types.ToolConfig(
                   function_calling_config=types.FunctionCallingConfig(
                       stream_function_call_arguments=False,
@@ -72,7 +68,7 @@ def test_compatible_config_afc_disabled():
 def test_compatible_config_stream_function_call_arguments_unset_afc_unset():
   assert (
       raise_error_for_afc_incompatible_config(
-          types.GenerateContentConfig(
+          types.ChatConfig(
               tool_config=types.ToolConfig(
                   function_calling_config=types.FunctionCallingConfig(
                   ),
@@ -83,11 +79,12 @@ def test_compatible_config_stream_function_call_arguments_unset_afc_unset():
   )
 
 
-def test_compatible_config_stream_function_call_arguments_unset_no_disable_afc():
+def test_compatible_config_stream_function_call_arguments_unset_enable_afc_false():
   assert (
       raise_error_for_afc_incompatible_config(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          types.ChatConfig(
+              automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                  enable=False,
               ),
               tool_config=types.ToolConfig(
                   function_calling_config=types.FunctionCallingConfig(
@@ -102,9 +99,8 @@ def test_compatible_config_stream_function_call_arguments_unset_no_disable_afc()
 def test_compatible_config_stream_function_call_arguments_unset_disable_afc_true():
   assert (
       raise_error_for_afc_incompatible_config(
-          types.GenerateContentConfig(
-              automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                  disable=True,
+          types.ChatConfig(
+              automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
               ),
               tool_config=types.ToolConfig(
                   function_calling_config=types.FunctionCallingConfig(
@@ -119,9 +115,9 @@ def test_compatible_config_stream_function_call_arguments_unset_disable_afc_true
 def test_incompatible_config_stream_function_call_arguments_set_enable_afc():
   with pytest.raises(ValueError):
     raise_error_for_afc_incompatible_config(
-        types.GenerateContentConfig(
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=False,
+        types.ChatConfig(
+            automatic_function_calling_config=types.AutomaticFunctionCallingConfig(
+                enable=True,
             ),
             tool_config=types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
@@ -133,27 +129,13 @@ def test_incompatible_config_stream_function_call_arguments_set_enable_afc():
 
 
 def test_incompatible_config_stream_function_call_arguments_set_no_afc_config():
-  with pytest.raises(ValueError):
-    raise_error_for_afc_incompatible_config(
-        types.GenerateContentConfig(
+  assert raise_error_for_afc_incompatible_config(
+        types.ChatConfig(
             tool_config=types.ToolConfig(
                 function_calling_config=types.FunctionCallingConfig(
                     stream_function_call_arguments=True,
                 ),
             ),
         )
-    )
+    ) is None
 
-
-def test_incompatible_config_stream_function_call_arguments_set_no_disable_afc():
-  with pytest.raises(ValueError):
-    raise_error_for_afc_incompatible_config(
-        types.GenerateContentConfig(
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(),
-            tool_config=types.ToolConfig(
-                function_calling_config=types.FunctionCallingConfig(
-                    stream_function_call_arguments=True,
-                ),
-            ),
-        )
-    )
