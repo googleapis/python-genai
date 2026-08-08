@@ -20,7 +20,7 @@ import sys
 
 from importlib.metadata import PackageNotFoundError, version
 import typing
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 import google.auth
 from google.auth.transport.requests import Request
@@ -28,6 +28,11 @@ from google.auth.transport.requests import Request
 from . import _common
 from . import types
 from ._api_client import _MULTI_REGIONAL_LOCATIONS
+
+if sys.version_info >= (3, 10):
+  from typing import TypeGuard
+else:
+  from typing_extensions import TypeGuard
 
 def _is_mcp_loaded() -> bool:
   return "mcp" in sys.modules
@@ -42,6 +47,98 @@ else:
   McpTool: typing.Type = Any
   streamable_http_client: Any = None
   create_mcp_http_client: Any = None
+
+
+class AllowedToolsMcpSession:
+  """Wraps an MCP ``ClientSession`` with an allowlist of tool names.
+
+  Use :func:`with_allowed_tools` to construct instances. Filtering happens in
+  ``list_tools`` so function declarations and the AFC adapter map stay aligned.
+  """
+
+  def __init__(self, session: Any, allowed_tools: Sequence[str]):
+    if not allowed_tools:
+      raise ValueError(
+          'allowed_tools must be a non-empty sequence of tool names.'
+      )
+    self._session = session
+    self._allowed_tools = set(allowed_tools)
+
+  @property
+  def allowed_tools(self) -> set[str]:
+    return set(self._allowed_tools)
+
+  @property
+  def session(self) -> Any:
+    return self._session
+
+  async def list_tools(self) -> Any:
+    """Returns session tools filtered to the allowlist."""
+    try:
+      from mcp import types as mcp_types
+    except ImportError as e:
+      raise ImportError(
+          'The mcp package is required to use with_allowed_tools.'
+      ) from e
+
+    result = await self._session.list_tools()
+    available = {tool.name for tool in result.tools}
+    missing = sorted(self._allowed_tools - available)
+    if missing:
+      raise ValueError(
+          'allowed_tools includes tool names not provided by the MCP session:'
+          f' {missing}. Available tools: {sorted(available)}.'
+      )
+    filtered = [
+        tool for tool in result.tools if tool.name in self._allowed_tools
+    ]
+    return mcp_types.ListToolsResult(tools=filtered)
+
+  async def call_tool(
+      self,
+      name: str,
+      arguments: Optional[dict[str, Any]] = None,
+  ) -> Any:
+    """Calls a tool on the underlying session if it is allowlisted."""
+    if name not in self._allowed_tools:
+      raise ValueError(
+          f'Tool {name!r} is not in allowed_tools'
+          f' {sorted(self._allowed_tools)}.'
+      )
+    return await self._session.call_tool(
+        name=name, arguments=arguments if arguments is not None else {}
+    )
+
+
+def with_allowed_tools(
+    session: Any, allowed_tools: Sequence[str]
+) -> AllowedToolsMcpSession:
+  """Returns an MCP session wrapper that exposes only ``allowed_tools``.
+
+  Example::
+
+    from google.genai import mcp as genai_mcp
+
+    config = types.GenerateContentConfig(
+        tools=[genai_mcp.with_allowed_tools(session, ['tool_a', 'tool_b'])],
+    )
+  """
+  return AllowedToolsMcpSession(session, allowed_tools)
+
+
+def is_mcp_client_session(
+    obj: Any,
+) -> TypeGuard[Union[McpClientSession, AllowedToolsMcpSession]]:
+  """Returns True if ``obj`` is an MCP ClientSession or allowlist wrapper."""
+  if isinstance(obj, AllowedToolsMcpSession):
+    return True
+  if not _is_mcp_loaded():
+    return False
+  try:
+    from mcp import ClientSession as _McpClientSession
+  except ImportError:
+    return False
+  return isinstance(obj, _McpClientSession)
 
 def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
   """Translates an MCP tool to a Google GenAI tool."""
@@ -83,32 +180,26 @@ def mcp_to_gemini_tools(
 
 def has_mcp_tool_usage(tools: types.ToolListUnion) -> bool:
   """Checks whether the list of tools contains any MCP tools or sessions."""
+  for tool in tools:
+    if is_mcp_client_session(tool):
+      return True
   if not _is_mcp_loaded():
     return False
   try:
-    from mcp import ClientSession as _McpClientSession
     from mcp.types import Tool as _McpTool
   except ImportError:
-    _McpClientSession = type('DummySession', (), {})  # type: ignore
     _McpTool = type('DummyTool', (), {})  # type: ignore
 
   for tool in tools:
-    if isinstance(tool, _McpTool) or isinstance(tool, _McpClientSession):
+    if isinstance(tool, _McpTool):
       return True
   return False
 
 
 def has_mcp_session_usage(tools: types.ToolListUnion) -> bool:
   """Checks whether the list of tools contains any MCP sessions."""
-  if not _is_mcp_loaded():
-    return False
-  try:
-    from mcp import ClientSession as _McpClientSession
-  except ImportError:
-    _McpClientSession = type('DummySession', (), {})  # type: ignore
-
   for tool in tools:
-    if isinstance(tool, _McpClientSession):
+    if is_mcp_client_session(tool):
       return True
   return False
 

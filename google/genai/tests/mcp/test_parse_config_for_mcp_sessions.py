@@ -16,6 +16,7 @@
 import _asyncio
 import pytest
 from ... import _extra_utils
+from ... import mcp as genai_mcp
 from ... import types
 from ..._adapters import McpToGenAiToolAdapter
 
@@ -32,6 +33,41 @@ except ImportError as e:
     ) from e
   else:
     raise e
+
+
+class MockMcpClientSession(McpClientSession):
+  """Shared mock session with two weather tools."""
+
+  def __init__(self):
+    self._read_stream = None
+    self._write_stream = None
+    self.call_tool_names = []
+
+  async def list_tools(self):
+    return mcp_types.ListToolsResult(
+        tools=[
+            mcp_types.Tool(
+                name='get_weather',
+                description='Get the weather in a city.',
+                inputSchema={
+                    'type': 'object',
+                    'properties': {'location': {'type': 'string'}},
+                },
+            ),
+            mcp_types.Tool(
+                name='get_weather_2',
+                description='Different tool to get the weather.',
+                inputSchema={
+                    'type': 'object',
+                    'properties': {'location': {'type': 'string'}},
+                },
+            ),
+        ]
+    )
+
+  async def call_tool(self, name, arguments=None):
+    self.call_tool_names.append(name)
+    return mcp_types.CallToolResult(content=[])
 
 
 @pytest.mark.asyncio
@@ -59,35 +95,6 @@ async def test_parse_empty_config_object():
 @pytest.mark.asyncio
 async def test_parse_config_object_with_tools():
   """Test conversion of GenerateContentConfig with tools to parsed config."""
-
-  class MockMcpClientSession(McpClientSession):
-
-    def __init__(self):
-      self._read_stream = None
-      self._write_stream = None
-
-    async def list_tools(self):
-      return mcp_types.ListToolsResult(
-          tools=[
-              mcp_types.Tool(
-                  name='get_weather',
-                  description='Get the weather in a city.',
-                  inputSchema={
-                      'type': 'object',
-                      'properties': {'location': {'type': 'string'}},
-                  },
-              ),
-              mcp_types.Tool(
-                  name='get_weather_2',
-                  description='Different tool to get the weather.',
-                  inputSchema={
-                      'type': 'object',
-                      'properties': {'location': {'type': 'string'}},
-                  },
-              ),
-          ]
-      )
-
   mock_session_instance = MockMcpClientSession()
   config = types.GenerateContentConfig(tools=[mock_session_instance])
   parsed_config, mcp_to_genai_tool_adapters = (
@@ -107,6 +114,55 @@ async def test_parse_config_object_with_tools():
   assert isinstance(
       mcp_to_genai_tool_adapters['get_weather_2'], McpToGenAiToolAdapter
   )
+
+
+@pytest.mark.asyncio
+async def test_parse_config_with_allowed_tools_filters_adapters_and_fds():
+  """Allowlist keeps only named tools in FDs and AFC adapter keys."""
+  mock_session = MockMcpClientSession()
+  wrapped = genai_mcp.with_allowed_tools(mock_session, ['get_weather'])
+  config = types.GenerateContentConfig(tools=[wrapped])
+  parsed_config, mcp_to_genai_tool_adapters = (
+      await _extra_utils.parse_config_for_mcp_sessions(config)
+  )
+  assert mcp_to_genai_tool_adapters.keys() == {'get_weather'}
+  assert isinstance(
+      mcp_to_genai_tool_adapters['get_weather'], McpToGenAiToolAdapter
+  )
+  names = []
+  for tool in parsed_config.tools or []:
+    if tool.function_declarations:
+      for fd in tool.function_declarations:
+        names.append(fd.name)
+  assert names == ['get_weather']
+
+
+@pytest.mark.asyncio
+async def test_parse_config_with_unknown_allowed_tool_raises():
+  mock_session = MockMcpClientSession()
+  wrapped = genai_mcp.with_allowed_tools(
+      mock_session, ['get_weather', 'not_a_real_tool']
+  )
+  config = types.GenerateContentConfig(tools=[wrapped])
+  with pytest.raises(ValueError, match='not_a_real_tool'):
+    await _extra_utils.parse_config_for_mcp_sessions(config)
+
+
+def test_empty_allowed_tools_raises():
+  mock_session = MockMcpClientSession()
+  with pytest.raises(ValueError, match='non-empty'):
+    genai_mcp.with_allowed_tools(mock_session, [])
+
+
+@pytest.mark.asyncio
+async def test_allowed_tools_call_tool_rejects_disallowed_name():
+  mock_session = MockMcpClientSession()
+  wrapped = genai_mcp.with_allowed_tools(mock_session, ['get_weather'])
+  with pytest.raises(ValueError, match='get_weather_2'):
+    await wrapped.call_tool(name='get_weather_2', arguments={})
+  assert mock_session.call_tool_names == []
+  await wrapped.call_tool(name='get_weather', arguments={'location': 'SF'})
+  assert mock_session.call_tool_names == ['get_weather']
 
 
 @pytest.mark.asyncio
