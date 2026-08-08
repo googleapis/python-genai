@@ -3844,9 +3844,9 @@ class _IpythonUtils:
     import sys
 
     if 'IPython' in sys.modules:
-      from IPython import get_ipython
+      from IPython import get_ipython  # type: ignore[attr-defined]
 
-      return get_ipython().__class__.__name__
+      return get_ipython().__class__.__name__  # type: ignore[no-untyped-call]
     return ''
 
   @staticmethod
@@ -3964,10 +3964,10 @@ class _IpythonUtils:
         </script>
     """
 
-    from IPython.display import display
-    from IPython.display import HTML
+    from IPython.display import display  # type: ignore[attr-defined]
+    from IPython.display import HTML  # type: ignore[attr-defined]
 
-    display(HTML(html))
+    display(HTML(html))  # type: ignore[no-untyped-call]
 
   @staticmethod
   def display_experiment_button(experiment: str, project: str) -> None:
