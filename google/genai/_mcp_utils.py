@@ -131,6 +131,9 @@ def _filter_to_supported_schema(
     schema: _common.StringDict,
 ) -> _common.StringDict:
   """Filters the schema to only include fields that are supported by JSONSchema."""
+  if not isinstance(schema, dict):
+    return schema
+
   supported_fields: set[str] = set(types.JSONSchema.model_fields.keys())
 
   supported_fields.update([
