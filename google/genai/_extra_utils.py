@@ -360,55 +360,101 @@ def get_function_response_parts(
   return func_response_parts
 
 
+def should_run_afc_concurrently(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> bool:
+  """Returns whether async AFC should execute function calls concurrently."""
+  if not config:
+    return False
+  config_model = _create_generate_content_config_model(config)
+  if not config_model.automatic_function_calling:
+    return False
+  return bool(config_model.automatic_function_calling.run_concurrently)
+
+
+async def _execute_function_call_async(
+    part: types.Part,
+    function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]],
+) -> Optional[types.Part]:
+  """Executes a single function_call part and returns its response part."""
+  if not part.function_call:
+    return None
+  func_name = part.function_call.name
+  if func_name is None:
+    return None
+  func = function_map[func_name]
+  # Treat None as an empty dictionary for execution
+  raw_args = (
+      part.function_call.args if part.function_call.args is not None else {}
+  )
+  args = convert_number_values_for_dict_function_call_args(raw_args)
+  func_response: _common.StringDict
+  try:
+    if isinstance(func, McpToGenAiToolAdapter):
+      mcp_tool_response = await func.call_tool(
+          types.FunctionCall(name=func_name, args=args)
+      )
+      if mcp_tool_response.isError:
+        func_response = {'error': mcp_tool_response}
+      else:
+        func_response = {'result': mcp_tool_response}
+    elif inspect.iscoroutinefunction(func):
+      func_response = {
+          'result': await invoke_function_from_dict_args_async(args, func)
+      }
+    else:
+      func_response = {
+          'result': await asyncio.to_thread(
+              invoke_function_from_dict_args, args, func
+          )
+      }
+  except Exception as e:  # pylint: disable=broad-except
+    func_response = {'error': str(e)}
+  return types.Part.from_function_response(
+      name=func_name, response=func_response
+  )
+
+
 async def get_function_response_parts_async(
     response: types.GenerateContentResponse,
     function_map: dict[str, Union[Callable[..., Any], McpToGenAiToolAdapter]],
+    config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> list[types.Part]:
-  """Returns the function response parts from the response."""
-  func_response_parts = []
+  """Returns the function response parts from the response.
+
+  When ``AutomaticFunctionCallingConfig.run_concurrently`` is True, multiple
+  function calls from the same model response are executed concurrently via
+  ``asyncio.gather`` (order of response parts matches the call order).
+  """
   if (
-      response.candidates is not None
-      and isinstance(response.candidates[0].content, types.Content)
-      and response.candidates[0].content.parts is not None
+      response.candidates is None
+      or not isinstance(response.candidates[0].content, types.Content)
+      or response.candidates[0].content.parts is None
   ):
-    for part in response.candidates[0].content.parts:
-      if not part.function_call:
-        continue
-      func_name = part.function_call.name
-      if func_name is not None:
-        func = function_map[func_name]
-        # Treat None as an empty dictionary for execution
-        raw_args = (
-            part.function_call.args
-            if part.function_call.args is not None
-            else {}
-        )
-        args = convert_number_values_for_dict_function_call_args(raw_args)
-        try:
-          if isinstance(func, McpToGenAiToolAdapter):
-            mcp_tool_response = await func.call_tool(
-                types.FunctionCall(name=func_name, args=args)
-            )
-            if mcp_tool_response.isError:
-              func_response = {'error': mcp_tool_response}
-            else:
-              func_response = {'result': mcp_tool_response}
-          elif inspect.iscoroutinefunction(func):
-            func_response = {
-                'result': await invoke_function_from_dict_args_async(args, func)
-            }
-          else:
-            func_response = {
-                'result': await asyncio.to_thread(
-                    invoke_function_from_dict_args, args, func
-                )
-            }
-        except Exception as e:  # pylint: disable=broad-except
-          func_response = {'error': str(e)}  # type: ignore[dict-item]
-        func_response_part = types.Part.from_function_response(
-            name=func_name, response=func_response
-        )
-        func_response_parts.append(func_response_part)
+    return []
+
+  function_call_parts = [
+      part
+      for part in response.candidates[0].content.parts
+      if part.function_call and part.function_call.name is not None
+  ]
+  if not function_call_parts:
+    return []
+
+  if should_run_afc_concurrently(config):
+    results = await asyncio.gather(
+        *[
+            _execute_function_call_async(part, function_map)
+            for part in function_call_parts
+        ]
+    )
+    return [part for part in results if part is not None]
+
+  func_response_parts: list[types.Part] = []
+  for part in function_call_parts:
+    func_response_part = await _execute_function_call_async(part, function_map)
+    if func_response_part is not None:
+      func_response_parts.append(func_response_part)
   return func_response_parts
 
 
