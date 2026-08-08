@@ -7632,6 +7632,10 @@ class GroundingChunk(_common.BaseModel):
   the source of the information.
   """
 
+  chunk_metadata: Optional[dict[str, Any]] = Field(
+      default=None,
+      description="""Metadata for this grounding chunk.""",
+  )
   image: Optional[GroundingChunkImage] = Field(
       default=None,
       description="""A grounding chunk from an image search result. See the `Image` message for details.""",
@@ -7661,6 +7665,9 @@ class GroundingChunkDict(TypedDict, total=False):
   is enabled, the model returns a `GroundingChunk` that contains a reference to
   the source of the information.
   """
+
+  chunk_metadata: Optional[dict[str, Any]]
+  """Metadata for this grounding chunk."""
 
   image: Optional[GroundingChunkImageDict]
   """A grounding chunk from an image search result. See the `Image` message for details."""
