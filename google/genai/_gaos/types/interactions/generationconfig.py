@@ -19,6 +19,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from .imageconfig import ImageConfig, ImageConfigParam
+from .speakerconfig import SpeakerConfig, SpeakerConfigParam
 from .speechconfig import SpeechConfig, SpeechConfigParam
 from .thinkinglevel import ThinkingLevel
 from .thinkingsummaries import ThinkingSummaries
@@ -30,6 +31,18 @@ import pydantic
 from pydantic import model_serializer
 from typing import List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
+
+
+SpeechConfigUnionParam = TypeAliasType(
+    "SpeechConfigUnionParam", Union[SpeakerConfigParam, List[SpeechConfigParam]]
+)
+r"""Optional. Speech and multi-speaker configuration."""
+
+
+SpeechConfigUnion = TypeAliasType(
+    "SpeechConfigUnion", Union[SpeakerConfig, List[SpeechConfig]]
+)
+r"""Optional. Speech and multi-speaker configuration."""
 
 
 ToolChoiceParam = TypeAliasType(
@@ -47,12 +60,14 @@ class GenerationConfigParam(TypedDict):
 
     image_config: NotRequired[ImageConfigParam]
     r"""The configuration for image interaction."""
+    legacy_speech_config: NotRequired[List[SpeechConfigParam]]
+    r"""Legacy speech configuration."""
     max_output_tokens: NotRequired[int]
     r"""The maximum number of tokens to include in the response."""
     seed: NotRequired[int]
     r"""Seed used in decoding for reproducibility."""
-    speech_config: NotRequired[List[SpeechConfigParam]]
-    r"""Configuration for speech interaction."""
+    speech_config: NotRequired[SpeechConfigUnionParam]
+    r"""Optional. Speech and multi-speaker configuration."""
     stop_sequences: NotRequired[List[str]]
     r"""A list of character sequences that will stop output interaction."""
     thinking_level: NotRequired[ThinkingLevel]
@@ -76,14 +91,22 @@ class GenerationConfig(BaseModel):
     ] = None
     r"""The configuration for image interaction."""
 
+    legacy_speech_config: Annotated[
+        Optional[List[SpeechConfig]],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Legacy speech configuration."""
+
     max_output_tokens: Optional[int] = None
     r"""The maximum number of tokens to include in the response."""
 
     seed: Optional[int] = None
     r"""Seed used in decoding for reproducibility."""
 
-    speech_config: Optional[List[SpeechConfig]] = None
-    r"""Configuration for speech interaction."""
+    speech_config: Optional[SpeechConfigUnion] = None
+    r"""Optional. Speech and multi-speaker configuration."""
 
     stop_sequences: Optional[List[str]] = None
     r"""A list of character sequences that will stop output interaction."""
@@ -106,6 +129,7 @@ class GenerationConfig(BaseModel):
         optional_fields = set(
             [
                 "image_config",
+                "legacy_speech_config",
                 "max_output_tokens",
                 "seed",
                 "speech_config",
