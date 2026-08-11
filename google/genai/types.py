@@ -1013,6 +1013,17 @@ class ComputationBasedMetricType(_common.CaseInSensitiveEnum):
   """ROUGE metric."""
 
 
+class MediaProcessing(_common.CaseInSensitiveEnum):
+  """How the model processes input media for understanding."""
+
+  MEDIA_PROCESSING_UNSPECIFIED = 'MEDIA_PROCESSING_UNSPECIFIED'
+  """Default. Uses model-specific processing (3.5 Pro+ -> `AGENTIC`, older models -> `STATIC`)."""
+  STATIC = 'STATIC'
+  """Fixed-rate frame extraction. All frames placed in context."""
+  AGENTIC = 'AGENTIC'
+  """Model-driven dynamic navigation. Recommended for most use cases."""
+
+
 class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """The tokenization quality used for given media."""
 
@@ -2291,6 +2302,10 @@ class Part(_common.BaseModel):
       default=None,
       description="""Output only. The transcription of the audio part.""",
   )
+  media_processing: Optional[MediaProcessing] = Field(
+      default=None,
+      description="""How the model processes this part's media for understanding.""",
+  )
 
   def __init__(
       self,
@@ -2524,6 +2539,9 @@ class PartDict(TypedDict, total=False):
 
   audio_transcription: Optional[TranscriptionDict]
   """Output only. The transcription of the audio part."""
+
+  media_processing: Optional[MediaProcessing]
+  """How the model processes this part's media for understanding."""
 
 
 PartOrDict = Union[Part, PartDict]

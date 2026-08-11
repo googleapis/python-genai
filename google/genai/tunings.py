@@ -1588,6 +1588,11 @@ def _Part_to_vertex(
         getv(from_object, ['audio_transcription']),
     )
 
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
+    )
+
   return to_object
 
 
