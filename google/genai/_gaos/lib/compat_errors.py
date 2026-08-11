@@ -28,7 +28,10 @@ import inspect
 import json
 from typing import Any, Awaitable, Callable, Optional, TypeVar, cast
 
-import httpx
+try:
+    import httpx2 as httpx
+except ImportError:
+    import httpx
 
 from ..errors.genaierror import GenAiError
 from ..errors.no_response_error import NoResponseError

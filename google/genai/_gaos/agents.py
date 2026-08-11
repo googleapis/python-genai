@@ -23,7 +23,10 @@ from .types import OptionalNullable, UNSET, agents, interactions
 from .types.agents import agent as agents_agent, agenttool as agents_agenttool
 from .utils import get_security_from_env, response_helpers
 from .utils.unmarshal_json_response import unmarshal_json_response
-import httpx
+try:
+  import httpx2 as httpx
+except ImportError:
+  import httpx
 from typing import Any, Iterable, List, Mapping, Optional, Union, cast
 
 

@@ -25,7 +25,10 @@ from ._hooks import (
 )
 from .sdkconfiguration import SDKConfiguration
 from .utils import RetryConfig, SerializedRequestBody, get_body_content
-import httpx
+try:
+  import httpx2 as httpx
+except ImportError:
+  import httpx
 from typing import Any, Callable, List, Mapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 

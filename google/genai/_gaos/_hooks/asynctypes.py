@@ -23,7 +23,10 @@ from .types import (
     BeforeRequestContext,
 )
 from abc import ABC, abstractmethod
-import httpx
+try:
+  import httpx2 as httpx
+except ImportError:
+  import httpx
 from typing import Optional, Tuple, Union
 
 

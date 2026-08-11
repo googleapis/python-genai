@@ -18,7 +18,10 @@
 
 from typing import Any, Optional, Type, TypeVar, overload
 
-import httpx
+try:
+  import httpx2 as httpx
+except ImportError:
+  import httpx
 
 from .serializers import unmarshal_json, construct_unvalidated
 from .. import errors

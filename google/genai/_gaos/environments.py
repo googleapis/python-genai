@@ -26,7 +26,10 @@ from .types.environments import (
 from .types.interactions import source as interactions_source
 from .utils import get_security_from_env, response_helpers
 from .utils.unmarshal_json_response import unmarshal_json_response
-import httpx
+try:
+  import httpx2 as httpx
+except ImportError:
+  import httpx
 from typing import Any, Iterable, List, Mapping, Optional, Union, cast
 
 

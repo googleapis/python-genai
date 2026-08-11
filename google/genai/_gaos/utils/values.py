@@ -23,7 +23,14 @@ from functools import partial
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union, cast
 
-from httpx import Response
+try:
+  import httpx2 as httpx
+except ImportError:
+  try:
+    import httpx2 as httpx
+  except ImportError:
+    import httpx
+Response = httpx.Response
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 

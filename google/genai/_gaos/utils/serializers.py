@@ -24,7 +24,10 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union, get_args
 import typing_extensions
 from typing_extensions import get_origin
 
-import httpx
+try:
+  import httpx2 as httpx
+except ImportError:
+  import httpx
 from pydantic import ConfigDict, create_model
 from pydantic_core import from_json
 
