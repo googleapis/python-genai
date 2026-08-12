@@ -143,8 +143,49 @@ def test_python_environments_lifecycle_routes_through_google_genai_client(
     server.server_close()
 
 
-class _ScottyDownloadHandler(BaseHTTPRequestHandler):
+class _ScottyFileHandler(BaseHTTPRequestHandler):
   captured: list[str] = []
+  uploaded_bytes: list[bytes] = []
+
+  def do_PUT(self) -> None:
+    self.captured.append(f"PUT {self.path}")
+    if ("/environments/" in self.path) and ("/files/" in self.path):
+      # Initial Scotty upload handshake
+      upload_url = f"http://127.0.0.1:{self.server.server_port}/scotty/upload/resumable_123"
+      self.send_response(200)
+      self.send_header("x-goog-upload-url", upload_url)
+      self.send_header("x-goog-upload-status", "active")
+      self.send_header("content-length", "0")
+      self.end_headers()
+      return
+
+    self.send_response(404)
+    self.end_headers()
+
+  def do_POST(self) -> None:
+    self.captured.append(f"POST {self.path}")
+    if self.path == "/scotty/upload/resumable_123":
+      content_length = int(self.headers.get("Content-Length", 0))
+      data = self.rfile.read(content_length)
+      self.uploaded_bytes.append(data)
+      file_response = {
+          "file": {
+              "name": "main.py",
+              "sizeBytes": str(len(data)),
+              "mimeType": "text/x-python",
+          }
+      }
+      payload = json.dumps(file_response).encode()
+      self.send_response(200)
+      self.send_header("content-type", "application/json")
+      self.send_header("x-goog-upload-status", "final")
+      self.send_header("content-length", str(len(payload)))
+      self.end_headers()
+      self.wfile.write(payload)
+      return
+
+    self.send_response(404)
+    self.end_headers()
 
   def do_GET(self) -> None:
     self.captured.append(f"GET {self.path}")
@@ -172,11 +213,13 @@ class _ScottyDownloadHandler(BaseHTTPRequestHandler):
     pass
 
 
-def test_python_environments_files_list_and_download(monkeypatch):
+def test_python_environments_file_upload_download(monkeypatch):
   monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
   captured: list[str] = []
-  handler = type("Handler", (_ScottyDownloadHandler,), {
+  uploaded_bytes: list[bytes] = []
+  handler = type("Handler", (_ScottyFileHandler,), {
       "captured": captured,
+      "uploaded_bytes": uploaded_bytes,
   })
   server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
   thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -213,6 +256,17 @@ def test_python_environments_files_list_and_download(monkeypatch):
     )
     assert len(files_res_paginated.files) == 1
 
+    # Test sync upload
+    upload_res = client.environments.files.upload(
+        environment="env_123",
+        path="src/main.py",
+        file=b"print('hello world')",
+        mime_type="text/x-python",
+    )
+    name = upload_res.name if hasattr(upload_res, "name") else upload_res.get("name")
+    assert name == "main.py"
+    assert uploaded_bytes[0] == b"print('hello world')"
+
     # Test sync files.download
     downloaded = client.environments.files.download(
         environment="env_123",
@@ -247,11 +301,13 @@ def test_python_environments_files_list_and_download(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_python_environments_async_files_list_and_download(monkeypatch):
+async def test_python_environments_async_file_upload_download(monkeypatch):
   monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
   captured: list[str] = []
-  handler = type("Handler", (_ScottyDownloadHandler,), {
+  uploaded_bytes: list[bytes] = []
+  handler = type("Handler", (_ScottyFileHandler,), {
       "captured": captured,
+      "uploaded_bytes": uploaded_bytes,
   })
   server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
   thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -262,6 +318,7 @@ async def test_python_environments_async_files_list_and_download(monkeypatch):
         http_options={
             "api_version": "v1beta",
             "base_url": f"http://127.0.0.1:{server.server_port}",
+            "headers": {"X-Goog-Api-Client": "test"},
         },
     )
 
@@ -285,6 +342,17 @@ async def test_python_environments_async_files_list_and_download(monkeypatch):
         recursive=True,
     )
     assert len(files_res_paginated.files) == 1
+
+    # Test async upload
+    upload_res = await client.aio.environments.files.upload(
+        environment="env_123",
+        path="src/main.py",
+        file=b"print('async hello world')",
+        mime_type="text/x-python",
+    )
+    name = upload_res.name if hasattr(upload_res, "name") else upload_res.get("name")
+    assert name == "main.py"
+    assert uploaded_bytes[0] == b"print('async hello world')"
 
     # Test async files.download
     downloaded = await client.aio.environments.files.download(
@@ -371,7 +439,4 @@ def test_python_environments_types_and_models():
   assert req.page_token == "tok"
   assert req.recursive is True
   assert req.api_version == "v1beta"
-
-
-
 
