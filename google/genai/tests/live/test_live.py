@@ -1133,17 +1133,18 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
           'model': 'test_model',
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parameters_json_schema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                               'description': (
                                   'The location to get the weather for'
                               ),
                           },
-                          'unit': {'type': 'STRING', 'enum': ['C', 'F']},
+                          'unit': {'type': 'string', 'enum': ['C', 'F']},
                       },
+                      'required': ['location', 'unit'],
                   },
                   'name': 'get_current_weather',
                   'description': 'Get the current weather in a city.',

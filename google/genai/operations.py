@@ -295,7 +295,7 @@ class Operations(_api_module.BaseModule):
           time.sleep(10)
           operation = client.operations.get(operation)
 
-      print(operation.result)
+      print(operation.response)
     """
     # Currently, only GenerateVideosOperation is supported.
     # TODO(b/398040607): Support short form names
@@ -554,7 +554,7 @@ class AsyncOperations(_api_module.BaseModule):
           await asyncio.sleep(10)
           operation = await client.aio.operations.get(operation)
 
-      print(operation.result)
+      print(operation.response)
     """
     # Currently, only GenerateVideosOperation is supported.
     operation_name = operation.name

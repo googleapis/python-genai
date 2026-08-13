@@ -19,11 +19,12 @@ import asyncio
 import inspect
 import io
 import logging
-import sys
-import typing
-from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
 import mimetypes
 import os
+import sys
+import typing
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
+
 import pydantic
 
 from . import _common
@@ -46,6 +47,9 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
+
+
+C = TypeVar('C', bound='_common.BaseModel')
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -136,6 +140,33 @@ def find_afc_incompatible_tool_indexes(
     if getattr(tool, 'mcp_servers', None) and not is_agent_platform:
       incompatible_tools_indexes.append(index)
   return incompatible_tools_indexes
+
+
+def log_afc_incompatible_tools_warning(
+    config: Optional[types.GenerateContentConfigOrDict],
+    incompatible_tools_indexes: list[int],
+) -> None:
+  """Logs a warning if any tools are incompatible with automatic function calling."""
+  if not incompatible_tools_indexes:
+    return
+  original_tools_length = 0
+  if isinstance(config, types.GenerateContentConfig):
+    if config.tools:
+      original_tools_length = len(config.tools)
+  elif isinstance(config, dict):
+    tools = config.get('tools', [])
+    if tools:
+      original_tools_length = len(tools)
+  if len(incompatible_tools_indexes) != original_tools_length:
+    indices_str = ', '.join(map(str, incompatible_tools_indexes))
+    logger.warning(
+        'Tools at indices [%s] are not compatible with automatic function '
+        'calling (AFC). AFC is disabled. If AFC is intended, please '
+        'include python callables in the tool list, and do not include '
+        'function declaration and MCP server in the tool list.',
+        indices_str,
+    )
+
 
 
 def get_function_map(
@@ -385,7 +416,12 @@ async def get_function_response_parts_async(
             mcp_tool_response = await func.call_tool(
                 types.FunctionCall(name=func_name, args=args)
             )
-            if mcp_tool_response.isError:
+            is_error = getattr(
+                mcp_tool_response,
+                'is_error',
+                getattr(mcp_tool_response, 'isError', False),
+            )
+            if is_error:
               func_response = {'error': mcp_tool_response}
             else:
               func_response = {'result': mcp_tool_response}
@@ -698,21 +734,29 @@ def has_agent_platform_mcp_servers(
 
 
 def get_usage_header(
-    config: Optional[types.GenerateContentConfigOrDict] = None,
-    usage: str = 'afc',
-) -> types.GenerateContentConfig:
-  """Sets the afc version label."""
+    config: Optional[Union[dict[str, Any], C]], config_cls: Type[C], usage: str
+) -> C:
+  """Returns the usage header for the config."""
   usage_header = f'google-genai-sdk/{public_version.__version__}+{usage}'
   if not config:
-    config_model = types.GenerateContentConfig()
+    config_model = config_cls()
   elif isinstance(config, dict):
-    config_model = types.GenerateContentConfig(**config)
+    config_model = config_cls(**config)
   else:
     config_model = config
 
-  if not config_model.http_options:
-    config_model.http_options = types.HttpOptions()
-  existing_headers = config_model.http_options.headers or {}
+  # Many configs have http_options, safely initialize it if it's missing
+  if not hasattr(config_model, 'http_options'):
+    return config_model
+
+  http_options = getattr(config_model, 'http_options', None)
+  if http_options is None:
+    http_options = types.HttpOptions()
+    setattr(config_model, 'http_options', http_options)
+
+  http_options = typing.cast(types.HttpOptions, http_options)
+  existing_headers = http_options.headers or {}
+
   for header_key in ('user-agent', 'x-goog-api-client'):
     if header_key in existing_headers:
       if (
@@ -730,5 +774,6 @@ def get_usage_header(
           existing_headers[header_key] += f' {usage_header}'
     else:
       existing_headers[header_key] = usage_header
-  config_model.http_options.headers = existing_headers
+
+  http_options.headers = existing_headers
   return config_model

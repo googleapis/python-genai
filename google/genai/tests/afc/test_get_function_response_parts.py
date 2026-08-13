@@ -197,25 +197,23 @@ async def test_mcp_tool():
       ]
   )
   function_map = {'tool': mcp_to_genai_tool_adapter}
-  expected_parts = [
-      Part(
-          function_response=FunctionResponse(
-              name='tool',
-              response={
-                  'result': {
-                      'content': [{'type': 'text', 'text': '1.01'}],
-                      'isError': False,
-                  }
-              },
-          )
-      )
-  ]
   actual_parts = await get_function_response_parts_async(response, function_map)
+  actual_part = actual_parts[0]
+  assert actual_part.function_response.name == 'tool'
+  assert 'result' in actual_part.function_response.response
+  assert (
+      actual_part.function_response.response['result'].content[0].text
+      == '1.01'
+  )
+  is_error = getattr(
+      actual_part.function_response.response['result'],
+      'isError',
+      getattr(
+          actual_part.function_response.response['result'], 'is_error', False
+      ),
+  )
+  assert is_error == False
 
-  for actual_part, expected_part in zip(actual_parts, expected_parts):
-    assert actual_part.model_dump_json(
-        exclude_none=True
-    ) == expected_part.model_dump_json(exclude_none=True)
 
 
 @pytest.mark.asyncio
@@ -256,22 +254,19 @@ async def test_mcp_tool_error():
       ]
   )
   function_map = {'tool': mcp_to_genai_tool_adapter}
-  expected_parts = [
-      Part(
-          function_response=FunctionResponse(
-              name='tool',
-              response={
-                  'error': {
-                      'content': [{'type': 'text', 'text': 'Internal error'}],
-                      'isError': True,
-                  }
-              },
-          )
-      )
-  ]
   actual_parts = await get_function_response_parts_async(response, function_map)
-
-  for actual_part, expected_part in zip(actual_parts, expected_parts):
-    assert actual_part.model_dump_json(
-        exclude_none=True
-    ) == expected_part.model_dump_json(exclude_none=True)
+  actual_part = actual_parts[0]
+  assert actual_part.function_response.name == 'tool'
+  assert 'error' in actual_part.function_response.response
+  assert (
+      actual_part.function_response.response['error'].content[0].text
+      == 'Internal error'
+  )
+  is_error = getattr(
+      actual_part.function_response.response['error'],
+      'isError',
+      getattr(
+          actual_part.function_response.response['error'], 'is_error', False
+      ),
+  )
+  assert is_error == True

@@ -19,6 +19,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from .imageconfig import ImageConfig, ImageConfigParam
+from .speakerconfig import SpeakerConfig, SpeakerConfigParam
 from .speechconfig import SpeechConfig, SpeechConfigParam
 from .thinkinglevel import ThinkingLevel
 from .thinkingsummaries import ThinkingSummaries
@@ -42,6 +43,18 @@ ToolChoice = TypeAliasType("ToolChoice", Union[ToolChoiceConfig, ToolChoiceType]
 r"""The tool choice configuration."""
 
 
+SpeechConfigUnionParam = TypeAliasType(
+    "SpeechConfigUnionParam", Union[SpeakerConfigParam, List[SpeechConfigParam]]
+)
+r"""Optional. Speech and multi-speaker configuration."""
+
+
+SpeechConfigUnion = TypeAliasType(
+    "SpeechConfigUnion", Union[SpeakerConfig, List[SpeechConfig]]
+)
+r"""Optional. Speech and multi-speaker configuration."""
+
+
 class GenerationConfigParam(TypedDict):
     r"""Configuration parameters for model interactions."""
 
@@ -51,8 +64,6 @@ class GenerationConfigParam(TypedDict):
     r"""The maximum number of tokens to include in the response."""
     seed: NotRequired[int]
     r"""Seed used in decoding for reproducibility."""
-    speech_config: NotRequired[List[SpeechConfigParam]]
-    r"""Configuration for speech interaction."""
     stop_sequences: NotRequired[List[str]]
     r"""A list of character sequences that will stop output interaction."""
     thinking_level: NotRequired[ThinkingLevel]
@@ -63,6 +74,8 @@ class GenerationConfigParam(TypedDict):
     r"""Configuration for speech recognition (transcription)."""
     video_config: NotRequired[VideoConfigParam]
     r"""Configuration options for video generation."""
+    speech_config: NotRequired[SpeechConfigUnionParam]
+    r"""Optional. Speech and multi-speaker configuration."""
 
 
 class GenerationConfig(BaseModel):
@@ -82,9 +95,6 @@ class GenerationConfig(BaseModel):
     seed: Optional[int] = None
     r"""Seed used in decoding for reproducibility."""
 
-    speech_config: Optional[List[SpeechConfig]] = None
-    r"""Configuration for speech interaction."""
-
     stop_sequences: Optional[List[str]] = None
     r"""A list of character sequences that will stop output interaction."""
 
@@ -101,6 +111,9 @@ class GenerationConfig(BaseModel):
     video_config: Optional[VideoConfig] = None
     r"""Configuration options for video generation."""
 
+    speech_config: Optional[SpeechConfigUnion] = None
+    r"""Optional. Speech and multi-speaker configuration."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
@@ -108,13 +121,13 @@ class GenerationConfig(BaseModel):
                 "image_config",
                 "max_output_tokens",
                 "seed",
-                "speech_config",
                 "stop_sequences",
                 "thinking_level",
                 "thinking_summaries",
                 "tool_choice",
                 "transcription_config",
                 "video_config",
+                "speech_config",
             ]
         )
         serialized = handler(self)

@@ -958,7 +958,7 @@ def t_tool(
     return types.Tool(
         function_declarations=[
             types.FunctionDeclaration.from_callable(
-                client=client, callable=origin
+                client=client, callable=origin, use_json_schema=True
             )
         ]
     )
@@ -1393,3 +1393,7 @@ def t_is_vertex_embed_content_model(model: str) -> bool:
       # Open-source MaaS embedding models.
       or 'maas' in model
   )
+
+
+def t_json_schema(origin: Any) -> Any:
+  return origin

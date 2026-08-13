@@ -26,6 +26,17 @@ from ._hooks import (
 from .sdkconfiguration import SDKConfiguration
 from .utils import RetryConfig, SerializedRequestBody, get_body_content
 import httpx
+
+try:
+    import httpx2
+except ImportError:
+    httpx2 = None
+
+_HTTPX_TIMEOUT_TYPES = (
+    (httpx.Timeout,)
+    if httpx2 is None
+    else (httpx.Timeout, httpx2.Timeout)
+)
 from typing import Any, Callable, List, Mapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
@@ -62,7 +73,7 @@ class BaseSDK:
             return None
         if isinstance(timeout, (int, float)):
             return int(timeout * 1000)
-        if isinstance(timeout, httpx.Timeout):
+        if isinstance(timeout, _HTTPX_TIMEOUT_TYPES):
             values = [timeout.connect, timeout.read, timeout.write, timeout.pool]
             finite_values = [value for value in values if value is not None]
             if not finite_values:
@@ -329,7 +340,7 @@ class AsyncBaseSDK:
             return None
         if isinstance(timeout, (int, float)):
             return int(timeout * 1000)
-        if isinstance(timeout, httpx.Timeout):
+        if isinstance(timeout, _HTTPX_TIMEOUT_TYPES):
             values = [timeout.connect, timeout.read, timeout.write, timeout.pool]
             finite_values = [value for value in values if value is not None]
             if not finite_values:

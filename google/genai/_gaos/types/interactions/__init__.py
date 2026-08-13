@@ -162,6 +162,8 @@ if TYPE_CHECKING:
     from .generationconfig import (
         GenerationConfig,
         GenerationConfigParam,
+        SpeechConfigUnion,
+        SpeechConfigUnionParam,
         ToolChoice,
         ToolChoiceParam,
     )
@@ -290,6 +292,7 @@ if TYPE_CHECKING:
         MCPServerToolResultStepResultUnion,
         MCPServerToolResultStepResultUnionParam,
     )
+    from .mediaprocessing import MediaProcessing, MediaProcessingParam
     from .mediaresolution import MediaResolution
     from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
     from .model import Model
@@ -324,7 +327,9 @@ if TYPE_CHECKING:
     from .servicetier import ServiceTier
     from .sessionconfig import SessionConfig, SessionConfigParam
     from .source import Source, SourceParam, SourceType
+    from .speakerconfig import SpeakerConfig, SpeakerConfigParam
     from .speechconfig import SpeechConfig, SpeechConfigParam
+    from .staticmediaprocessing import StaticMediaProcessing, StaticMediaProcessingParam
     from .status import Status, StatusParam
     from .step import Step, StepParam, UnknownStep
     from .stepdelta import StepDelta, StepDeltaTypedDict
@@ -336,7 +341,6 @@ if TYPE_CHECKING:
     from .stepdeltametadata import StepDeltaMetadata, StepDeltaMetadataTypedDict
     from .stepstart import StepStart, StepStartTypedDict
     from .stepstop import StepStop, StepStopTypedDict
-    from .streammetadata import StreamMetadata, StreamMetadataTypedDict
     from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDict
     from .textcontent import TextContent, TextContentParam
     from .textdelta import TextDelta, TextDeltaTypedDict
@@ -362,7 +366,6 @@ if TYPE_CHECKING:
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
     from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
-    from .turn import Turn, TurnContent, TurnContentParam, TurnParam
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
@@ -385,7 +388,14 @@ if TYPE_CHECKING:
     from .userinputstep import UserInputStep, UserInputStepParam
     from .vertexaisearchconfig import VertexAISearchConfig, VertexAISearchConfigParam
     from .videoconfig import Task, VideoConfig, VideoConfigParam
-    from .videocontent import VideoContent, VideoContentMimeType, VideoContentParam
+    from .videocontent import (
+        Processing,
+        ProcessingEnum,
+        ProcessingParam,
+        VideoContent,
+        VideoContentMimeType,
+        VideoContentParam,
+    )
     from .videodelta import VideoDelta, VideoDeltaMimeType, VideoDeltaTypedDict
     from .videoresponseformat import (
         VideoResponseFormat,
@@ -617,6 +627,8 @@ __all__ = [
     "MCPServerToolResultStepResultParam",
     "MCPServerToolResultStepResultUnion",
     "MCPServerToolResultStepResultUnionParam",
+    "MediaProcessing",
+    "MediaProcessingParam",
     "MediaResolution",
     "Method",
     "ModalityTokens",
@@ -632,6 +644,9 @@ __all__ = [
     "ParallelAISearchConfigParam",
     "PlaceCitation",
     "PlaceCitationParam",
+    "Processing",
+    "ProcessingEnum",
+    "ProcessingParam",
     "RagResource",
     "RagResourceParam",
     "RagRetrievalConfig",
@@ -663,8 +678,14 @@ __all__ = [
     "Source",
     "SourceParam",
     "SourceType",
+    "SpeakerConfig",
+    "SpeakerConfigParam",
     "SpeechConfig",
     "SpeechConfigParam",
+    "SpeechConfigUnion",
+    "SpeechConfigUnionParam",
+    "StaticMediaProcessing",
+    "StaticMediaProcessingParam",
     "Status",
     "StatusParam",
     "Step",
@@ -679,8 +700,6 @@ __all__ = [
     "StepStartTypedDict",
     "StepStop",
     "StepStopTypedDict",
-    "StreamMetadata",
-    "StreamMetadataTypedDict",
     "Task",
     "TextAnnotationDelta",
     "TextAnnotationDeltaTypedDict",
@@ -713,10 +732,6 @@ __all__ = [
     "TranscriptionConfigParam",
     "Transform",
     "TransformParam",
-    "Turn",
-    "TurnContent",
-    "TurnContentParam",
-    "TurnParam",
     "URLCitation",
     "URLCitationParam",
     "URLContext",
@@ -902,6 +917,8 @@ _dynamic_imports: dict[str, str] = {
     "UnknownFunctionResultSubcontent": ".functionresultsubcontent",
     "GenerationConfig": ".generationconfig",
     "GenerationConfigParam": ".generationconfig",
+    "SpeechConfigUnion": ".generationconfig",
+    "SpeechConfigUnionParam": ".generationconfig",
     "ToolChoice": ".generationconfig",
     "ToolChoiceParam": ".generationconfig",
     "GoogleMaps": ".googlemaps",
@@ -1003,6 +1020,8 @@ _dynamic_imports: dict[str, str] = {
     "MCPServerToolResultStepResultParam": ".mcpservertoolresultstep",
     "MCPServerToolResultStepResultUnion": ".mcpservertoolresultstep",
     "MCPServerToolResultStepResultUnionParam": ".mcpservertoolresultstep",
+    "MediaProcessing": ".mediaprocessing",
+    "MediaProcessingParam": ".mediaprocessing",
     "MediaResolution": ".mediaresolution",
     "ModalityTokens": ".modalitytokens",
     "ModalityTokensTypedDict": ".modalitytokens",
@@ -1046,8 +1065,12 @@ _dynamic_imports: dict[str, str] = {
     "Source": ".source",
     "SourceParam": ".source",
     "SourceType": ".source",
+    "SpeakerConfig": ".speakerconfig",
+    "SpeakerConfigParam": ".speakerconfig",
     "SpeechConfig": ".speechconfig",
     "SpeechConfigParam": ".speechconfig",
+    "StaticMediaProcessing": ".staticmediaprocessing",
+    "StaticMediaProcessingParam": ".staticmediaprocessing",
     "Status": ".status",
     "StatusParam": ".status",
     "Step": ".step",
@@ -1064,8 +1087,6 @@ _dynamic_imports: dict[str, str] = {
     "StepStartTypedDict": ".stepstart",
     "StepStop": ".stepstop",
     "StepStopTypedDict": ".stepstop",
-    "StreamMetadata": ".streammetadata",
-    "StreamMetadataTypedDict": ".streammetadata",
     "TextAnnotationDelta": ".textannotationdelta",
     "TextAnnotationDeltaTypedDict": ".textannotationdelta",
     "TextContent": ".textcontent",
@@ -1094,10 +1115,6 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceType": ".toolchoicetype",
     "TranscriptionConfig": ".transcriptionconfig",
     "TranscriptionConfigParam": ".transcriptionconfig",
-    "Turn": ".turn",
-    "TurnContent": ".turn",
-    "TurnContentParam": ".turn",
-    "TurnParam": ".turn",
     "URLCitation": ".urlcitation",
     "URLCitationParam": ".urlcitation",
     "URLContext": ".urlcontext",
@@ -1124,6 +1141,9 @@ _dynamic_imports: dict[str, str] = {
     "Task": ".videoconfig",
     "VideoConfig": ".videoconfig",
     "VideoConfigParam": ".videoconfig",
+    "Processing": ".videocontent",
+    "ProcessingEnum": ".videocontent",
+    "ProcessingParam": ".videocontent",
     "VideoContent": ".videocontent",
     "VideoContentMimeType": ".videocontent",
     "VideoContentParam": ".videocontent",

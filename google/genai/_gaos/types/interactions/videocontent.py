@@ -25,12 +25,32 @@ from .. import (
     UnrecognizedStr,
 )
 from ...utils import validate_const
+from .mediaprocessing import MediaProcessing, MediaProcessingParam
 from .mediaresolution import MediaResolution
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
 from typing import Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
+
+
+ProcessingEnum = Union[
+    Literal[
+        "static",
+        "agentic",
+    ],
+    UnrecognizedStr,
+]
+
+
+ProcessingParam = TypeAliasType(
+    "ProcessingParam", Union[MediaProcessingParam, ProcessingEnum]
+)
+r"""How the model processes this video for understanding."""
+
+
+Processing = TypeAliasType("Processing", Union[MediaProcessing, ProcessingEnum])
+r"""How the model processes this video for understanding."""
 
 
 VideoContentMimeType = Union[
@@ -55,12 +75,14 @@ class VideoContentParam(TypedDict):
 
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The video content."""
-    mime_type: NotRequired[VideoContentMimeType]
-    r"""The mime type of the video."""
+    processing: NotRequired[ProcessingParam]
+    r"""How the model processes this video for understanding."""
     resolution: NotRequired[MediaResolution]
     type: Literal["video"]
     uri: NotRequired[str]
     r"""The URI of the video."""
+    mime_type: NotRequired[VideoContentMimeType]
+    r"""The mime type of the video."""
 
 
 class VideoContent(BaseModel):
@@ -69,8 +91,8 @@ class VideoContent(BaseModel):
     data: Optional[Base64EncodedString] = None
     r"""The video content."""
 
-    mime_type: Optional[VideoContentMimeType] = None
-    r"""The mime type of the video."""
+    processing: Optional[Processing] = None
+    r"""How the model processes this video for understanding."""
 
     resolution: Optional[MediaResolution] = None
 
@@ -82,9 +104,12 @@ class VideoContent(BaseModel):
     uri: Optional[str] = None
     r"""The URI of the video."""
 
+    mime_type: Optional[VideoContentMimeType] = None
+    r"""The mime type of the video."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "mime_type", "resolution", "uri"])
+        optional_fields = set(["data", "processing", "resolution", "uri", "mime_type"])
         serialized = handler(self)
         m = {}
 

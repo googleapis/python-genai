@@ -28,7 +28,23 @@ import inspect
 import json
 from typing import Any, Awaitable, Callable, Optional, TypeVar, cast
 
+try:
+    import httpx2
+except ImportError:
+    httpx2 = None
+
 import httpx
+
+_HTTPX_TIMEOUT_ERRORS = (
+    (httpx.TimeoutException,)
+    if httpx2 is None
+    else (httpx.TimeoutException, httpx2.TimeoutException)
+)
+_HTTPX_HTTP_ERRORS = (
+    (httpx.HTTPError,)
+    if httpx2 is None
+    else (httpx.HTTPError, httpx2.HTTPError)
+)
 
 from ..errors.genaierror import GenAiError
 from ..errors.no_response_error import NoResponseError
@@ -271,7 +287,7 @@ def _wrap_httpx_error(error: BaseException) -> APIConnectionError:
     tolerates the edge case rather than fabricating a misleading stand-in.
     """
     request = getattr(error, "_request", None)
-    if isinstance(error, httpx.TimeoutException):
+    if isinstance(error, _HTTPX_TIMEOUT_ERRORS):
         wrapped: APIConnectionError = APITimeoutError(request=request)  # type: ignore[arg-type]
     else:
         wrapped = APIConnectionError(
@@ -300,7 +316,7 @@ def wrap_sdk_error(error: BaseException) -> BaseException:
         return _wrap_validation_error(error)
     if isinstance(error, NoResponseError):
         return _wrap_no_response_error(error)
-    if isinstance(error, httpx.HTTPError):
+    if isinstance(error, _HTTPX_HTTP_ERRORS):
         return _wrap_httpx_error(error)
     if not isinstance(error, GenAiError):
         return error
@@ -317,7 +333,11 @@ def wrap_sdk_error(error: BaseException) -> BaseException:
     return wrapped
 
 
-_WRAP_EXCEPTIONS = (GenAiError, NoResponseError, httpx.HTTPError)
+_WRAP_EXCEPTIONS = (
+    (GenAiError, NoResponseError, httpx.HTTPError)
+    if httpx2 is None
+    else (GenAiError, NoResponseError, httpx.HTTPError, httpx2.HTTPError)
+)
 
 
 class CompatErrorHook:
