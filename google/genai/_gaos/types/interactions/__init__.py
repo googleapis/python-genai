@@ -366,6 +366,7 @@ if TYPE_CHECKING:
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
     from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
+    from .turn import Turn, TurnContent, TurnContentParam, TurnParam
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
@@ -732,6 +733,10 @@ __all__ = [
     "TranscriptionConfigParam",
     "Transform",
     "TransformParam",
+    "Turn",
+    "TurnContent",
+    "TurnContentParam",
+    "TurnParam",
     "URLCitation",
     "URLCitationParam",
     "URLContext",
@@ -1115,6 +1120,10 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceType": ".toolchoicetype",
     "TranscriptionConfig": ".transcriptionconfig",
     "TranscriptionConfigParam": ".transcriptionconfig",
+    "Turn": ".turn",
+    "TurnContent": ".turn",
+    "TurnContentParam": ".turn",
+    "TurnParam": ".turn",
     "URLCitation": ".urlcitation",
     "URLCitationParam": ".urlcitation",
     "URLContext": ".urlcontext",
