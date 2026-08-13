@@ -37,8 +37,8 @@ ContentParam = TypeAliasType(
         TextContentParam,
         DocumentContentParam,
         ImageContentParam,
-        VideoContentParam,
         AudioContentParam,
+        VideoContentParam,
     ],
 )
 r"""The content of the response."""

@@ -45,13 +45,10 @@ import google.auth
 import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport import mtls
-from google.auth.transport.requests import AuthorizedSession
 from google.auth import exceptions as auth_exceptions
 import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
-import requests
-from requests.structures import CaseInsensitiveDict
 import tenacity
 
 from . import _common
@@ -80,8 +77,16 @@ except ImportError:
   pass
 
 
+try:
+  import httpx2
+except ImportError:
+  httpx2 = None  # type: ignore[assignment]
+
+
 if TYPE_CHECKING:
+  from google.auth.transport.requests import AuthorizedSession  # pylint: disable=g-import-not-at-top
   from multidict import CIMultiDictProxy
+  from requests.structures import CaseInsensitiveDict  # pylint: disable=g-import-not-at-top
 
 
 logger = logging.getLogger('google_genai._api_client')
@@ -92,6 +97,27 @@ INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
 
 _MULTI_REGIONAL_LOCATIONS = {'us', 'eu'}
+
+# httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
+# separate import namespace, so its classes are not instances of the httpx
+# equivalents. Widen the runtime type checks to accept either when httpx2 is
+# installed.
+_HTTPX_RESPONSE_TYPES = (
+    (httpx.Response,) if httpx2 is None else (httpx.Response, httpx2.Response)
+)
+_HTTPX_HEADERS_TYPES = (
+    (httpx.Headers,) if httpx2 is None else (httpx.Headers, httpx2.Headers)
+)
+_HTTPX_TRANSIENT_EXC = (
+    (httpx.TimeoutException, httpx.ConnectError)
+    if httpx2 is None
+    else (
+        httpx.TimeoutException,
+        httpx.ConnectError,
+        httpx2.TimeoutException,
+        httpx2.ConnectError,
+    )
+)
 
 
 class EphemeralTokenAPIKeyError(ValueError):
@@ -249,18 +275,22 @@ class HttpResponse:
           dict[str, str],
           httpx.Headers,
           'CIMultiDictProxy[str]',
-          CaseInsensitiveDict,
+          'CaseInsensitiveDict',
       ],
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
   ):
     if isinstance(headers, dict):
       self.headers = headers
-    elif isinstance(headers, httpx.Headers):
+    elif isinstance(headers, _HTTPX_HEADERS_TYPES):
       self.headers = {
-          key: ', '.join(headers.get_list(key)) for key in headers.keys()
+          key: ', '.join(headers.get_list(key)) for key in headers.keys()  # type: ignore[attr-defined]
       }
-    elif isinstance(headers, CaseInsensitiveDict):
+    elif (
+        requests_module := _common.loaded_requests()
+    ) is not None and isinstance(
+        headers, requests_module.structures.CaseInsensitiveDict
+    ):
       self.headers = {key: value for key, value in headers.items()}
     elif type(headers).__name__ == 'CIMultiDictProxy':
       self.headers = {
@@ -338,9 +368,13 @@ class HttpResponse:
 
   def _iter_response_stream(self) -> Iterator[str]:
     """Iterates over chunks retrieved from the API."""
+    requests_module = _common.loaded_requests()
     if not (
-        isinstance(self.response_stream, httpx.Response)
-        or isinstance(self.response_stream, requests.Response)
+        isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES)
+        or (
+            requests_module is not None
+            and isinstance(self.response_stream, requests_module.Response)
+        )
     ):
       raise TypeError(
           'Expected self.response_stream to be an httpx.Response object, '
@@ -350,7 +384,7 @@ class HttpResponse:
     chunk = ''
     balance = 0
     data_buffer: list[str] = []
-    if isinstance(self.response_stream, httpx.Response):
+    if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       response_stream = self.response_stream.iter_lines()
     else:
       response_stream = self.response_stream.iter_lines(decode_unicode=True)
@@ -389,7 +423,9 @@ class HttpResponse:
 
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
-    is_valid_response = isinstance(self.response_stream, httpx.Response) or (
+    is_valid_response = isinstance(
+        self.response_stream, _HTTPX_RESPONSE_TYPES
+    ) or (
         has_aiohttp and isinstance(self.response_stream, aiohttp.ClientResponse)
     )
     if not is_valid_response:
@@ -403,9 +439,10 @@ class HttpResponse:
     balance = 0
     data_buffer: list[str] = []
     # httpx.Response has a dedicated async line iterator.
-    if isinstance(self.response_stream, httpx.Response):
+    if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       try:
-        async for line in self.response_stream.aiter_lines():
+        response_stream: Any = self.response_stream
+        async for line in response_stream.aiter_lines():
           if not line:
             if data_buffer:
               yield '\n'.join(data_buffer)
@@ -437,7 +474,7 @@ class HttpResponse:
           yield '\n'.join(data_buffer)
       finally:
         # Close the response and release the connection.
-        await self.response_stream.aclose()
+        await response_stream.aclose()
 
     # aiohttp.ClientResponse uses a content stream that we read line by line.
     elif has_aiohttp and isinstance(
@@ -540,7 +577,7 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
-      or isinstance(e, (httpx.TimeoutException, httpx.ConnectError)),
+      or isinstance(e, _HTTPX_TRANSIENT_EXC),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=options.initial_delay or _RETRY_INITIAL_DELAY,
@@ -818,7 +855,7 @@ class BaseApiClient:
         vertexai=bool(self.vertexai),
     )
     self._async_httpx_client_args = async_client_args
-    self._authorized_session: Optional[AuthorizedSession] = None
+    self._authorized_session: Optional['AuthorizedSession'] = None
 
     if self._use_google_auth_sync():
       self._httpx_client = None
@@ -1437,6 +1474,8 @@ class BaseApiClient:
     if self._use_google_auth_sync():
       url = str(http_request.url)
       if self._authorized_session is None:
+        from google.auth.transport.requests import AuthorizedSession  # pylint: disable=g-import-not-at-top
+
         self._authorized_session = AuthorizedSession(  # type: ignore[no-untyped-call]
             self._credentials,
             max_refresh_attempts=1,
@@ -1468,7 +1507,7 @@ class BaseApiClient:
           headers=http_request.headers,
           timeout=http_request.timeout,
       )
-      response = self._httpx_client.send(httpx_request, stream=stream)  # type: ignore[union-attr]
+      response = self._httpx_client.send(httpx_request, stream=stream)  # type: ignore[union-attr, arg-type]
     errors.APIError.raise_for_response(response)
     return HttpResponse(
         response.headers, response if stream else [response.text]
@@ -1582,7 +1621,7 @@ class BaseApiClient:
             timeout=http_request.timeout,
         )
         client_response = await self._async_httpx_client.send(  # type: ignore[union-attr]
-            httpx_request,
+            httpx_request,  # type: ignore[arg-type]
             stream=stream,
         )
         await errors.APIError.raise_for_async_response(client_response)

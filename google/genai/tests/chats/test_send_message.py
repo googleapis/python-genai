@@ -45,10 +45,6 @@ pytestmark = [
         file=__file__,
         globals_for_file=globals(),
     ),
-    pytest.mark.skipif(
-        "config.getoption('--private')",
-        reason="AFC re-written for private SDK",
-    ),
 ]
 pytest_plugins = ('pytest_asyncio',)
 

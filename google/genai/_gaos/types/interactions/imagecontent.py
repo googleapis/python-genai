@@ -54,12 +54,12 @@ class ImageContentParam(TypedDict):
 
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The image content."""
-    mime_type: NotRequired[ImageContentMimeType]
-    r"""The mime type of the image."""
     resolution: NotRequired[MediaResolution]
     type: Literal["image"]
     uri: NotRequired[str]
     r"""The URI of the image."""
+    mime_type: NotRequired[ImageContentMimeType]
+    r"""The mime type of the image."""
 
 
 class ImageContent(BaseModel):
@@ -67,9 +67,6 @@ class ImageContent(BaseModel):
 
     data: Optional[Base64EncodedString] = None
     r"""The image content."""
-
-    mime_type: Optional[ImageContentMimeType] = None
-    r"""The mime type of the image."""
 
     resolution: Optional[MediaResolution] = None
 
@@ -81,9 +78,12 @@ class ImageContent(BaseModel):
     uri: Optional[str] = None
     r"""The URI of the image."""
 
+    mime_type: Optional[ImageContentMimeType] = None
+    r"""The mime type of the image."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "mime_type", "resolution", "uri"])
+        optional_fields = set(["data", "resolution", "uri", "mime_type"])
         serialized = handler(self)
         m = {}
 

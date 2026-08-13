@@ -142,6 +142,33 @@ def find_afc_incompatible_tool_indexes(
   return incompatible_tools_indexes
 
 
+def log_afc_incompatible_tools_warning(
+    config: Optional[types.GenerateContentConfigOrDict],
+    incompatible_tools_indexes: list[int],
+) -> None:
+  """Logs a warning if any tools are incompatible with automatic function calling."""
+  if not incompatible_tools_indexes:
+    return
+  original_tools_length = 0
+  if isinstance(config, types.GenerateContentConfig):
+    if config.tools:
+      original_tools_length = len(config.tools)
+  elif isinstance(config, dict):
+    tools = config.get('tools', [])
+    if tools:
+      original_tools_length = len(tools)
+  if len(incompatible_tools_indexes) != original_tools_length:
+    indices_str = ', '.join(map(str, incompatible_tools_indexes))
+    logger.warning(
+        'Tools at indices [%s] are not compatible with automatic function '
+        'calling (AFC). AFC is disabled. If AFC is intended, please '
+        'include python callables in the tool list, and do not include '
+        'function declaration and MCP server in the tool list.',
+        indices_str,
+    )
+
+
+
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
     mcp_to_genai_tool_adapters: Optional[
@@ -389,7 +416,12 @@ async def get_function_response_parts_async(
             mcp_tool_response = await func.call_tool(
                 types.FunctionCall(name=func_name, args=args)
             )
-            if mcp_tool_response.isError:
+            is_error = getattr(
+                mcp_tool_response,
+                'is_error',
+                getattr(mcp_tool_response, 'isError', False),
+            )
+            if is_error:
               func_response = {'error': mcp_tool_response}
             else:
               func_response = {'result': mcp_tool_response}

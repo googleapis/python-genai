@@ -1074,7 +1074,7 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
+        t.t_json_schema(getv(from_object, ['response_json_schema'])),
     )
 
   if getv(from_object, ['routing_config']) is not None:

@@ -1,14 +1,15 @@
 absl-py==2.1.0
 annotated-types==0.7.0
-anyio==4.8.0
+anyio==4.14.2
 cachetools==5.5.0
 certifi==2024.8.30
 charset-normalizer==3.4.0
 coverage==7.6.9
 distro==1.9.0
 httpx==0.28.1
+httpx2==2.7.0; python_version >= '3.10'
 google-auth==2.56.0
-idna==3.10
+idna==3.18
 iniconfig==2.0.0
 packaging==24.2
 pillow==11.0.0
@@ -29,6 +30,6 @@ tenacity==8.2.3
 typing_extensions>=4.14.1
 urllib3==2.5.0
 websockets==16.0
-mcp>=1.14.0; python_version > '3.9'
+mcp>=1.14.0,<2.0.0; python_version > '3.9'
 sentencepiece>=0.2.0
 protobuf

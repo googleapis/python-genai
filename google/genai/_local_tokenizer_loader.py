@@ -53,7 +53,6 @@ _GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES = {
     "gemini-3.5-flash": "gemma4",
     "gemini-3.1-flash-lite": "gemma4",
     "gemini-3.1-pro-preview": "gemma4",
-    "gemini-4-flash-preview": "gemma4",
 }
 
 GEMMA_TOKENIZER_TO_MODEL_NAMES = {

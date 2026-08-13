@@ -66,9 +66,6 @@ class TestGetTokenizerName(unittest.TestCase):
     self.assertEqual(
         loader.get_tokenizer_name("gemini-3.1-pro-preview"), "gemma4"
     )
-    self.assertEqual(
-        loader.get_tokenizer_name("gemini-4-flash-preview"), "gemma4"
-    )
 
   def test_get_tokenizer_name_unsupported(self):
     with self.assertRaisesRegex(

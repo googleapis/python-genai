@@ -111,13 +111,17 @@ def _redact_request_headers(headers: dict[str, str]) -> dict[str, str]:
     if header_name.lower() == 'x-goog-api-key':
       redacted_headers[header_name] = '{REDACTED}'
     elif header_name.lower() == 'user-agent':
-      redacted_headers[header_name] = _redact_language_label(
-          _redact_version_numbers(header_value)
-      ).replace('agentplatform-genai-modules', 'vertex-genai-modules')
+      redacted_headers[header_name] = (
+          _redact_language_label(_redact_version_numbers(header_value))
+          .replace('agentplatform-genai-modules', 'vertex-genai-modules')
+          .replace('+nonsource', '')
+      )
     elif header_name.lower() == 'x-goog-api-client':
-      redacted_headers[header_name] = _redact_language_label(
-          _redact_version_numbers(header_value)
-      ).replace('agentplatform-genai-modules', 'vertex-genai-modules')
+      redacted_headers[header_name] = (
+          _redact_language_label(_redact_version_numbers(header_value))
+          .replace('agentplatform-genai-modules', 'vertex-genai-modules')
+          .replace('+nonsource', '')
+      )
     elif header_name.lower() == 'x-goog-user-project':
       continue
     elif header_name.lower() == 'authorization':
