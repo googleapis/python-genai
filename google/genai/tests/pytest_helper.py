@@ -38,6 +38,10 @@ class TestTableItem(types.TestTableItem):
   parameters: SerializeAsAny[BaseModel] = Field(
       description="""The parameters to the test. Use pydantic models.""",
   )
+  skip_in_private: Optional[str] = Field(
+      default=None,
+      description="""When set to a reason string, this test will be skipped in private SDK mode.""",
+  )
 
 
 def base_test_function(
@@ -48,6 +52,11 @@ def base_test_function(
     test_table_item: TestTableItem,
     globals_for_file: dict[str, Any],
 ):
+  if (
+      getattr(client._api_client, '_private', False)
+      and test_table_item.skip_in_private
+  ):
+    pytest.skip(test_table_item.skip_in_private)
   replay_id = (
       test_table_item.override_replay_id
       if test_table_item.override_replay_id

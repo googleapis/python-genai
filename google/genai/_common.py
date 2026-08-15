@@ -22,6 +22,7 @@ import enum
 import functools
 import logging
 import re
+import sys
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -33,6 +34,17 @@ from typing_extensions import TypeAlias
 logger = logging.getLogger('google_genai._common')
 
 StringDict: TypeAlias = dict[str, Any]
+
+
+def loaded_requests() -> Optional[Any]:
+  """Returns the `requests` module, or None if nothing has imported it.
+
+  Only the synchronous google-auth path uses `requests`, and importing it
+  costs around 300 modules. An object can only be an instance of a `requests`
+  class once that module is loaded, so callers doing an isinstance check
+  against one can consult this instead of importing it themselves.
+  """
+  return sys.modules.get('requests')
 
 
 class ExperimentalWarning(Warning):

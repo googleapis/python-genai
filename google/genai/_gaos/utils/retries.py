@@ -25,6 +25,17 @@ from typing import List, Optional
 
 import httpx
 
+try:
+    import httpx2
+except ImportError:
+    httpx2 = None
+
+_RETRY_EXCEPTIONS = (
+    (httpx.NetworkError, httpx.TimeoutException)
+    if httpx2 is None
+    else (httpx.NetworkError, httpx.TimeoutException, httpx2.NetworkError, httpx2.TimeoutException)
+)
+
 
 class BackoffStrategy:
     """Exponential backoff strategy configuration."""
@@ -236,7 +247,7 @@ def retry(func, retries: Retries):
 
                 if should_retry:
                     raise TemporaryError(res)
-            except (httpx.NetworkError, httpx.TimeoutException) as exception:
+            except _RETRY_EXCEPTIONS as exception:
                 if retries.config.retry_connection_errors:
                     raise
 
@@ -296,7 +307,7 @@ async def retry_async(func, retries: Retries):
 
                 if should_retry:
                     raise TemporaryError(res)
-            except (httpx.NetworkError, httpx.TimeoutException) as exception:
+            except _RETRY_EXCEPTIONS as exception:
                 if retries.config.retry_connection_errors:
                     raise
 

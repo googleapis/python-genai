@@ -25,12 +25,32 @@ from .. import (
     UnrecognizedStr,
 )
 from ...utils import validate_const
+from .mediaprocessing import MediaProcessing, MediaProcessingParam
 from .mediaresolution import MediaResolution
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
 from typing import Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
+
+
+ProcessingEnum = Union[
+    Literal[
+        "static",
+        "agentic",
+    ],
+    UnrecognizedStr,
+]
+
+
+ProcessingParam = TypeAliasType(
+    "ProcessingParam", Union[MediaProcessingParam, ProcessingEnum]
+)
+r"""How the model processes this video for understanding."""
+
+
+Processing = TypeAliasType("Processing", Union[MediaProcessing, ProcessingEnum])
+r"""How the model processes this video for understanding."""
 
 
 VideoContentMimeType = Union[
@@ -55,6 +75,8 @@ class VideoContentParam(TypedDict):
 
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The video content."""
+    processing: NotRequired[ProcessingParam]
+    r"""How the model processes this video for understanding."""
     resolution: NotRequired[MediaResolution]
     type: Literal["video"]
     uri: NotRequired[str]
@@ -68,6 +90,9 @@ class VideoContent(BaseModel):
 
     data: Optional[Base64EncodedString] = None
     r"""The video content."""
+
+    processing: Optional[Processing] = None
+    r"""How the model processes this video for understanding."""
 
     resolution: Optional[MediaResolution] = None
 
@@ -84,7 +109,7 @@ class VideoContent(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "resolution", "uri", "mime_type"])
+        optional_fields = set(["data", "processing", "resolution", "uri", "mime_type"])
         serialized = handler(self)
         m = {}
 

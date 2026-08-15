@@ -99,10 +99,6 @@ class _RecordingHandler(BaseHTTPRequestHandler):
             ],
         ),
         (
-            [{"role": "user", "content": "test-input-turn"}],
-            [{"role": "user", "content": "test-input-turn"}],
-        ),
-        (
             {"type": "text", "text": "test-input-single-content"},
             {"type": "text", "text": "test-input-single-content"},
         ),

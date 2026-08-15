@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.18.1](https://github.com/googleapis/python-genai/compare/v2.18.0...v2.18.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* Add gemini-3.7-flash ([f898b61](https://github.com/googleapis/python-genai/commit/f898b61089df672818a6f8832646ae82b59ff9a2))
+
+## [2.18.0](https://github.com/googleapis/python-genai/compare/v2.17.0...v2.18.0) (2026-08-12)
+
+
+### Features
+
+* Add interaction_status to LiveServerContent ([66e224c](https://github.com/googleapis/python-genai/commit/66e224c39c9527e0fef3a4f049ac33ec941e2f99))
+* **api:** Make the deferred service tier publicly available on Vertex ([e1f7c40](https://github.com/googleapis/python-genai/commit/e1f7c40f0a831f25ee71294fc8c195576d5fd126))
+* Enable json schema in FunctionDeclaration parser ([62d50d6](https://github.com/googleapis/python-genai/commit/62d50d6f172da5d6efa30838ab92da95b1327b5e))
+* Make speech_config a structured object. ([cc0d42e](https://github.com/googleapis/python-genai/commit/cc0d42e84583ed927b6c0dfae38da7f5f544b2da))
+* Support injecting httpx2 client. ([012804d](https://github.com/googleapis/python-genai/commit/012804d9b649a20da46a6041e37d126b9a0b79e0)), refs [#2680](https://github.com/googleapis/python-genai/issues/2680)
+
+
+### Bug Fixes
+
+* Improve AFC(automatic function calling) in chat including fixing bugs in AFC for generate_content_stream. also log warnings in generate_content, generate_content_stream and their async variants that AFC is meant to be used in chat experience, not directly in models module. ([fe6118e](https://github.com/googleapis/python-genai/commit/fe6118e3c7a9e83406bc722e34b7efca75f1ef13))
+
+
+### Performance Improvements
+
+* Build model validators on first use instead of at import ([66bfe95](https://github.com/googleapis/python-genai/commit/66bfe956f7a8b6c8d7c7eb949a9b6a499a4e2860)), refs [#2784](https://github.com/googleapis/python-genai/issues/2784)
+* Lazily import the interactions API to speed up import google.genai ([89dcfe5](https://github.com/googleapis/python-genai/commit/89dcfe5b28f5e794f9a5ac84e2d45e9e7b7bd803))
+* Stop importing the requests HTTP stack at module scope ([3a44936](https://github.com/googleapis/python-genai/commit/3a44936ea783363489967bd9d219fb26401585dd))
+
 ## [2.17.0](https://github.com/googleapis/python-genai/compare/v2.16.0...v2.17.0) (2026-08-06)
 
 

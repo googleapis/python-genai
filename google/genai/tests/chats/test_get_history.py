@@ -115,47 +115,6 @@ def mock_generate_content_stream_empty_content():
     yield mock_generate_content
 
 
-@pytest.fixture
-def mock_generate_content_afc_history():
-  with mock.patch.object(
-      models.Models, 'generate_content'
-  ) as mock_generate_content:
-    mock_generate_content.return_value = types.GenerateContentResponse(
-        candidates=[
-            types.Candidate(
-                content=types.Content(
-                    role='model',
-                    parts=[types.Part.from_text(text='afc output')],
-                )
-            )
-        ],
-        automatic_function_calling_history=AFC_HISTORY,
-    )
-    yield mock_generate_content
-
-
-@pytest.fixture
-def mock_generate_content_stream_afc_history():
-  with mock.patch.object(
-      models.Models, 'generate_content_stream'
-  ) as mock_generate_content:
-    mock_generate_content.return_value = [
-        types.GenerateContentResponse(
-            candidates=[
-                types.Candidate(
-                    content=types.Content(
-                        role='model',
-                        parts=[types.Part.from_text(text='afc output')],
-                    ),
-                    finish_reason=types.FinishReason.STOP,
-                )
-            ],
-            automatic_function_calling_history=AFC_HISTORY,
-        )
-    ]
-    yield mock_generate_content
-
-
 def test_history_start_with_valid_model_content():
   history = [
       types.Content(
@@ -560,47 +519,3 @@ def test_chat_stream_with_empty_content(
   ]
   assert chat.get_history() == expected_comprehensive_history
   assert not chat.get_history(curated=True)
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC logic in private is re-written',
-)
-def test_chat_with_afc_history(mock_generate_content_afc_history):
-  models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-flash')
-
-  chat.send_message('Hello')
-
-  expected_history = AFC_HISTORY + [
-      types.Content(
-          role='model',
-          parts=[types.Part.from_text(text='afc output')],
-      ),
-  ]
-  assert chat.get_history() == expected_history
-  assert chat.get_history(curated=True) == expected_history
-
-
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC logic in private is re-written',
-)
-def test_chat_stream_with_afc_history(mock_generate_content_stream_afc_history):
-  models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-flash')
-
-  chunks = chat.send_message_stream('Hello')
-  for chunk in chunks:
-    pass
-
-  expected_history = AFC_HISTORY + [
-      types.Content(
-          role='model',
-          parts=[types.Part.from_text(text='afc output')],
-      ),
-  ]
-  assert chat.get_history() == expected_history
-  assert chat.get_history(curated=True) == expected_history

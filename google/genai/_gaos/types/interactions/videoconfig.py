@@ -29,6 +29,7 @@ Task = Union[
         "image_to_video",
         "reference_to_video",
         "edit",
+        "extend",
     ],
     UnrecognizedStr,
 ]

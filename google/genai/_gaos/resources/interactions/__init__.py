@@ -125,6 +125,7 @@ from . import tool
 from . import urlcontextcallstep
 from . import urlcontextresultstep
 from . import usage
+from . import videocontent
 
 CreateAgentInteractionParamsStreaming = CreateAgentInteractionParamsNonStreaming
 CreateModelInteractionParamsStreaming = CreateModelInteractionParamsNonStreaming
@@ -228,4 +229,5 @@ __all__ = [
     "urlcontextcallstep",
     "urlcontextresultstep",
     "usage",
+    "videocontent",
 ]
