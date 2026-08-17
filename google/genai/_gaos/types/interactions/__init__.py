@@ -250,6 +250,11 @@ if TYPE_CHECKING:
         InteractionCreatedEvent,
         InteractionCreatedEventTypedDict,
     )
+    from .interactionmetadata import (
+        InteractionMetadata,
+        InteractionMetadataStatus,
+        InteractionMetadataTypedDict,
+    )
     from .interactionsinput import InteractionsInput, InteractionsInputParam
     from .interactionsseevent import (
         InteractionSSEEvent,
@@ -269,6 +274,10 @@ if TYPE_CHECKING:
         InteractionStatusUpdate,
         InteractionStatusUpdateStatus,
         InteractionStatusUpdateTypedDict,
+    )
+    from .listinteractionsresponse import (
+        ListInteractionsResponse,
+        ListInteractionsResponseTypedDict,
     )
     from .mcpserver import MCPServer, MCPServerParam
     from .mcpservertoolcalldelta import (
@@ -594,6 +603,9 @@ __all__ = [
     "InteractionCreatedEventTypedDict",
     "InteractionEnvironment",
     "InteractionEnvironmentTypedDict",
+    "InteractionMetadata",
+    "InteractionMetadataStatus",
+    "InteractionMetadataTypedDict",
     "InteractionResponseFormat",
     "InteractionResponseFormatTypedDict",
     "InteractionSSEEvent",
@@ -611,6 +623,8 @@ __all__ = [
     "InteractionsInput",
     "InteractionsInputParam",
     "Language",
+    "ListInteractionsResponse",
+    "ListInteractionsResponseTypedDict",
     "MCPServer",
     "MCPServerParam",
     "MCPServerToolCallDelta",
@@ -993,6 +1007,9 @@ _dynamic_imports: dict[str, str] = {
     "InteractionCompletedEventTypedDict": ".interactioncompletedevent",
     "InteractionCreatedEvent": ".interactioncreatedevent",
     "InteractionCreatedEventTypedDict": ".interactioncreatedevent",
+    "InteractionMetadata": ".interactionmetadata",
+    "InteractionMetadataStatus": ".interactionmetadata",
+    "InteractionMetadataTypedDict": ".interactionmetadata",
     "InteractionsInput": ".interactionsinput",
     "InteractionsInputParam": ".interactionsinput",
     "InteractionSSEEvent": ".interactionsseevent",
@@ -1006,6 +1023,8 @@ _dynamic_imports: dict[str, str] = {
     "InteractionStatusUpdate": ".interactionstatusupdate",
     "InteractionStatusUpdateStatus": ".interactionstatusupdate",
     "InteractionStatusUpdateTypedDict": ".interactionstatusupdate",
+    "ListInteractionsResponse": ".listinteractionsresponse",
+    "ListInteractionsResponseTypedDict": ".listinteractionsresponse",
     "MCPServer": ".mcpserver",
     "MCPServerParam": ".mcpserver",
     "MCPServerToolCallDelta": ".mcpservertoolcalldelta",
