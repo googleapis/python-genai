@@ -35,6 +35,7 @@ except ImportError:
   StaticCredentials = mock.MagicMock()
   AsyncAuthorizedSession = mock.MagicMock()
 
+from google.auth import exceptions as auth_exceptions
 from google.oauth2 import credentials
 import httpx
 import tenacity
@@ -187,10 +188,10 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
       assert not retry.predicate(e)
 
 
-def test_retry_args_retries_httpx_transport_errors():
-  # httpx transport errors (timeouts, connect errors) bypass APIError but are
-  # transient infrastructure failures, so the predicate must still retry them
-  # when HttpRetryOptions is configured. See issue #2337.
+def test_retry_args_retries_transport_errors():
+  # Transport errors bypass APIError but are transient infrastructure failures,
+  # so the predicate must still retry them when HttpRetryOptions is configured.
+  # See issue #2337.
   args = api_client.retry_args(types.HttpRetryOptions())
   retry = args['retry']
 
@@ -198,9 +199,13 @@ def test_retry_args_retries_httpx_transport_errors():
   assert retry.predicate(httpx.ReadTimeout('read stalled'))
   assert retry.predicate(httpx.ConnectTimeout('connect stalled'))
   assert retry.predicate(httpx.ConnectError('connect refused'))
+  assert retry.predicate(
+      auth_exceptions.TransportError('token endpoint unavailable')
+  )
 
   # Unrelated transport errors are not retried.
   assert not retry.predicate(httpx.InvalidURL('bad url'))
+  assert not retry.predicate(auth_exceptions.RefreshError('invalid grant'))
   assert not retry.predicate(ValueError('not a transport error'))
 
 
@@ -501,6 +506,52 @@ def test_async_retries_successful_request_executes_once():
       )
       mock_transport.handle_async_request.assert_called_once()
       assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+def test_async_retries_google_auth_transport_error():
+  api_client.has_aiohttp = False
+
+  class FlakyCredentials(credentials.Credentials):
+
+    def __init__(self):
+      super().__init__(token=None)
+      self.refresh_calls = 0
+
+    def refresh(self, request):
+      self.refresh_calls += 1
+      if self.refresh_calls == 1:
+        raise auth_exceptions.TransportError('token endpoint unavailable')
+      self.token = 'magic_token'
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.return_value = _httpx_response(200)
+    credential = FlakyCredentials()
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
+    )
+
+    with mock.patch(
+        'google.auth.default',
+        return_value=(credential, 'test_project'),
+        autospec=True,
+    ):
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+
+    assert credential.refresh_calls == 2
+    mock_transport.handle_async_request.assert_called_once()
+    assert response.headers['status-code'] == '200'
 
   asyncio.run(run())
 
