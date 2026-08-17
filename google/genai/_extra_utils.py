@@ -777,3 +777,27 @@ def get_usage_header(
 
   http_options.headers = existing_headers
   return config_model
+
+
+def set_agent_platform_service_tier_header(
+    config: Optional[types.GenerateContentConfig],
+    is_vertex: bool,
+) -> None:
+  """Injects the service_tier as an HTTP header for Gemini Enterprise Agent Platform requests."""
+  if not is_vertex or not config or not config.service_tier:
+    return
+
+  # Extract the raw string value (e.g. 'flex', 'standard', 'priority')
+  tier_val = (
+      config.service_tier.value
+      if hasattr(config.service_tier, 'value')
+      else str(config.service_tier)
+  )
+  tier_val = tier_val.lower().replace('service_tier_', '')
+
+  if config.http_options is None:
+    config.http_options = types.HttpOptions(headers={})
+  if config.http_options.headers is None:
+    config.http_options.headers = {}
+
+  config.http_options.headers['X-Vertex-AI-LLM-Shared-Request-Type'] = tier_val
