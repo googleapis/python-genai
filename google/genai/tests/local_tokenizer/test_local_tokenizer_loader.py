@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import sys
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -244,3 +245,10 @@ class TestLoaderFunctions(unittest.TestCase):
     mock_get.assert_called_once()
 
 
+class TestGetHuggingfaceTokenizer(unittest.TestCase):
+
+  def test_get_huggingface_tokenizer_error_names_extra(self):
+    """A missing transformers install names the extra that provides it."""
+    with patch.dict(sys.modules, {"transformers": None}):
+      with self.assertRaisesRegex(ImportError, "local-tokenizer-transformers"):
+        loader.get_huggingface_tokenizer("gemma4")
