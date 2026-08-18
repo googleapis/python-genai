@@ -202,6 +202,157 @@ def test_properties_conversion():
   ]
 
 
+def test_additional_properties_false_conversion():
+  """Test that a FastMCP schema with 'additionalProperties': False converts."""
+  mcp_tools = [
+      mcp_types.Tool(
+          name='tool',
+          description='tool-description',
+          inputSchema={
+              'type': 'object',
+              'properties': {
+                  'arg1': {
+                      'type': 'string',
+                  },
+                  'arg2': {
+                      'type': 'integer',
+                  },
+              },
+              'required': ['arg1', 'arg2'],
+              'additionalProperties': False,
+          },
+      ),
+  ]
+  result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
+  assert result == [
+      types.Tool(
+          function_declarations=[
+              types.FunctionDeclaration(
+                  name='tool',
+                  description='tool-description',
+                  parameters=types.Schema(
+                      type='OBJECT',
+                      properties={
+                          'arg1': types.Schema(type='STRING'),
+                          'arg2': types.Schema(type='INTEGER'),
+                      },
+                      required=['arg1', 'arg2'],
+                  ),
+              ),
+          ],
+      ),
+  ]
+
+
+def test_additional_properties_true_conversion():
+  """Test that a schema with 'additionalProperties': True converts."""
+  mcp_tools = [
+      mcp_types.Tool(
+          name='tool',
+          description='tool-description',
+          inputSchema={
+              'type': 'object',
+              'properties': {
+                  'arg1': {
+                      'type': 'string',
+                  },
+              },
+              'required': ['arg1'],
+              'additionalProperties': True,
+          },
+      ),
+  ]
+  result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
+  assert result == [
+      types.Tool(
+          function_declarations=[
+              types.FunctionDeclaration(
+                  name='tool',
+                  description='tool-description',
+                  parameters=types.Schema(
+                      type='OBJECT',
+                      properties={
+                          'arg1': types.Schema(type='STRING'),
+                      },
+                      required=['arg1'],
+                  ),
+              ),
+          ],
+      ),
+  ]
+
+
+def test_filter_to_supported_schema_filters_dict_additional_properties():
+  """Test that a dict 'additionalProperties' is still filtered recursively."""
+  filtered = _mcp_utils._filter_to_supported_schema({
+      'type': 'object',
+      'additionalProperties': {
+          'type': 'string',
+          'unknown_field': 'unknownField',
+      },
+  })
+
+  assert filtered == {
+      'type': 'object',
+      'additionalProperties': {'type': 'string'},
+  }
+
+
+def test_filter_to_supported_schema_keeps_boolean_additional_properties():
+  """Test that the filter keeps a boolean 'additionalProperties' value."""
+  filtered = _mcp_utils._filter_to_supported_schema({
+      'type': 'object',
+      'properties': {'arg1': {'type': 'string'}},
+      'required': ['arg1'],
+      'additionalProperties': False,
+  })
+
+  assert filtered == {
+      'type': 'object',
+      'properties': {'arg1': {'type': 'string'}},
+      'required': ['arg1'],
+      'additionalProperties': False,
+  }
+
+
+def test_items_boolean_is_dropped():
+  """Test that a boolean 'items' is dropped, since JSONSchema rejects it."""
+  mcp_tools = [
+      mcp_types.Tool(
+          name='tool',
+          description='tool-description',
+          inputSchema={
+              'type': 'array',
+              'items': False,
+          },
+      ),
+  ]
+  result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
+
+  assert result[0].function_declarations[0].parameters == types.Schema(
+      type='ARRAY'
+  )
+
+
+def test_items_list_is_dropped():
+  """Test that a draft-04 tuple-form 'items' list is dropped."""
+  mcp_tools = [
+      mcp_types.Tool(
+          name='tool',
+          description='tool-description',
+          inputSchema={
+              'type': 'array',
+              'items': [{'type': 'string'}],
+          },
+      ),
+  ]
+  result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
+
+  assert result[0].function_declarations[0].parameters == types.Schema(
+      type='ARRAY'
+  )
+
+
 def test_defs_conversion():
     """Test conversion of MCP tools with shared definitions ($defs)."""
     mcp_tools = [
