@@ -32,6 +32,7 @@ import warnings
 import certifi
 from google.oauth2.credentials import Credentials
 import pytest
+import websockets
 from websockets import client
 
 from .. import pytest_helper
@@ -39,6 +40,7 @@ from ... import _api_client as api_client
 from ... import _common
 from ... import Client
 from ... import client as gl_client
+from ... import errors
 from ... import live
 from ... import types
 
@@ -496,6 +498,79 @@ async def test_async_session_receive_text(
   assert isinstance(messages[0], types.LiveServerMessage)
   assert messages[0].server_content.model_turn.parts[0].text == 'test'
   assert messages[1].server_content.turn_complete == True
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_multi_turn(mock_websocket, vertexai):
+  """multi_turn=True keeps the iterator open after a turn_complete message."""
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "one"}]}}}',
+          '{"serverContent": {"turnComplete": true}}',
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "two"}]}}}',
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  responses = session.receive(multi_turn=True)
+  messages = []
+  for _ in range(4):
+    messages.append(await responses.__anext__())
+  assert messages[0].server_content.model_turn.parts[0].text == 'one'
+  assert messages[1].server_content.turn_complete
+  assert messages[2].server_content.model_turn.parts[0].text == 'two'
+  assert messages[3].server_content.turn_complete
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_multi_turn_connection_closed(
+    mock_websocket, vertexai
+):
+  """A closed socket ends the multi-turn iterator with an APIError."""
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "one"}]}}}',
+          websockets.exceptions.ConnectionClosed(
+              websockets.frames.Close(1011, 'boom'), None
+          ),
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  responses = session.receive(multi_turn=True)
+  message = await responses.__anext__()
+  assert message.server_content.model_turn.parts[0].text == 'one'
+
+  with pytest.raises(errors.APIError, match='boom'):
+    await responses.__anext__()
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_default_stops_after_turn_complete(
+    mock_websocket, vertexai
+):
+  """The default iterator stops at the first turn_complete message."""
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "one"}]}}}',
+          '{"serverContent": {"turnComplete": true}}',
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "two"}]}}}',
+          '{"serverContent": {"turnComplete": true}}',
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = await _async_iterator_to_list(session.receive())
+  assert len(messages) == 2
+  assert messages[0].server_content.model_turn.parts[0].text == 'one'
+  assert messages[1].server_content.turn_complete
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
