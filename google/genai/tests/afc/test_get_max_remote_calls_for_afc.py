@@ -20,6 +20,7 @@ Covers both reading it off the config, and what the AFC loop does once it is
 spent.
 """
 
+import logging
 from unittest import mock
 import pytest
 from ... import _api_client
@@ -28,6 +29,17 @@ from ... import chats
 from ... import models
 from ... import types
 from ..._extra_utils import get_max_remote_calls_afc
+
+
+def get_weather(city: str) -> str:
+  return f'sunny in {city}'
+
+
+_ANY_MODE_TOOL_CONFIG = types.ToolConfig(
+    function_calling_config=types.FunctionCallingConfig(
+        mode=types.FunctionCallingConfigMode.ANY
+    )
+)
 
 
 def test_config_is_none():
@@ -445,3 +457,99 @@ async def test_async_direct_afc_warning_only_logged_when_functions_present(
     )
     assert 'Direct use of automatic function calling (AFC)' in caplog.text
 
+
+def test_afc_any_mode_warns_when_afc_enabled(caplog):
+  """Mode `ANY` with a callable tool and AFC enabled warns the caller."""
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+  assert (
+      get_max_remote_calls_afc(
+          types.GenerateContentConfig(
+              tools=[get_weather],
+              tool_config=_ANY_MODE_TOOL_CONFIG,
+          )
+      )
+      == 10
+  )
+  assert 'is `ANY`' in caplog.text
+
+
+def test_afc_any_mode_no_warning_for_function_declarations(caplog):
+  """Function declarations mean the caller runs the loop, so `ANY` is fine."""
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+  assert (
+      get_max_remote_calls_afc(
+          types.GenerateContentConfig(
+              tools=[
+                  types.Tool(
+                      function_declarations=[
+                          types.FunctionDeclaration(name='get_weather')
+                      ]
+                  )
+              ],
+              tool_config=_ANY_MODE_TOOL_CONFIG,
+          )
+      )
+      == 10
+  )
+  assert 'ANY' not in caplog.text
+
+
+def test_afc_any_mode_no_warning_for_auto_mode(caplog):
+  """Mode `AUTO` lets the model answer, so it needs no warning."""
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+  assert (
+      get_max_remote_calls_afc(
+          types.GenerateContentConfig(
+              tools=[get_weather],
+              tool_config=types.ToolConfig(
+                  function_calling_config=types.FunctionCallingConfig(
+                      mode=types.FunctionCallingConfigMode.AUTO
+                  )
+              ),
+          )
+      )
+      == 10
+  )
+  assert 'ANY' not in caplog.text
+
+
+def test_afc_any_mode_no_warning_for_validated_mode(caplog):
+  """Mode `VALIDATED` still lets the model answer with text."""
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+  assert (
+      get_max_remote_calls_afc(
+          types.GenerateContentConfig(
+              tools=[get_weather],
+              tool_config=types.ToolConfig(
+                  function_calling_config=types.FunctionCallingConfig(
+                      mode=types.FunctionCallingConfigMode.VALIDATED
+                  )
+              ),
+          )
+      )
+      == 10
+  )
+  assert 'ANY' not in caplog.text
+
+
+def test_afc_any_mode_warns_for_dict_config(caplog):
+  """A lowercase mode in a dict config reaches the same enum value."""
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+  assert (
+      get_max_remote_calls_afc({
+          'tools': [get_weather],
+          'tool_config': {'function_calling_config': {'mode': 'any'}},
+      })
+      == 10
+  )
+  assert 'is `ANY`' in caplog.text
+
+
+def test_afc_any_mode_no_warning_without_tool_config(caplog):
+  """A config with no tool_config never forces a function call."""
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+  assert (
+      get_max_remote_calls_afc(types.GenerateContentConfig(tools=[get_weather]))
+      == 10
+  )
+  assert 'ANY' not in caplog.text

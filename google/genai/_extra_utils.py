@@ -452,6 +452,35 @@ async def get_function_response_parts_async(
   return func_response_parts
 
 
+def _log_afc_any_mode_warning(
+    config_model: types.GenerateContentConfig,
+) -> None:
+  """Warns when AFC runs while the model must return a function call."""
+  tool_config = config_model.tool_config
+  function_calling_config = (
+      tool_config.function_calling_config if tool_config else None
+  )
+  if (
+      not function_calling_config
+      or function_calling_config.mode != types.FunctionCallingConfigMode.ANY
+  ):
+    return
+  # AFC runs callables, while function declarations mean the caller runs the
+  # loop. MCP sessions are not detected: the async path converts them to
+  # declarations before this check runs.
+  if not any(callable(tool) for tool in config_model.tools or []):
+    return
+  logger.warning(
+      '`tool_config.function_calling_config.mode` is `ANY` and automatic'
+      ' function calling (AFC) is enabled. The model must return a function'
+      ' call on every turn, so AFC uses all'
+      ' `automatic_function_calling.maximum_remote_calls` and the response'
+      ' has no text. Set the mode to `AUTO` to let the model answer, or set'
+      ' `automatic_function_calling.disable` to `True` to run the function'
+      ' calling loop yourself.'
+  )
+
+
 def should_disable_afc(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
@@ -519,6 +548,7 @@ def get_max_remote_calls_afc(
         ' max remote calls.'
     )
   config_model = _create_generate_content_config_model(config)
+  _log_afc_any_mode_warning(config_model)
   if (
       not config_model.automatic_function_calling
       or config_model.automatic_function_calling.maximum_remote_calls is None
