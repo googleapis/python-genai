@@ -1,0 +1,66 @@
+# Modules that `import google.genai` is allowed to load.
+#
+# Every google.genai submodule is listed by name, and that part has to match
+# exactly. Everything else is listed by top-level package only and is a
+# ceiling rather than a requirement, because some dependencies are conditional
+# on the interpreter version. Standard library modules are not listed.
+#
+# Adding a line means importing the SDK got more expensive. Deleting lines is
+# the goal.
+#
+# Regenerate after an intentional change:
+#   GOOGLE_GENAI_UPDATE_IMPORT_ALLOWLIST=1 pytest google/genai/tests/imports/test_imported_modules.py
+_cffi_backend
+_openssl
+annotated_types
+anyio
+certifi
+charset_normalizer
+cryptography
+exceptiongroup
+google.auth
+google.genai
+google.genai._adapters
+google.genai._api_client
+google.genai._api_module
+google.genai._base_transformers
+google.genai._base_url
+google.genai._common
+google.genai._extra_utils
+google.genai._gaos
+google.genai._live_converters
+google.genai._mcp_utils
+google.genai._operations_converters
+google.genai._replay_api_client
+google.genai._tokens_converters
+google.genai._transformers
+google.genai.batches
+google.genai.caches
+google.genai.chats
+google.genai.client
+google.genai.documents
+google.genai.errors
+google.genai.file_search_stores
+google.genai.files
+google.genai.interactions
+google.genai.live
+google.genai.live_music
+google.genai.models
+google.genai.operations
+google.genai.pagers
+google.genai.tokens
+google.genai.tunings
+google.genai.types
+google.genai.version
+google.oauth2
+httpx
+idna
+pydantic
+pydantic_core
+requests
+sniffio
+tenacity
+typing_extensions
+typing_inspection
+urllib3
+websockets
