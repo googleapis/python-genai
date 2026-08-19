@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.18.1](https://github.com/googleapis/python-genai/compare/v2.18.0...v2.18.1) (2026-08-13)
+
+
+### Bug Fixes
+
+* Add gemini-3.7-flash ([f898b61](https://github.com/googleapis/python-genai/commit/f898b61089df672818a6f8832646ae82b59ff9a2))
+
 ## [2.18.0](https://github.com/googleapis/python-genai/compare/v2.17.0...v2.18.0) (2026-08-12)
 
 

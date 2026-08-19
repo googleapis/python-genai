@@ -43,7 +43,7 @@ class SourceParam(TypedDict):
     r"""Optional encoding for inline content (e.g. `base64`)."""
     source: NotRequired[str]
     r"""The source of the environment.
-    For GCS, this is the GCS path.
+    For Cloud Storage, this is the Cloud Storage path.
     For GitHub, this is the GitHub path.
     """
     target: NotRequired[str]
@@ -62,7 +62,7 @@ class Source(BaseModel):
 
     source: Optional[str] = None
     r"""The source of the environment.
-    For GCS, this is the GCS path.
+    For Cloud Storage, this is the Cloud Storage path.
     For GitHub, this is the GitHub path.
     """
 

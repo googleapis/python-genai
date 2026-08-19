@@ -366,7 +366,6 @@ if TYPE_CHECKING:
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
     from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
-    from .turn import Turn, TurnContent, TurnContentParam, TurnParam
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
@@ -399,6 +398,7 @@ if TYPE_CHECKING:
     )
     from .videodelta import VideoDelta, VideoDeltaMimeType, VideoDeltaTypedDict
     from .videoresponseformat import (
+        Resolution,
         VideoResponseFormat,
         VideoResponseFormatAspectRatio,
         VideoResponseFormatDelivery,
@@ -656,6 +656,7 @@ __all__ = [
     "RagStoreConfigParam",
     "Ranking",
     "RankingParam",
+    "Resolution",
     "ResponseFormat",
     "ResponseFormatParam",
     "ResponseModality",
@@ -733,10 +734,6 @@ __all__ = [
     "TranscriptionConfigParam",
     "Transform",
     "TransformParam",
-    "Turn",
-    "TurnContent",
-    "TurnContentParam",
-    "TurnParam",
     "URLCitation",
     "URLCitationParam",
     "URLContext",
@@ -1120,10 +1117,6 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceType": ".toolchoicetype",
     "TranscriptionConfig": ".transcriptionconfig",
     "TranscriptionConfigParam": ".transcriptionconfig",
-    "Turn": ".turn",
-    "TurnContent": ".turn",
-    "TurnContentParam": ".turn",
-    "TurnParam": ".turn",
     "URLCitation": ".urlcitation",
     "URLCitationParam": ".urlcitation",
     "URLContext": ".urlcontext",
@@ -1159,6 +1152,7 @@ _dynamic_imports: dict[str, str] = {
     "VideoDelta": ".videodelta",
     "VideoDeltaMimeType": ".videodelta",
     "VideoDeltaTypedDict": ".videodelta",
+    "Resolution": ".videoresponseformat",
     "VideoResponseFormat": ".videoresponseformat",
     "VideoResponseFormatAspectRatio": ".videoresponseformat",
     "VideoResponseFormatDelivery": ".videoresponseformat",

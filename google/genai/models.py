@@ -207,27 +207,6 @@ def _CitationMetadata_from_mldev(
   return to_object
 
 
-def _CodeExecutionResult_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['outcome']) is not None:
-    setv(to_object, ['outcome'], getv(from_object, ['outcome']))
-
-  if getv(from_object, ['output']) is not None:
-    setv(to_object, ['output'], getv(from_object, ['output']))
-
-  if getv(from_object, ['id']) is not None:
-    raise ValueError(
-        'id parameter is only supported in Gemini Developer API mode, not in'
-        ' Gemini Enterprise Agent Platform mode.'
-    )
-
-  return to_object
-
-
 def _ComputeTokensParameters_to_vertex(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -1167,27 +1146,6 @@ def _Endpoint_from_vertex(
   if getv(from_object, ['deployedModelId']) is not None:
     setv(
         to_object, ['deployed_model_id'], getv(from_object, ['deployedModelId'])
-    )
-
-  return to_object
-
-
-def _ExecutableCode_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['code']) is not None:
-    setv(to_object, ['code'], getv(from_object, ['code']))
-
-  if getv(from_object, ['language']) is not None:
-    setv(to_object, ['language'], getv(from_object, ['language']))
-
-  if getv(from_object, ['id']) is not None:
-    raise ValueError(
-        'id parameter is only supported in Gemini Developer API mode, not in'
-        ' Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -3726,19 +3684,11 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['codeExecutionResult'],
-        _CodeExecutionResult_to_vertex(
-            getv(from_object, ['code_execution_result']), to_object, root_object
-        ),
+        getv(from_object, ['code_execution_result']),
     )
 
   if getv(from_object, ['executable_code']) is not None:
-    setv(
-        to_object,
-        ['executableCode'],
-        _ExecutableCode_to_vertex(
-            getv(from_object, ['executable_code']), to_object, root_object
-        ),
-    )
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['file_data']) is not None:
     setv(to_object, ['fileData'], getv(from_object, ['file_data']))
@@ -6405,6 +6355,7 @@ class Models(_api_module.BaseModule):
     return return_value
 
   _logged_generate_videos_deprecation_warning = False
+  _logged_afc_warning = False
 
   def embed_content(
       self,
@@ -6572,6 +6523,15 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
+    if not Models._logged_afc_warning:
+      logger.warning(
+          'Direct use of automatic function calling (AFC) in'
+          ' Models.generate_content is not recommended. Instead, we recommend'
+          ' to use AFC in Chat.send_message. Similarly, direct use of AFC in'
+          ' Models.generate_content_stream is not recommended. Instead, we'
+          ' recommend to use AFC in Chat.send_message_stream.'
+      )
+      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     response = types.GenerateContentResponse()
     i = 0
@@ -6736,6 +6696,15 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
+    if not Models._logged_afc_warning:
+      logger.warning(
+          'Direct use of automatic function calling (AFC) in '
+          'Models.generate_content_stream is not recommended. Instead, we '
+          'recommend to use AFC in Chat.send_message_stream. Similarly, direct '
+          'use of AFC in Models.generate_content is not recommended. Instead, '
+          'we recommend to use AFC in Chat.send_message.'
+      )
+      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     i = 0
     while remaining_remote_calls_afc > 0:
@@ -8604,6 +8573,7 @@ class AsyncModels(_api_module.BaseModule):
     return return_value
 
   _logged_generate_videos_deprecation_warning = False
+  _logged_afc_warning = False
 
   async def generate_content(
       self,
@@ -8737,6 +8707,16 @@ class AsyncModels(_api_module.BaseModule):
       logger.info(
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
       )
+      if not AsyncModels._logged_afc_warning:
+        logger.warning(
+            'Direct use of automatic function calling (AFC) in '
+            'AsyncModels.generate_content is not recommended. Instead, we '
+            'recommend to use AFC in AsyncChat.send_message. Similarly, direct '
+            'use of AFC in AsyncModels.generate_content_stream is not '
+            'recommended. Instead, we recommend to use AFC in '
+            'AsyncChat.send_message_stream.'
+        )
+        AsyncModels._logged_afc_warning = True
       automatic_function_calling_history: list[types.Content] = []
       response = types.GenerateContentResponse()
 
@@ -8973,6 +8953,16 @@ class AsyncModels(_api_module.BaseModule):
             'AFC is enabled with max remote calls:'
             f' {remaining_remote_calls_afc}.'
         )
+        if not AsyncModels._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'AsyncModels.generate_content_stream is not recommended. '
+              'Instead, we recommend to use AFC in '
+              'AsyncChat.send_message_stream. Similarly, direct use of AFC in '
+              'AsyncModels.generate_content is not recommended. '
+              'Instead, we recommend to use AFC in AsyncChat.send_message.'
+          )
+          AsyncModels._logged_afc_warning = True
         automatic_function_calling_history: list[types.Content] = []
         i = 0
         loop_contents = contents

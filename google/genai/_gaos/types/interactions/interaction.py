@@ -45,7 +45,7 @@ from .videocontent import VideoContent, VideoContentParam
 from .webhookconfig import WebhookConfig, WebhookConfigParam
 from functools import partial
 import pydantic
-from pydantic import ConfigDict, model_serializer, model_validator
+from pydantic import ConfigDict, model_serializer
 from pydantic.functional_validators import BeforeValidator
 from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
@@ -387,7 +387,7 @@ class Interaction(BaseModel):
         coerced["steps"] = [{"type": "model_output", "content": outputs}]
         return coerced
 
-    @model_validator(mode="before")
+    @pydantic.model_validator(mode="before")
     @classmethod
     def _coerce_outputs_to_steps(cls, data: Any) -> Any:
         return cls._maybe_coerce_outputs(data)
@@ -396,9 +396,11 @@ class Interaction(BaseModel):
     def model_construct(cls, _fields_set=None, **values):
         # Coerce legacy lyria ``outputs`` -> ``steps`` here as well: validators
         # do not run on model_construct (used by deferred SSE parsing).
-        return super().model_construct(_fields_set, **cls._maybe_coerce_outputs(values))
+        return pydantic.BaseModel.model_construct(
+            _fields_set, **cls._maybe_coerce_outputs(values)
+        )
 
-    @model_validator(mode="after")
+    @pydantic.model_validator(mode="after")
     def _populate_output_helpers(self):
         steps = self.steps if isinstance(self.steps, list) else []
 
