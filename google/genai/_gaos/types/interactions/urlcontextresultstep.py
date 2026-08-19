@@ -19,7 +19,7 @@
 from __future__ import annotations
 from .. import Base64EncodedString, Base64FileInput, BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
-from .urlcontextresult import URLContextResult, URLContextResultParam
+from .urlcontextresultitem import URLContextResultItem, URLContextResultItemParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -32,7 +32,7 @@ class URLContextResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    result: List[URLContextResultParam]
+    result: List[URLContextResultItemParam]
     r"""Required. The results of the URL context."""
     is_error: NotRequired[bool]
     r"""Whether the URL context resulted in an error."""
@@ -47,7 +47,7 @@ class URLContextResultStep(BaseModel):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
 
-    result: List[URLContextResult]
+    result: List[URLContextResultItem]
     r"""Required. The results of the URL context."""
 
     is_error: Optional[bool] = None

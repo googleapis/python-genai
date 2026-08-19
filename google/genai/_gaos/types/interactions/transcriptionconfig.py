@@ -27,8 +27,6 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class TranscriptionConfigParam(TypedDict):
     r"""Configuration for speech recognition (transcription)."""
 
-    adaptation_phrases: NotRequired[List[str]]
-    r"""Optional. A list of phrases to bias the ASR model towards."""
     custom_vocabulary: NotRequired[List[str]]
     r"""Optional. A list of custom vocabulary phrases to bias the speech recognition model
     toward recognizing specific terms.
@@ -43,18 +41,12 @@ class TranscriptionConfigParam(TypedDict):
     r"""Optional. The granularity of timestamps to include in the transcription output.
     Supported values: \"word\". If empty, no timestamps are generated.
     """
+    language_hints: NotRequired[List[str]]
+    r"""Deprecated: use language_codes. BCP-47 language codes providing hints about the languages present in the audio."""
 
 
 class TranscriptionConfig(BaseModel):
     r"""Configuration for speech recognition (transcription)."""
-
-    adaptation_phrases: Annotated[
-        Optional[List[str]],
-        pydantic.Field(
-            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-        ),
-    ] = None
-    r"""Optional. A list of phrases to bias the ASR model towards."""
 
     custom_vocabulary: Optional[List[str]] = None
     r"""Optional. A list of custom vocabulary phrases to bias the speech recognition model
@@ -74,15 +66,23 @@ class TranscriptionConfig(BaseModel):
     Supported values: \"word\". If empty, no timestamps are generated.
     """
 
+    language_hints: Annotated[
+        Optional[List[str]],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Deprecated: use language_codes. BCP-47 language codes providing hints about the languages present in the audio."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "adaptation_phrases",
                 "custom_vocabulary",
                 "diarization_mode",
                 "language_codes",
                 "timestamp_granularities",
+                "language_hints",
             ]
         )
         serialized = handler(self)

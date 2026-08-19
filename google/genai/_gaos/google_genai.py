@@ -223,8 +223,19 @@ class GeminiNextGenInteractions(GeneratedInteractions):
     """
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        # api_version is a hidden global on the generated client; a per-call
+        # override routes through a client built for that version.
+        if api_version:
+            sdk = build_google_genai_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedInteractions(sdk.sdk_configuration, parent_ref=sdk)
+        return super(GeminiNextGenInteractions, self)
 
     if not TYPE_CHECKING:
         @property
@@ -254,11 +265,11 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             if request is not None:
                 if body:
                     raise TypeError(_REQUEST_AND_BODY_ERROR)
+                request = _unwrap_create_request(request)
                 stream = _request_stream(request)
                 response = wrap_sdk_call(
-                    super().create,
+                    self._generated(api_version).create,
                     request=request,
-                    api_version=api_version,
                     extra_headers=extra_headers,
                     extra_query=extra_query,
                     extra_body=extra_body,
@@ -273,8 +284,7 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             stream = _optional_bool(body.get('stream'), default=False)
             body = _normalize_create_body(body)
             response = wrap_sdk_call(
-                super().create,
-                api_version=api_version,
+                self._generated(api_version).create,
                 **cast(Any, body),
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -306,9 +316,8 @@ class GeminiNextGenInteractions(GeneratedInteractions):
         ]:
             stream_bool = bool(_optional_bool(stream, default=False))
             response = wrap_sdk_call(
-                super().get,
+                self._generated(api_version).get,
                 id=id,
-                api_version=api_version,
                 include_input=_optional_bool(include_input),
                 last_event_id=_optional_str(last_event_id),
                 stream=stream_bool,
@@ -341,9 +350,8 @@ class GeminiNextGenInteractions(GeneratedInteractions):
                 interactions.Interaction,
                 _add_output_properties_if_interaction(
                     wrap_sdk_call(
-                        super().cancel,
+                        self._generated(api_version).cancel,
                         id=id,
-                        api_version=api_version,
                         extra_headers=extra_headers,
                         extra_query=extra_query,
                         timeout=timeout,
@@ -362,9 +370,8 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             timeout: Optional[Union[float, httpx.Timeout]] = None,
         ) -> Any:
             return wrap_sdk_call(
-                super().delete,
+                self._generated(api_version).delete,
                 id=id,
-                api_version=api_version,
                 extra_headers=extra_headers,
                 extra_query=extra_query,
                 timeout=timeout,
@@ -375,8 +382,19 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
     """Async public interactions resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_async_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedAsyncInteractions(
+                sdk.sdk_configuration, parent_ref=sdk
+            )
+        return super(AsyncGeminiNextGenInteractions, self)
 
     if not TYPE_CHECKING:
         @property
@@ -406,11 +424,11 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             if request is not None:
                 if body:
                     raise TypeError(_REQUEST_AND_BODY_ERROR)
+                request = _unwrap_create_request(request)
                 stream = _request_stream(request)
                 response = await async_wrap_sdk_call(
-                    super().create,
+                    self._generated(api_version).create,
                     request=request,
-                    api_version=api_version,
                     extra_headers=extra_headers,
                     extra_query=extra_query,
                     extra_body=extra_body,
@@ -425,8 +443,7 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             stream = _optional_bool(body.get('stream'), default=False)
             body = _normalize_create_body(body)
             response = await async_wrap_sdk_call(
-                super().create,
-                api_version=api_version,
+                self._generated(api_version).create,
                 **cast(Any, body),
                 extra_headers=extra_headers,
                 extra_query=extra_query,
@@ -458,9 +475,8 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
         ]:
             stream_bool = bool(_optional_bool(stream, default=False))
             response = await async_wrap_sdk_call(
-                super().get,
+                self._generated(api_version).get,
                 id=id,
-                api_version=api_version,
                 include_input=_optional_bool(include_input),
                 last_event_id=_optional_str(last_event_id),
                 stream=stream_bool,
@@ -493,9 +509,8 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
                 interactions.Interaction,
                 _add_output_properties_if_interaction(
                     await async_wrap_sdk_call(
-                        super().cancel,
+                        self._generated(api_version).cancel,
                         id=id,
-                        api_version=api_version,
                         extra_headers=extra_headers,
                         extra_query=extra_query,
                         timeout=timeout,
@@ -514,9 +529,8 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             timeout: Optional[Union[float, httpx.Timeout]] = None,
         ) -> Any:
             return await async_wrap_sdk_call(
-                super().delete,
+                self._generated(api_version).delete,
                 id=id,
-                api_version=api_version,
                 extra_headers=extra_headers,
                 extra_query=extra_query,
                 timeout=timeout,
@@ -533,8 +547,17 @@ class GeminiNextGenWebhooks(GeneratedWebhooks):
     """
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedWebhooks(sdk.sdk_configuration, parent_ref=sdk)
+        return super(GeminiNextGenWebhooks, self)
 
     if not TYPE_CHECKING:
         @property
@@ -571,8 +594,17 @@ class AsyncGeminiNextGenWebhooks(GeneratedAsyncWebhooks):
     """Async public webhooks resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_async_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedAsyncWebhooks(sdk.sdk_configuration, parent_ref=sdk)
+        return super(AsyncGeminiNextGenWebhooks, self)
 
     if not TYPE_CHECKING:
         @property
@@ -617,8 +649,17 @@ class GeminiNextGenAgents(GeneratedAgents):
     """
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedAgents(sdk.sdk_configuration, parent_ref=sdk)
+        return super(GeminiNextGenAgents, self)
 
     if not TYPE_CHECKING:
         @property
@@ -646,8 +687,17 @@ class AsyncGeminiNextGenAgents(GeneratedAsyncAgents):
     """Async public agents resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_async_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedAsyncAgents(sdk.sdk_configuration, parent_ref=sdk)
+        return super(AsyncGeminiNextGenAgents, self)
 
     if not TYPE_CHECKING:
         @property
@@ -681,8 +731,17 @@ class GeminiNextGenTriggers(GeneratedTriggers):
     """
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedTriggers(sdk.sdk_configuration, parent_ref=sdk)
+        return super(GeminiNextGenTriggers, self)
 
     if not TYPE_CHECKING:
         @property
@@ -723,8 +782,17 @@ class AsyncGeminiNextGenTriggers(GeneratedAsyncTriggers):
     """Async public triggers resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
+        self._google_genai_api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _generated(self, api_version: Optional[str] = None) -> Any:
+        if api_version:
+            sdk = build_google_genai_async_client(
+                self._google_genai_api_client, api_version
+            )
+            return GeneratedAsyncTriggers(sdk.sdk_configuration, parent_ref=sdk)
+        return super(AsyncGeminiNextGenTriggers, self)
 
     if not TYPE_CHECKING:
         @property
@@ -801,8 +869,13 @@ class GeminiNextGenEnvironments(GeneratedEnvironments):
         def delete(self, *args: Any, **kwargs: Any) -> Any:
             return self.delete_environment(*args, **kwargs)
 
-        def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
-            return wrap_sdk_call(super().get_environment_files, *args, **kwargs)
+        # get_environment_files exists only in the internal generation
+        # (internal/genai-next); the public spec does not emit it. Wrap it
+        # only when the generated resource provides it so the bridge never
+        # exposes a method that would fail on super().
+        if hasattr(GeneratedEnvironments, "get_environment_files"):
+            def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
+                return wrap_sdk_call(super().get_environment_files, *args, **kwargs)
 
         # NOTE: update_environment, patch_environment are handled by fallback if they exist, but we assume they aren't generated based on our openapi.json.
 
@@ -847,8 +920,9 @@ class AsyncGeminiNextGenEnvironments(GeneratedAsyncEnvironments):
         async def delete(self, *args: Any, **kwargs: Any) -> Any:
             return await self.delete_environment(*args, **kwargs)
 
-        async def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
-            return await async_wrap_sdk_call(super().get_environment_files, *args, **kwargs)
+        if hasattr(GeneratedAsyncEnvironments, "get_environment_files"):
+            async def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
+                return await async_wrap_sdk_call(super().get_environment_files, *args, **kwargs)
 
 
 def _add_output_properties_if_interaction(value: Any) -> Any:
@@ -971,7 +1045,6 @@ def _get_value(value: Any, name: str) -> Any:
         return value.get(name)
     return getattr(value, name, None)
 
-
 # Allowed create() body keys, derived from the generated request models so the
 # set tracks the schema; output-only fields are excluded.
 _CREATE_BODY_KEYS = frozenset(
@@ -990,6 +1063,12 @@ _REQUEST_AND_BODY_ERROR = (
 )
 
 
+def _normalize_content_item(item: Any) -> Any:
+    if isinstance(item, dict) and 'text' in item and 'type' not in item:
+        return {'type': 'text', **item}
+    return item
+
+
 def _normalize_create_body(body: dict[str, Any]) -> dict[str, Any]:
     unknown = set(body) - _CREATE_BODY_KEYS
     if unknown:
@@ -1000,10 +1079,21 @@ def _normalize_create_body(body: dict[str, Any]) -> dict[str, Any]:
         )
 
     input_value = body.get('input')
-    if not _is_content_list(input_value):
-        return body
+    if _is_content_list(input_value):
+        normalized_content = [_normalize_content_item(item) for item in input_value]
+        return {**body, 'input': [{'type': 'user_input', 'content': normalized_content}]}
 
-    return {**body, 'input': [{'type': 'user_input', 'content': input_value}]}
+    if isinstance(input_value, list):
+        normalized_steps = []
+        for step in input_value:
+            if isinstance(step, dict) and isinstance(step.get('content'), list):
+                norm_c = [_normalize_content_item(item) for item in step['content']]
+                normalized_steps.append({**step, 'content': norm_c})
+            else:
+                normalized_steps.append(step)
+        return {**body, 'input': normalized_steps}
+
+    return body
 
 
 def _is_content_list(value: Any) -> bool:
@@ -1058,12 +1148,22 @@ def _optional_str(value: Any) -> Optional[str]:
     return None
 
 
+def _unwrap_create_request(request: Any) -> Any:
+    # The published `request=` overload takes the operation-shaped
+    # `{"body": <create params>}`; the generated create() (api_version is a
+    # hidden global, so the operation has no other parameters) takes the
+    # create params directly. Accept both and hand the generated method the
+    # body payload.
+    if isinstance(request, Mapping):
+        if 'body' in request:
+            return request['body']
+        return request
+    body = getattr(request, 'body', None)
+    return request if body is None else body
+
+
 def _request_stream(request: Any) -> bool:
-    body = (
-        request.get('body')
-        if isinstance(request, Mapping)
-        else getattr(request, 'body', None)
-    )
+    body = _unwrap_create_request(request)
     stream = (
         body.get('stream')
         if isinstance(body, Mapping)

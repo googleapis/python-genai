@@ -19,7 +19,12 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..types.agents import agent as agents_agent
-from ..utils import FieldMetadata, PathParamMetadata, RequestMetadata
+from ..utils import (
+    FieldMetadata,
+    PathParamMetadata,
+    QueryParamMetadata,
+    RequestMetadata,
+)
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -27,7 +32,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class CreateAgentGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateAgentGlobals(BaseModel):
@@ -35,7 +40,7 @@ class CreateAgentGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,9 +61,7 @@ class CreateAgentGlobals(BaseModel):
 
 class CreateAgentRequestParam(TypedDict):
     body: agents_agent.AgentParam
-    r"""The request body."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    parent: NotRequired[str]
 
 
 class CreateAgentRequest(BaseModel):
@@ -66,17 +69,15 @@ class CreateAgentRequest(BaseModel):
         agents_agent.Agent,
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ]
-    r"""The request body."""
 
-    api_version: Annotated[
+    parent: Annotated[
         Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Which version of the API to use."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version"])
+        optional_fields = set(["parent"])
         serialized = handler(self)
         m = {}
 

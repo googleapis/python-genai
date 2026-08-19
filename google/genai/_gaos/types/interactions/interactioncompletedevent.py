@@ -23,6 +23,7 @@ from .interactionsseeventinteraction import (
     InteractionSseEventInteraction,
     InteractionSseEventInteractionTypedDict,
 )
+from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -37,11 +38,13 @@ class InteractionCompletedEventTypedDict(TypedDict):
     full non-streaming Interaction responses.
 
     """
-    event_type: Literal["interaction.completed"]
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
+    event_type: Literal["interaction.completed"]
+    metadata: NotRequired[StreamMetadataTypedDict]
+    r"""Optional metadata accompanying ANY streamed event."""
 
 
 class InteractionCompletedEvent(BaseModel):
@@ -52,6 +55,11 @@ class InteractionCompletedEvent(BaseModel):
 
     """
 
+    event_id: Optional[str] = None
+    r"""The event_id token to be used to resume the interaction stream, from
+    this event.
+    """
+
     event_type: Annotated[
         Annotated[
             Literal["interaction.completed"],
@@ -60,14 +68,12 @@ class InteractionCompletedEvent(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "interaction.completed"
 
-    event_id: Optional[str] = None
-    r"""The event_id token to be used to resume the interaction stream, from
-    this event.
-    """
+    metadata: Optional[StreamMetadata] = None
+    r"""Optional metadata accompanying ANY streamed event."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id"])
+        optional_fields = set(["event_id", "metadata"])
         serialized = handler(self)
         m = {}
 

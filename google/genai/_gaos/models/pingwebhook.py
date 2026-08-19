@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class PingWebhookGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class PingWebhookGlobals(BaseModel):
@@ -35,7 +35,7 @@ class PingWebhookGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,38 +56,26 @@ class PingWebhookGlobals(BaseModel):
 
 class PingWebhookRequestParam(TypedDict):
     id: str
-    r"""Required. The ID of the webhook to ping.
-    Format: `{webhook_id}`
-    """
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""Required. The ID of the webhook to ping."""
     body: NotRequired[webhooks_pingwebhookrequest.PingWebhookRequestParam]
-    r"""The request body."""
+    r"""Required. The HTTP body of the payload."""
 
 
 class PingWebhookRequest(BaseModel):
     id: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
-    r"""Required. The ID of the webhook to ping.
-    Format: `{webhook_id}`
-    """
-
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
+    r"""Required. The ID of the webhook to ping."""
 
     body: Annotated[
         Optional[webhooks_pingwebhookrequest.PingWebhookRequest],
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ] = None
-    r"""The request body."""
+    r"""Required. The HTTP body of the payload."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "body"])
+        optional_fields = set(["body"])
         serialized = handler(self)
         m = {}
 

@@ -28,6 +28,7 @@ from .deepresearchagentconfig import (
 from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
 from .environment import Environment, EnvironmentParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
+from .localenvironmentconfig import LocalEnvironmentConfig, LocalEnvironmentConfigParam
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
 from .safetysetting import SafetySetting, SafetySettingParam
@@ -40,31 +41,6 @@ from typing import Dict, List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-CreateAgentInteractionResponseFormatParam = TypeAliasType(
-    "CreateAgentInteractionResponseFormatParam",
-    Union[List[ResponseFormatParam], ResponseFormatParam],
-)
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-
-CreateAgentInteractionResponseFormat = TypeAliasType(
-    "CreateAgentInteractionResponseFormat", Union[List[ResponseFormat], ResponseFormat]
-)
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-
-CreateAgentInteractionEnvironmentParam = TypeAliasType(
-    "CreateAgentInteractionEnvironmentParam", Union[EnvironmentParam, str]
-)
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-
-CreateAgentInteractionEnvironment = TypeAliasType(
-    "CreateAgentInteractionEnvironment", Union[Environment, str]
-)
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-
 CreateAgentInteractionAgentConfigParam = TypeAliasType(
     "CreateAgentInteractionAgentConfigParam",
     Union[
@@ -74,82 +50,138 @@ CreateAgentInteractionAgentConfigParam = TypeAliasType(
         CodeMenderAgentConfigParam,
     ],
 )
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 CreateAgentInteractionAgentConfig = Annotated[
     Union[
-        DynamicAgentConfig,
-        DeepResearchAgentConfig,
-        CodeMenderAgentConfig,
         AntigravityAgentConfig,
+        CodeMenderAgentConfig,
+        DeepResearchAgentConfig,
+        DynamicAgentConfig,
     ],
     Field(discriminator="type"),
 ]
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
+
+
+CreateAgentInteractionEnvironmentParam = TypeAliasType(
+    "CreateAgentInteractionEnvironmentParam",
+    Union[LocalEnvironmentConfigParam, EnvironmentParam, str],
+)
+r"""The environment configuration for the interaction."""
+
+
+CreateAgentInteractionEnvironment = TypeAliasType(
+    "CreateAgentInteractionEnvironment", Union[LocalEnvironmentConfig, Environment, str]
+)
+r"""The environment configuration for the interaction."""
+
+
+CreateAgentInteractionResponseFormatParam = TypeAliasType(
+    "CreateAgentInteractionResponseFormatParam",
+    Union[ResponseFormatParam, List[ResponseFormatParam]],
+)
+
+
+CreateAgentInteractionResponseFormat = TypeAliasType(
+    "CreateAgentInteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
+)
 
 
 class CreateAgentInteractionParam(TypedDict):
-    r"""Parameters for creating agent interactions"""
+    r"""Interaction for generating the completion using agents."""
 
     agent: AgentOption
     r"""The agent to interact with."""
-    input: InteractionsInputParam
-    r"""The input for the interaction."""
-    stream: NotRequired[bool]
-    r"""Input only. Whether the interaction will be streamed."""
-    store: NotRequired[bool]
-    r"""Input only. Whether to store the response and request for later retrieval."""
+    agent_config: NotRequired[CreateAgentInteractionAgentConfigParam]
+    r"""Parameters for the agent interaction."""
     background: NotRequired[bool]
     r"""Input only. Whether to run the model interaction in the background."""
+    environment: NotRequired[CreateAgentInteractionEnvironmentParam]
+    r"""The environment configuration for the interaction."""
+    labels: NotRequired[Dict[str, str]]
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
+    previous_interaction_id: NotRequired[str]
+    r"""The ID of the previous interaction, if any."""
+    response_format: NotRequired[CreateAgentInteractionResponseFormatParam]
+    safety_settings: NotRequired[List[SafetySettingParam]]
+    r"""Safety settings for the interaction."""
+    service_tier: NotRequired[ServiceTier]
+    store: NotRequired[bool]
+    r"""Input only. Whether to store the response and request for later retrieval."""
+    stream: NotRequired[bool]
+    r"""Input only. Whether the interaction will be streamed."""
     system_instruction: NotRequired[str]
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
     r"""A list of tool declarations the model may call during interaction."""
+    webhook_config: NotRequired[WebhookConfigParam]
+    r"""Message for configuring webhook events for a request."""
     response_modalities: NotRequired[List[ResponseModality]]
     r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
     response_mime_type: NotRequired[str]
     r"""The mime type of the response. This is required if response_format is set."""
-    previous_interaction_id: NotRequired[str]
-    r"""The ID of the previous interaction, if any."""
-    service_tier: NotRequired[ServiceTier]
-    webhook_config: NotRequired[WebhookConfigParam]
-    r"""Message for configuring webhook events for a request."""
-    response_format: NotRequired[CreateAgentInteractionResponseFormatParam]
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-    environment: NotRequired[CreateAgentInteractionEnvironmentParam]
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-    agent_config: NotRequired[CreateAgentInteractionAgentConfigParam]
-    r"""Configuration parameters for the agent interaction."""
-    safety_settings: NotRequired[List[SafetySettingParam]]
-    r"""Safety settings for the interaction."""
-    labels: NotRequired[Dict[str, str]]
-    r"""The labels with user-defined metadata for the request."""
+    input: NotRequired[InteractionsInputParam]
+    r"""The input for the interaction."""
 
 
 class CreateAgentInteraction(BaseModel):
-    r"""Parameters for creating agent interactions"""
+    r"""Interaction for generating the completion using agents."""
 
     agent: AgentOption
     r"""The agent to interact with."""
 
-    input: InteractionsInput
-    r"""The input for the interaction."""
+    agent_config: Optional[CreateAgentInteractionAgentConfig] = None
+    r"""Parameters for the agent interaction."""
 
-    stream: Optional[bool] = None
-    r"""Input only. Whether the interaction will be streamed."""
+    background: Optional[bool] = None
+    r"""Input only. Whether to run the model interaction in the background."""
+
+    environment: Optional[CreateAgentInteractionEnvironment] = None
+    r"""The environment configuration for the interaction."""
+
+    labels: Optional[Dict[str, str]] = None
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
+
+    previous_interaction_id: Optional[str] = None
+    r"""The ID of the previous interaction, if any."""
+
+    response_format: Optional[CreateAgentInteractionResponseFormat] = None
+
+    safety_settings: Optional[List[SafetySetting]] = None
+    r"""Safety settings for the interaction."""
+
+    service_tier: Optional[ServiceTier] = None
 
     store: Optional[bool] = None
     r"""Input only. Whether to store the response and request for later retrieval."""
 
-    background: Optional[bool] = None
-    r"""Input only. Whether to run the model interaction in the background."""
+    stream: Optional[bool] = None
+    r"""Input only. Whether the interaction will be streamed."""
 
     system_instruction: Optional[str] = None
     r"""System instruction for the interaction."""
 
     tools: Optional[List[Tool]] = None
     r"""A list of tool declarations the model may call during interaction."""
+
+    webhook_config: Optional[WebhookConfig] = None
+    r"""Message for configuring webhook events for a request."""
 
     response_modalities: Annotated[
         Optional[List[ResponseModality]],
@@ -167,48 +199,29 @@ class CreateAgentInteraction(BaseModel):
     ] = None
     r"""The mime type of the response. This is required if response_format is set."""
 
-    previous_interaction_id: Optional[str] = None
-    r"""The ID of the previous interaction, if any."""
-
-    service_tier: Optional[ServiceTier] = None
-
-    webhook_config: Optional[WebhookConfig] = None
-    r"""Message for configuring webhook events for a request."""
-
-    response_format: Optional[CreateAgentInteractionResponseFormat] = None
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-    environment: Optional[CreateAgentInteractionEnvironment] = None
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-    agent_config: Optional[CreateAgentInteractionAgentConfig] = None
-    r"""Configuration parameters for the agent interaction."""
-
-    safety_settings: Optional[List[SafetySetting]] = None
-    r"""Safety settings for the interaction."""
-
-    labels: Optional[Dict[str, str]] = None
-    r"""The labels with user-defined metadata for the request."""
+    input: Optional[InteractionsInput] = None
+    r"""The input for the interaction."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "stream",
-                "store",
+                "agent_config",
                 "background",
+                "environment",
+                "labels",
+                "previous_interaction_id",
+                "response_format",
+                "safety_settings",
+                "service_tier",
+                "store",
+                "stream",
                 "system_instruction",
                 "tools",
+                "webhook_config",
                 "response_modalities",
                 "response_mime_type",
-                "previous_interaction_id",
-                "service_tier",
-                "webhook_config",
-                "response_format",
-                "environment",
-                "agent_config",
-                "safety_settings",
-                "labels",
+                "input",
             ]
         )
         serialized = handler(self)

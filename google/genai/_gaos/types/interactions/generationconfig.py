@@ -33,6 +33,18 @@ from typing import List, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
+StructuredSpeechConfigParam = TypeAliasType(
+    "StructuredSpeechConfigParam", Union[SpeakerConfigParam, List[SpeechConfigParam]]
+)
+r"""Speech and multi-speaker configuration."""
+
+
+StructuredSpeechConfig = TypeAliasType(
+    "StructuredSpeechConfig", Union[SpeakerConfig, List[SpeechConfig]]
+)
+r"""Speech and multi-speaker configuration."""
+
+
 ToolChoiceParam = TypeAliasType(
     "ToolChoiceParam", Union[ToolChoiceConfigParam, ToolChoiceType]
 )
@@ -43,51 +55,35 @@ ToolChoice = TypeAliasType("ToolChoice", Union[ToolChoiceConfig, ToolChoiceType]
 r"""The tool choice configuration."""
 
 
-SpeechConfigUnionParam = TypeAliasType(
-    "SpeechConfigUnionParam", Union[SpeakerConfigParam, List[SpeechConfigParam]]
-)
-r"""Optional. Speech and multi-speaker configuration."""
-
-
-SpeechConfigUnion = TypeAliasType(
-    "SpeechConfigUnion", Union[SpeakerConfig, List[SpeechConfig]]
-)
-r"""Optional. Speech and multi-speaker configuration."""
-
-
 class GenerationConfigParam(TypedDict):
     r"""Configuration parameters for model interactions."""
 
-    image_config: NotRequired[ImageConfigParam]
-    r"""The configuration for image interaction."""
     max_output_tokens: NotRequired[int]
     r"""The maximum number of tokens to include in the response."""
     seed: NotRequired[int]
     r"""Seed used in decoding for reproducibility."""
     stop_sequences: NotRequired[List[str]]
     r"""A list of character sequences that will stop output interaction."""
+    structured_speech_config: NotRequired[StructuredSpeechConfigParam]
+    r"""Speech and multi-speaker configuration."""
+    temperature: NotRequired[float]
+    r"""Controls the randomness of the output."""
     thinking_level: NotRequired[ThinkingLevel]
     thinking_summaries: NotRequired[ThinkingSummaries]
     tool_choice: NotRequired[ToolChoiceParam]
     r"""The tool choice configuration."""
+    top_p: NotRequired[float]
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
     transcription_config: NotRequired[TranscriptionConfigParam]
     r"""Configuration for speech recognition (transcription)."""
     video_config: NotRequired[VideoConfigParam]
     r"""Configuration options for video generation."""
-    speech_config: NotRequired[SpeechConfigUnionParam]
-    r"""Optional. Speech and multi-speaker configuration."""
+    image_config: NotRequired[ImageConfigParam]
+    r"""The configuration for image interaction."""
 
 
 class GenerationConfig(BaseModel):
     r"""Configuration parameters for model interactions."""
-
-    image_config: Annotated[
-        Optional[ImageConfig],
-        pydantic.Field(
-            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-        ),
-    ] = None
-    r"""The configuration for image interaction."""
 
     max_output_tokens: Optional[int] = None
     r"""The maximum number of tokens to include in the response."""
@@ -98,6 +94,12 @@ class GenerationConfig(BaseModel):
     stop_sequences: Optional[List[str]] = None
     r"""A list of character sequences that will stop output interaction."""
 
+    structured_speech_config: Optional[StructuredSpeechConfig] = None
+    r"""Speech and multi-speaker configuration."""
+
+    temperature: Optional[float] = None
+    r"""Controls the randomness of the output."""
+
     thinking_level: Optional[ThinkingLevel] = None
 
     thinking_summaries: Optional[ThinkingSummaries] = None
@@ -105,29 +107,39 @@ class GenerationConfig(BaseModel):
     tool_choice: Optional[ToolChoice] = None
     r"""The tool choice configuration."""
 
+    top_p: Optional[float] = None
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
+
     transcription_config: Optional[TranscriptionConfig] = None
     r"""Configuration for speech recognition (transcription)."""
 
     video_config: Optional[VideoConfig] = None
     r"""Configuration options for video generation."""
 
-    speech_config: Optional[SpeechConfigUnion] = None
-    r"""Optional. Speech and multi-speaker configuration."""
+    image_config: Annotated[
+        Optional[ImageConfig],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""The configuration for image interaction."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "image_config",
                 "max_output_tokens",
                 "seed",
                 "stop_sequences",
+                "structured_speech_config",
+                "temperature",
                 "thinking_level",
                 "thinking_summaries",
                 "tool_choice",
+                "top_p",
                 "transcription_config",
                 "video_config",
-                "speech_config",
+                "image_config",
             ]
         )
         serialized = handler(self)

@@ -33,6 +33,7 @@ from .error import Error, ErrorTypedDict
 from .generationconfig import GenerationConfig, GenerationConfigParam
 from .imagecontent import ImageContent, ImageContentParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
+from .localenvironmentconfig import LocalEnvironmentConfig, LocalEnvironmentConfigParam
 from .model import Model
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
@@ -51,6 +52,30 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
+InteractionEnvironmentTypedDict = TypeAliasType(
+    "InteractionEnvironmentTypedDict",
+    Union[LocalEnvironmentConfigParam, EnvironmentParam, str],
+)
+r"""The environment configuration for the interaction."""
+
+
+InteractionEnvironment = TypeAliasType(
+    "InteractionEnvironment", Union[LocalEnvironmentConfig, Environment, str]
+)
+r"""The environment configuration for the interaction."""
+
+
+InteractionResponseFormatTypedDict = TypeAliasType(
+    "InteractionResponseFormatTypedDict",
+    Union[ResponseFormatParam, List[ResponseFormatParam]],
+)
+
+
+InteractionResponseFormat = TypeAliasType(
+    "InteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
+)
+
+
 InteractionStatus = Union[
     Literal[
         "in_progress",
@@ -67,31 +92,6 @@ InteractionStatus = Union[
 r"""Required. Output only. The status of the interaction."""
 
 
-InteractionResponseFormatTypedDict = TypeAliasType(
-    "InteractionResponseFormatTypedDict",
-    Union[List[ResponseFormatParam], ResponseFormatParam],
-)
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-
-InteractionResponseFormat = TypeAliasType(
-    "InteractionResponseFormat", Union[List[ResponseFormat], ResponseFormat]
-)
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-
-InteractionEnvironmentTypedDict = TypeAliasType(
-    "InteractionEnvironmentTypedDict", Union[EnvironmentParam, str]
-)
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-
-InteractionEnvironment = TypeAliasType(
-    "InteractionEnvironment", Union[Environment, str]
-)
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-
 InteractionAgentConfigTypedDict = TypeAliasType(
     "InteractionAgentConfigTypedDict",
     Union[
@@ -101,7 +101,7 @@ InteractionAgentConfigTypedDict = TypeAliasType(
         CodeMenderAgentConfigParam,
     ],
 )
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 class UnknownInteractionAgentConfig(BaseModel):
@@ -115,19 +115,19 @@ class UnknownInteractionAgentConfig(BaseModel):
 
 
 _INTERACTION_AGENT_CONFIG_VARIANTS: dict[str, Any] = {
-    "dynamic": DynamicAgentConfig,
-    "deep-research": DeepResearchAgentConfig,
-    "code-mender": CodeMenderAgentConfig,
     "antigravity": AntigravityAgentConfig,
+    "code-mender": CodeMenderAgentConfig,
+    "deep-research": DeepResearchAgentConfig,
+    "dynamic": DynamicAgentConfig,
 }
 
 
 InteractionAgentConfig = Annotated[
     Union[
-        DynamicAgentConfig,
-        DeepResearchAgentConfig,
-        CodeMenderAgentConfig,
         AntigravityAgentConfig,
+        CodeMenderAgentConfig,
+        DeepResearchAgentConfig,
+        DynamicAgentConfig,
         UnknownInteractionAgentConfig,
     ],
     BeforeValidator(
@@ -141,7 +141,7 @@ InteractionAgentConfig = Annotated[
         )
     ),
 ]
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 class InteractionTypedDict(TypedDict):
@@ -149,66 +149,72 @@ class InteractionTypedDict(TypedDict):
 
     status: InteractionStatus
     r"""Required. Output only. The status of the interaction."""
-    model: NotRequired[Model]
-    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
-    agent: NotRequired[AgentOption]
-    r"""The agent to interact with."""
-    id: NotRequired[str]
-    r"""Required. Output only. A unique identifier for the interaction completion."""
     created: NotRequired[str]
-    r"""Output only. The time at which the response was created in ISO 8601 format
+    r"""Required. Output only. The time at which the response was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
-    updated: NotRequired[str]
-    r"""Output only. The time at which the response was last updated in ISO 8601 format
-    (YYYY-MM-DDThh:mm:ssZ).
-    """
-    system_instruction: NotRequired[str]
-    r"""System instruction for the interaction."""
-    tools: NotRequired[List[ToolParam]]
-    r"""A list of tool declarations the model may call during interaction."""
-    errors: NotRequired[List[ErrorTypedDict]]
-    r"""Output only. Diagnostic faults / platform errors recorded on the interaction."""
-    usage: NotRequired[UsageTypedDict]
-    r"""Statistics on the interaction request's token usage."""
-    response_modalities: NotRequired[List[ResponseModality]]
-    r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
-    response_mime_type: NotRequired[str]
-    r"""The mime type of the response. This is required if response_format is set."""
-    previous_interaction_id: NotRequired[str]
-    r"""The ID of the previous interaction, if any."""
+    environment: NotRequired[InteractionEnvironmentTypedDict]
+    r"""The environment configuration for the interaction."""
     environment_id: NotRequired[str]
     r"""Output only. The environment ID for the interaction. Only populated if environment
     config is set in the request.
     """
-    service_tier: NotRequired[ServiceTier]
-    webhook_config: NotRequired[WebhookConfigParam]
-    r"""Message for configuring webhook events for a request."""
-    steps: NotRequired[List[StepParam]]
-    r"""Output only. The steps that make up the interaction, when included in the response."""
-    response_format: NotRequired[InteractionResponseFormatTypedDict]
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-    environment: NotRequired[InteractionEnvironmentTypedDict]
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    errors: NotRequired[List[ErrorTypedDict]]
+    r"""Output only. Diagnostic faults / platform errors recorded on the interaction."""
     generation_config: NotRequired[GenerationConfigParam]
     r"""Configuration parameters for model interactions."""
-    agent_config: NotRequired[InteractionAgentConfigTypedDict]
-    r"""Configuration parameters for the agent interaction."""
+    id: NotRequired[str]
+    r"""Required. Output only. A unique identifier for the interaction completion."""
+    labels: NotRequired[Dict[str, str]]
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
+    previous_interaction_id: NotRequired[str]
+    r"""The ID of the previous interaction, if any."""
+    response_format: NotRequired[InteractionResponseFormatTypedDict]
     safety_settings: NotRequired[List[SafetySettingParam]]
     r"""Safety settings for the interaction."""
-    labels: NotRequired[Dict[str, str]]
-    r"""The labels with user-defined metadata for the request."""
+    service_tier: NotRequired[ServiceTier]
+    steps: NotRequired[List[StepParam]]
+    r"""Required. Output only. The steps that make up the interaction."""
+    system_instruction: NotRequired[str]
+    r"""System instruction for the interaction."""
+    tools: NotRequired[List[ToolParam]]
+    r"""A list of tool declarations the model may call during interaction."""
+    updated: NotRequired[str]
+    r"""Required. Output only. The time at which the response was last updated in ISO 8601 format
+    (YYYY-MM-DDThh:mm:ssZ).
+    """
+    usage: NotRequired[UsageTypedDict]
+    r"""Statistics on the interaction request's token usage."""
+    webhook_config: NotRequired[WebhookConfigParam]
+    r"""Message for configuring webhook events for a request."""
+    response_modalities: NotRequired[List[ResponseModality]]
+    r"""The requested modalities of the response (TEXT, IMAGE, AUDIO)."""
+    response_mime_type: NotRequired[str]
+    r"""The mime type of the response. This is required if response_format is set."""
     input: NotRequired[InteractionsInputParam]
     r"""The input for the interaction."""
+    model: NotRequired[Model]
+    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+    agent: NotRequired[AgentOption]
+    r"""The agent to interact with."""
+    agent_config: NotRequired[InteractionAgentConfigTypedDict]
+    r"""Parameters for the agent interaction."""
+    output_audio: NotRequired[AudioContentParam]
+    r"""An audio content block."""
+    output_image: NotRequired[ImageContentParam]
+    r"""An image content block."""
     output_text: NotRequired[str]
     r"""Concatenated text from the last model output in response to the current request.
 
     Note: this is added by the SDK.
     """
-    output_image: NotRequired[ImageContentParam]
-    r"""An image content block."""
-    output_audio: NotRequired[AudioContentParam]
-    r"""An audio content block."""
     output_video: NotRequired[VideoContentParam]
     r"""A video content block."""
 
@@ -219,24 +225,50 @@ class Interaction(BaseModel):
     status: InteractionStatus
     r"""Required. Output only. The status of the interaction."""
 
-    model: Optional[Model] = None
-    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+    created: Optional[str] = None
+    r"""Required. Output only. The time at which the response was created in ISO 8601 format
+    (YYYY-MM-DDThh:mm:ssZ).
+    """
 
-    agent: Optional[AgentOption] = None
-    r"""The agent to interact with."""
+    environment: Optional[InteractionEnvironment] = None
+    r"""The environment configuration for the interaction."""
 
-    id: Optional[str] = ""
+    environment_id: Optional[str] = None
+    r"""Output only. The environment ID for the interaction. Only populated if environment
+    config is set in the request.
+    """
+
+    errors: Optional[List[Error]] = None
+    r"""Output only. Diagnostic faults / platform errors recorded on the interaction."""
+
+    generation_config: Optional[GenerationConfig] = None
+    r"""Configuration parameters for model interactions."""
+
+    id: Optional[str] = None
     r"""Required. Output only. A unique identifier for the interaction completion."""
 
-    created: Optional[str] = None
-    r"""Output only. The time at which the response was created in ISO 8601 format
-    (YYYY-MM-DDThh:mm:ssZ).
+    labels: Optional[Dict[str, str]] = None
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
     """
 
-    updated: Optional[str] = None
-    r"""Output only. The time at which the response was last updated in ISO 8601 format
-    (YYYY-MM-DDThh:mm:ssZ).
-    """
+    previous_interaction_id: Optional[str] = None
+    r"""The ID of the previous interaction, if any."""
+
+    response_format: Optional[InteractionResponseFormat] = None
+
+    safety_settings: Optional[List[SafetySetting]] = None
+    r"""Safety settings for the interaction."""
+
+    service_tier: Optional[ServiceTier] = None
+
+    steps: Optional[List[Step]] = None
+    r"""Required. Output only. The steps that make up the interaction."""
 
     system_instruction: Optional[str] = None
     r"""System instruction for the interaction."""
@@ -244,11 +276,16 @@ class Interaction(BaseModel):
     tools: Optional[List[Tool]] = None
     r"""A list of tool declarations the model may call during interaction."""
 
-    errors: Optional[List[Error]] = None
-    r"""Output only. Diagnostic faults / platform errors recorded on the interaction."""
+    updated: Optional[str] = None
+    r"""Required. Output only. The time at which the response was last updated in ISO 8601 format
+    (YYYY-MM-DDThh:mm:ssZ).
+    """
 
     usage: Optional[Usage] = None
     r"""Statistics on the interaction request's token usage."""
+
+    webhook_config: Optional[WebhookConfig] = None
+    r"""Message for configuring webhook events for a request."""
 
     response_modalities: Annotated[
         Optional[List[ResponseModality]],
@@ -266,54 +303,29 @@ class Interaction(BaseModel):
     ] = None
     r"""The mime type of the response. This is required if response_format is set."""
 
-    previous_interaction_id: Optional[str] = None
-    r"""The ID of the previous interaction, if any."""
-
-    environment_id: Optional[str] = None
-    r"""Output only. The environment ID for the interaction. Only populated if environment
-    config is set in the request.
-    """
-
-    service_tier: Optional[ServiceTier] = None
-
-    webhook_config: Optional[WebhookConfig] = None
-    r"""Message for configuring webhook events for a request."""
-
-    steps: Optional[List[Step]] = None
-    r"""Output only. The steps that make up the interaction, when included in the response."""
-
-    response_format: Optional[InteractionResponseFormat] = None
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
-
-    environment: Optional[InteractionEnvironment] = None
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
-
-    generation_config: Optional[GenerationConfig] = None
-    r"""Configuration parameters for model interactions."""
-
-    agent_config: Optional[InteractionAgentConfig] = None
-    r"""Configuration parameters for the agent interaction."""
-
-    safety_settings: Optional[List[SafetySetting]] = None
-    r"""Safety settings for the interaction."""
-
-    labels: Optional[Dict[str, str]] = None
-    r"""The labels with user-defined metadata for the request."""
-
     input: Optional[InteractionsInput] = None
     r"""The input for the interaction."""
+
+    model: Optional[Model] = None
+    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+
+    agent: Optional[AgentOption] = None
+    r"""The agent to interact with."""
+
+    agent_config: Optional[InteractionAgentConfig] = None
+    r"""Parameters for the agent interaction."""
+
+    output_audio: Optional[AudioContent] = None
+    r"""An audio content block."""
+
+    output_image: Optional[ImageContent] = None
+    r"""An image content block."""
 
     output_text: Optional[str] = None
     r"""Concatenated text from the last model output in response to the current request.
 
     Note: this is added by the SDK.
     """
-
-    output_image: Optional[ImageContent] = None
-    r"""An image content block."""
-
-    output_audio: Optional[AudioContent] = None
-    r"""An audio content block."""
 
     output_video: Optional[VideoContent] = None
     r"""A video content block."""
@@ -322,32 +334,32 @@ class Interaction(BaseModel):
     def _serialize_model(self, handler):
         optional_fields = set(
             [
-                "model",
-                "agent",
-                "id",
                 "created",
-                "updated",
+                "environment",
+                "environment_id",
+                "errors",
+                "generation_config",
+                "id",
+                "labels",
+                "previous_interaction_id",
+                "response_format",
+                "safety_settings",
+                "service_tier",
+                "steps",
                 "system_instruction",
                 "tools",
-                "errors",
+                "updated",
                 "usage",
+                "webhook_config",
                 "response_modalities",
                 "response_mime_type",
-                "previous_interaction_id",
-                "environment_id",
-                "service_tier",
-                "webhook_config",
-                "steps",
-                "response_format",
-                "environment",
-                "generation_config",
-                "agent_config",
-                "safety_settings",
-                "labels",
                 "input",
-                "output_text",
-                "output_image",
+                "model",
+                "agent",
+                "agent_config",
                 "output_audio",
+                "output_image",
+                "output_text",
                 "output_video",
             ]
         )
@@ -396,7 +408,7 @@ class Interaction(BaseModel):
     def model_construct(cls, _fields_set=None, **values):
         # Coerce legacy lyria ``outputs`` -> ``steps`` here as well: validators
         # do not run on model_construct (used by deferred SSE parsing).
-        return pydantic.BaseModel.model_construct(
+        return super(cls, cls).model_construct(
             _fields_set, **cls._maybe_coerce_outputs(values)
         )
 

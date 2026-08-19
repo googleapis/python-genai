@@ -19,10 +19,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils import validate_const
-from .retrievalcallarguments import (
-    RetrievalCallArguments,
-    RetrievalCallArgumentsTypedDict,
-)
+from .retrievalcallarguments import RetrievalCallArguments, RetrievalCallArgumentsParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -47,7 +44,7 @@ class RetrievalCallDeltaTypedDict(TypedDict):
     etc. RetrievalType decides which tool is used.
     """
 
-    arguments: RetrievalCallArgumentsTypedDict
+    arguments: RetrievalCallArgumentsParam
     r"""The arguments to pass to Retrieval tools."""
     retrieval_type: NotRequired[RetrievalCallDeltaRetrievalType]
     r"""The type of retrieval tools."""

@@ -18,38 +18,28 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from ...utils import validate_const
-import pydantic
+from .rankservice import RankService, RankServiceParam
 from pydantic import model_serializer
-from pydantic.functional_validators import AfterValidator
-from typing import Literal, Optional
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing import Optional
+from typing_extensions import NotRequired, TypedDict
 
 
 class RankingParam(TypedDict):
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
 
-    model_name: NotRequired[str]
-    r"""Optional. The model name of the rank service."""
-    ranking_config: Literal["rank_service"]
+    rank_service: NotRequired[RankServiceParam]
+    r"""Config for Rank Service."""
 
 
 class Ranking(BaseModel):
+    r"""Config for ranking and reranking."""
+
+    rank_service: Optional[RankService] = None
     r"""Config for Rank Service."""
-
-    model_name: Optional[str] = None
-    r"""Optional. The model name of the rank service."""
-
-    ranking_config: Annotated[
-        Annotated[
-            Literal["rank_service"], AfterValidator(validate_const("rank_service"))
-        ],
-        pydantic.Field(alias="ranking_config"),
-    ] = "rank_service"
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["model_name"])
+        optional_fields = set(["rank_service"])
         serialized = handler(self)
         m = {}
 
@@ -62,9 +52,3 @@ class Ranking(BaseModel):
                     m[k] = val
 
         return m
-
-
-try:
-    Ranking.model_rebuild()
-except NameError:
-    pass

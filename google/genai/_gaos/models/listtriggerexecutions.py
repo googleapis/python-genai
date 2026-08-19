@@ -19,6 +19,7 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..utils import FieldMetadata, PathParamMetadata, QueryParamMetadata
+import pydantic
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -26,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListTriggerExecutionsGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListTriggerExecutionsGlobals(BaseModel):
@@ -34,7 +35,7 @@ class ListTriggerExecutionsGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -55,42 +56,45 @@ class ListTriggerExecutionsGlobals(BaseModel):
 
 class ListTriggerExecutionsRequestParam(TypedDict):
     trigger_id: str
-    r"""Resource name of the trigger."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""Required. The trigger ID to list executions from."""
+    filter_: NotRequired[str]
+    r"""Optional. Filter expression."""
     page_size: NotRequired[int]
-    r"""Optional. The maximum number of executions to return per page."""
+    r"""The maximum number of executions to return per page."""
     page_token: NotRequired[str]
-    r"""Optional. A page token from a previous ListTriggerExecutions call."""
+    r"""A page token from a previous ListTriggerExecutions call."""
 
 
 class ListTriggerExecutionsRequest(BaseModel):
     trigger_id: Annotated[
-        str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
-    ]
-    r"""Resource name of the trigger."""
-
-    api_version: Annotated[
-        Optional[str],
+        str,
+        pydantic.Field(alias="triggerId"),
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
+    ]
+    r"""Required. The trigger ID to list executions from."""
+
+    filter_: Annotated[
+        Optional[str],
+        pydantic.Field(alias="filter"),
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""Optional. Filter expression."""
 
     page_size: Annotated[
         Optional[int],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. The maximum number of executions to return per page."""
+    r"""The maximum number of executions to return per page."""
 
     page_token: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. A page token from a previous ListTriggerExecutions call."""
+    r"""A page token from a previous ListTriggerExecutions call."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "page_size", "page_token"])
+        optional_fields = set(["filter", "page_size", "page_token"])
         serialized = handler(self)
         m = {}
 

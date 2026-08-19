@@ -20,6 +20,7 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
 from .error import Error, ErrorTypedDict
+from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -35,6 +36,8 @@ class ErrorEventTypedDict(TypedDict):
     this event.
     """
     event_type: Literal["error"]
+    metadata: NotRequired[StreamMetadataTypedDict]
+    r"""Optional metadata accompanying ANY streamed event."""
 
 
 class ErrorEvent(BaseModel):
@@ -51,9 +54,12 @@ class ErrorEvent(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "error"
 
+    metadata: Optional[StreamMetadata] = None
+    r"""Optional metadata accompanying ANY streamed event."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["error", "event_id"])
+        optional_fields = set(["error", "event_id", "metadata"])
         serialized = handler(self)
         m = {}
 

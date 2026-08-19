@@ -19,6 +19,7 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..utils import FieldMetadata, PathParamMetadata
+import pydantic
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -26,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class DeleteInteractionGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteInteractionGlobals(BaseModel):
@@ -34,7 +35,7 @@ class DeleteInteractionGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -55,35 +56,17 @@ class DeleteInteractionGlobals(BaseModel):
 
 class DeleteInteractionRequestParam(TypedDict):
     id: str
-    r"""The unique identifier of the interaction to delete."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""Part of `name`. Required. The name of the interaction to delete.
+    Format: interactions/{interaction}
+    """
 
 
 class DeleteInteractionRequest(BaseModel):
     id: Annotated[
-        str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
-    ]
-    r"""The unique identifier of the interaction to delete."""
-
-    api_version: Annotated[
-        Optional[str],
+        str,
+        pydantic.Field(alias="interactionsId"),
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
-    @model_serializer(mode="wrap")
-    def serialize_model(self, handler):
-        optional_fields = set(["api_version"])
-        serialized = handler(self)
-        m = {}
-
-        for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
-
-            if val != UNSET_SENTINEL:
-                if val is not None or k not in optional_fields:
-                    m[k] = val
-
-        return m
+    ]
+    r"""Part of `name`. Required. The name of the interaction to delete.
+    Format: interactions/{interaction}
+    """

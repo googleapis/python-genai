@@ -35,7 +35,7 @@ URLContextResultStatus = Union[
 r"""The status of the URL retrieval."""
 
 
-class URLContextResultParam(TypedDict):
+class URLContextResultTypedDict(TypedDict):
     r"""The result of the URL context."""
 
     status: NotRequired[URLContextResultStatus]

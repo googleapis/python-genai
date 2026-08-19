@@ -18,10 +18,7 @@
 
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
-from ..types.environments import (
-    createenvironmentrequest as environments_createenvironmentrequest,
-)
-from ..utils import FieldMetadata, PathParamMetadata, RequestMetadata
+from ..utils import FieldMetadata, PathParamMetadata
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -29,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class CreateEnvironmentGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateEnvironmentGlobals(BaseModel):
@@ -37,44 +34,7 @@ class CreateEnvironmentGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
-
-    @model_serializer(mode="wrap")
-    def serialize_model(self, handler):
-        optional_fields = set(["api_version"])
-        serialized = handler(self)
-        m = {}
-
-        for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
-
-            if val != UNSET_SENTINEL:
-                if val is not None or k not in optional_fields:
-                    m[k] = val
-
-        return m
-
-
-class CreateEnvironmentRequestParam(TypedDict):
-    body: environments_createenvironmentrequest.CreateEnvironmentRequestParam
-    r"""Required. The environment to create."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
-
-
-class CreateEnvironmentRequest(BaseModel):
-    body: Annotated[
-        environments_createenvironmentrequest.CreateEnvironmentRequest,
-        FieldMetadata(request=RequestMetadata(media_type="application/json")),
-    ]
-    r"""Required. The environment to create."""
-
-    api_version: Annotated[
-        Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

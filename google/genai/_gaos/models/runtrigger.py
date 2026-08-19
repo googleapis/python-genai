@@ -19,6 +19,7 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..utils import FieldMetadata, PathParamMetadata
+import pydantic
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -26,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class RunTriggerGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class RunTriggerGlobals(BaseModel):
@@ -34,7 +35,7 @@ class RunTriggerGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -55,35 +56,13 @@ class RunTriggerGlobals(BaseModel):
 
 class RunTriggerRequestParam(TypedDict):
     trigger_id: str
-    r"""Resource name of the trigger."""
-    api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""Required. The ID of the trigger to run immediately."""
 
 
 class RunTriggerRequest(BaseModel):
     trigger_id: Annotated[
-        str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
-    ]
-    r"""Resource name of the trigger."""
-
-    api_version: Annotated[
-        Optional[str],
+        str,
+        pydantic.Field(alias="triggerId"),
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
-    ] = None
-    r"""Which version of the API to use."""
-
-    @model_serializer(mode="wrap")
-    def serialize_model(self, handler):
-        optional_fields = set(["api_version"])
-        serialized = handler(self)
-        m = {}
-
-        for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
-
-            if val != UNSET_SENTINEL:
-                if val is not None or k not in optional_fields:
-                    m[k] = val
-
-        return m
+    ]
+    r"""Required. The ID of the trigger to run immediately."""
