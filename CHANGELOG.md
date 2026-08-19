@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.19.0](https://github.com/googleapis/python-genai/compare/v2.18.1...v2.19.0) (2026-08-19)
+
+
+### Features
+
+* Add `mode` enum (`VERBATIM`, `SMART`) to `AudioTranscriptionConfig` and `TranscriptionConfig`. ([e8cd7d0](https://github.com/googleapis/python-genai/commit/e8cd7d001438da2b580c0d65cc429111f1c38442))
+* Add enable_data_retention to ToolParallelAiSearch, Add step_count to ReinforcementTuningHyperParameters, Add BidiGenerateContentSetup ([656da78](https://github.com/googleapis/python-genai/commit/656da7861344603fc122c2d3e6f98f88f7d7fe1e))
+* Add IDLE state to live connection status enum and mark REQUIRES_ACTION as deprecated. ([599d89f](https://github.com/googleapis/python-genai/commit/599d89fe1b6b4625d1c402a3275d95d8c84f3699))
+* Add video resolution and extension task parameters ([c3bdb88](https://github.com/googleapis/python-genai/commit/c3bdb8865ce11bfe8d4869fa80c6cb14a469abff))
+
 ## [2.18.1](https://github.com/googleapis/python-genai/compare/v2.18.0...v2.18.1) (2026-08-13)
 
 
