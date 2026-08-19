@@ -18,6 +18,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
+from .transcriptionmode import TranscriptionMode
 import pydantic
 from pydantic import model_serializer
 from typing import List, Optional
@@ -38,6 +39,11 @@ class TranscriptionConfigParam(TypedDict):
     language_codes: NotRequired[List[str]]
     r"""Optional. BCP-47 language codes providing hints about the languages present in the
     audio. If omitted or empty, defaults to automatic language detection.
+    """
+    mode: NotRequired[TranscriptionMode]
+    r"""Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If
+    unspecified, defaults to `VERBATIM` transcription. Mutually exclusive with
+    `timestamp_granularities` and `diarization_mode`.
     """
     timestamp_granularities: NotRequired[List[str]]
     r"""Optional. The granularity of timestamps to include in the transcription output.
@@ -69,6 +75,12 @@ class TranscriptionConfig(BaseModel):
     audio. If omitted or empty, defaults to automatic language detection.
     """
 
+    mode: Optional[TranscriptionMode] = None
+    r"""Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If
+    unspecified, defaults to `VERBATIM` transcription. Mutually exclusive with
+    `timestamp_granularities` and `diarization_mode`.
+    """
+
     timestamp_granularities: Optional[List[str]] = None
     r"""Optional. The granularity of timestamps to include in the transcription output.
     Supported values: \"word\". If empty, no timestamps are generated.
@@ -82,6 +94,7 @@ class TranscriptionConfig(BaseModel):
                 "custom_vocabulary",
                 "diarization_mode",
                 "language_codes",
+                "mode",
                 "timestamp_granularities",
             ]
         )
