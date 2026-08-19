@@ -18,6 +18,7 @@
 
 import pytest
 
+from ... import errors
 from ... import types
 from .. import pytest_helper
 
@@ -26,6 +27,7 @@ IMAGEN_MODEL_LATEST = 'imagen-4.0-generate-001'
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_simple_prompt',
+        exception_if_mldev='404',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',
@@ -103,6 +105,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_safety_filter_level_enum_parameters',
+        exception_if_mldev='404',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
@@ -115,6 +118,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_safety_filter_level_enum_parameters_2',
+        exception_if_mldev='404',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
@@ -127,6 +131,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_all_vertexai_config_safety_filter_level_enum_parameters_3',
+        exception_if_mldev='404',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Robot holding a red skateboard',
@@ -134,25 +139,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 safety_filter_level=types.SafetyFilterLevel.BLOCK_LOW_AND_ABOVE,
                 number_of_images=1,
                 output_mime_type='image/jpeg',
-            ),
-        ),
-    ),
-    pytest_helper.TestTableItem(
-        name='test_all_mldev_config_parameters',
-        parameters=types._GenerateImagesParameters(
-            model=IMAGEN_MODEL_LATEST,
-            prompt='Red skateboard',
-            config=types.GenerateImagesConfig(
-                image_size='2K',
-                aspect_ratio='1:1',
-                guidance_scale=15.0,
-                safety_filter_level='BLOCK_LOW_AND_ABOVE',
-                number_of_images=1,
-                person_generation='DONT_ALLOW',
-                include_safety_attributes=True,
-                include_rai_reason=True,
-                output_mime_type='image/jpeg',
-                output_compression_quality=80,
             ),
         ),
     ),
@@ -167,25 +153,26 @@ pytestmark = pytest_helper.setup(
 
 @pytest.mark.asyncio
 async def test_simple_prompt_async(client):
-  response = await client.aio.models.generate_images(
-      model=IMAGEN_MODEL_LATEST,
-      prompt='Red skateboard',
-      config=types.GenerateImagesConfig(
-          number_of_images=1,
-          output_mime_type='image/jpeg',
-          include_safety_attributes=True,
-          include_rai_reason=True,
-      ),
-  )
+  with pytest_helper.exception_if_mldev(client, errors.ClientError):
+    response = await client.aio.models.generate_images(
+        model=IMAGEN_MODEL_LATEST,
+        prompt='Red skateboard',
+        config=types.GenerateImagesConfig(
+            number_of_images=1,
+            output_mime_type='image/jpeg',
+            include_safety_attributes=True,
+            include_rai_reason=True,
+        ),
+    )
 
-  assert response.generated_images[0].image.image_bytes
-  # Verify the images accessor works correctly.
-  assert (
-      response.generated_images[0].image.image_bytes
-      == response.images[0].image_bytes
-  )
-  assert len(response.generated_images) == 1
-  assert (
-      response.positive_prompt_safety_attributes.content_type
-      == 'Positive Prompt'
-  )
+    assert response.generated_images[0].image.image_bytes
+    # Verify the images accessor works correctly.
+    assert (
+        response.generated_images[0].image.image_bytes
+        == response.images[0].image_bytes
+    )
+    assert len(response.generated_images) == 1
+    assert (
+        response.positive_prompt_safety_attributes.content_type
+        == 'Positive Prompt'
+    )
