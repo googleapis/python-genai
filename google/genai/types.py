@@ -8816,11 +8816,17 @@ class GenerateContentResponse(_common.BaseModel):
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
 
-  def _get_text(self) -> Optional[str]:
+  def _get_text(
+      self, *, warn_multiple_candidates: bool = True
+  ) -> Optional[str]:
     """Returns the concatenation of all text parts in the response.
 
     This is an internal method that allows customizing or disabling the warning
     message.
+
+    Args:
+      warn_multiple_candidates: Whether to warn when the response holds more
+        than one candidate. The SDK sets this to False for its own accesses.
 
     Returns:
       The concatenation of all text parts in the response.
@@ -8832,7 +8838,11 @@ class GenerateContentResponse(_common.BaseModel):
     ):
       return None
     global _response_text_warning_logged
-    if len(self.candidates) > 1 and not _response_text_warning_logged:
+    if (
+        warn_multiple_candidates
+        and len(self.candidates) > 1
+        and not _response_text_warning_logged
+    ):
       logger.warning(
           f'there are {len(self.candidates)} candidates, returning text result'
           ' from the first candidate. Access response.candidates directly to'
@@ -9016,7 +9026,7 @@ class GenerateContentResponse(_common.BaseModel):
     ):
       # Pydantic schema.
       try:
-        result_text = result._get_text()
+        result_text = result._get_text(warn_multiple_candidates=False)
         if result_text is not None:
           result.parsed = response_schema.model_validate_json(result_text)
       # may not be a valid json per stream response
@@ -9025,10 +9035,11 @@ class GenerateContentResponse(_common.BaseModel):
       except json.decoder.JSONDecodeError:
         pass
     elif (
-        isinstance(response_schema, EnumMeta) and result._get_text() is not None
+        isinstance(response_schema, EnumMeta)
+        and result._get_text(warn_multiple_candidates=False) is not None
     ):
       # Enum with "application/json" returns response in double quotes.
-      result_text = result._get_text()
+      result_text = result._get_text(warn_multiple_candidates=False)
       if result_text is None:
         raise ValueError('Response is empty.')
       enum_value = result_text.replace('"', '')
@@ -9049,7 +9060,7 @@ class GenerateContentResponse(_common.BaseModel):
         placeholder: response_schema  # type: ignore[valid-type]
 
       try:
-        result_text = result._get_text()
+        result_text = result._get_text(warn_multiple_candidates=False)
         if result_text is not None:
           parsed = {'placeholder': json.loads(result_text)}
           placeholder = Placeholder.model_validate(parsed)
@@ -9066,7 +9077,7 @@ class GenerateContentResponse(_common.BaseModel):
       # want the result converted to. So just return json.
       # JSON schema.
       try:
-        result_text = result._get_text()
+        result_text = result._get_text(warn_multiple_candidates=False)
         if result_text is not None:
           result.parsed = json.loads(result_text)
       # may not be a valid json per stream response
@@ -9078,7 +9089,7 @@ class GenerateContentResponse(_common.BaseModel):
       for union_type in union_types:
         if issubclass(union_type, pydantic.BaseModel):
           try:
-            result_text = result._get_text()
+            result_text = result._get_text(warn_multiple_candidates=False)
             if result_text is not None:
 
               class Placeholder(pydantic.BaseModel):  # type: ignore[no-redef]
@@ -9093,7 +9104,7 @@ class GenerateContentResponse(_common.BaseModel):
             pass
         else:
           try:
-            result_text = result._get_text()
+            result_text = result._get_text(warn_multiple_candidates=False)
             if result_text is not None:
               result.parsed = json.loads(result_text)
           # may not be a valid json per stream response
