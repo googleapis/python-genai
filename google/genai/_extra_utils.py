@@ -472,10 +472,13 @@ def should_disable_afc(
       not config_model.automatic_function_calling
       or config_model.automatic_function_calling.disable is None
   ):
-    return False
+    afc_disabled = False
+  else:
+    afc_disabled = bool(config_model.automatic_function_calling.disable)
 
   if (
-      config_model.automatic_function_calling.disable
+      afc_disabled
+      and config_model.automatic_function_calling
       and config_model.automatic_function_calling.maximum_remote_calls
       is not None
       # exclude the case where max_remote_calls is set to 10 by default.
@@ -496,7 +499,23 @@ def should_disable_afc(
         ' `automatic_function_calling.maximum_remote_calls` unset.'
     )
 
-  return config_model.automatic_function_calling.disable
+  if (
+      not afc_disabled
+      and config_model.tool_config
+      and config_model.tool_config.function_calling_config
+      and config_model.tool_config.function_calling_config.mode
+      in (types.FunctionCallingConfigMode.ANY, 'ANY', 'any')
+  ):
+    logger.warning(
+        '`tool_config.function_calling_config.mode` is set to `ANY` with'
+        ' automatic function calling enabled. The model is forced to call a'
+        ' function on every turn and cannot return a text response, which will'
+        ' exhaust `maximum_remote_calls` and return empty text. If you want the'
+        ' model to answer with text, use mode=`AUTO`, or disable automatic'
+        ' function calling to manually orchestrate tool calls.'
+    )
+
+  return afc_disabled
 
 
 def get_max_remote_calls_afc(
