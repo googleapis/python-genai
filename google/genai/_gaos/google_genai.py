@@ -128,6 +128,17 @@ _DEFAULT_INITIAL_INTERVAL_MS = 500
 _DEFAULT_MAX_INTERVAL_MS = 8000
 _DEFAULT_EXPONENT = 2
 _MAX_ELAPSED_TIME_MS = 30000
+# Align with google.genai._api_client._RETRY_HTTP_STATUS_CODES. Speakeasy
+# operations default to retrying the entire "5XX" class, which incorrectly
+# retries permanent failures such as HTTP 501 Not Implemented (see #2803).
+_DEFAULT_RETRY_HTTP_STATUS_CODES = (
+    '408',  # Request timeout.
+    '429',  # Too many requests.
+    '500',  # Internal server error.
+    '502',  # Bad gateway.
+    '503',  # Service unavailable.
+    '504',  # Gateway timeout.
+)
 
 
 def _translate_retry_config(http_options: Any) -> RetryConfig:
@@ -147,7 +158,7 @@ def _translate_retry_config(http_options: Any) -> RetryConfig:
     max_interval = _DEFAULT_MAX_INTERVAL_MS
     exponent = _DEFAULT_EXPONENT
     jitter_ms = None
-    status_codes_override = None
+    status_codes_override = list(_DEFAULT_RETRY_HTTP_STATUS_CODES)
 
     if options is not None:
         if options.initial_delay is not None:
