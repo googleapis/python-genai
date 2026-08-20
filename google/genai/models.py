@@ -3666,6 +3666,11 @@ def _Part_to_mldev(
         getv(from_object, ['audio_transcription']),
     )
 
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
+    )
+
   return to_object
 
 
@@ -3745,6 +3750,11 @@ def _Part_to_vertex(
         to_object,
         ['audioTranscription'],
         getv(from_object, ['audio_transcription']),
+    )
+
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
     )
 
   return to_object
