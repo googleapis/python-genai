@@ -1175,19 +1175,20 @@ async def _t_live_connect_config(
   parameter_model_copy = parameter_model.model_copy(update={'tools': None})
   if parameter_model.tools:
     parameter_model_copy.tools = []
-    if not _mcp_utils._is_mcp_loaded():
+    if not _mcp_utils._is_mcp_loaded() and not any(
+        isinstance(tool, _mcp_utils.AllowedToolsMcpSession)
+        for tool in parameter_model.tools
+    ):
       # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
       parameter_model_copy.tools.extend(parameter_model.tools)
     else:
       try:
-        from mcp import ClientSession as _McpClientSession  # pylint: disable=g-import-not-at-top
         from mcp.types import Tool as _McpTool  # pylint: disable=g-import-not-at-top
       except ImportError:
-        _McpClientSession = type('DummySession', (), {})  # type: ignore
         _McpTool = type('DummyTool', (), {})  # type: ignore
 
       for tool in parameter_model.tools:
-        if isinstance(tool, _McpClientSession):
+        if _mcp_utils.is_mcp_client_session(tool):
           mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
               tool, await tool.list_tools()
           )
