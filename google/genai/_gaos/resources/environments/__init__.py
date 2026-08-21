@@ -18,6 +18,10 @@
 
 from ...types.environments.createenvironmentrequest import CreateEnvironmentRequest
 from ...types.environments.environment import Environment
+from ...types.environments.environmentfile import EnvironmentFile
+from ...types.environments.getenvironmentfilesresponse import (
+    GetEnvironmentFilesResponse,
+)
 from ...types.environments.listenvironmentsresponse import (
     ListEnvironmentsResponse as EnvironmentListResponse,
 )
@@ -29,7 +33,9 @@ __all__ = [
     "CreateEnvironmentRequest",
     "Environment",
     "EnvironmentDeleteResponse",
+    "EnvironmentFile",
     "EnvironmentListResponse",
+    "GetEnvironmentFilesResponse",
     "createenvironmentrequest",
     "environment",
 ]

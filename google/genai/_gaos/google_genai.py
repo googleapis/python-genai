@@ -45,6 +45,7 @@ from .lib.compat_errors import (
     wrap_stream_errors,
 )
 from .sdk import AsyncGenAI, GenAI
+from .types import environments
 from .types import interactions
 from .types.security import Security
 from .utils import BackoffStrategy, RetryConfig, eventstreaming
@@ -54,6 +55,8 @@ from .webhooks import AsyncWebhooks as GeneratedAsyncWebhooks
 from .webhooks import Webhooks as GeneratedWebhooks
 from .environments import AsyncEnvironments as GeneratedAsyncEnvironments
 from .environments import Environments as GeneratedEnvironments
+from .files import AsyncFiles as GeneratedAsyncFiles
+from .files import Files as GeneratedFiles
 
 
 GOOGLE_GENAI_API_REVISION = _GOOGLE_GENAI_API_REVISION
@@ -761,10 +764,84 @@ class AsyncGeminiNextGenTriggers(GeneratedAsyncTriggers):
             return await async_wrap_sdk_call(super().list_executions, *args, **kwargs)
 
 
+class GeminiNextGenEnvironmentFiles:
+    """Environment files resource backed by the NextGen client."""
+
+    def __init__(self, parent: GeminiNextGenEnvironments):
+        self._parent = parent
+
+    def list(self, *args: Any, **kwargs: Any) -> Any:
+        """Lists directory contents or files inside an environment workspace."""
+        files_sdk = getattr(self._parent, '_sdk_files', None)
+        if files_sdk is not None and hasattr(files_sdk, 'list'):
+            return wrap_sdk_call(files_sdk.list, *args, **kwargs)
+        raise AttributeError(
+            'environments.files.list is not available on this client.'
+        )
+
+    def download(
+        self,
+        *,
+        environment: str,
+        path: str,
+        http_options: Optional[Any] = None,
+    ) -> bytes:
+        """Downloads binary file content from an environment workspace."""
+        env_name = (
+            environment
+            if environment.startswith('environments/')
+            else f'environments/{environment}'
+        )
+        clean_path = path.lstrip('/')
+        download_path = f'{env_name}/files/{clean_path}?alt=media'
+        return self._parent._api_client.download_file(
+            download_path,
+            http_options=http_options,
+        )
+
+
+class AsyncGeminiNextGenEnvironmentFiles:
+    """Async environment files resource backed by the NextGen client."""
+
+    def __init__(self, parent: AsyncGeminiNextGenEnvironments):
+        self._parent = parent
+
+    async def list(self, *args: Any, **kwargs: Any) -> Any:
+        """Lists directory contents or files inside an environment workspace."""
+        files_sdk = getattr(self._parent, '_sdk_files', None)
+        if files_sdk is not None and hasattr(files_sdk, 'list'):
+            return await async_wrap_sdk_call(files_sdk.list, *args, **kwargs)
+        raise AttributeError(
+            'environments.files.list is not available on this client.'
+        )
+
+    async def download(
+        self,
+        *,
+        environment: str,
+        path: str,
+        http_options: Optional[Any] = None,
+    ) -> bytes:
+        """Downloads binary file content from an environment workspace."""
+        env_name = (
+            environment
+            if environment.startswith('environments/')
+            else f'environments/{environment}'
+        )
+        clean_path = path.lstrip('/')
+        download_path = f'{env_name}/files/{clean_path}?alt=media'
+        return await self._parent._api_client.async_download_file(
+            download_path,
+            http_options=http_options,
+        )
+
+
 class GeminiNextGenEnvironments(GeneratedEnvironments):
     """Public environments resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
+        self._api_client = api_client
+        self._files_wrapper = GeminiNextGenEnvironmentFiles(self)
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
@@ -776,6 +853,14 @@ class GeminiNextGenEnvironments(GeneratedEnvironments):
         @property
         def with_streaming_response(self):
             return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        @property
+        def files(self) -> GeminiNextGenEnvironmentFiles:
+            return getattr(self, '_files_wrapper', None)
+
+        @files.setter
+        def files(self, value: Any) -> None:
+            self._sdk_files = value
 
         def create_environment(self, *args: Any, **kwargs: Any) -> Any:
             return wrap_sdk_call(super().create_environment, *args, **kwargs)
@@ -801,16 +886,13 @@ class GeminiNextGenEnvironments(GeneratedEnvironments):
         def delete(self, *args: Any, **kwargs: Any) -> Any:
             return self.delete_environment(*args, **kwargs)
 
-        def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
-            return wrap_sdk_call(super().get_environment_files, *args, **kwargs)
-
-        # NOTE: update_environment, patch_environment are handled by fallback if they exist, but we assume they aren't generated based on our openapi.json.
-
 
 class AsyncGeminiNextGenEnvironments(GeneratedAsyncEnvironments):
     """Async public environments resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
+        self._api_client = api_client
+        self._files_wrapper = AsyncGeminiNextGenEnvironmentFiles(self)
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
@@ -822,6 +904,14 @@ class AsyncGeminiNextGenEnvironments(GeneratedAsyncEnvironments):
         @property
         def with_streaming_response(self):
             return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        @property
+        def files(self) -> AsyncGeminiNextGenEnvironmentFiles:
+            return getattr(self, '_files_wrapper', None)
+
+        @files.setter
+        def files(self, value: Any) -> None:
+            self._sdk_files = value
 
         async def create_environment(self, *args: Any, **kwargs: Any) -> Any:
             return await async_wrap_sdk_call(super().create_environment, *args, **kwargs)
@@ -846,9 +936,6 @@ class AsyncGeminiNextGenEnvironments(GeneratedAsyncEnvironments):
 
         async def delete(self, *args: Any, **kwargs: Any) -> Any:
             return await self.delete_environment(*args, **kwargs)
-
-        async def get_environment_files(self, *args: Any, **kwargs: Any) -> Any:
-            return await async_wrap_sdk_call(super().get_environment_files, *args, **kwargs)
 
 
 def _add_output_properties_if_interaction(value: Any) -> Any:

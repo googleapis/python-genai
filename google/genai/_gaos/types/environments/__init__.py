@@ -36,6 +36,11 @@ if TYPE_CHECKING:
         EnvironmentTypedDict,
         Status,
     )
+    from .environmentfile import EnvironmentFile, EnvironmentFileTypedDict, Type
+    from .getenvironmentfilesresponse import (
+        GetEnvironmentFilesResponse,
+        GetEnvironmentFilesResponseTypedDict,
+    )
     from .listenvironmentsresponse import (
         ListEnvironmentsResponse,
         ListEnvironmentsResponseTypedDict,
@@ -48,13 +53,18 @@ __all__ = [
     "CreateEnvironmentRequestNetworkUnionParam",
     "CreateEnvironmentRequestParam",
     "Environment",
+    "EnvironmentFile",
+    "EnvironmentFileTypedDict",
     "EnvironmentNetworkEnum",
     "EnvironmentNetworkUnion",
     "EnvironmentNetworkUnionTypedDict",
     "EnvironmentTypedDict",
+    "GetEnvironmentFilesResponse",
+    "GetEnvironmentFilesResponseTypedDict",
     "ListEnvironmentsResponse",
     "ListEnvironmentsResponseTypedDict",
     "Status",
+    "Type",
 ]
 
 _dynamic_imports: dict[str, str] = {
@@ -69,6 +79,11 @@ _dynamic_imports: dict[str, str] = {
     "EnvironmentNetworkUnionTypedDict": ".environment",
     "EnvironmentTypedDict": ".environment",
     "Status": ".environment",
+    "EnvironmentFile": ".environmentfile",
+    "EnvironmentFileTypedDict": ".environmentfile",
+    "Type": ".environmentfile",
+    "GetEnvironmentFilesResponse": ".getenvironmentfilesresponse",
+    "GetEnvironmentFilesResponseTypedDict": ".getenvironmentfilesresponse",
     "ListEnvironmentsResponse": ".listenvironmentsresponse",
     "ListEnvironmentsResponseTypedDict": ".listenvironmentsresponse",
 }
