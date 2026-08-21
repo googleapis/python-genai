@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.0](https://github.com/googleapis/python-genai/compare/v2.19.0...v2.20.0) (2026-08-21)
+
+
+### Features
+
+* Add TYPE_JPEG2000 to VideoContent.MimeType enum ([ef39c40](https://github.com/googleapis/python-genai/commit/ef39c40eb053aecdf0ae791410ecfe598281252d))
+
 ## [2.19.0](https://github.com/googleapis/python-genai/compare/v2.18.1...v2.19.0) (2026-08-19)
 
 
