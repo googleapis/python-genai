@@ -25,6 +25,7 @@ from .googlemaps import GoogleMaps, GoogleMapsParam
 from .googlesearch import GoogleSearch, GoogleSearchParam
 from .mcpserver import MCPServer, MCPServerParam
 from .retrieval import Retrieval, RetrievalParam
+from .toolsearch import ToolSearch, ToolSearchParam
 from .urlcontext import URLContext, URLContextParam
 from functools import partial
 from .. import BaseModel
@@ -42,9 +43,10 @@ ToolParam = TypeAliasType(
         URLContextParam,
         GoogleSearchParam,
         FileSearchParam,
-        FunctionParam,
         GoogleMapsParam,
         ComputerUseParam,
+        ToolSearchParam,
+        FunctionParam,
         MCPServerParam,
         RetrievalParam,
     ],
@@ -71,6 +73,7 @@ _TOOL_VARIANTS: dict[str, Any] = {
     "google_search": GoogleSearch,
     "mcp_server": MCPServer,
     "retrieval": Retrieval,
+    "tool_search": ToolSearch,
     "url_context": URLContext,
 }
 
@@ -85,6 +88,7 @@ Tool = Annotated[
         GoogleSearch,
         MCPServer,
         Retrieval,
+        ToolSearch,
         URLContext,
         UnknownTool,
     ],

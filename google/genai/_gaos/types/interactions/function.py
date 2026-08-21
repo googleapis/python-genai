@@ -29,17 +29,26 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class FunctionParam(TypedDict):
     r"""A tool that can be used by the model."""
 
+    defer_loading: NotRequired[bool]
+    r"""If true, the function's loading is deferred."""
     description: NotRequired[str]
     r"""A description of the function."""
     name: NotRequired[str]
     r"""The name of the function."""
     parameters: NotRequired[Any]
     r"""The JSON Schema for the function's parameters."""
+    short_description: NotRequired[str]
+    r"""A brief description of the function, shown to the model as a
+    short summary of functions with `defer_loading` set to true.
+    """
     type: Literal["function"]
 
 
 class Function(BaseModel):
     r"""A tool that can be used by the model."""
+
+    defer_loading: Optional[bool] = None
+    r"""If true, the function's loading is deferred."""
 
     description: Optional[str] = None
     r"""A description of the function."""
@@ -50,6 +59,11 @@ class Function(BaseModel):
     parameters: Optional[Any] = None
     r"""The JSON Schema for the function's parameters."""
 
+    short_description: Optional[str] = None
+    r"""A brief description of the function, shown to the model as a
+    short summary of functions with `defer_loading` set to true.
+    """
+
     type: Annotated[
         Annotated[Literal["function"], AfterValidator(validate_const("function"))],
         pydantic.Field(alias="type"),
@@ -57,7 +71,9 @@ class Function(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["description", "name", "parameters"])
+        optional_fields = set(
+            ["defer_loading", "description", "name", "parameters", "short_description"]
+        )
         serialized = handler(self)
         m = {}
 
