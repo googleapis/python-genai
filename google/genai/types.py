@@ -8435,6 +8435,10 @@ class GenerateContentResponseUsageMetadata(_common.BaseModel):
       default=None,
       description="""Output only. A detailed breakdown of the token count for each modality in the prompt.""",
   )
+  service_tier: Optional[ServiceTier] = Field(
+      default=None,
+      description="""Output only. The service tier used for this request.""",
+  )
   thoughts_token_count: Optional[int] = Field(
       default=None,
       description="""Output only. The number of tokens that were part of the model's generated "thoughts" output, if applicable.""",
@@ -8481,6 +8485,9 @@ class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
 
   prompt_tokens_details: Optional[list[ModalityTokenCountDict]]
   """Output only. A detailed breakdown of the token count for each modality in the prompt."""
+
+  service_tier: Optional[ServiceTier]
+  """Output only. The service tier used for this request."""
 
   thoughts_token_count: Optional[int]
   """Output only. The number of tokens that were part of the model's generated "thoughts" output, if applicable."""
