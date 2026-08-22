@@ -1599,9 +1599,6 @@ def _GenerateContentConfig_to_vertex(
         getv(from_object, ['model_armor_config']),
     )
 
-  if getv(from_object, ['service_tier']) is not None:
-    setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
-
   if getv(from_object, ['audio_transcription_config']) is not None:
     setv(
         to_object,
@@ -6207,6 +6204,11 @@ class Models(_api_module.BaseModule):
         _extra_utils.find_afc_incompatible_tool_indexes(config)
     )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
+
+    _extra_utils.set_agent_platform_service_tier_header(
+        parsed_config, is_vertex=getattr(self._api_client, 'vertexai', False)
+    )
+
     if (
         parsed_config
         and parsed_config.tools
@@ -6373,6 +6375,11 @@ class Models(_api_module.BaseModule):
         _extra_utils.find_afc_incompatible_tool_indexes(config)
     )
     parsed_config = _extra_utils.parse_config_for_mcp_usage(config)
+
+    _extra_utils.set_agent_platform_service_tier_header(
+        parsed_config, is_vertex=getattr(self._api_client, 'vertexai', False)
+    )
+
     if (
         parsed_config
         and parsed_config.tools
@@ -8329,6 +8336,10 @@ class AsyncModels(_api_module.BaseModule):
     else:
       parsed_config = config.model_copy(deep=True)
 
+    _extra_utils.set_agent_platform_service_tier_header(
+        parsed_config, is_vertex=getattr(self._api_client, 'vertexai', False)
+    )
+
     # Use AsyncExitStack to keep MCP connections alive across the entire AFC loop
     async with contextlib.AsyncExitStack() as stack:
 
@@ -8559,6 +8570,10 @@ class AsyncModels(_api_module.BaseModule):
       parsed_config = types.GenerateContentConfig(**config)
     else:
       parsed_config = config.model_copy(deep=True)
+
+    _extra_utils.set_agent_platform_service_tier_header(
+        parsed_config, is_vertex=getattr(self._api_client, 'vertexai', False)
+    )
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(

@@ -577,24 +577,22 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_service_tier',
         parameters=types._GenerateContentParameters(
-            model=GEMINI_FLASH_LATEST,
+            model='gemini-3.1-pro-preview',
             contents=t.t_contents('What is your name?'),
             config={
                 'service_tier': 'FLEX',
             },
         ),
-        exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
         name='test_service_tier_lower',
         parameters=types._GenerateContentParameters(
-            model=GEMINI_FLASH_LATEST,
+            model='gemini-3.1-pro-preview',
             contents=t.t_contents('What is your name?'),
             config={
                 'service_tier': 'flex',
             },
         ),
-        exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
         name='test_audio_transcription_config',
