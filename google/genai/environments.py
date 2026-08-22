@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,24 +13,9 @@
 # limitations under the License.
 #
 
-"""Google Gen AI SDK"""
+"""Expose Google GenAI environment types."""
 
-import importlib
-from typing import Any
+from ._gaos.types.environments import *  # noqa: F401,F403
+from ._gaos.types.environments import __all__ as _environments_all
 
-from . import types
-from . import version
-from .client import Client
-
-
-__version__ = version.__version__
-
-__all__ = ['Client', 'environments', 'interactions', 'types']
-
-
-def __getattr__(name: str) -> Any:
-  if name in {'environments', 'interactions'}:
-    module = importlib.import_module(f'.{name}', __name__)
-    globals()[name] = module
-    return module
-  raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+__all__ = list(_environments_all)
