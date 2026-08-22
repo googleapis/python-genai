@@ -16412,6 +16412,10 @@ class CreateCachedContentConfig(_common.BaseModel):
       description="""The user-generated meaningful display name of the cached content.
       """,
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   contents: Optional[ContentListUnion] = Field(
       default=None,
       description="""The content to cache.
@@ -16461,6 +16465,9 @@ class CreateCachedContentConfigDict(TypedDict, total=False):
   display_name: Optional[str]
   """The user-generated meaningful display name of the cached content.
       """
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   contents: Optional[ContentListUnionDict]
   """The content to cache.
@@ -16585,6 +16592,10 @@ class CachedContent(_common.BaseModel):
       default=None,
       description="""The user-generated meaningful display name of the cached content.""",
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""User specified labels to track billing usage.""",
+  )
   model: Optional[str] = Field(
       default=None,
       description="""The name of the publisher model to use for cached content.""",
@@ -16613,6 +16624,9 @@ class CachedContentDict(TypedDict, total=False):
 
   display_name: Optional[str]
   """The user-generated meaningful display name of the cached content."""
+
+  labels: Optional[dict[str, str]]
+  """User specified labels to track billing usage."""
 
   model: Optional[str]
   """The name of the publisher model to use for cached content."""
