@@ -46,6 +46,13 @@ class SubFunctionResponsePart(types.FunctionResponsePart):
   pass
 
 
+def test_audio_transcription_config_mode():
+  config = types.AudioTranscriptionConfig(mode='smart')
+
+  assert config.mode == types.AudioTranscriptionConfigMode.SMART
+  assert config.model_dump(by_alias=True, exclude_none=True)['mode'] == 'SMART'
+
+
 def test_factory_method_from_uri_part():
 
   my_part = SubPart.from_uri(
@@ -2969,4 +2976,3 @@ def test_computer_use_types():
   assert c.enable_prompt_injection_detection is True
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
-
