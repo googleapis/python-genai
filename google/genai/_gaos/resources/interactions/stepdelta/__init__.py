@@ -53,6 +53,12 @@ from ....types.interactions.mcpservertoolcalldelta import (
 from ....types.interactions.mcpservertoolresultdelta import (
     MCPServerToolResultDelta as MCPServerToolResult,
 )
+from ....types.interactions.processingcalldelta import (
+    ProcessingCallDelta as ProcessingCall,
+)
+from ....types.interactions.processingresultdelta import (
+    ProcessingResultDelta as ProcessingResult,
+)
 from ....types.interactions.stepdeltametadata import StepDeltaMetadata as Metadata
 from ....types.interactions.textannotationdelta import TextAnnotationDelta
 from ....types.interactions.textdelta import TextDelta as Text
@@ -87,6 +93,8 @@ __all__ = [
     "MCPServerToolCall",
     "MCPServerToolResult",
     "Metadata",
+    "ProcessingCall",
+    "ProcessingResult",
     "Text",
     "TextAnnotationDelta",
     "ThoughtSignature",
