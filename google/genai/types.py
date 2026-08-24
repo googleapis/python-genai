@@ -6338,6 +6338,15 @@ class LanguageHintsDict(TypedDict, total=False):
 LanguageHintsOrDict = Union[LanguageHints, LanguageHintsDict]
 
 
+class AudioTranscriptionConfigMode(_common.CaseInSensitiveEnum):
+  """Controls the level of detail returned by audio transcription."""
+
+  VERBATIM = 'VERBATIM'
+  """Returns a verbatim transcription."""
+  SMART = 'SMART'
+  """Returns a cleaned-up transcription."""
+
+
 class AudioTranscriptionConfig(_common.BaseModel):
   """The audio transcription configuration in Setup."""
 
@@ -6371,6 +6380,10 @@ class AudioTranscriptionConfig(_common.BaseModel):
       description="""Configures speaker diarization.
       """,
   )
+  mode: Optional[AudioTranscriptionConfigMode] = Field(
+      default=None,
+      description="""Controls the level of detail returned by audio transcription.""",
+  )
 
 
 class AudioTranscriptionConfigDict(TypedDict, total=False):
@@ -6398,6 +6411,9 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   diarization: Optional[bool]
   """Configures speaker diarization.
       """
+
+  mode: Optional[AudioTranscriptionConfigMode]
+  """Controls the level of detail returned by audio transcription."""
 
 
 AudioTranscriptionConfigOrDict = Union[
