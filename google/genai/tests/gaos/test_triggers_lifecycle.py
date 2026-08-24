@@ -132,13 +132,13 @@ def test_python_triggers_lifecycle_routes_through_google_genai_client(
   assert trigger.schedule == "0 0 * * *"
   assert fetched.schedule == "0 0 * * *"
   assert mock_gaos_server.captured == [
-      "POST /v1beta/triggers",
-      "GET /v1beta/triggers?filter=some-filter&page_size=10",
-      "GET /v1beta/triggers/svc_abc",
-      "PATCH /v1beta/triggers/svc_abc",
-      "DELETE /v1beta/triggers/svc_abc",
-      "POST /v1beta/triggers/svc_abc/executions",
-      "GET /v1beta/triggers/svc_abc/executions?page_size=5",
+      "POST /v1/triggers",
+      "GET /v1/triggers?filter=some-filter&page_size=10",
+      "GET /v1/triggers/svc_abc",
+      "PATCH /v1/triggers/svc_abc",
+      "DELETE /v1/triggers/svc_abc",
+      "POST /v1/triggers/svc_abc/executions",
+      "GET /v1/triggers/svc_abc/executions?page_size=5",
   ]
 
   # Verify the serialized interaction input in the CREATE request

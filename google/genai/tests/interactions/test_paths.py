@@ -42,7 +42,7 @@ def test_interactions_paths(mock_auth_default, client):
         else:
             expected_base_url = "https://aiplatform.googleapis.com/v1beta1"
     else:
-        expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
+        expected_base_url = "https://generativelanguage.googleapis.com/v1"
 
     with mock.patch.object(HTTPClient, "send") as mock_send:
         mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
@@ -83,7 +83,7 @@ async def test_async_interactions_paths(mock_auth_default, client):
         else:
             expected_base_url = "https://aiplatform.googleapis.com/v1beta1"
     else:
-        expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
+        expected_base_url = "https://generativelanguage.googleapis.com/v1"
 
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
         mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')

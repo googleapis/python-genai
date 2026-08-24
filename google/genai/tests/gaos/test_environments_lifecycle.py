@@ -92,11 +92,11 @@ def test_python_environments_lifecycle_routes_through_google_genai_client(
   assert forked_environment.id == "env_abc_1234"
   assert fetched.id == "env_abc_1234"
   assert mock_gaos_server.captured == [
-      "POST /v1beta/environments",
-      "POST /v1beta/environments",
-      "GET /v1beta/environments",
-      "GET /v1beta/environments/env_abc_1234",
-      "DELETE /v1beta/environments/env_abc_1234",
+      "POST /v1/environments",
+      "POST /v1/environments",
+      "GET /v1/environments",
+      "GET /v1/environments/env_abc_1234",
+      "DELETE /v1/environments/env_abc_1234",
   ]
 
   create_body = mock_gaos_server.captured_bodies[0]
@@ -117,7 +117,7 @@ async def test_python_environments_async_create_with_from_environment(
       from_environment="environments/env_abc_1234",
   )
   assert forked_environment.id == "env_abc_1234"
-  assert mock_gaos_server.captured == ["POST /v1beta/environments"]
+  assert mock_gaos_server.captured == ["POST /v1/environments"]
   assert (
       mock_gaos_server.captured_bodies[0]["from_environment"]
       == "environments/env_abc_1234"
@@ -223,7 +223,7 @@ def test_python_environments_file_upload_download(
   ][0]
   assert handshake["method"] == "PUT"
   assert handshake["path"].startswith(
-      "/upload/v1beta/environments/env_123/files/src/main.py"
+      "/upload/v1/environments/env_123/files/src/main.py"
   )
   assert "overwrite=true" in handshake["path"]
   assert handshake["headers"].get("x-goog-upload-protocol") == "resumable"
@@ -329,7 +329,7 @@ async def test_python_environments_async_file_upload_download(
   ][0]
   assert handshake["method"] == "PUT"
   assert handshake["path"].startswith(
-      "/upload/v1beta/environments/env_123/files/src/main.py"
+      "/upload/v1/environments/env_123/files/src/main.py"
   )
   assert "overwrite=true" in handshake["path"]
   assert handshake["headers"].get("x-goog-upload-protocol") == "resumable"

@@ -361,6 +361,7 @@ class Client:
       enterprise: Optional[bool] = None,
       vertexai: Optional[bool] = None,
       api_key: Optional[str] = None,
+      api_version: Optional[str] = None,
       credentials: Optional[google.auth.credentials.Credentials] = None,
       project: Optional[str] = None,
       location: Optional[str] = None,
@@ -379,6 +380,7 @@ class Client:
        api_key (str): The `API key
          <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
          authentication. Applies to the Gemini Developer API only.
+       api_version (str): The API version to use (e.g. 'v1' or 'v1beta').
        credentials (google.auth.credentials.Credentials): The credentials to use
          for authentication when calling the Vertex AI APIs. Credentials can be
          obtained from environment variables and default credentials. For more
@@ -411,6 +413,19 @@ class Client:
 
     if isinstance(http_options, dict):
       http_options = HttpOptions(**http_options)
+    elif http_options is not None:
+      http_options = http_options.model_copy()
+
+    if api_version is not None:
+      if http_options and http_options.api_version is not None:
+        raise ValueError(
+            'api_version is set in both client constructor and http_options.'
+            ' Please specify api_version in only one place.'
+        )
+      if http_options:
+        http_options.api_version = api_version
+      else:
+        http_options = HttpOptions(api_version=api_version)
 
     base_url = get_base_url(resolved_vertexai or False, http_options)
     if base_url:
