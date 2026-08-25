@@ -173,6 +173,21 @@ T = typing.TypeVar('T', bound='GenerateContentResponse')
 MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
+class MediaProcessing(_common.CaseInSensitiveEnum):
+  """How the model processes this part's media for understanding.
+
+  Only meaningful for video parts (`inline_data` or `file_data` with video
+  mime). Non-video parts ignore this field.
+  """
+
+  MEDIA_PROCESSING_UNSPECIFIED = 'MEDIA_PROCESSING_UNSPECIFIED'
+  """Default. Uses model-specific processing (3.5 Pro+ -> `AGENTIC`, older models -> `STATIC`)."""
+  STATIC = 'STATIC'
+  """Fixed-rate frame extraction. All frames placed in context."""
+  AGENTIC = 'AGENTIC'
+  """Model-driven dynamic navigation. Recommended for most use cases."""
+
+
 class Outcome(_common.CaseInSensitiveEnum):
   """Outcome of the code execution."""
 
@@ -485,6 +500,25 @@ class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
   """Model is constrained to predict either function calls or natural language response. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
 
 
+class AudioTranscriptionConfigMode(_common.CaseInSensitiveEnum):
+  """Configures transcription mode.
+
+  Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM`
+  transcription. In `SMART` mode, the model performs disfluency removal
+  (eliminating filler words, repetitions, and false starts), light grammatical
+  cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and
+  minor user edits (inline self-corrections). Timestamps and diarization are
+  incompatible with mode `SMART`.
+  """
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Unspecified transcription mode."""
+  VERBATIM = 'VERBATIM'
+  """Verbatim transcription mode."""
+  SMART = 'SMART'
+  """Smart transcription mode."""
+
+
 class FinishReason(_common.CaseInSensitiveEnum):
   """Output only. The reason why the model stopped generating tokens.
 
@@ -613,6 +647,8 @@ class TrafficType(_common.CaseInSensitiveEnum):
   """Type for Priority Pay-As-You-Go traffic."""
   ON_DEMAND_FLEX = 'ON_DEMAND_FLEX'
   """Type for Flex traffic."""
+  ON_DEMAND_OFFPEAK = 'ON_DEMAND_OFFPEAK'
+  """Type for Off-Peak Pay-As-You-Go traffic."""
   PROVISIONED_THROUGHPUT = 'PROVISIONED_THROUGHPUT'
   """Type for Provisioned Throughput traffic."""
 
@@ -1013,17 +1049,6 @@ class ComputationBasedMetricType(_common.CaseInSensitiveEnum):
   """ROUGE metric."""
 
 
-class MediaProcessing(_common.CaseInSensitiveEnum):
-  """How the model processes input media for understanding."""
-
-  MEDIA_PROCESSING_UNSPECIFIED = 'MEDIA_PROCESSING_UNSPECIFIED'
-  """Default. Uses model-specific processing"""
-  STATIC = 'STATIC'
-  """Fixed-rate frame extraction. All frames placed in context."""
-  AGENTIC = 'AGENTIC'
-  """Model-driven dynamic navigation. Recommended for most use cases."""
-
-
 class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """The tokenization quality used for given media."""
 
@@ -1371,17 +1396,6 @@ class VoiceActivityType(_common.CaseInSensitiveEnum):
   """Start of sentence signal."""
   ACTIVITY_END = 'ACTIVITY_END'
   """End of sentence signal."""
-
-
-class AudioTranscriptionConfigMode(_common.CaseInSensitiveEnum):
-  """Transcription mode."""
-
-  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
-  """Unspecified transcription mode."""
-  VERBATIM = 'VERBATIM'
-  """Verbatim transcription mode."""
-  SMART = 'SMART'
-  """Smart transcription mode."""
 
 
 class StartSensitivity(_common.CaseInSensitiveEnum):
@@ -2319,7 +2333,7 @@ class Part(_common.BaseModel):
   )
   media_processing: Optional[MediaProcessing] = Field(
       default=None,
-      description="""How the model processes this part's media for understanding.""",
+      description="""Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field.""",
   )
 
   def __init__(
@@ -2556,7 +2570,7 @@ class PartDict(TypedDict, total=False):
   """Output only. The transcription of the audio part."""
 
   media_processing: Optional[MediaProcessing]
-  """How the model processes this part's media for understanding."""
+  """Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -6374,7 +6388,7 @@ class AudioTranscriptionConfig(_common.BaseModel):
 
   language_codes: Optional[list[str]] = Field(
       default=None,
-      description="""BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.""",
+      description="""Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.""",
   )
   language_auto: Optional[LanguageAuto] = Field(
       default=None,
@@ -6412,7 +6426,7 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   """The audio transcription configuration in Setup."""
 
   language_codes: Optional[list[str]]
-  """BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection."""
+  """Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection."""
 
   language_auto: Optional[LanguageAutoDict]
   """Deprecated: Auto-detection is now the default when language_codes is omitted. This field will be removed in a future version."""
@@ -11324,6 +11338,10 @@ class VideoResponseFormat(_common.BaseModel):
       default=None,
       description="""Optional. The Google Cloud Storage URI to store the video output. Required for Vertex if delivery is URI.""",
   )
+  resolution: Optional[str] = Field(
+      default=None,
+      description="""Optional. The video output resolution. Supported values: "360p", "720p", "1080p", "4k".""",
+  )
 
 
 class VideoResponseFormatDict(TypedDict, total=False):
@@ -11343,6 +11361,9 @@ class VideoResponseFormatDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """Optional. The Google Cloud Storage URI to store the video output. Required for Vertex if delivery is URI."""
+
+  resolution: Optional[str]
+  """Optional. The video output resolution. Supported values: "360p", "720p", "1080p", "4k"."""
 
 
 VideoResponseFormatOrDict = Union[VideoResponseFormat, VideoResponseFormatDict]
@@ -14062,6 +14083,10 @@ class ReinforcementTuningExample(_common.BaseModel):
       default=None,
       description="""Corresponds to system_instruction in user-facing GenerateContentRequest.""",
   )
+  tools: Optional[list[Tool]] = Field(
+      default=None,
+      description="""Optional. Corresponds to tools in user-facing GenerateContentRequest.""",
+  )
 
 
 class ReinforcementTuningExampleDict(TypedDict, total=False):
@@ -14075,6 +14100,9 @@ class ReinforcementTuningExampleDict(TypedDict, total=False):
 
   system_instruction: Optional[ContentDict]
   """Corresponds to system_instruction in user-facing GenerateContentRequest."""
+
+  tools: Optional[list[ToolDict]]
+  """Optional. Corresponds to tools in user-facing GenerateContentRequest."""
 
 
 ReinforcementTuningExampleOrDict = Union[
@@ -16364,6 +16392,10 @@ class ReinforcementTuningRewardInfo(_common.BaseModel):
       default=None,
       description="""Output only. The user-requested auxiliary info for the reward function. This field is set only if the Cloud Run reward function configured by user returns a "user_requested_aux_info". Refer to ReinforcementTuningCloudRunRewardScorer for more details.""",
   )
+  error_status: Optional[GoogleRpcStatus] = Field(
+      default=None,
+      description="""Output only. In case of an error for this reward, this field will be populated with a detailed error status.""",
+  )
 
 
 class ReinforcementTuningRewardInfoDict(TypedDict, total=False):
@@ -16374,6 +16406,9 @@ class ReinforcementTuningRewardInfoDict(TypedDict, total=False):
 
   user_requested_aux_info: Optional[str]
   """Output only. The user-requested auxiliary info for the reward function. This field is set only if the Cloud Run reward function configured by user returns a "user_requested_aux_info". Refer to ReinforcementTuningCloudRunRewardScorer for more details."""
+
+  error_status: Optional[GoogleRpcStatusDict]
+  """Output only. In case of an error for this reward, this field will be populated with a detailed error status."""
 
 
 ReinforcementTuningRewardInfoOrDict = Union[
@@ -23094,6 +23129,10 @@ class EvaluationParserConfigCustomCodeParserConfig(_common.BaseModel):
       default=None,
       description="""Required. Python function for parsing results. The function should be defined within this string. The function takes a list of strings (LLM responses) and should return either a list of dictionaries (for rubrics) or a single dictionary (for a metric result). Example function signature: def parse(responses: list[str]) -> list[dict[str, Any]] | dict[str, Any]: When parsing rubrics, return a list of dictionaries, where each dictionary represents a Rubric. Example for rubrics: [ { "content": {"property": {"description": "The response is factual."}}, "type": "FACTUALITY", "importance": "HIGH" }, { "content": {"property": {"description": "The response is fluent."}}, "type": "FLUENCY", "importance": "MEDIUM" } ] When parsing critique results, return a dictionary representing a MetricResult. Example for a metric result: { "score": 0.8, "explanation": "The model followed most instructions.", "rubric_verdicts": [...] } ... code for result extraction and aggregation""",
   )
+  code_execution_region: Optional[str] = Field(
+      default=None,
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: us-central1, us-east1, us-east4, us-west1, us-west4, southamerica-east1, europe-west2, europe-west3, asia-east1, asia-south1, asia-southeast1. If unset, the request's originating region is used.""",
+  )
 
 
 class EvaluationParserConfigCustomCodeParserConfigDict(TypedDict, total=False):
@@ -23104,6 +23143,9 @@ class EvaluationParserConfigCustomCodeParserConfigDict(TypedDict, total=False):
 
   parsing_function: Optional[str]
   """Required. Python function for parsing results. The function should be defined within this string. The function takes a list of strings (LLM responses) and should return either a list of dictionaries (for rubrics) or a single dictionary (for a metric result). Example function signature: def parse(responses: list[str]) -> list[dict[str, Any]] | dict[str, Any]: When parsing rubrics, return a list of dictionaries, where each dictionary represents a Rubric. Example for rubrics: [ { "content": {"property": {"description": "The response is factual."}}, "type": "FACTUALITY", "importance": "HIGH" }, { "content": {"property": {"description": "The response is fluent."}}, "type": "FLUENCY", "importance": "MEDIUM" } ] When parsing critique results, return a dictionary representing a MetricResult. Example for a metric result: { "score": 0.8, "explanation": "The model followed most instructions.", "rubric_verdicts": [...] } ... code for result extraction and aggregation"""
+
+  code_execution_region: Optional[str]
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: us-central1, us-east1, us-east4, us-west1, us-west4, southamerica-east1, europe-west2, europe-west3, asia-east1, asia-south1, asia-southeast1. If unset, the request's originating region is used."""
 
 
 EvaluationParserConfigCustomCodeParserConfigOrDict = Union[
@@ -23228,6 +23270,10 @@ class CustomCodeExecutionSpec(_common.BaseModel):
   Instance is the evaluation instance, any fields populated in the instance
   are available to the function as instance[field_name].""",
   )
+  code_execution_region: Optional[str] = Field(
+      default=None,
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: us-central1, us-east1, us-east4, us-west1, us-west4, southamerica-east1, europe-west2, europe-west3, asia-east1, asia-south1, asia-southeast1. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED.""",
+  )
 
 
 class CustomCodeExecutionSpecDict(TypedDict, total=False):
@@ -23240,6 +23286,9 @@ class CustomCodeExecutionSpecDict(TypedDict, total=False):
   Please include this function signature in the code snippet.
   Instance is the evaluation instance, any fields populated in the instance
   are available to the function as instance[field_name]."""
+
+  code_execution_region: Optional[str]
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: us-central1, us-east1, us-east4, us-west1, us-west4, southamerica-east1, europe-west2, europe-west3, asia-east1, asia-south1, asia-southeast1. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED."""
 
 
 CustomCodeExecutionSpecOrDict = Union[
