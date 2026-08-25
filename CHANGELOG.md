@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.20.0](https://github.com/googleapis/python-genai/compare/v2.19.0...v2.20.0) (2026-08-25)
+
+
+### Features
+
+* Add AudioTranscriptionConfigMode ([4a80954](https://github.com/googleapis/python-genai/commit/4a809546fdba31376d483ec018ec27f02e717d1c))
+* Add environment files support and scotty file download helper ([3074263](https://github.com/googleapis/python-genai/commit/30742636766a888f5ebe3eb272f912c843c74564))
+* Add TYPE_JPEG2000 to VideoContent.MimeType enum ([ef39c40](https://github.com/googleapis/python-genai/commit/ef39c40eb053aecdf0ae791410ecfe598281252d))
+
 ## [2.19.0](https://github.com/googleapis/python-genai/compare/v2.18.1...v2.19.0) (2026-08-19)
 
 
