@@ -302,6 +302,11 @@ if TYPE_CHECKING:
         ParallelAISearchConfigParam,
     )
     from .placecitation import PlaceCitation, PlaceCitationParam
+    from .processingcalldelta import ProcessingCallDelta, ProcessingCallDeltaTypedDict
+    from .processingresultdelta import (
+        ProcessingResultDelta,
+        ProcessingResultDeltaTypedDict,
+    )
     from .ragresource import RagResource, RagResourceParam
     from .ragretrievalconfig import RagRetrievalConfig, RagRetrievalConfigParam
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
@@ -665,8 +670,12 @@ __all__ = [
     "PlaceCitation",
     "PlaceCitationParam",
     "Processing",
+    "ProcessingCallDelta",
+    "ProcessingCallDeltaTypedDict",
     "ProcessingEnum",
     "ProcessingParam",
+    "ProcessingResultDelta",
+    "ProcessingResultDeltaTypedDict",
     "RagResource",
     "RagResourceParam",
     "RagRetrievalConfig",
@@ -1063,6 +1072,10 @@ _dynamic_imports: dict[str, str] = {
     "ParallelAISearchConfigParam": ".parallelaisearchconfig",
     "PlaceCitation": ".placecitation",
     "PlaceCitationParam": ".placecitation",
+    "ProcessingCallDelta": ".processingcalldelta",
+    "ProcessingCallDeltaTypedDict": ".processingcalldelta",
+    "ProcessingResultDelta": ".processingresultdelta",
+    "ProcessingResultDeltaTypedDict": ".processingresultdelta",
     "RagResource": ".ragresource",
     "RagResourceParam": ".ragresource",
     "RagRetrievalConfig": ".ragretrievalconfig",
