@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,11 +93,32 @@ class AsyncSession:
       websocket: ClientConnection,
       session_id: Optional[str] = None,
       setup_complete: Optional[types.LiveServerSetupComplete] = None,
+      save_live_blob: bool = False,
+      artifact_service: Optional[Any] = None,
+      audio_cache_manager: Optional[Any] = None,
+      app_name: str = 'app',
+      user_id: str = 'user',
+      agent_name: str = 'agent',
   ):
     self._api_client = api_client
     self._ws = websocket
     self.session_id = session_id
     self.setup_complete = setup_complete
+    self.save_live_blob = save_live_blob
+    self.app_name = app_name
+    self.user_id = user_id
+    self.agent_name = agent_name
+    self.input_realtime_cache: list[types.RealtimeCacheEntry] = []
+    self.output_realtime_cache: list[types.RealtimeCacheEntry] = []
+    if save_live_blob:
+      from .audio_cache_manager import AudioCacheManager
+      from .file_artifact_service import FileArtifactService
+
+      self.artifact_service = artifact_service or FileArtifactService()
+      self.audio_cache_manager = audio_cache_manager or AudioCacheManager()
+    else:
+      self.artifact_service = artifact_service
+      self.audio_cache_manager = audio_cache_manager
 
   async def send(
       self,
@@ -343,6 +364,19 @@ class AsyncSession:
     realtime_input_dict = _common.encode_unserializable_types(
         realtime_input_dict
     )
+    if self.save_live_blob and self.audio_cache_manager:
+      if (
+          isinstance(realtime_input.media, types.Blob)
+          and realtime_input.media.mime_type
+          and realtime_input.media.mime_type.startswith('audio/')
+      ):
+        self.audio_cache_manager.cache_audio(
+            self, realtime_input.media, cache_type='input'
+        )
+      elif realtime_input.audio:
+        self.audio_cache_manager.cache_audio(
+            self, realtime_input.audio, cache_type='input'
+        )
     await self._ws.send(json.dumps({'realtime_input': realtime_input_dict}))
 
   async def send_tool_response(
@@ -561,9 +595,36 @@ class AsyncSession:
     if not response_dict and response:
       # Error handling.
       errors.APIError.raise_error(response.get('code'), response, None)
-    return types.LiveServerMessage._from_response(
+    result = types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
+    if self.save_live_blob and self.audio_cache_manager:
+      if (
+          result.server_content
+          and result.server_content.model_turn
+          and result.server_content.model_turn.parts
+      ):
+        for part in result.server_content.model_turn.parts:
+          if (
+              part.inline_data
+              and part.inline_data.mime_type
+              and part.inline_data.mime_type.startswith('audio/')
+          ):
+            audio_blob = types.Blob(
+                data=part.inline_data.data, mime_type=part.inline_data.mime_type
+            )
+            self.audio_cache_manager.cache_audio(
+                self, audio_blob, cache_type='output'
+            )
+      if result.server_content and result.server_content.interrupted:
+        await self.audio_cache_manager.flush_caches(
+            self, flush_user_audio=False, flush_model_audio=True
+        )
+      elif result.server_content and result.server_content.turn_complete:
+        await self.audio_cache_manager.flush_caches(
+            self, flush_user_audio=True, flush_model_audio=True
+        )
+    return result
 
   async def _send_loop(
       self,
@@ -1143,6 +1204,9 @@ class AsyncLive(_api_module.BaseModule):
           websocket=ws,
           session_id=session_id,
           setup_complete=setup_complete,
+          save_live_blob=bool(
+              getattr(parameter_model, 'save_live_blob', False)
+          ),
       )
 
 

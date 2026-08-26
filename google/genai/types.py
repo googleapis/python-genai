@@ -21698,6 +21698,10 @@ If included the server will send SessionResumptionUpdate messages.""",
   translation_config: Optional[TranslationConfig] = Field(
       default=None, description="""Config for translation."""
   )
+  save_live_blob: Optional[bool] = Field(
+      default=False,
+      description="""Saves live audio data to session and artifact service.""",
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -21819,8 +21823,74 @@ If included the server will send SessionResumptionUpdate messages."""
   translation_config: Optional[TranslationConfigDict]
   """Config for translation."""
 
+  save_live_blob: Optional[bool]
+  """Saves live audio data to session and artifact service."""
+
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]
+
+
+class RealtimeCacheEntry(_common.BaseModel):
+  """Entry for caching realtime audio chunks."""
+
+  role: Optional[str] = Field(
+      default=None,
+      description="""The role of the participant ('user' or 'model').""",
+  )
+  data: Optional[Blob] = Field(
+      default=None, description="""The audio chunk data."""
+  )
+  timestamp: Optional[float] = Field(
+      default=None,
+      description="""Timestamp in seconds when the chunk was received or generated.""",
+  )
+
+
+class RealtimeCacheEntryDict(TypedDict, total=False):
+  """Entry for caching realtime audio chunks."""
+
+  role: Optional[str]
+  """The role of the participant ('user' or 'model')."""
+
+  data: Optional[BlobDict]
+  """The audio chunk data."""
+
+  timestamp: Optional[float]
+  """Timestamp in seconds when the chunk was received or generated."""
+
+
+RealtimeCacheEntryOrDict = Union[RealtimeCacheEntry, RealtimeCacheEntryDict]
+
+
+class AudioCacheConfig(_common.BaseModel):
+  """Configuration for audio caching behavior."""
+
+  max_cache_size_bytes: Optional[int] = Field(
+      default=10485760,
+      description="""Maximum cache size in bytes before auto-flush.""",
+  )
+  max_cache_duration_seconds: Optional[float] = Field(
+      default=300.0, description="""Maximum duration to keep data in cache."""
+  )
+  auto_flush_threshold: Optional[int] = Field(
+      default=100, description="""Number of chunks that triggers auto-flush."""
+  )
+
+
+class AudioCacheConfigDict(TypedDict, total=False):
+  """Configuration for audio caching behavior."""
+
+  max_cache_size_bytes: Optional[int]
+  """Maximum cache size in bytes before auto-flush."""
+
+  max_cache_duration_seconds: Optional[float]
+  """Maximum duration to keep data in cache."""
+
+  auto_flush_threshold: Optional[int]
+  """Number of chunks that triggers auto-flush."""
+
+
+AudioCacheConfigOrDict = Union[AudioCacheConfig, AudioCacheConfigDict]
 
 
 class LiveConnectParameters(_common.BaseModel):
