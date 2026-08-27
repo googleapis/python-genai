@@ -77,6 +77,10 @@ class VideoContentParam(TypedDict):
     r"""The video content."""
     mime_type: NotRequired[VideoContentMimeType]
     r"""The mime type of the video."""
+    name: NotRequired[str]
+    r"""A user-defined name for this content block. Can be referenced by the model
+    in the final response.
+    """
     processing: NotRequired[ProcessingParam]
     r"""How the model processes this video for understanding."""
     resolution: NotRequired[MediaResolution]
@@ -94,6 +98,11 @@ class VideoContent(BaseModel):
     mime_type: Optional[VideoContentMimeType] = None
     r"""The mime type of the video."""
 
+    name: Optional[str] = None
+    r"""A user-defined name for this content block. Can be referenced by the model
+    in the final response.
+    """
+
     processing: Optional[Processing] = None
     r"""How the model processes this video for understanding."""
 
@@ -109,7 +118,9 @@ class VideoContent(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["data", "mime_type", "processing", "resolution", "uri"])
+        optional_fields = set(
+            ["data", "mime_type", "name", "processing", "resolution", "uri"]
+        )
         serialized = handler(self)
         m = {}
 
