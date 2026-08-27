@@ -3470,11 +3470,17 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
         # If we found both parts, unwrap them into a single schema.
         if nullable_part and type_part:
           default_value = schema.default
+          description_value = schema.description
+          title_value = schema.title
           schema = type_part
           schema.nullable = True
           # Carry the default value over to the unwrapped schema
           if default_value is not None:
             schema.default = default_value
+          if description_value is not None:
+            schema.description = description_value
+          if title_value is not None:
+            schema.title = title_value
 
       if ref:
         visited_refs.remove(ref)

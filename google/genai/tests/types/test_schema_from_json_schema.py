@@ -114,6 +114,32 @@ def test_nullable_conversion():
   assert set(vertex_ai_not_none_field_names2) == set(['type', 'nullable'])
 
 
+def test_nullable_any_of_preserves_schema_metadata():
+  """Test that nullable any_of conversion preserves schema metadata."""
+  json_schema = types.JSONSchema(
+      any_of=[
+          types.JSONSchema(type='string'),
+          types.JSONSchema(type='null'),
+      ],
+      description='description',
+      title='title',
+  )
+
+  gemini_api_schema = types.Schema.from_json_schema(json_schema=json_schema)
+  vertex_ai_schema = types.Schema.from_json_schema(
+      json_schema=json_schema, api_option='VERTEX_AI'
+  )
+  expected_schema = types.Schema(
+      type='STRING',
+      nullable=True,
+      description='description',
+      title='title',
+  )
+
+  assert gemini_api_schema == expected_schema
+  assert vertex_ai_schema == expected_schema
+
+
 def test_nullable_in_union_like_type_conversion():
   """Test conversion of JSONSchema.nullable to Schema.nullable"""
   json_schema1 = types.JSONSchema(
