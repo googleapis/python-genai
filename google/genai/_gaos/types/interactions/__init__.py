@@ -303,10 +303,12 @@ if TYPE_CHECKING:
     )
     from .placecitation import PlaceCitation, PlaceCitationParam
     from .processingcalldelta import ProcessingCallDelta, ProcessingCallDeltaTypedDict
+    from .processingcallstep import ProcessingCallStep, ProcessingCallStepParam
     from .processingresultdelta import (
         ProcessingResultDelta,
         ProcessingResultDeltaTypedDict,
     )
+    from .processingresultstep import ProcessingResultStep, ProcessingResultStepParam
     from .ragresource import RagResource, RagResourceParam
     from .ragretrievalconfig import RagRetrievalConfig, RagRetrievalConfigParam
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
@@ -672,10 +674,14 @@ __all__ = [
     "Processing",
     "ProcessingCallDelta",
     "ProcessingCallDeltaTypedDict",
+    "ProcessingCallStep",
+    "ProcessingCallStepParam",
     "ProcessingEnum",
     "ProcessingParam",
     "ProcessingResultDelta",
     "ProcessingResultDeltaTypedDict",
+    "ProcessingResultStep",
+    "ProcessingResultStepParam",
     "RagResource",
     "RagResourceParam",
     "RagRetrievalConfig",
@@ -1074,8 +1080,12 @@ _dynamic_imports: dict[str, str] = {
     "PlaceCitationParam": ".placecitation",
     "ProcessingCallDelta": ".processingcalldelta",
     "ProcessingCallDeltaTypedDict": ".processingcalldelta",
+    "ProcessingCallStep": ".processingcallstep",
+    "ProcessingCallStepParam": ".processingcallstep",
     "ProcessingResultDelta": ".processingresultdelta",
     "ProcessingResultDeltaTypedDict": ".processingresultdelta",
+    "ProcessingResultStep": ".processingresultstep",
+    "ProcessingResultStepParam": ".processingresultstep",
     "RagResource": ".ragresource",
     "RagResourceParam": ".ragresource",
     "RagRetrievalConfig": ".ragretrievalconfig",

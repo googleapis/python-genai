@@ -80,6 +80,8 @@ from ...types.interactions.mcpservertoolresultstep import MCPServerToolResultSte
 from ...types.interactions.model import Model
 from ...types.interactions.modeloutputstep import ModelOutputStep
 from ...types.interactions.placecitation import PlaceCitation
+from ...types.interactions.processingcallstep import ProcessingCallStep
+from ...types.interactions.processingresultstep import ProcessingResultStep
 from ...types.interactions.retrievalcallarguments import RetrievalCallArguments
 from ...types.interactions.retrievalcalldelta import RetrievalCallDelta
 from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
@@ -186,6 +188,8 @@ __all__ = [
     "Model",
     "ModelOutputStep",
     "PlaceCitation",
+    "ProcessingCallStep",
+    "ProcessingResultStep",
     "RetrievalCallArguments",
     "RetrievalCallDelta",
     "RetrievalResultDelta",

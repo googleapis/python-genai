@@ -36,6 +36,8 @@ from .mcpservertoolresultstep import (
     MCPServerToolResultStepParam,
 )
 from .modeloutputstep import ModelOutputStep, ModelOutputStepParam
+from .processingcallstep import ProcessingCallStep, ProcessingCallStepParam
+from .processingresultstep import ProcessingResultStep, ProcessingResultStepParam
 from .thoughtstep import ThoughtStep, ThoughtStepParam
 from .urlcontextcallstep import URLContextCallStep, URLContextCallStepParam
 from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
@@ -57,9 +59,11 @@ StepParam = TypeAliasType(
         FileSearchCallStepParam,
         FileSearchResultStepParam,
         ThoughtStepParam,
+        ProcessingResultStepParam,
+        ProcessingCallStepParam,
         FunctionCallStepParam,
-        GoogleMapsCallStepParam,
         GoogleMapsResultStepParam,
+        GoogleMapsCallStepParam,
         CodeExecutionCallStepParam,
         URLContextCallStepParam,
         GoogleSearchCallStepParam,
@@ -98,6 +102,8 @@ _STEP_VARIANTS: dict[str, Any] = {
     "mcp_server_tool_call": MCPServerToolCallStep,
     "mcp_server_tool_result": MCPServerToolResultStep,
     "model_output": ModelOutputStep,
+    "processing_call": ProcessingCallStep,
+    "processing_result": ProcessingResultStep,
     "thought": ThoughtStep,
     "url_context_call": URLContextCallStep,
     "url_context_result": URLContextResultStep,
@@ -120,6 +126,8 @@ Step = Annotated[
         MCPServerToolCallStep,
         MCPServerToolResultStep,
         ModelOutputStep,
+        ProcessingCallStep,
+        ProcessingResultStep,
         ThoughtStep,
         URLContextCallStep,
         URLContextResultStep,
