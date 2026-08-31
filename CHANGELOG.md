@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.21.0](https://github.com/googleapis/python-genai/compare/v2.20.0...v2.21.0) (2026-08-31)
+
+
+### Features
+
+* Add destination parameter to client.files.download to support streaming downloads to disk or file-like objects ([fcf9e3f](https://github.com/googleapis/python-genai/commit/fcf9e3fe8bdf9cc18a09a7fff3d65742913a6b06))
+* Add support for the audio/webm MIME type. ([67ec3d7](https://github.com/googleapis/python-genai/commit/67ec3d75df7ee1bf984e7ae8a6d45894579375d1))
+* Add translation_config SDK support for GEAP. ([ff153a7](https://github.com/googleapis/python-genai/commit/ff153a757362d776b935819bcc13aa20d9696a2a))
+* Add Video Understanding support to the Interactions API ([2cc99a9](https://github.com/googleapis/python-genai/commit/2cc99a9b365bda40ad60da33b206a31c096a79c5))
+
+
+### Bug Fixes
+
+* Expose ProcessingCallStep and ProcessingResultStep in Interactions SDK ([df0ab55](https://github.com/googleapis/python-genai/commit/df0ab55c09994da4de26ad3038f206fc986ced3a))
+
 ## [2.20.0](https://github.com/googleapis/python-genai/compare/v2.19.0...v2.20.0) (2026-08-25)
 
 
