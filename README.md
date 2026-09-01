@@ -627,6 +627,30 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
+### Get Base Model
+
+To retrieve base model metadata (such as display name, description, supported actions, and token limits):
+
+```python
+model = client.models.get(model='gemini-2.5-flash')
+
+print(f"Name: {model.name}")
+print(f"Display Name: {model.display_name}")
+print(f"Description: {model.description}")
+print(f"Input Token Limit: {model.input_token_limit}")
+print(f"Output Token Limit: {model.output_token_limit}")
+print(f"Supported Actions: {model.supported_actions}")
+```
+
+#### Get Base Model (Asynchronous)
+
+```python
+model = await client.aio.models.get(model='gemini-2.5-flash')
+
+print(f"Display Name: {model.display_name}")
+print(f"Input Token Limit: {model.input_token_limit}")
+```
+
 ### List Base Models
 
 To retrieve tuned models, see [list tuned models](#list-tuned-models).
@@ -784,14 +808,12 @@ user_prompt_content = types.Content(
     role='user',
     parts=[types.Part.from_text(text='What is the weather like in Boston?')],
 )
-function_call_part = response.function_calls[0]
+function_call = response.function_calls[0]
 function_call_content = response.candidates[0].content
 
 
 try:
-    function_result = get_current_weather(
-        **function_call_part.function_call.args
-    )
+    function_result = get_current_weather(**function_call.args)
     function_response = {'result': function_result}
 except (
     Exception
@@ -800,7 +822,7 @@ except (
 
 
 function_response_part = types.Part.from_function_response(
-    name=function_call_part.name,
+    name=function_call.name,
     response=function_response,
 )
 function_response_content = types.Content(
@@ -1832,6 +1854,8 @@ print(response.text)
 ```
 
 ### Get Tuned Model
+
+To retrieve base models, see [get base model](#get-base-model).
 
 ```python
 tuned_model = client.models.get(model=tuning_job.tuned_model.model)
