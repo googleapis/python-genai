@@ -57,7 +57,12 @@ def unmarshal_json_response(
         return unmarshal_json(body, typ)
     except Exception as e:
         if not validate:
-            return construct_unvalidated(json.loads(body), typ)
+            try:
+                decoded = json.loads(body)
+            except ValueError:
+                pass
+            else:
+                return construct_unvalidated(decoded, typ)
         raise errors.ResponseValidationError(
             "Response validation failed",
             http_res,

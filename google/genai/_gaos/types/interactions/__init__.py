@@ -302,6 +302,13 @@ if TYPE_CHECKING:
         ParallelAISearchConfigParam,
     )
     from .placecitation import PlaceCitation, PlaceCitationParam
+    from .processingcalldelta import ProcessingCallDelta, ProcessingCallDeltaTypedDict
+    from .processingcallstep import ProcessingCallStep, ProcessingCallStepParam
+    from .processingresultdelta import (
+        ProcessingResultDelta,
+        ProcessingResultDeltaTypedDict,
+    )
+    from .processingresultstep import ProcessingResultStep, ProcessingResultStepParam
     from .ragresource import RagResource, RagResourceParam
     from .ragretrievalconfig import RagRetrievalConfig, RagRetrievalConfigParam
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
@@ -326,6 +333,10 @@ if TYPE_CHECKING:
     from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
     from .servicetier import ServiceTier
     from .sessionconfig import SessionConfig, SessionConfigParam
+    from .smarttranscriptionmode import (
+        SmartTranscriptionMode,
+        SmartTranscriptionModeParam,
+    )
     from .source import Source, SourceParam, SourceType
     from .speakerconfig import SpeakerConfig, SpeakerConfigParam
     from .speechconfig import SpeechConfig, SpeechConfigParam
@@ -365,7 +376,18 @@ if TYPE_CHECKING:
     from .tool import Tool, ToolParam, UnknownTool
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
-    from .transcriptionconfig import TranscriptionConfig, TranscriptionConfigParam
+    from .transcriptionconfig import (
+        TranscriptionConfig,
+        TranscriptionConfigMode,
+        TranscriptionConfigModeEnum,
+        TranscriptionConfigModeParam,
+        TranscriptionConfigParam,
+    )
+    from .transcriptionmode import (
+        TranscriptionMode,
+        TranscriptionModeParam,
+        UnknownTranscriptionMode,
+    )
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
@@ -386,6 +408,10 @@ if TYPE_CHECKING:
     from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
     from .usage import Usage, UsageTypedDict
     from .userinputstep import UserInputStep, UserInputStepParam
+    from .verbatimtranscriptionmode import (
+        VerbatimTranscriptionMode,
+        VerbatimTranscriptionModeParam,
+    )
     from .vertexaisearchconfig import VertexAISearchConfig, VertexAISearchConfigParam
     from .videoconfig import Task, VideoConfig, VideoConfigParam
     from .videocontent import (
@@ -646,8 +672,16 @@ __all__ = [
     "PlaceCitation",
     "PlaceCitationParam",
     "Processing",
+    "ProcessingCallDelta",
+    "ProcessingCallDeltaTypedDict",
+    "ProcessingCallStep",
+    "ProcessingCallStepParam",
     "ProcessingEnum",
     "ProcessingParam",
+    "ProcessingResultDelta",
+    "ProcessingResultDeltaTypedDict",
+    "ProcessingResultStep",
+    "ProcessingResultStepParam",
     "RagResource",
     "RagResourceParam",
     "RagRetrievalConfig",
@@ -677,6 +711,8 @@ __all__ = [
     "ServiceTier",
     "SessionConfig",
     "SessionConfigParam",
+    "SmartTranscriptionMode",
+    "SmartTranscriptionModeParam",
     "Source",
     "SourceParam",
     "SourceType",
@@ -731,7 +767,12 @@ __all__ = [
     "ToolChoiceType",
     "ToolParam",
     "TranscriptionConfig",
+    "TranscriptionConfigMode",
+    "TranscriptionConfigModeEnum",
+    "TranscriptionConfigModeParam",
     "TranscriptionConfigParam",
+    "TranscriptionMode",
+    "TranscriptionModeParam",
     "Transform",
     "TransformParam",
     "URLCitation",
@@ -760,10 +801,13 @@ __all__ = [
     "UnknownStepDeltaData",
     "UnknownThoughtSummaryContent",
     "UnknownTool",
+    "UnknownTranscriptionMode",
     "Usage",
     "UsageTypedDict",
     "UserInputStep",
     "UserInputStepParam",
+    "VerbatimTranscriptionMode",
+    "VerbatimTranscriptionModeParam",
     "VertexAISearchConfig",
     "VertexAISearchConfigParam",
     "VideoConfig",
@@ -1034,6 +1078,14 @@ _dynamic_imports: dict[str, str] = {
     "ParallelAISearchConfigParam": ".parallelaisearchconfig",
     "PlaceCitation": ".placecitation",
     "PlaceCitationParam": ".placecitation",
+    "ProcessingCallDelta": ".processingcalldelta",
+    "ProcessingCallDeltaTypedDict": ".processingcalldelta",
+    "ProcessingCallStep": ".processingcallstep",
+    "ProcessingCallStepParam": ".processingcallstep",
+    "ProcessingResultDelta": ".processingresultdelta",
+    "ProcessingResultDeltaTypedDict": ".processingresultdelta",
+    "ProcessingResultStep": ".processingresultstep",
+    "ProcessingResultStepParam": ".processingresultstep",
     "RagResource": ".ragresource",
     "RagResourceParam": ".ragresource",
     "RagRetrievalConfig": ".ragretrievalconfig",
@@ -1064,6 +1116,8 @@ _dynamic_imports: dict[str, str] = {
     "ServiceTier": ".servicetier",
     "SessionConfig": ".sessionconfig",
     "SessionConfigParam": ".sessionconfig",
+    "SmartTranscriptionMode": ".smarttranscriptionmode",
+    "SmartTranscriptionModeParam": ".smarttranscriptionmode",
     "Source": ".source",
     "SourceParam": ".source",
     "SourceType": ".source",
@@ -1116,7 +1170,13 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceConfigParam": ".toolchoiceconfig",
     "ToolChoiceType": ".toolchoicetype",
     "TranscriptionConfig": ".transcriptionconfig",
+    "TranscriptionConfigMode": ".transcriptionconfig",
+    "TranscriptionConfigModeEnum": ".transcriptionconfig",
+    "TranscriptionConfigModeParam": ".transcriptionconfig",
     "TranscriptionConfigParam": ".transcriptionconfig",
+    "TranscriptionMode": ".transcriptionmode",
+    "TranscriptionModeParam": ".transcriptionmode",
+    "UnknownTranscriptionMode": ".transcriptionmode",
     "URLCitation": ".urlcitation",
     "URLCitationParam": ".urlcitation",
     "URLContext": ".urlcontext",
@@ -1138,6 +1198,8 @@ _dynamic_imports: dict[str, str] = {
     "UsageTypedDict": ".usage",
     "UserInputStep": ".userinputstep",
     "UserInputStepParam": ".userinputstep",
+    "VerbatimTranscriptionMode": ".verbatimtranscriptionmode",
+    "VerbatimTranscriptionModeParam": ".verbatimtranscriptionmode",
     "VertexAISearchConfig": ".vertexaisearchconfig",
     "VertexAISearchConfigParam": ".vertexaisearchconfig",
     "Task": ".videoconfig",

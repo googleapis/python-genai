@@ -105,6 +105,7 @@ def _apply_default_headers(
 
 
 
+
 def _apply_user_project(
     hook_ctx: BeforeRequestContext, request: httpx.Request
 ) -> None:

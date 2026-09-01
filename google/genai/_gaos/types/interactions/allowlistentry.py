@@ -24,12 +24,12 @@ from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
 TransformParam = TypeAliasType(
-    "TransformParam", Union[Dict[str, str], List[Dict[str, str]]]
+    "TransformParam", Union[List[Dict[str, str]], Dict[str, str]]
 )
 r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 
-Transform = TypeAliasType("Transform", Union[Dict[str, str], List[Dict[str, str]]])
+Transform = TypeAliasType("Transform", Union[List[Dict[str, str]], Dict[str, str]])
 r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
 

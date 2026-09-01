@@ -103,6 +103,12 @@ if TYPE_CHECKING:
         GetEnvironmentRequest,
         GetEnvironmentRequestParam,
     )
+    from .getenvironmentfiles import (
+        GetEnvironmentFilesGlobals,
+        GetEnvironmentFilesGlobalsTypedDict,
+        GetEnvironmentFilesRequest,
+        GetEnvironmentFilesRequestParam,
+    )
     from .getinteractionbyid import (
         GetInteractionByIDGlobals,
         GetInteractionByIDGlobalsTypedDict,
@@ -238,6 +244,10 @@ __all__ = [
     "GetAgentGlobalsTypedDict",
     "GetAgentRequest",
     "GetAgentRequestParam",
+    "GetEnvironmentFilesGlobals",
+    "GetEnvironmentFilesGlobalsTypedDict",
+    "GetEnvironmentFilesRequest",
+    "GetEnvironmentFilesRequestParam",
     "GetEnvironmentGlobals",
     "GetEnvironmentGlobalsTypedDict",
     "GetEnvironmentRequest",
@@ -355,6 +365,10 @@ _dynamic_imports: dict[str, str] = {
     "GetEnvironmentGlobalsTypedDict": ".getenvironment",
     "GetEnvironmentRequest": ".getenvironment",
     "GetEnvironmentRequestParam": ".getenvironment",
+    "GetEnvironmentFilesGlobals": ".getenvironmentfiles",
+    "GetEnvironmentFilesGlobalsTypedDict": ".getenvironmentfiles",
+    "GetEnvironmentFilesRequest": ".getenvironmentfiles",
+    "GetEnvironmentFilesRequestParam": ".getenvironmentfiles",
     "GetInteractionByIDGlobals": ".getinteractionbyid",
     "GetInteractionByIDGlobalsTypedDict": ".getinteractionbyid",
     "GetInteractionByIDRequest": ".getinteractionbyid",

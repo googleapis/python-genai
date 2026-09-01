@@ -46,6 +46,7 @@ AudioContentMimeType = Union[
         "audio/opus",
         "audio/alaw",
         "audio/mulaw",
+        "audio/webm",
     ],
     UnrecognizedStr,
 ]
@@ -59,13 +60,13 @@ class AudioContentParam(TypedDict):
     r"""The number of audio channels."""
     data: NotRequired[Union[str, Base64FileInput]]
     r"""The audio content."""
+    mime_type: NotRequired[AudioContentMimeType]
+    r"""The mime type of the audio."""
     sample_rate: NotRequired[int]
     r"""The sample rate of the audio."""
     type: Literal["audio"]
     uri: NotRequired[str]
     r"""The URI of the audio."""
-    mime_type: NotRequired[AudioContentMimeType]
-    r"""The mime type of the audio."""
 
 
 class AudioContent(BaseModel):
@@ -76,6 +77,9 @@ class AudioContent(BaseModel):
 
     data: Optional[Base64EncodedString] = None
     r"""The audio content."""
+
+    mime_type: Optional[AudioContentMimeType] = None
+    r"""The mime type of the audio."""
 
     sample_rate: Optional[int] = None
     r"""The sample rate of the audio."""
@@ -88,12 +92,9 @@ class AudioContent(BaseModel):
     uri: Optional[str] = None
     r"""The URI of the audio."""
 
-    mime_type: Optional[AudioContentMimeType] = None
-    r"""The mime type of the audio."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["channels", "data", "sample_rate", "uri", "mime_type"])
+        optional_fields = set(["channels", "data", "mime_type", "sample_rate", "uri"])
         serialized = handler(self)
         m = {}
 

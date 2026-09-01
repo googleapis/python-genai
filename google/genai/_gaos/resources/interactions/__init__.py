@@ -80,6 +80,8 @@ from ...types.interactions.mcpservertoolresultstep import MCPServerToolResultSte
 from ...types.interactions.model import Model
 from ...types.interactions.modeloutputstep import ModelOutputStep
 from ...types.interactions.placecitation import PlaceCitation
+from ...types.interactions.processingcallstep import ProcessingCallStep
+from ...types.interactions.processingresultstep import ProcessingResultStep
 from ...types.interactions.retrievalcallarguments import RetrievalCallArguments
 from ...types.interactions.retrievalcalldelta import RetrievalCallDelta
 from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
@@ -97,6 +99,7 @@ from ...types.interactions.tool import Tool
 from ...types.interactions.toolchoiceconfig import ToolChoiceConfig
 from ...types.interactions.toolchoicetype import ToolChoiceType
 from ...types.interactions.transcriptionconfig import TranscriptionConfig
+from ...types.interactions.transcriptionmode import TranscriptionMode
 from ...types.interactions.urlcitation import URLCitation
 from ...types.interactions.urlcontextcallarguments import URLContextCallArguments
 from ...types.interactions.urlcontextcallstep import URLContextCallStep
@@ -122,6 +125,7 @@ from . import placecitation
 from . import retrievalcalldelta
 from . import stepdelta
 from . import tool
+from . import transcriptionmode
 from . import urlcontextcallstep
 from . import urlcontextresultstep
 from . import usage
@@ -184,6 +188,8 @@ __all__ = [
     "Model",
     "ModelOutputStep",
     "PlaceCitation",
+    "ProcessingCallStep",
+    "ProcessingResultStep",
     "RetrievalCallArguments",
     "RetrievalCallDelta",
     "RetrievalResultDelta",
@@ -201,6 +207,7 @@ __all__ = [
     "ToolChoiceConfig",
     "ToolChoiceType",
     "TranscriptionConfig",
+    "TranscriptionMode",
     "URLCitation",
     "URLContextCallArguments",
     "URLContextCallStep",
@@ -226,6 +233,7 @@ __all__ = [
     "retrievalcalldelta",
     "stepdelta",
     "tool",
+    "transcriptionmode",
     "urlcontextcallstep",
     "urlcontextresultstep",
     "usage",

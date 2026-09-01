@@ -18,11 +18,11 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
-from ...utils import serialize_int, validate_int
 from ..interactions import (
     environmentnetworkegressallowlist as interactions_environmentnetworkegressallowlist,
     source as interactions_source,
 )
+from ...utils import serialize_int, validate_int
 from pydantic import model_serializer
 from pydantic.functional_serializers import PlainSerializer
 from pydantic.functional_validators import BeforeValidator

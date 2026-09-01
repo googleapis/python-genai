@@ -18,7 +18,9 @@
 
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
-from ..types.triggers import triggercreateparams as triggers_triggercreateparams
+from ..types.triggers import (
+    triggercreateparams as triggers_triggercreateparams,
+)
 from ..utils import FieldMetadata, PathParamMetadata, RequestMetadata
 from pydantic import model_serializer
 from typing import Optional

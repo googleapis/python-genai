@@ -92,11 +92,11 @@ def get_security_from_env(security: Any, security_class: Any) -> Optional[BaseMo
 
     security_dict: Any = {}
 
-    if os.getenv("GOOGLE_GENAI_API_KEY"):
-        security_dict["api_key"] = os.getenv("GOOGLE_GENAI_API_KEY")
-
     if os.getenv("GOOGLE_GENAI_ACCESS_TOKEN"):
         security_dict["access_token"] = os.getenv("GOOGLE_GENAI_ACCESS_TOKEN")
+
+    if os.getenv("GOOGLE_GENAI_API_KEY"):
+        security_dict["api_key"] = os.getenv("GOOGLE_GENAI_API_KEY")
 
     if os.getenv("GOOGLE_GENAI_DEFAULT_HEADERS"):
         security_dict["default_headers"] = os.getenv("GOOGLE_GENAI_DEFAULT_HEADERS")

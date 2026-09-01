@@ -18,7 +18,9 @@
 
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
-from ..types.webhooks import pingwebhookrequest as webhooks_pingwebhookrequest
+from ..types.webhooks import (
+    pingwebhookrequest as webhooks_pingwebhookrequest,
+)
 from ..utils import FieldMetadata, PathParamMetadata, RequestMetadata
 from pydantic import model_serializer
 from typing import Optional

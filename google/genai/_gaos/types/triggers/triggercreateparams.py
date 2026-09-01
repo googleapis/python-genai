@@ -50,33 +50,33 @@ r"""Required. The interaction request template to be executed."""
 class TriggerCreateParamsParam(TypedDict):
     r"""Parameters for creating a trigger."""
 
+    interaction: InteractionParam
+    r"""Required. The interaction request template to be executed."""
     schedule: str
     r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
-    interaction: InteractionParam
-    r"""Required. The interaction request template to be executed."""
     display_name: NotRequired[str]
     r"""Optional. The display name of the trigger."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the trigger execution."""
-    max_consecutive_failures: NotRequired[int]
-    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
     execution_timeout_seconds: NotRequired[int]
     r"""Optional. The execution timeout for the triggered interaction."""
+    max_consecutive_failures: NotRequired[int]
+    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
 
 
 class TriggerCreateParams(BaseModel):
     r"""Parameters for creating a trigger."""
 
+    interaction: Interaction
+    r"""Required. The interaction request template to be executed."""
+
     schedule: str
     r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
 
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
-
-    interaction: Interaction
-    r"""Required. The interaction request template to be executed."""
 
     display_name: Optional[str] = None
     r"""Optional. The display name of the trigger."""
@@ -84,11 +84,11 @@ class TriggerCreateParams(BaseModel):
     environment_id: Optional[str] = None
     r"""Optional. The environment ID for the trigger execution."""
 
-    max_consecutive_failures: Optional[int] = None
-    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
-
     execution_timeout_seconds: Optional[int] = None
     r"""Optional. The execution timeout for the triggered interaction."""
+
+    max_consecutive_failures: Optional[int] = None
+    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -96,8 +96,8 @@ class TriggerCreateParams(BaseModel):
             [
                 "display_name",
                 "environment_id",
-                "max_consecutive_failures",
                 "execution_timeout_seconds",
+                "max_consecutive_failures",
             ]
         )
         serialized = handler(self)

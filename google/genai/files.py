@@ -20,7 +20,7 @@ import io
 import json
 import logging
 import os
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, overload
 from urllib.parse import urlencode
 
 import google.auth
@@ -652,43 +652,72 @@ class Files(_api_module.BaseModule):
         kwargs=config_model.model_dump() if config else {},
     )
 
+  @overload
   def download(
       self,
       *,
       file: Union[str, types.File, types.Video, types.GeneratedVideo],
+      destination: None = None,
       config: Optional[types.DownloadFileConfigOrDict] = None,
   ) -> bytes:
+    ...
+
+  @overload
+  def download(
+      self,
+      *,
+      file: Union[str, types.File, types.Video, types.GeneratedVideo],
+      destination: Union[str, os.PathLike[str], io.IOBase],
+      config: Optional[types.DownloadFileConfigOrDict] = None,
+  ) -> None:
+    ...
+
+  def download(
+      self,
+      *,
+      file: Union[str, types.File, types.Video, types.GeneratedVideo],
+      destination: Optional[Union[str, os.PathLike[str], io.IOBase]] = None,
+      config: Optional[types.DownloadFileConfigOrDict] = None,
+  ) -> Optional[bytes]:
     """Downloads a file's data from storage.
 
     Files created by `upload` can't be downloaded. You can tell which files are
     downloadable by checking the `source` or `download_uri` property.
 
-    Note: This method returns the data as bytes. For `Video` and
-    `GeneratedVideo` objects there is an additional side effect, that it also
-    sets the `video_bytes` property on the `Video` object.
+    Note: When destination is None, this method returns the data as bytes. For
+    `Video` and `GeneratedVideo` objects, if destination is None, it also sets
+    the
+    `video_bytes` property on the `Video` object. When destination is provided,
+    chunks are streamed directly to disk or the writable stream without loading
+    the full file into memory, and None is returned.
 
     Args:
-      file (str): A file name, uri, or file object. Identifying which file to
-        download.
-      config (DownloadFileConfigOrDict): Optional, configuration for the get
-        method.
+      file: A file name, uri, or file object identifying which file to download.
+      destination: Optional, a local file path or writable binary stream to
+        write the file directly to in chunks, avoiding holding the full file in
+        memory.
+      config: Optional, configuration for the get method.
 
     Returns:
-      File: The file data as bytes.
+      bytes: The file data as bytes if destination is None; otherwise None.
 
     Usage:
 
     .. code-block:: python
 
-      for file client.files.list():
+      for file in client.files.list():
         if file.download_uri is not None:
           break
       else:
         raise ValueError('No files found with a `download_uri`.')
-      data = client.files.download(file=file)
-      # data = client.files.download(file=file.name)
-      # data = client.files.download(file=file.download_uri)
 
+      # Download to memory:
+      data = client.files.download(file=file)
+
+      # Stream directly to a file path (avoids memory spike):
+      client.files.download(file=file, destination="output.mp4")
+
+      # Download video object:
       video = types.Video(uri=file.uri)
       video_bytes = client.files.download(file=video)
       video.video_bytes
@@ -724,12 +753,14 @@ class Files(_api_module.BaseModule):
     data = self._api_client.download_file(
         path,
         http_options=http_options,
+        destination=destination,
     )
 
-    if isinstance(file, types.Video):
-      file.video_bytes = data
-    elif isinstance(file, types.GeneratedVideo) and file.video is not None:
-      file.video.video_bytes = data
+    if destination is None:
+      if isinstance(file, types.Video):
+        file.video_bytes = data
+      elif isinstance(file, types.GeneratedVideo) and file.video is not None:
+        file.video.video_bytes = data
 
     return data
 
@@ -1277,13 +1308,34 @@ class AsyncFiles(_api_module.BaseModule):
         kwargs=config_model.model_dump() if config else {},
     )
 
+  @overload
   async def download(
       self,
       *,
-      file: Union[str, types.File],
+      file: Union[str, types.File, types.Video, types.GeneratedVideo],
+      destination: None = None,
       config: Optional[types.DownloadFileConfigOrDict] = None,
   ) -> bytes:
-    """Downloads a file's data from the file service.
+    ...
+
+  @overload
+  async def download(
+      self,
+      *,
+      file: Union[str, types.File, types.Video, types.GeneratedVideo],
+      destination: Union[str, os.PathLike[str], io.IOBase],
+      config: Optional[types.DownloadFileConfigOrDict] = None,
+  ) -> None:
+    ...
+
+  async def download(
+      self,
+      *,
+      file: Union[str, types.File, types.Video, types.GeneratedVideo],
+      destination: Optional[Union[str, os.PathLike[str], io.IOBase]] = None,
+      config: Optional[types.DownloadFileConfigOrDict] = None,
+  ) -> Optional[bytes]:
+    """Downloads a file's data from the file service asynchronously.
 
     The Gemini Enterprise Agent Platform implementation of the API does not
     include the file service.
@@ -1291,27 +1343,38 @@ class AsyncFiles(_api_module.BaseModule):
     Files created by `upload` can't be downloaded. You can tell which files are
     downloadable by checking the `download_uri` property.
 
+    Note: When destination is None, this method returns the data as bytes. For
+    `Video` and `GeneratedVideo` objects, if destination is None, it also sets
+    the
+    `video_bytes` property on the `Video` object. When destination is provided,
+    chunks are streamed directly to disk or the writable stream without loading
+    the full file into memory, and None is returned.
+
     Args:
-      File (str): A file name, uri, or file object. Identifying which file to
-        download.
-      config (DownloadFileConfigOrDict): Optional, configuration for the get
-        method.
+      file: A file name, uri, or file object identifying which file to download.
+      destination: Optional, a local file path or writable binary stream to
+        write the file directly to in chunks, avoiding holding the full file in
+        memory.
+      config: Optional, configuration for the get method.
 
     Returns:
-      File: The file data as bytes.
+      bytes: The file data as bytes if destination is None; otherwise None.
 
     Usage:
 
     .. code-block:: python
 
-      for file client.files.list():
+      async for file in await client.aio.files.list():
         if file.download_uri is not None:
           break
       else:
         raise ValueError('No files found with a `download_uri`.')
-      data = client.files.download(file=file)
-      # data = client.files.download(file=file.name)
-      # data = client.files.download(file=file.uri)
+
+      # Download to memory:
+      data = await client.aio.files.download(file=file)
+
+      # Stream directly to a file path (avoids memory spike):
+      await client.aio.files.download(file=file, destination="output.mp4")
     """
     if self._api_client.vertexai:
       raise ValueError(
@@ -1325,6 +1388,12 @@ class AsyncFiles(_api_module.BaseModule):
       else:
         config_model = config
 
+    if isinstance(file, types.File) and file.download_uri is None:
+      raise ValueError(
+          "Only generated files can be downloaded, uploaded files can't be "
+          'downloaded. You can tell which files are downloadable by checking '
+          'the `source` or `download_uri` property.'
+      )
     name = t.t_file_name(file)
 
     path = f'files/{name}:download'
@@ -1340,7 +1409,14 @@ class AsyncFiles(_api_module.BaseModule):
     data = await self._api_client.async_download_file(
         path,
         http_options=http_options,
+        destination=destination,
     )
+
+    if destination is None:
+      if isinstance(file, types.Video):
+        file.video_bytes = data
+      elif isinstance(file, types.GeneratedVideo) and file.video is not None:
+        file.video.video_bytes = data
 
     return data
 

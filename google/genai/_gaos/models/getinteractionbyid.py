@@ -62,14 +62,14 @@ class GetInteractionByIDGlobals(BaseModel):
 class GetInteractionByIDRequestParam(TypedDict):
     id: str
     r"""The unique identifier of the interaction to retrieve."""
-    stream: NotRequired[bool]
-    r"""If set to true, the generated content will be streamed incrementally."""
-    last_event_id: NotRequired[str]
-    r"""Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true."""
-    include_input: NotRequired[bool]
-    r"""If set to true, includes the input in the response."""
     api_version: NotRequired[str]
     r"""Which version of the API to use."""
+    include_input: NotRequired[bool]
+    r"""If set to true, includes the input in the response."""
+    last_event_id: NotRequired[str]
+    r"""Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true."""
+    stream: NotRequired[bool]
+    r"""If set to true, the generated content will be streamed incrementally."""
 
 
 class GetInteractionByIDRequest(BaseModel):
@@ -78,17 +78,11 @@ class GetInteractionByIDRequest(BaseModel):
     ]
     r"""The unique identifier of the interaction to retrieve."""
 
-    stream: Annotated[
-        Optional[bool],
-        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
-    ] = False
-    r"""If set to true, the generated content will be streamed incrementally."""
-
-    last_event_id: Annotated[
+    api_version: Annotated[
         Optional[str],
-        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true."""
+    r"""Which version of the API to use."""
 
     include_input: Annotated[
         Optional[bool],
@@ -99,16 +93,22 @@ class GetInteractionByIDRequest(BaseModel):
     ] = False
     r"""If set to true, includes the input in the response."""
 
-    api_version: Annotated[
+    last_event_id: Annotated[
         Optional[str],
-        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true."""
+
+    stream: Annotated[
+        Optional[bool],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = False
+    r"""If set to true, the generated content will be streamed incrementally."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
-            ["stream", "last_event_id", "include_input", "api_version"]
+            ["api_version", "include_input", "last_event_id", "stream"]
         )
         serialized = handler(self)
         m = {}

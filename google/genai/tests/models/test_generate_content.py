@@ -617,6 +617,26 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
     ),
+    pytest_helper.TestTableItem(
+        name='test_audio_transcription_config_mode',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                    )
+                ),
+                audio_transcription_config=types.AudioTranscriptionConfig(
+                    mode='SMART',
+                ),
+            ),
+        ),
+    ),
 ]
 
 pytestmark = pytest_helper.setup(

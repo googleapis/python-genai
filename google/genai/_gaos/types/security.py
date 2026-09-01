@@ -26,26 +26,15 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class SecurityTypedDict(TypedDict):
-    api_key: NotRequired[str]
-    r"""Gemini API key sent as x-goog-api-key."""
     access_token: NotRequired[str]
     r"""OAuth access token sent as a bearer Authorization header."""
+    api_key: NotRequired[str]
+    r"""Gemini API key sent as x-goog-api-key."""
     default_headers: NotRequired[Dict[str, str]]
     r"""Additional default headers to apply before request-specific headers and auth."""
 
 
 class Security(BaseModel):
-    api_key: Annotated[
-        Optional[str],
-        pydantic.Field(alias="apiKey"),
-        FieldMetadata(
-            security=SecurityMetadata(
-                scheme=True, scheme_type="http", sub_type="custom", field_name="apiKey"
-            )
-        ),
-    ] = None
-    r"""Gemini API key sent as x-goog-api-key."""
-
     access_token: Annotated[
         Optional[str],
         pydantic.Field(alias="accessToken"),
@@ -59,6 +48,17 @@ class Security(BaseModel):
         ),
     ] = None
     r"""OAuth access token sent as a bearer Authorization header."""
+
+    api_key: Annotated[
+        Optional[str],
+        pydantic.Field(alias="apiKey"),
+        FieldMetadata(
+            security=SecurityMetadata(
+                scheme=True, scheme_type="http", sub_type="custom", field_name="apiKey"
+            )
+        ),
+    ] = None
+    r"""Gemini API key sent as x-goog-api-key."""
 
     default_headers: Annotated[
         Optional[Dict[str, str]],
@@ -76,7 +76,7 @@ class Security(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["apiKey", "accessToken", "defaultHeaders"])
+        optional_fields = set(["accessToken", "apiKey", "defaultHeaders"])
         serialized = handler(self)
         m = {}
 

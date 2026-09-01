@@ -25,12 +25,12 @@ from typing_extensions import TypeAliasType
 
 InteractionsInputParam = TypeAliasType(
     "InteractionsInputParam",
-    Union[str, List[StepParam], List[ContentParam], ContentParam],
+    Union[ContentParam, List[StepParam], List[ContentParam], str],
 )
 r"""The input for the interaction."""
 
 
 InteractionsInput = TypeAliasType(
-    "InteractionsInput", Union[str, List[Step], List[Content], Content]
+    "InteractionsInput", Union[Content, List[Step], List[Content], str]
 )
 r"""The input for the interaction."""
