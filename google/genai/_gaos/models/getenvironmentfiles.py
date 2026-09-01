@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GetEnvironmentFilesGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetEnvironmentFilesGlobals(BaseModel):
@@ -34,7 +34,7 @@ class GetEnvironmentFilesGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -57,7 +57,7 @@ class GetEnvironmentFilesRequestParam(TypedDict):
     environment: str
     path: str
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
     page_size: NotRequired[int]
     r"""Optional. Maximum number of entries to return per page (for directory listing)."""
     page_token: NotRequired[str]
@@ -79,7 +79,7 @@ class GetEnvironmentFilesRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     page_size: Annotated[
         Optional[int],

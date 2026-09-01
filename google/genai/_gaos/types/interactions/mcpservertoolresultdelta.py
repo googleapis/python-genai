@@ -56,17 +56,27 @@ MCPServerToolResultDeltaResultUnion = TypeAliasType(
 
 class MCPServerToolResultDeltaTypedDict(TypedDict):
     result: MCPServerToolResultDeltaResultUnionTypedDict
+    call_id: NotRequired[str]
+    r"""Required. ID to match the ID from the function call block."""
     name: NotRequired[str]
     server_name: NotRequired[str]
+    signature: NotRequired[str]
+    r"""A signature hash for backend validation."""
     type: Literal["mcp_server_tool_result"]
 
 
 class MCPServerToolResultDelta(BaseModel):
     result: MCPServerToolResultDeltaResultUnion
 
+    call_id: Optional[str] = None
+    r"""Required. ID to match the ID from the function call block."""
+
     name: Optional[str] = None
 
     server_name: Optional[str] = None
+
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
 
     type: Annotated[
         Annotated[
@@ -78,7 +88,7 @@ class MCPServerToolResultDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "server_name"])
+        optional_fields = set(["call_id", "name", "server_name", "signature"])
         serialized = handler(self)
         m = {}
 

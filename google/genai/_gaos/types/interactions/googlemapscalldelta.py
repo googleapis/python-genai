@@ -33,6 +33,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class GoogleMapsCallDeltaTypedDict(TypedDict):
     arguments: NotRequired[GoogleMapsCallArgumentsParam]
     r"""The arguments to pass to the Google Maps tool."""
+    id: NotRequired[str]
+    r"""Required. A unique ID for this specific tool call."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
     type: Literal["google_maps_call"]
@@ -41,6 +43,9 @@ class GoogleMapsCallDeltaTypedDict(TypedDict):
 class GoogleMapsCallDelta(BaseModel):
     arguments: Optional[GoogleMapsCallArguments] = None
     r"""The arguments to pass to the Google Maps tool."""
+
+    id: Optional[str] = None
+    r"""Required. A unique ID for this specific tool call."""
 
     signature: Optional[str] = None
     r"""A signature hash for backend validation."""
@@ -55,7 +60,7 @@ class GoogleMapsCallDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["arguments", "signature"])
+        optional_fields = set(["arguments", "id", "signature"])
         serialized = handler(self)
         m = {}
 

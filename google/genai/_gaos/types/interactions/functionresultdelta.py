@@ -56,6 +56,8 @@ class FunctionResultDeltaTypedDict(TypedDict):
     result: FunctionResultDeltaResultUnionTypedDict
     is_error: NotRequired[bool]
     name: NotRequired[str]
+    signature: NotRequired[str]
+    r"""A signature hash for backend validation."""
     type: Literal["function_result"]
 
 
@@ -69,6 +71,9 @@ class FunctionResultDelta(BaseModel):
 
     name: Optional[str] = None
 
+    signature: Optional[str] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["function_result"],
@@ -79,7 +84,7 @@ class FunctionResultDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["is_error", "name"])
+        optional_fields = set(["is_error", "name", "signature"])
         serialized = handler(self)
         m = {}
 

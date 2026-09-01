@@ -34,7 +34,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class ProcessingResultStepParam(TypedDict):
     r"""The result of a server-initiated media processing step."""
 
-    call_id: str
+    call_id: NotRequired[str]
     r"""Required. ID to match the ID from the function call block."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
@@ -44,7 +44,7 @@ class ProcessingResultStepParam(TypedDict):
 class ProcessingResultStep(BaseModel):
     r"""The result of a server-initiated media processing step."""
 
-    call_id: str
+    call_id: Optional[str] = None
     r"""Required. ID to match the ID from the function call block."""
 
     signature: Optional[Base64EncodedString] = None
@@ -60,7 +60,7 @@ class ProcessingResultStep(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature"])
+        optional_fields = set(["call_id", "signature"])
         serialized = handler(self)
         m = {}
 

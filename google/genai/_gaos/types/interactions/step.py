@@ -38,6 +38,8 @@ from .mcpservertoolresultstep import (
 from .modeloutputstep import ModelOutputStep, ModelOutputStepParam
 from .processingcallstep import ProcessingCallStep, ProcessingCallStepParam
 from .processingresultstep import ProcessingResultStep, ProcessingResultStepParam
+from .retrievalcallstep import RetrievalCallStep, RetrievalCallStepParam
+from .retrievalresultstep import RetrievalResultStep, RetrievalResultStepParam
 from .thoughtstep import ThoughtStep, ThoughtStepParam
 from .urlcontextcallstep import URLContextCallStep, URLContextCallStepParam
 from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
@@ -56,23 +58,25 @@ StepParam = TypeAliasType(
     Union[
         UserInputStepParam,
         ModelOutputStepParam,
+        ThoughtStepParam,
         FileSearchCallStepParam,
         FileSearchResultStepParam,
-        ThoughtStepParam,
         ProcessingResultStepParam,
         ProcessingCallStepParam,
-        FunctionCallStepParam,
-        GoogleMapsResultStepParam,
-        GoogleMapsCallStepParam,
-        CodeExecutionCallStepParam,
         URLContextCallStepParam,
-        GoogleSearchCallStepParam,
-        GoogleSearchResultStepParam,
-        MCPServerToolCallStepParam,
-        MCPServerToolResultStepParam,
-        FunctionResultStepParam,
+        CodeExecutionCallStepParam,
+        GoogleMapsCallStepParam,
+        GoogleMapsResultStepParam,
+        RetrievalResultStepParam,
+        FunctionCallStepParam,
         URLContextResultStepParam,
+        GoogleSearchResultStepParam,
+        RetrievalCallStepParam,
+        GoogleSearchCallStepParam,
         CodeExecutionResultStepParam,
+        FunctionResultStepParam,
+        MCPServerToolResultStepParam,
+        MCPServerToolCallStepParam,
     ],
 )
 r"""A step in the interaction."""
@@ -104,6 +108,8 @@ _STEP_VARIANTS: dict[str, Any] = {
     "model_output": ModelOutputStep,
     "processing_call": ProcessingCallStep,
     "processing_result": ProcessingResultStep,
+    "retrieval_call": RetrievalCallStep,
+    "retrieval_result": RetrievalResultStep,
     "thought": ThoughtStep,
     "url_context_call": URLContextCallStep,
     "url_context_result": URLContextResultStep,
@@ -128,6 +134,8 @@ Step = Annotated[
         ModelOutputStep,
         ProcessingCallStep,
         ProcessingResultStep,
+        RetrievalCallStep,
+        RetrievalResultStep,
         ThoughtStep,
         URLContextCallStep,
         URLContextResultStep,

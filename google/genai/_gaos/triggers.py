@@ -52,10 +52,11 @@ class Triggers(BaseSDK):
     ) -> triggers.ListTriggersResponse:
         r"""Lists triggers for a project.
 
-        :param api_version: Which version of the API to use.
-        :param filter_: Optional. Filter expression (e.g., by state).
-        :param page_size: Optional. The maximum number of triggers to return per page.
-        :param page_token: Optional. A page token from a previous ListTriggers call.
+        :param api_version: API version for request routing.
+        :param filter_: Optional. Filter expression (e.g. `agent=\"agents/my-agent-id\"`). Only
+            equality filtering on the `agent` field is currently supported.
+        :param page_size: The maximum number of triggers to return per page.
+        :param page_token: A page token from a previous ListTriggers call.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -121,10 +122,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.ListTriggersResponse, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -134,6 +131,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.ListTriggersResponse, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -146,7 +147,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -214,16 +215,19 @@ class Triggers(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.Trigger:
-        r"""Creates a new trigger that will invoke the specified agent on the given cron schedule.
+        r"""Creates a new trigger that will invoke the specified agent
+        on the given cron schedule.
 
         :param interaction: Required. The interaction request template to be executed.
-        :param schedule: Required. The cron schedule on which the trigger should run. Standard cron format.
+        :param schedule: Required. The cron schedule on which the trigger should run.
+            Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param display_name: Optional. The display name of the trigger.
         :param environment_id: Optional. The environment ID for the trigger execution.
         :param execution_timeout_seconds: Optional. The execution timeout for the triggered interaction.
-        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR).
+        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before
+            the trigger is automatically paused (status becomes ERROR).
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -304,10 +308,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.Trigger, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -317,6 +317,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.Trigger, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -329,7 +333,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -387,10 +391,11 @@ class Triggers(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes a trigger.
+        r"""Deletes a trigger. Does not delete past interaction histories
+        or environments created by past executions.
 
-        :param id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the trigger to delete.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -454,10 +459,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    interactions.Empty, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -467,6 +468,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    interactions.Empty, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -479,7 +484,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -537,10 +542,10 @@ class Triggers(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.Trigger:
-        r"""Gets details of a single trigger.
+        r"""Gets a trigger, including recent execution history.
 
-        :param id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the trigger to retrieve.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -604,10 +609,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.Trigger, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -617,6 +618,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.Trigger, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -629,7 +634,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -690,10 +695,10 @@ class Triggers(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.Trigger:
-        r"""Updates a trigger.
+        r"""Updates a trigger. Supports partial updates via field_mask.
 
-        :param id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the trigger to update.
+        :param api_version: API version for request routing.
         :param display_name: Optional. The display name of the trigger.
         :param status: Optional. The status of the trigger.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -772,10 +777,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.Trigger, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -785,6 +786,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.Trigger, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -797,7 +802,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -859,10 +864,10 @@ class Triggers(BaseSDK):
     ) -> triggers.ListTriggerExecutionsResponse:
         r"""Lists executions for a trigger.
 
-        :param trigger_id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. The maximum number of executions to return per page.
-        :param page_token: Optional. A page token from a previous ListTriggerExecutions call.
+        :param trigger_id: Required. The trigger ID to list executions from.
+        :param api_version: API version for request routing.
+        :param page_size: The maximum number of executions to return per page.
+        :param page_token: A page token from a previous ListTriggerExecutions call.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -883,9 +888,9 @@ class Triggers(BaseSDK):
 
         request = models.ListTriggerExecutionsRequest(
             api_version=api_version,
-            trigger_id=trigger_id,
             page_size=page_size,
             page_token=page_token,
+            trigger_id=trigger_id,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -893,7 +898,7 @@ class Triggers(BaseSDK):
         )
         req = self._build_request(
             method="GET",
-            path="/{api_version}/triggers/{trigger_id}/executions",
+            path="/{api_version}/triggers/{triggerId}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -928,10 +933,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.ListTriggerExecutionsResponse, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -941,6 +942,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.ListTriggerExecutionsResponse, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -953,7 +958,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers.executions"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -1011,10 +1016,11 @@ class Triggers(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.TriggerExecution:
-        r"""Runs a trigger immediately.
+        r"""Immediately fires a trigger, bypassing the cron schedule.
+        Useful for testing and manual runs.
 
-        :param trigger_id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param trigger_id: Required. The ID of the trigger to run immediately.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1043,7 +1049,7 @@ class Triggers(BaseSDK):
         )
         req = self._build_request(
             method="POST",
-            path="/{api_version}/triggers/{trigger_id}/executions",
+            path="/{api_version}/triggers/{triggerId}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1078,10 +1084,6 @@ class Triggers(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.TriggerExecution, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
@@ -1091,6 +1093,10 @@ class Triggers(BaseSDK):
                 http_res_text = utils.stream_to_text(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.TriggerExecution, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -1103,7 +1109,7 @@ class Triggers(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -1221,10 +1227,11 @@ class AsyncTriggers(AsyncBaseSDK):
     ) -> triggers.ListTriggersResponse:
         r"""Lists triggers for a project.
 
-        :param api_version: Which version of the API to use.
-        :param filter_: Optional. Filter expression (e.g., by state).
-        :param page_size: Optional. The maximum number of triggers to return per page.
-        :param page_token: Optional. A page token from a previous ListTriggers call.
+        :param api_version: API version for request routing.
+        :param filter_: Optional. Filter expression (e.g. `agent=\"agents/my-agent-id\"`). Only
+            equality filtering on the `agent` field is currently supported.
+        :param page_size: The maximum number of triggers to return per page.
+        :param page_token: A page token from a previous ListTriggers call.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1290,10 +1297,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.ListTriggersResponse, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -1303,6 +1306,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.ListTriggersResponse, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -1315,7 +1322,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1386,16 +1393,19 @@ class AsyncTriggers(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.Trigger:
-        r"""Creates a new trigger that will invoke the specified agent on the given cron schedule.
+        r"""Creates a new trigger that will invoke the specified agent
+        on the given cron schedule.
 
         :param interaction: Required. The interaction request template to be executed.
-        :param schedule: Required. The cron schedule on which the trigger should run. Standard cron format.
+        :param schedule: Required. The cron schedule on which the trigger should run.
+            Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param display_name: Optional. The display name of the trigger.
         :param environment_id: Optional. The environment ID for the trigger execution.
         :param execution_timeout_seconds: Optional. The execution timeout for the triggered interaction.
-        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR).
+        :param max_consecutive_failures: Optional. The maximum number of consecutive failures allowed before
+            the trigger is automatically paused (status becomes ERROR).
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1476,10 +1486,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.Trigger, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -1489,6 +1495,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.Trigger, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -1501,7 +1511,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1562,10 +1572,11 @@ class AsyncTriggers(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes a trigger.
+        r"""Deletes a trigger. Does not delete past interaction histories
+        or environments created by past executions.
 
-        :param id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the trigger to delete.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1629,10 +1640,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    interactions.Empty, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -1642,6 +1649,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    interactions.Empty, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -1654,7 +1665,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1715,10 +1726,10 @@ class AsyncTriggers(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.Trigger:
-        r"""Gets details of a single trigger.
+        r"""Gets a trigger, including recent execution history.
 
-        :param id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the trigger to retrieve.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1782,10 +1793,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.Trigger, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -1795,6 +1802,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.Trigger, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -1807,7 +1818,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1871,10 +1882,10 @@ class AsyncTriggers(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.Trigger:
-        r"""Updates a trigger.
+        r"""Updates a trigger. Supports partial updates via field_mask.
 
-        :param id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the trigger to update.
+        :param api_version: API version for request routing.
         :param display_name: Optional. The display name of the trigger.
         :param status: Optional. The status of the trigger.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -1953,10 +1964,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.Trigger, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -1966,6 +1973,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.Trigger, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -1978,7 +1989,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -2043,10 +2054,10 @@ class AsyncTriggers(AsyncBaseSDK):
     ) -> triggers.ListTriggerExecutionsResponse:
         r"""Lists executions for a trigger.
 
-        :param trigger_id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. The maximum number of executions to return per page.
-        :param page_token: Optional. A page token from a previous ListTriggerExecutions call.
+        :param trigger_id: Required. The trigger ID to list executions from.
+        :param api_version: API version for request routing.
+        :param page_size: The maximum number of executions to return per page.
+        :param page_token: A page token from a previous ListTriggerExecutions call.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2067,9 +2078,9 @@ class AsyncTriggers(AsyncBaseSDK):
 
         request = models.ListTriggerExecutionsRequest(
             api_version=api_version,
-            trigger_id=trigger_id,
             page_size=page_size,
             page_token=page_token,
+            trigger_id=trigger_id,
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -2077,7 +2088,7 @@ class AsyncTriggers(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="GET",
-            path="/{api_version}/triggers/{trigger_id}/executions",
+            path="/{api_version}/triggers/{triggerId}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2112,10 +2123,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.ListTriggerExecutionsResponse, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -2125,6 +2132,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.ListTriggerExecutionsResponse, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -2137,7 +2148,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers.executions"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -2198,10 +2209,11 @@ class AsyncTriggers(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> triggers.TriggerExecution:
-        r"""Runs a trigger immediately.
+        r"""Immediately fires a trigger, bypassing the cron schedule.
+        Useful for testing and manual runs.
 
-        :param trigger_id: Resource name of the trigger.
-        :param api_version: Which version of the API to use.
+        :param trigger_id: Required. The ID of the trigger to run immediately.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2230,7 +2242,7 @@ class AsyncTriggers(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="POST",
-            path="/{api_version}/triggers/{trigger_id}/executions",
+            path="/{api_version}/triggers/{triggerId}/executions",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2265,10 +2277,6 @@ class AsyncTriggers(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "200", "application/json"):
-                return unmarshal_json_response(
-                    triggers.TriggerExecution, http_res, validate=False
-                )
             if utils.match_response(http_res, "4XX", "*"):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
@@ -2278,6 +2286,10 @@ class AsyncTriggers(AsyncBaseSDK):
                 http_res_text = await utils.stream_to_text_async(http_res)
                 raise errors.GenAiDefaultError(
                     "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(
+                    triggers.TriggerExecution, http_res, validate=False
                 )
 
             raise errors.GenAiDefaultError("Unexpected response received", http_res)
@@ -2290,7 +2302,7 @@ class AsyncTriggers(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["triggers"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )

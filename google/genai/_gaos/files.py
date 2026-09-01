@@ -48,11 +48,11 @@ class Files(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.GetEnvironmentFilesResponse:
-        r"""Retrieves file metadata or directory contents from an environment's snapshot. To download file contents directly, pass ?alt=media or use the files.download helper.
+        r"""Retrieves a file or directory from an environment's snapshot.
 
         :param environment:
         :param path:
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param page_size: Optional. Maximum number of entries to return per page (for directory listing).
         :param page_token: Optional. Pagination token for directory listing.
         :param recursive: Optional. If true and the path is a directory, recursively lists all files.
@@ -148,61 +148,8 @@ class Files(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list_files",
-                        "lang": "sh",
-                        "source": "curl -X GET 'https://generativelanguage.googleapis.com/v1beta/environments/env_abc123/files/src' \\\n  -H \"x-goog-api-key: $GEMINI_API_KEY\"\n",
-                    },
-                    {
-                        "label": "list_files",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "src/main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nresponse = client.environments.files.list(\n    environment=created.id,\n    path="src",\n)\nfor file in response.files or []:\n    print(file.name, file.type, file.size_bytes)\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "list_files",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'src/main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nconst response = await ai.environments.files.list({\n    environment: created.id,\n    path: 'src',\n});\nfor (const file of (response.files ?? [])) {\n    console.log(file.name, file.type, file.size_bytes);\n}\n\n// [cleanup]\nawait ai.environments.delete(created.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "list_files",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.environments.EnvironmentFile;\nimport com.google.genai.gaos.models.environments.GetEnvironmentFilesResponse;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.GetEnvironmentFilesRequest;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest createReq = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("src/main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(createReq).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\ncom.google.genai.gaos.models.operations.GetEnvironmentFilesResponse response = client.environments.files().list(\n    GetEnvironmentFilesRequest.builder()\n        .environment(envId)\n        .path("src")\n        .build());\nGetEnvironmentFilesResponse filesResponse = response.getEnvironmentFilesResponse().orElseThrow();\nfor (EnvironmentFile file : filesResponse.files().orElse(List.of())) {\n    System.out.println(file.name().orElse("") + " " + file.type().map(Object::toString).orElse("") + " " + file.sizeBytes().orElse(""));\n}\n\n// [cleanup]\nclient.environments.deleteEnvironment(envId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "sh",
-                        "source": "curl -X GET 'https://generativelanguage.googleapis.com/v1beta/environments/env_abc123/files/main.py' \\\n  -H \"x-goog-api-key: $GEMINI_API_KEY\"\n",
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nresponse = client.environments.files.get(\n    environment=created.id,\n    path="main.py",\n)\nfor file in response.files or []:\n    print(file.name, file.size_bytes)\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nconst response = await ai.environments.files.list({\n    environment: created.id,\n    path: 'main.py',\n});\nfor (const file of (response.files ?? [])) {\n    console.log(file.name, file.size_bytes);\n}\n\n// [cleanup]\nawait ai.environments.delete(created.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.environments.EnvironmentFile;\nimport com.google.genai.gaos.models.environments.GetEnvironmentFilesResponse;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.GetEnvironmentFilesRequest;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest createReq = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(createReq).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\ncom.google.genai.gaos.models.operations.GetEnvironmentFilesResponse response = client.environments.files().list(\n    GetEnvironmentFilesRequest.builder()\n        .environment(envId)\n        .path("main.py")\n        .build());\nGetEnvironmentFilesResponse filesResponse = response.getEnvironmentFilesResponse().orElseThrow();\nfor (EnvironmentFile file : filesResponse.files().orElse(List.of())) {\n    System.out.println(file.name().orElse("") + " " + file.sizeBytes().orElse(""));\n}\n\n// [cleanup]\nclient.environments.deleteEnvironment(envId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "download_file",
-                        "lang": "sh",
-                        "source": "curl -X GET 'https://generativelanguage.googleapis.com/v1beta/environments/env_abc123/files/src/main.py?alt=media' \\\n  -H \"x-goog-api-key: $GEMINI_API_KEY\" \\\n  --output main.py\n",
-                    },
-                    {
-                        "label": "download_file",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "src/main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\ncontent = client.environments.files.download(\n    environment=created.id,\n    path="src/main.py",\n)\nprint(content.decode("utf-8"))\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["environments.files"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -287,11 +234,11 @@ class AsyncFiles(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.GetEnvironmentFilesResponse:
-        r"""Retrieves file metadata or directory contents from an environment's snapshot. To download file contents directly, pass ?alt=media or use the files.download helper.
+        r"""Retrieves a file or directory from an environment's snapshot.
 
         :param environment:
         :param path:
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param page_size: Optional. Maximum number of entries to return per page (for directory listing).
         :param page_token: Optional. Pagination token for directory listing.
         :param recursive: Optional. If true and the path is a directory, recursively lists all files.
@@ -387,61 +334,8 @@ class AsyncFiles(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list_files",
-                        "lang": "sh",
-                        "source": "curl -X GET 'https://generativelanguage.googleapis.com/v1beta/environments/env_abc123/files/src' \\\n  -H \"x-goog-api-key: $GEMINI_API_KEY\"\n",
-                    },
-                    {
-                        "label": "list_files",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "src/main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nresponse = client.environments.files.list(\n    environment=created.id,\n    path="src",\n)\nfor file in response.files or []:\n    print(file.name, file.type, file.size_bytes)\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "list_files",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'src/main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nconst response = await ai.environments.files.list({\n    environment: created.id,\n    path: 'src',\n});\nfor (const file of (response.files ?? [])) {\n    console.log(file.name, file.type, file.size_bytes);\n}\n\n// [cleanup]\nawait ai.environments.delete(created.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "list_files",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.environments.EnvironmentFile;\nimport com.google.genai.gaos.models.environments.GetEnvironmentFilesResponse;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.GetEnvironmentFilesRequest;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest createReq = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("src/main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(createReq).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\ncom.google.genai.gaos.models.operations.GetEnvironmentFilesResponse response = client.environments.files().list(\n    GetEnvironmentFilesRequest.builder()\n        .environment(envId)\n        .path("src")\n        .build());\nGetEnvironmentFilesResponse filesResponse = response.getEnvironmentFilesResponse().orElseThrow();\nfor (EnvironmentFile file : filesResponse.files().orElse(List.of())) {\n    System.out.println(file.name().orElse("") + " " + file.type().map(Object::toString).orElse("") + " " + file.sizeBytes().orElse(""));\n}\n\n// [cleanup]\nclient.environments.deleteEnvironment(envId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "sh",
-                        "source": "curl -X GET 'https://generativelanguage.googleapis.com/v1beta/environments/env_abc123/files/main.py' \\\n  -H \"x-goog-api-key: $GEMINI_API_KEY\"\n",
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nresponse = client.environments.files.get(\n    environment=created.id,\n    path="main.py",\n)\nfor file in response.files or []:\n    print(file.name, file.size_bytes)\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nconst response = await ai.environments.files.list({\n    environment: created.id,\n    path: 'main.py',\n});\nfor (const file of (response.files ?? [])) {\n    console.log(file.name, file.size_bytes);\n}\n\n// [cleanup]\nawait ai.environments.delete(created.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "get_file",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.environments.EnvironmentFile;\nimport com.google.genai.gaos.models.environments.GetEnvironmentFilesResponse;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.GetEnvironmentFilesRequest;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest createReq = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(createReq).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\ncom.google.genai.gaos.models.operations.GetEnvironmentFilesResponse response = client.environments.files().list(\n    GetEnvironmentFilesRequest.builder()\n        .environment(envId)\n        .path("main.py")\n        .build());\nGetEnvironmentFilesResponse filesResponse = response.getEnvironmentFilesResponse().orElseThrow();\nfor (EnvironmentFile file : filesResponse.files().orElse(List.of())) {\n    System.out.println(file.name().orElse("") + " " + file.sizeBytes().orElse(""));\n}\n\n// [cleanup]\nclient.environments.deleteEnvironment(envId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "download_file",
-                        "lang": "sh",
-                        "source": "curl -X GET 'https://generativelanguage.googleapis.com/v1beta/environments/env_abc123/files/src/main.py?alt=media' \\\n  -H \"x-goog-api-key: $GEMINI_API_KEY\" \\\n  --output main.py\n",
-                    },
-                    {
-                        "label": "download_file",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "src/main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\ncontent = client.environments.files.download(\n    environment=created.id,\n    path="src/main.py",\n)\nprint(content.decode("utf-8"))\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["environments.files"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(

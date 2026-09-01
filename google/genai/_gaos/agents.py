@@ -50,9 +50,9 @@ class Agents(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.AgentListResponse:
-        r"""Lists all Agents.
+        r"""Lists agents.
 
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param page_size:
         :param page_token:
         :param parent:
@@ -146,31 +146,8 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "list",
-                        "lang": "python",
-                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.agents.list()\nfor agent in response.agents or []:\n    print(agent.id)\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agents = await ai.agents.list();\nfor (const agent of (agents.agents ?? [])) {\n    console.log(agent.id);\n}\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "java",
-                        "source": "import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.AgentListResponse;\nimport com.google.genai.gaos.models.operations.ListAgentsResponse;\nimport java.util.List;\n\nClient client = new Client();\nListAgentsResponse response = client.agents.list().call();\nList<Agent> agents = response.agentListResponse()\n    .flatMap(AgentListResponse::agents)\n    .orElse(List.of());\nfor (Agent agent : agents) {\n  agent.id().ifPresent(System.out::println);\n}\n",
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -243,9 +220,9 @@ class Agents(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Creates a new Agent (Typed version for SDK).
+        r"""Creates or updates an agent (upsert by name).
 
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param agent_config: Configuration parameters for the agent.
         :param base_agent: The base agent to extend.
         :param base_environment: The environment configuration for the agent.
@@ -355,71 +332,8 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "create",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"research-assistant-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    description="A helpful research assistant.",\n    system_instruction="You are a helpful research assistant.",\n    base_environment="remote",\n    tools=[{"type": "google_search"}],\n)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `research-assistant-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A helpful research assistant.',\n    system_instruction: 'You are a helpful research assistant.',\n    base_environment: 'remote',\n    tools: [{ type: 'google_search' }],\n});\nif (!agent.id) {\n    throw new Error('Agent creation failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "create",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.GoogleSearch;\nimport com.google.genai.gaos.models.operations.CreateAgentResponse;\nimport java.util.List;\nimport java.util.UUID;\n\nClient client = new Client();\nString agentId = "research-assistant-" + UUID.randomUUID().toString().substring(0, 8);\nAgent agent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .description("A helpful research assistant.")\n    .systemInstruction("You are a helpful research assistant.")\n    .baseEnvironment(BaseEnvironment.of("remote"))\n    .tools(List.of(new GoogleSearch()))\n    .build();\nCreateAgentResponse response = client.agents.create(agent);\nSystem.out.println(response.agent().flatMap(Agent::id).orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"data-analyst-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Always include visualizations and export results as PDF.",\n    base_environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "inline",\n                "target": ".agents/AGENTS.md",\n                "content": "Always use matplotlib for charts. Include a summary table in every report.",\n            },\n            {\n                "type": "repository",\n                "source": "https://github.com/my-org/analysis-templates",\n                "target": "/workspace/templates",\n            },\n        ],\n    },\n)\nprint(f"Created agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Always include visualizations and export results as PDF.',\n    base_environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'inline',\n                target: '.agents/AGENTS.md',\n                content: 'Always use matplotlib for charts. Include a summary table in every report.',\n            },\n            {\n                type: 'repository',\n                source: 'https://github.com/my-org/analysis-templates',\n                target: '/workspace/templates',\n            },\n        ],\n    },\n});\nconsole.log(`Created agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.CreateAgentResponse;\nimport java.util.List;\nimport java.util.UUID;\n\nClient client = new Client();\nString agentId = "data-analyst-" + UUID.randomUUID().toString().substring(0, 8);\nEnvironment env = Environment.builder()\n    .sources(List.of(\n        Source.builder()\n            .type(SourceType.INLINE)\n            .target(".agents/AGENTS.md")\n            .content("Always use matplotlib for charts. Include a summary table in every report.")\n            .build(),\n        Source.builder()\n            .type(SourceType.REPOSITORY)\n            .source("https://github.com/my-org/analysis-templates")\n            .target("/workspace/templates")\n            .build()\n    ))\n    .build();\nAgent agent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .systemInstruction("You are a data analyst. Always include visualizations and export results as PDF.")\n    .baseEnvironment(BaseEnvironment.of(env))\n    .build();\nCreateAgentResponse response = client.agents.create(agent);\nSystem.out.println("Created agent: " + response.agent().flatMap(Agent::id).orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Set up the environment interactively.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a basic Hello World template to /workspace/template.py.",\n    environment="remote",\n)\n\n# Step 2: Fork that environment into a named agent.\nagent_id = f"my-data-analyst-{uuid.uuid4().hex[:8]}"\nagent = client.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Use the template at /workspace/template.py for all reports.",\n    base_environment=interaction.environment_id,\n)\nprint(f"Forked agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Set up the environment interactively.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a basic Hello World template to /workspace/template.py.',\n    environment: 'remote',\n});\n\n// Step 2: Fork that environment into a named agent.\nconst agentId = `my-data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Use the template at /workspace/template.py for all reports.',\n    base_environment: interaction.environment_id,\n});\nconsole.log(`Forked agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateAgentResponse;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// Step 1: Set up the environment interactively.\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Write a basic Hello World template to /workspace/template.py."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse interactionResponse =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    interactionResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\n\n// Step 2: Fork that environment into a named agent.\nString agentId = "my-data-analyst-" + UUID.randomUUID().toString().substring(0, 8);\nAgent agent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .systemInstruction("You are a data analyst. Use the template at /workspace/template.py for all reports.")\n    .baseEnvironment(BaseEnvironment.of(interaction.environmentId().orElse("")))\n    .build();\nCreateAgentResponse agentResponse = client.agents.create(agent);\nSystem.out.println("Forked agent: " + agentResponse.agent().flatMap(Agent::id).orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -476,10 +390,10 @@ class Agents(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an Agent.
+        r"""Deletes an agent and all its versions.
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -508,7 +422,7 @@ class Agents(BaseSDK):
         )
         req = self._build_request(
             method="DELETE",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -568,31 +482,8 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# [setup]\nagent_id = f"delete-test-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    description="Temporary agent for deletion.",\n    base_environment="remote",\n)\n# [/setup]\n\nclient.agents.delete(agent_id)\nprint("Agent deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst agentId = `delete-test-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'Temporary agent for deletion.',\n    base_environment: 'remote',\n});\n// [/setup]\n\nawait ai.agents.delete(agentId);\nconsole.log('Agent deleted successfully.');\n",
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// [setup]\nString agentId = "delete-test-" + UUID.randomUUID().toString().substring(0, 8);\nclient.agents.create(Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .description("Temporary agent for deletion.")\n    .baseEnvironment(BaseEnvironment.of("remote"))\n    .build());\n// [/setup]\n\nclient.agents.delete(agentId);\nSystem.out.println("Agent deleted successfully.");\n',
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -649,10 +540,10 @@ class Agents(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Gets a specific Agent.
+        r"""Gets an agent (latest version).
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -681,7 +572,7 @@ class Agents(BaseSDK):
         )
         req = self._build_request(
             method="GET",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -739,31 +630,8 @@ class Agents(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# [setup]\nagent_id = f"test-agent-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    description="A test agent.",\n    base_environment="remote",\n)\n# [/setup]\n\nagent = client.agents.get(agent_id)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst agentId = `test-agent-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A test agent.',\n    base_environment: 'remote',\n});\n// [/setup]\n\nconst agent = await ai.agents.get(agentId);\nif (!agent.id) {\n    throw new Error('Agent retrieval failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "get",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.operations.GetAgentResponse;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// [setup]\nString agentId = "test-agent-" + UUID.randomUUID().toString().substring(0, 8);\nclient.agents.create(Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .description("A test agent.")\n    .baseEnvironment(BaseEnvironment.of("remote"))\n    .build());\n// [/setup]\n\nGetAgentResponse response = client.agents.get(agentId);\nAgent agent = response.agent().orElseThrow(() -> new RuntimeException("No agent returned"));\nSystem.out.println(agent.id().orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -862,9 +730,9 @@ class AsyncAgents(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.AgentListResponse:
-        r"""Lists all Agents.
+        r"""Lists agents.
 
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param page_size:
         :param page_token:
         :param parent:
@@ -958,31 +826,8 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "list",
-                        "lang": "python",
-                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.agents.list()\nfor agent in response.agents or []:\n    print(agent.id)\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agents = await ai.agents.list();\nfor (const agent of (agents.agents ?? [])) {\n    console.log(agent.id);\n}\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "java",
-                        "source": "import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.AgentListResponse;\nimport com.google.genai.gaos.models.operations.ListAgentsResponse;\nimport java.util.List;\n\nClient client = new Client();\nListAgentsResponse response = client.agents.list().call();\nList<Agent> agents = response.agentListResponse()\n    .flatMap(AgentListResponse::agents)\n    .orElse(List.of());\nfor (Agent agent : agents) {\n  agent.id().ifPresent(System.out::println);\n}\n",
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1058,9 +903,9 @@ class AsyncAgents(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Creates a new Agent (Typed version for SDK).
+        r"""Creates or updates an agent (upsert by name).
 
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param agent_config: Configuration parameters for the agent.
         :param base_agent: The base agent to extend.
         :param base_environment: The environment configuration for the agent.
@@ -1170,71 +1015,8 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "create",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "research-assistant-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "description": "A helpful research assistant.",\n    "system_instruction": "You are a helpful research assistant.",\n    "base_environment": "remote",\n    "tools": [{"type": "google_search"}]\n  }\'\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"research-assistant-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    description="A helpful research assistant.",\n    system_instruction="You are a helpful research assistant.",\n    base_environment="remote",\n    tools=[{"type": "google_search"}],\n)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `research-assistant-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A helpful research assistant.',\n    system_instruction: 'You are a helpful research assistant.',\n    base_environment: 'remote',\n    tools: [{ type: 'google_search' }],\n});\nif (!agent.id) {\n    throw new Error('Agent creation failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "create",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.GoogleSearch;\nimport com.google.genai.gaos.models.operations.CreateAgentResponse;\nimport java.util.List;\nimport java.util.UUID;\n\nClient client = new Client();\nString agentId = "research-assistant-" + UUID.randomUUID().toString().substring(0, 8);\nAgent agent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .description("A helpful research assistant.")\n    .systemInstruction("You are a helpful research assistant.")\n    .baseEnvironment(BaseEnvironment.of("remote"))\n    .tools(List.of(new GoogleSearch()))\n    .build();\nCreateAgentResponse response = client.agents.create(agent);\nSystem.out.println(response.agent().flatMap(Agent::id).orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "data-analyst-abc123",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "inline",\n          "target": ".agents/AGENTS.md",\n          "content": "Always use matplotlib for charts. Include a summary table in every report."\n        },\n        {\n          "type": "repository",\n          "source": "https://github.com/my-org/analysis-templates",\n          "target": "/workspace/templates"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\nagent = client.agents.create(\n    id=f"data-analyst-{uuid.uuid4().hex[:8]}",\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Always include visualizations and export results as PDF.",\n    base_environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "inline",\n                "target": ".agents/AGENTS.md",\n                "content": "Always use matplotlib for charts. Include a summary table in every report.",\n            },\n            {\n                "type": "repository",\n                "source": "https://github.com/my-org/analysis-templates",\n                "target": "/workspace/templates",\n            },\n        ],\n    },\n)\nprint(f"Created agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst agentId = `data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Always include visualizations and export results as PDF.',\n    base_environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'inline',\n                target: '.agents/AGENTS.md',\n                content: 'Always use matplotlib for charts. Include a summary table in every report.',\n            },\n            {\n                type: 'repository',\n                source: 'https://github.com/my-org/analysis-templates',\n                target: '/workspace/templates',\n            },\n        ],\n    },\n});\nconsole.log(`Created agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.CreateAgentResponse;\nimport java.util.List;\nimport java.util.UUID;\n\nClient client = new Client();\nString agentId = "data-analyst-" + UUID.randomUUID().toString().substring(0, 8);\nEnvironment env = Environment.builder()\n    .sources(List.of(\n        Source.builder()\n            .type(SourceType.INLINE)\n            .target(".agents/AGENTS.md")\n            .content("Always use matplotlib for charts. Include a summary table in every report.")\n            .build(),\n        Source.builder()\n            .type(SourceType.REPOSITORY)\n            .source("https://github.com/my-org/analysis-templates")\n            .target("/workspace/templates")\n            .build()\n    ))\n    .build();\nAgent agent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .systemInstruction("You are a data analyst. Always include visualizations and export results as PDF.")\n    .baseEnvironment(BaseEnvironment.of(env))\n    .build();\nCreateAgentResponse response = client.agents.create(agent);\nSystem.out.println("Created agent: " + response.agent().flatMap(Agent::id).orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Set up the environment interactively\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a basic Hello World template to /workspace/template.py.",\n    "environment": "remote"\n  }\')\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Fork that environment into a named agent\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"id\\": \\"my-data-analyst\\",\n    \\"base_agent\\": \\"antigravity-preview-05-2026\\",\n    \\"system_instruction\\": \\"You are a data analyst. Use the template at /workspace/template.py for all reports.\\",\n    \\"base_environment\\": \\"$ENV_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Set up the environment interactively.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a basic Hello World template to /workspace/template.py.",\n    environment="remote",\n)\n\n# Step 2: Fork that environment into a named agent.\nagent_id = f"my-data-analyst-{uuid.uuid4().hex[:8]}"\nagent = client.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a data analyst. Use the template at /workspace/template.py for all reports.",\n    base_environment=interaction.environment_id,\n)\nprint(f"Forked agent: {agent.id}")\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Set up the environment interactively.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a basic Hello World template to /workspace/template.py.',\n    environment: 'remote',\n});\n\n// Step 2: Fork that environment into a named agent.\nconst agentId = `my-data-analyst-${crypto.randomUUID().slice(0, 8)}`;\nconst agent = await ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a data analyst. Use the template at /workspace/template.py for all reports.',\n    base_environment: interaction.environment_id,\n});\nconsole.log(`Forked agent: ${agent.id}`);\n\n// [cleanup]\nif (agent.id) await ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "fork_from_env",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateAgentResponse;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// Step 1: Set up the environment interactively.\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Write a basic Hello World template to /workspace/template.py."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse interactionResponse =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    interactionResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\n\n// Step 2: Fork that environment into a named agent.\nString agentId = "my-data-analyst-" + UUID.randomUUID().toString().substring(0, 8);\nAgent agent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .systemInstruction("You are a data analyst. Use the template at /workspace/template.py for all reports.")\n    .baseEnvironment(BaseEnvironment.of(interaction.environmentId().orElse("")))\n    .build();\nCreateAgentResponse agentResponse = client.agents.create(agent);\nSystem.out.println("Forked agent: " + agentResponse.agent().flatMap(Agent::id).orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1294,10 +1076,10 @@ class AsyncAgents(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an Agent.
+        r"""Deletes an agent and all its versions.
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1326,7 +1108,7 @@ class AsyncAgents(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="DELETE",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1386,31 +1168,8 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# [setup]\nagent_id = f"delete-test-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    description="Temporary agent for deletion.",\n    base_environment="remote",\n)\n# [/setup]\n\nclient.agents.delete(agent_id)\nprint("Agent deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst agentId = `delete-test-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'Temporary agent for deletion.',\n    base_environment: 'remote',\n});\n// [/setup]\n\nawait ai.agents.delete(agentId);\nconsole.log('Agent deleted successfully.');\n",
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// [setup]\nString agentId = "delete-test-" + UUID.randomUUID().toString().substring(0, 8);\nclient.agents.create(Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .description("Temporary agent for deletion.")\n    .baseEnvironment(BaseEnvironment.of("remote"))\n    .build());\n// [/setup]\n\nclient.agents.delete(agentId);\nSystem.out.println("Agent deleted successfully.");\n',
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1470,10 +1229,10 @@ class AsyncAgents(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> agents.Agent:
-        r"""Gets a specific Agent.
+        r"""Gets an agent (latest version).
 
-        :param id:
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1502,7 +1261,7 @@ class AsyncAgents(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="GET",
-            path="/{api_version}/agents/{id}",
+            path="/{api_version}/agents/{agentsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1560,31 +1319,8 @@ class AsyncAgents(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/agents/ag_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# [setup]\nagent_id = f"test-agent-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    description="A test agent.",\n    base_environment="remote",\n)\n# [/setup]\n\nagent = client.agents.get(agent_id)\nprint(agent.id)\n\n# [cleanup]\nclient.agents.delete(agent.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst agentId = `test-agent-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    description: 'A test agent.',\n    base_environment: 'remote',\n});\n// [/setup]\n\nconst agent = await ai.agents.get(agentId);\nif (!agent.id) {\n    throw new Error('Agent retrieval failed: ID is undefined');\n}\nconsole.log(agent.id);\n\n// [cleanup]\nawait ai.agents.delete(agent.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "get",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.operations.GetAgentResponse;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// [setup]\nString agentId = "test-agent-" + UUID.randomUUID().toString().substring(0, 8);\nclient.agents.create(Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .description("A test agent.")\n    .baseEnvironment(BaseEnvironment.of("remote"))\n    .build());\n// [/setup]\n\nGetAgentResponse response = client.agents.get(agentId);\nAgent agent = response.agent().orElseThrow(() -> new RuntimeException("No agent returned"));\nSystem.out.println(agent.id().orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["agents"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(

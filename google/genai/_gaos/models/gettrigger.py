@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GetTriggerGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetTriggerGlobals(BaseModel):
@@ -34,7 +34,7 @@ class GetTriggerGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -55,22 +55,22 @@ class GetTriggerGlobals(BaseModel):
 
 class GetTriggerRequestParam(TypedDict):
     id: str
-    r"""Resource name of the trigger."""
+    r"""Required. The ID of the trigger to retrieve."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetTriggerRequest(BaseModel):
     id: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
-    r"""Resource name of the trigger."""
+    r"""Required. The ID of the trigger to retrieve."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

@@ -29,6 +29,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class FileSearchResultDeltaTypedDict(TypedDict):
     result: List[FileSearchResultTypedDict]
+    call_id: NotRequired[str]
+    r"""Required. ID to match the ID from the function call block."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
     type: Literal["file_search_result"]
@@ -36,6 +38,9 @@ class FileSearchResultDeltaTypedDict(TypedDict):
 
 class FileSearchResultDelta(BaseModel):
     result: List[FileSearchResult]
+
+    call_id: Optional[str] = None
+    r"""Required. ID to match the ID from the function call block."""
 
     signature: Optional[str] = None
     r"""A signature hash for backend validation."""
@@ -50,7 +55,7 @@ class FileSearchResultDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature"])
+        optional_fields = set(["call_id", "signature"])
         serialized = handler(self)
         m = {}
 

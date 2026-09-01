@@ -53,11 +53,11 @@ class Webhooks(BaseSDK):
     ) -> webhooks.WebhookListResponse:
         r"""Lists all Webhooks.
 
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. The maximum number of webhooks to return. The service may return fewer than
+        :param api_version: API version for request routing.
+        :param page_size: The maximum number of webhooks to return. The service may return fewer than
             this value. If unspecified, at most 50 webhooks will be returned.
             The maximum value is 1000.
-        :param page_token: Optional. A page token, received from a previous `ListWebhooks` call.
+        :param page_token: A page token, received from a previous `ListWebhooks` call.
             Provide this to retrieve the subsequent page.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -148,7 +148,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -221,7 +221,7 @@ class Webhooks(BaseSDK):
             - interaction.failed
             - video.generated
         :param uri: Required. The URI to which webhook events will be sent.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param name: Optional. The user-provided name of the webhook.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -326,7 +326,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -388,7 +388,7 @@ class Webhooks(BaseSDK):
 
         :param id: Required. The ID of the webhook to delete.
             Format: `{webhook_id}`
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -477,7 +477,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -538,7 +538,7 @@ class Webhooks(BaseSDK):
         r"""Gets a specific Webhook.
 
         :param id: Required. The ID of the webhook to retrieve.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -627,7 +627,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -696,8 +696,8 @@ class Webhooks(BaseSDK):
         r"""Updates an existing Webhook.
 
         :param id: Required. The ID of the webhook to update.
-        :param api_version: Which version of the API to use.
-        :param update_mask: Optional. The list of fields to update.
+        :param api_version: API version for request routing.
+        :param update_mask: Optional list of fields to update.
         :param name: Optional. The user-provided name of the webhook.
         :param state: Optional. The state of the webhook.
         :param subscribed_events: Optional. The events that the webhook is subscribed to.
@@ -817,7 +817,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -885,9 +885,8 @@ class Webhooks(BaseSDK):
         r"""Sends a ping event to a Webhook.
 
         :param id: Required. The ID of the webhook to ping.
-            Format: `{webhook_id}`
-        :param api_version: Which version of the API to use.
-        :param body: The request body.
+        :param api_version: API version for request routing.
+        :param body: Required. The HTTP body of the payload.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -986,7 +985,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -1050,9 +1049,8 @@ class Webhooks(BaseSDK):
     ) -> webhooks.WebhookRotateSigningSecretResponse:
         r"""Generates a new signing secret for a Webhook.
 
-        :param id: Required. The ID of the webhook for which to generate a signing secret.
-            Format: `{webhook_id}`
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the webhook for which to rotate the signing secret.
+        :param api_version: API version for request routing.
         :param revocation_behavior: Optional. The revocation behavior for previous signing secrets.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -1156,7 +1154,7 @@ class Webhooks(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
@@ -1273,11 +1271,11 @@ class AsyncWebhooks(AsyncBaseSDK):
     ) -> webhooks.WebhookListResponse:
         r"""Lists all Webhooks.
 
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. The maximum number of webhooks to return. The service may return fewer than
+        :param api_version: API version for request routing.
+        :param page_size: The maximum number of webhooks to return. The service may return fewer than
             this value. If unspecified, at most 50 webhooks will be returned.
             The maximum value is 1000.
-        :param page_token: Optional. A page token, received from a previous `ListWebhooks` call.
+        :param page_token: A page token, received from a previous `ListWebhooks` call.
             Provide this to retrieve the subsequent page.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -1368,7 +1366,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1444,7 +1442,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             - interaction.failed
             - video.generated
         :param uri: Required. The URI to which webhook events will be sent.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param name: Optional. The user-provided name of the webhook.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -1549,7 +1547,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1614,7 +1612,7 @@ class AsyncWebhooks(AsyncBaseSDK):
 
         :param id: Required. The ID of the webhook to delete.
             Format: `{webhook_id}`
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1703,7 +1701,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1767,7 +1765,7 @@ class AsyncWebhooks(AsyncBaseSDK):
         r"""Gets a specific Webhook.
 
         :param id: Required. The ID of the webhook to retrieve.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1856,7 +1854,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -1928,8 +1926,8 @@ class AsyncWebhooks(AsyncBaseSDK):
         r"""Updates an existing Webhook.
 
         :param id: Required. The ID of the webhook to update.
-        :param api_version: Which version of the API to use.
-        :param update_mask: Optional. The list of fields to update.
+        :param api_version: API version for request routing.
+        :param update_mask: Optional list of fields to update.
         :param name: Optional. The user-provided name of the webhook.
         :param state: Optional. The state of the webhook.
         :param subscribed_events: Optional. The events that the webhook is subscribed to.
@@ -2049,7 +2047,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -2120,9 +2118,8 @@ class AsyncWebhooks(AsyncBaseSDK):
         r"""Sends a ping event to a Webhook.
 
         :param id: Required. The ID of the webhook to ping.
-            Format: `{webhook_id}`
-        :param api_version: Which version of the API to use.
-        :param body: The request body.
+        :param api_version: API version for request routing.
+        :param body: Required. The HTTP body of the payload.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -2221,7 +2218,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
@@ -2288,9 +2285,8 @@ class AsyncWebhooks(AsyncBaseSDK):
     ) -> webhooks.WebhookRotateSigningSecretResponse:
         r"""Generates a new signing secret for a Webhook.
 
-        :param id: Required. The ID of the webhook for which to generate a signing secret.
-            Format: `{webhook_id}`
-        :param api_version: Which version of the API to use.
+        :param id: Required. The ID of the webhook for which to rotate the signing secret.
+        :param api_version: API version for request routing.
         :param revocation_behavior: Optional. The revocation behavior for previous signing secrets.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -2394,7 +2390,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
+            tags=["webhooks"],
             extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )

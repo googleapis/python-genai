@@ -36,7 +36,7 @@ class ProcessingCallStepParam(TypedDict):
     understanding).
     """
 
-    id: str
+    id: NotRequired[str]
     r"""Required. A unique ID for this specific tool call."""
     signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
@@ -48,7 +48,7 @@ class ProcessingCallStep(BaseModel):
     understanding).
     """
 
-    id: str
+    id: Optional[str] = None
     r"""Required. A unique ID for this specific tool call."""
 
     signature: Optional[Base64EncodedString] = None
@@ -64,7 +64,7 @@ class ProcessingCallStep(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature"])
+        optional_fields = set(["id", "signature"])
         serialized = handler(self)
         m = {}
 

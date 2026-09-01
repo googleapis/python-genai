@@ -31,6 +31,7 @@ from .error import Error, ErrorTypedDict
 from .generationconfig import GenerationConfig, GenerationConfigParam
 from .imagecontent import ImageContent, ImageContentParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
+from .localenvironmentconfig import LocalEnvironmentConfig, LocalEnvironmentConfigParam
 from .model import Model
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
@@ -60,7 +61,7 @@ InteractionAgentConfigTypedDict = TypeAliasType(
         CodeMenderAgentConfigParam,
     ],
 )
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 class UnknownInteractionAgentConfig(BaseModel):
@@ -100,32 +101,31 @@ InteractionAgentConfig = Annotated[
         )
     ),
 ]
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 InteractionEnvironmentTypedDict = TypeAliasType(
-    "InteractionEnvironmentTypedDict", Union[EnvironmentParam, str]
+    "InteractionEnvironmentTypedDict",
+    Union[LocalEnvironmentConfigParam, EnvironmentParam, str],
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 InteractionEnvironment = TypeAliasType(
-    "InteractionEnvironment", Union[Environment, str]
+    "InteractionEnvironment", Union[LocalEnvironmentConfig, Environment, str]
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 InteractionResponseFormatTypedDict = TypeAliasType(
     "InteractionResponseFormatTypedDict",
     Union[ResponseFormatParam, List[ResponseFormatParam]],
 )
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
 
 InteractionResponseFormat = TypeAliasType(
     "InteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
 )
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
 
 InteractionStatus = Union[
@@ -152,13 +152,15 @@ class InteractionTypedDict(TypedDict):
     agent: NotRequired[AgentOption]
     r"""The agent to interact with."""
     agent_config: NotRequired[InteractionAgentConfigTypedDict]
-    r"""Configuration parameters for the agent interaction."""
+    r"""Parameters for the agent interaction."""
+    cached_content: NotRequired[str]
+    r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
     created: NotRequired[str]
-    r"""Output only. The time at which the response was created in ISO 8601 format
+    r"""Required. Output only. The time at which the response was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
     environment: NotRequired[InteractionEnvironmentTypedDict]
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    r"""The environment configuration for the interaction."""
     environment_id: NotRequired[str]
     r"""Output only. The environment ID for the interaction. Only populated if environment
     config is set in the request.
@@ -172,7 +174,14 @@ class InteractionTypedDict(TypedDict):
     input: NotRequired[InteractionsInputParam]
     r"""The input for the interaction."""
     labels: NotRequired[Dict[str, str]]
-    r"""The labels with user-defined metadata for the request."""
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
     model: NotRequired[Model]
     r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
     output_audio: NotRequired[AudioContentParam]
@@ -189,7 +198,6 @@ class InteractionTypedDict(TypedDict):
     previous_interaction_id: NotRequired[str]
     r"""The ID of the previous interaction, if any."""
     response_format: NotRequired[InteractionResponseFormatTypedDict]
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
     response_mime_type: NotRequired[str]
     r"""The mime type of the response. This is required if response_format is set."""
     response_modalities: NotRequired[List[ResponseModality]]
@@ -198,13 +206,13 @@ class InteractionTypedDict(TypedDict):
     r"""Safety settings for the interaction."""
     service_tier: NotRequired[ServiceTier]
     steps: NotRequired[List[StepParam]]
-    r"""Output only. The steps that make up the interaction, when included in the response."""
+    r"""Required. Output only. The steps that make up the interaction."""
     system_instruction: NotRequired[str]
     r"""System instruction for the interaction."""
     tools: NotRequired[List[ToolParam]]
     r"""A list of tool declarations the model may call during interaction."""
     updated: NotRequired[str]
-    r"""Output only. The time at which the response was last updated in ISO 8601 format
+    r"""Required. Output only. The time at which the response was last updated in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
     usage: NotRequired[UsageTypedDict]
@@ -223,15 +231,23 @@ class Interaction(BaseModel):
     r"""The agent to interact with."""
 
     agent_config: Optional[InteractionAgentConfig] = None
-    r"""Configuration parameters for the agent interaction."""
+    r"""Parameters for the agent interaction."""
+
+    cached_content: Annotated[
+        Optional[str],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
 
     created: Optional[str] = None
-    r"""Output only. The time at which the response was created in ISO 8601 format
+    r"""Required. Output only. The time at which the response was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
     environment: Optional[InteractionEnvironment] = None
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    r"""The environment configuration for the interaction."""
 
     environment_id: Optional[str] = None
     r"""Output only. The environment ID for the interaction. Only populated if environment
@@ -251,7 +267,14 @@ class Interaction(BaseModel):
     r"""The input for the interaction."""
 
     labels: Optional[Dict[str, str]] = None
-    r"""The labels with user-defined metadata for the request."""
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
 
     model: Optional[Model] = None
     r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
@@ -275,7 +298,6 @@ class Interaction(BaseModel):
     r"""The ID of the previous interaction, if any."""
 
     response_format: Optional[InteractionResponseFormat] = None
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
     response_mime_type: Annotated[
         Optional[str],
@@ -299,7 +321,7 @@ class Interaction(BaseModel):
     service_tier: Optional[ServiceTier] = None
 
     steps: Optional[List[Step]] = None
-    r"""Output only. The steps that make up the interaction, when included in the response."""
+    r"""Required. Output only. The steps that make up the interaction."""
 
     system_instruction: Optional[str] = None
     r"""System instruction for the interaction."""
@@ -308,7 +330,7 @@ class Interaction(BaseModel):
     r"""A list of tool declarations the model may call during interaction."""
 
     updated: Optional[str] = None
-    r"""Output only. The time at which the response was last updated in ISO 8601 format
+    r"""Required. Output only. The time at which the response was last updated in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
@@ -324,6 +346,7 @@ class Interaction(BaseModel):
             [
                 "agent",
                 "agent_config",
+                "cached_content",
                 "created",
                 "environment",
                 "environment_id",

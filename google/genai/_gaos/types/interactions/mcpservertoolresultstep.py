@@ -21,7 +21,12 @@ from .functionresultsubcontent import (
     FunctionResultSubcontent,
     FunctionResultSubcontentParam,
 )
-from .. import BaseModel, UNSET_SENTINEL
+from .. import (
+    Base64EncodedString,
+    Base64FileInput,
+    BaseModel,
+    UNSET_SENTINEL,
+)
 from ...utils import validate_const
 import pydantic
 from pydantic import model_serializer
@@ -63,6 +68,8 @@ class MCPServerToolResultStepParam(TypedDict):
     r"""Name of the tool which is called for this specific tool call."""
     server_name: NotRequired[str]
     r"""The name of the used MCP server."""
+    signature: NotRequired[Union[str, Base64FileInput]]
+    r"""A signature hash for backend validation."""
     type: Literal["mcp_server_tool_result"]
 
 
@@ -81,6 +88,9 @@ class MCPServerToolResultStep(BaseModel):
     server_name: Optional[str] = None
     r"""The name of the used MCP server."""
 
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["mcp_server_tool_result"],
@@ -91,7 +101,7 @@ class MCPServerToolResultStep(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["name", "server_name"])
+        optional_fields = set(["name", "server_name", "signature"])
         serialized = handler(self)
         m = {}
 

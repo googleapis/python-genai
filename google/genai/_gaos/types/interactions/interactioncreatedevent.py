@@ -21,6 +21,7 @@ from .interactionsseeventinteraction import (
     InteractionSseEventInteraction,
     InteractionSseEventInteractionTypedDict,
 )
+from .streammetadata import StreamMetadata, StreamMetadataTypedDict
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
 import pydantic
@@ -42,6 +43,8 @@ class InteractionCreatedEventTypedDict(TypedDict):
     this event.
     """
     event_type: Literal["interaction.created"]
+    metadata: NotRequired[StreamMetadataTypedDict]
+    r"""Optional metadata accompanying ANY streamed event."""
 
 
 class InteractionCreatedEvent(BaseModel):
@@ -65,9 +68,12 @@ class InteractionCreatedEvent(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "interaction.created"
 
+    metadata: Optional[StreamMetadata] = None
+    r"""Optional metadata accompanying ANY streamed event."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id"])
+        optional_fields = set(["event_id", "metadata"])
         serialized = handler(self)
         m = {}
 

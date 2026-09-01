@@ -58,20 +58,28 @@ r"""The tool choice configuration."""
 class GenerationConfigParam(TypedDict):
     r"""Configuration parameters for model interactions."""
 
+    frequency_penalty: NotRequired[float]
+    r"""Penalizes tokens based on their frequency so far."""
     image_config: NotRequired[ImageConfigParam]
     r"""The configuration for image interaction."""
     max_output_tokens: NotRequired[int]
     r"""The maximum number of tokens to include in the response."""
+    presence_penalty: NotRequired[float]
+    r"""Penalizes tokens that have already appeared."""
     seed: NotRequired[int]
     r"""Seed used in decoding for reproducibility."""
     speech_config: NotRequired[SpeechConfigUnionParam]
     r"""Optional. Speech and multi-speaker configuration."""
     stop_sequences: NotRequired[List[str]]
     r"""A list of character sequences that will stop output interaction."""
+    temperature: NotRequired[float]
+    r"""Controls the randomness of the output."""
     thinking_level: NotRequired[ThinkingLevel]
     thinking_summaries: NotRequired[ThinkingSummaries]
     tool_choice: NotRequired[ToolChoiceParam]
     r"""The tool choice configuration."""
+    top_p: NotRequired[float]
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
     transcription_config: NotRequired[TranscriptionConfigParam]
     r"""Configuration for speech recognition (transcription)."""
     video_config: NotRequired[VideoConfigParam]
@@ -81,16 +89,27 @@ class GenerationConfigParam(TypedDict):
 class GenerationConfig(BaseModel):
     r"""Configuration parameters for model interactions."""
 
-    image_config: Annotated[
-        Optional[ImageConfig],
+    frequency_penalty: Annotated[
+        Optional[float],
         pydantic.Field(
             deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
         ),
     ] = None
+    r"""Penalizes tokens based on their frequency so far."""
+
+    image_config: Optional[ImageConfig] = None
     r"""The configuration for image interaction."""
 
     max_output_tokens: Optional[int] = None
     r"""The maximum number of tokens to include in the response."""
+
+    presence_penalty: Annotated[
+        Optional[float],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Penalizes tokens that have already appeared."""
 
     seed: Optional[int] = None
     r"""Seed used in decoding for reproducibility."""
@@ -101,12 +120,18 @@ class GenerationConfig(BaseModel):
     stop_sequences: Optional[List[str]] = None
     r"""A list of character sequences that will stop output interaction."""
 
+    temperature: Optional[float] = None
+    r"""Controls the randomness of the output."""
+
     thinking_level: Optional[ThinkingLevel] = None
 
     thinking_summaries: Optional[ThinkingSummaries] = None
 
     tool_choice: Optional[ToolChoice] = None
     r"""The tool choice configuration."""
+
+    top_p: Optional[float] = None
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
 
     transcription_config: Optional[TranscriptionConfig] = None
     r"""Configuration for speech recognition (transcription)."""
@@ -118,14 +143,18 @@ class GenerationConfig(BaseModel):
     def serialize_model(self, handler):
         optional_fields = set(
             [
+                "frequency_penalty",
                 "image_config",
                 "max_output_tokens",
+                "presence_penalty",
                 "seed",
                 "speech_config",
                 "stop_sequences",
+                "temperature",
                 "thinking_level",
                 "thinking_summaries",
                 "tool_choice",
+                "top_p",
                 "transcription_config",
                 "video_config",
             ]

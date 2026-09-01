@@ -27,7 +27,9 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
+    api_revision: NotRequired[str]
+    r"""API revision header to send with Google GenAI API requests."""
     user_project: NotRequired[str]
     r"""Quota project header to send with Google GenAI API requests."""
 
@@ -37,7 +39,14 @@ class Globals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
+
+    api_revision: Annotated[
+        Optional[str],
+        pydantic.Field(alias="Api-Revision"),
+        FieldMetadata(header=HeaderMetadata(style="simple", explode=False)),
+    ] = None
+    r"""API revision header to send with Google GenAI API requests."""
 
     user_project: Annotated[
         Optional[str],
@@ -48,7 +57,7 @@ class Globals(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "user_project"])
+        optional_fields = set(["api_version", "api_revision", "user_project"])
         serialized = handler(self)
         m = {}
 

@@ -63,11 +63,12 @@ class Environments(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.ListEnvironmentsResponse:
-        r"""Lists environments.
+        r"""Lists environments (HTTP endpoint).
 
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. Maximum number of environments to return.\nIf unspecified, defaults to 50. Maximum is 1000.
-        :param page_token: Optional. Pagination token.
+        :param api_version: API version for request routing.
+        :param page_size: Maximum number of environments to return.
+            If unspecified, defaults to 50. Maximum is 1000.
+        :param page_token: Pagination token.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -157,31 +158,8 @@ class Environments(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/environments \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "list",
-                        "lang": "python",
-                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.environments.list()\nfor environment in response.environments or []:\n    print(environment.id)\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst response = await ai.environments.list();\nfor (const env of (response.environments ?? [])) {\n    console.log(env.id);\n}\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.operations.ListEnvironmentsResponse;\nimport java.util.List;\n\nClient client = new Client();\nListEnvironmentsResponse response = client.environments.listEnvironmentsDirect();\nfor (Environment env : response.listEnvironmentsResponse().flatMap(res -> res.environments()).orElse(List.of())) {\n    System.out.println(env.id().orElse(""));\n}\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -250,9 +228,9 @@ class Environments(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.Environment:
-        r"""Creates an environment.
+        r"""Creates an environment (HTTP endpoint).
 
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param network: Network configuration for the environment.
         :param sources: Sources to be mounted into the environment.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -359,31 +337,8 @@ class Environments(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "create",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/environments \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "sources": [{\n      "type": "inline",\n      "target": "main.py",\n      "content": "print(\\"Hello, World!\\")"\n    }]\n  }\'\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nenvironment = client.environments.create(\n    sources=[{\n        "type": "inline",\n        "target": "main.py",\n        "content": "print(\'Hello, World!\')",\n    }]\n)\nprint(environment.id)\n\n# [cleanup]\nclient.environments.delete(id=environment.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst environment = await ai.environments.create({\n    sources: [{\n        type: 'inline',\n        target: 'main.py',\n        content: \"print('Hello, World!')\",\n    }],\n});\nif (!environment.id) {\n    throw new Error('Environment creation failed: ID is undefined');\n}\nconsole.log(environment.id);\n\n// [cleanup]\nawait ai.environments.delete(environment.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "create",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport java.util.List;\n\nClient client = new Client();\nCreateEnvironmentRequest request = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello, World!\')")\n        .build()))\n    .build();\nEnvironment environment = client.environments.createEnvironment(request).environment().orElseThrow();\nSystem.out.println(environment.id().orElse(""));\n\n// [cleanup]\nenvironment.id().ifPresent(id -> client.environments.deleteEnvironment(id));\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -440,10 +395,10 @@ class Environments(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an environment.
+        r"""Deletes an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to delete.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -532,31 +487,8 @@ class Environments(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/environments/env_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nclient.environments.delete(id=created.id)\nprint("Environment deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nawait ai.environments.delete(created.id);\nconsole.log('Environment deleted successfully.');\n",
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest request = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(request).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\nclient.environments.deleteEnvironment(envId);\nSystem.out.println("Environment deleted successfully.");\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -613,10 +545,10 @@ class Environments(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.Environment:
-        r"""Gets an environment.
+        r"""Gets an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to retrieve.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -705,31 +637,8 @@ class Environments(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/environments/env_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nenvironment = client.environments.get(id=created.id)\nprint(environment.id)\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nconst environment = await ai.environments.get(created.id);\nconsole.log(environment.id);\n\n// [cleanup]\nawait ai.environments.delete(created.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "get",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest request = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(request).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\nEnvironment environment = client.environments.getEnvironment(envId).environment().orElseThrow();\nSystem.out.println(environment.id().orElse(""));\n\n// [cleanup]\nclient.environments.deleteEnvironment(envId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -851,11 +760,12 @@ class AsyncEnvironments(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.ListEnvironmentsResponse:
-        r"""Lists environments.
+        r"""Lists environments (HTTP endpoint).
 
-        :param api_version: Which version of the API to use.
-        :param page_size: Optional. Maximum number of environments to return.\nIf unspecified, defaults to 50. Maximum is 1000.
-        :param page_token: Optional. Pagination token.
+        :param api_version: API version for request routing.
+        :param page_size: Maximum number of environments to return.
+            If unspecified, defaults to 50. Maximum is 1000.
+        :param page_token: Pagination token.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -945,31 +855,8 @@ class AsyncEnvironments(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "list",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/environments \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "list",
-                        "lang": "python",
-                        "source": "from google import genai\n\nclient = genai.Client()\nresponse = client.environments.list()\nfor environment in response.environments or []:\n    print(environment.id)\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst response = await ai.environments.list();\nfor (const env of (response.environments ?? [])) {\n    console.log(env.id);\n}\n",
-                    },
-                    {
-                        "label": "list",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.operations.ListEnvironmentsResponse;\nimport java.util.List;\n\nClient client = new Client();\nListEnvironmentsResponse response = client.environments.listEnvironmentsDirect();\nfor (Environment env : response.listEnvironmentsResponse().flatMap(res -> res.environments()).orElse(List.of())) {\n    System.out.println(env.id().orElse(""));\n}\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1041,9 +928,9 @@ class AsyncEnvironments(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.Environment:
-        r"""Creates an environment.
+        r"""Creates an environment (HTTP endpoint).
 
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param network: Network configuration for the environment.
         :param sources: Sources to be mounted into the environment.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -1150,31 +1037,8 @@ class AsyncEnvironments(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "create",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/environments \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "sources": [{\n      "type": "inline",\n      "target": "main.py",\n      "content": "print(\\"Hello, World!\\")"\n    }]\n  }\'\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nenvironment = client.environments.create(\n    sources=[{\n        "type": "inline",\n        "target": "main.py",\n        "content": "print(\'Hello, World!\')",\n    }]\n)\nprint(environment.id)\n\n# [cleanup]\nclient.environments.delete(id=environment.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "create",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst environment = await ai.environments.create({\n    sources: [{\n        type: 'inline',\n        target: 'main.py',\n        content: \"print('Hello, World!')\",\n    }],\n});\nif (!environment.id) {\n    throw new Error('Environment creation failed: ID is undefined');\n}\nconsole.log(environment.id);\n\n// [cleanup]\nawait ai.environments.delete(environment.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "create",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport java.util.List;\n\nClient client = new Client();\nCreateEnvironmentRequest request = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello, World!\')")\n        .build()))\n    .build();\nEnvironment environment = client.environments.createEnvironment(request).environment().orElseThrow();\nSystem.out.println(environment.id().orElse(""));\n\n// [cleanup]\nenvironment.id().ifPresent(id -> client.environments.deleteEnvironment(id));\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1234,10 +1098,10 @@ class AsyncEnvironments(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Empty:
-        r"""Deletes an environment.
+        r"""Deletes an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to delete.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1326,31 +1190,8 @@ class AsyncEnvironments(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": 'curl -X DELETE https://generativelanguage.googleapis.com/v1beta/environments/env_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nclient.environments.delete(id=created.id)\nprint("Environment deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nawait ai.environments.delete(created.id);\nconsole.log('Environment deleted successfully.');\n",
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest request = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(request).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\nclient.environments.deleteEnvironment(envId);\nSystem.out.println("Environment deleted successfully.");\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -1410,10 +1251,10 @@ class AsyncEnvironments(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> environments.Environment:
-        r"""Gets an environment.
+        r"""Gets an environment (HTTP endpoint).
 
-        :param id: Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122.
-        :param api_version: Which version of the API to use.
+        :param id: Required. The identifier of the environment to retrieve.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1502,31 +1343,8 @@ class AsyncEnvironments(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/environments/env_abc123 \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.environments.create(\n    sources=[{"type": "inline", "target": "main.py", "content": "print(\'Hello\')"}]\n)\n# [/setup]\n\nenvironment = client.environments.get(id=created.id)\nprint(environment.id)\n\n# [cleanup]\nclient.environments.delete(id=created.id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.environments.create({\n    sources: [{type: 'inline', target: 'main.py', content: \"print('Hello')\"}],\n});\nif (!created.id) throw new Error('Failed to create environment');\n// [/setup]\n\nconst environment = await ai.environments.get(created.id);\nconsole.log(environment.id);\n\n// [cleanup]\nawait ai.environments.delete(created.id);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "get",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.environments.CreateEnvironmentRequest;\nimport com.google.genai.gaos.models.environments.Environment;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport java.util.List;\n\nClient client = new Client();\n\n// [setup]\nCreateEnvironmentRequest request = CreateEnvironmentRequest.builder()\n    .sources(List.of(Source.builder()\n        .type(SourceType.INLINE)\n        .target("main.py")\n        .content("print(\'Hello\')")\n        .build()))\n    .build();\nEnvironment created = client.environments.createEnvironment(request).environment().orElseThrow();\nString envId = created.id().orElseThrow();\n// [/setup]\n\nEnvironment environment = client.environments.getEnvironment(envId).environment().orElseThrow();\nSystem.out.println(environment.id().orElse(""));\n\n// [cleanup]\nclient.environments.deleteEnvironment(envId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["environments"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
