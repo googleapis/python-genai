@@ -613,6 +613,12 @@ def _CreateBatchJobConfig_to_mldev(
         getv(from_object, ['webhook_config']),
     )
 
+  if getv(from_object, ['encryption_spec']) is not None:
+    raise ValueError(
+        'encryption_spec parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
   return to_object
 
 
@@ -638,6 +644,13 @@ def _CreateBatchJobConfig_to_vertex(
     raise ValueError(
         'webhook_config parameter is only supported in Gemini Developer API'
         ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['encryption_spec']) is not None:
+    setv(
+        parent_object,
+        ['encryptionSpec', 'kmsKeyName'],
+        getv(from_object, ['encryption_spec', 'kms_key_name']),
     )
 
   return to_object
@@ -743,6 +756,13 @@ def _CreateEmbeddingsBatchJobParameters_to_mldev(
   if getv(from_object, ['config']) is not None:
     _CreateEmbeddingsBatchJobConfig_to_mldev(
         getv(from_object, ['config']), to_object
+    )
+
+  if getv(from_object, ['encryption_spec']) is not None:
+    setv(
+        to_object,
+        ['batch', 'encryptionSpec', 'kmsKeyName'],
+        getv(from_object, ['encryption_spec', 'kms_key_name']),
     )
 
   return to_object
