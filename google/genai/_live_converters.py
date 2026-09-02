@@ -70,26 +70,6 @@ def _AuthConfig_to_mldev(
   return to_object
 
 
-def _Blob_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError(
-        'display_name parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
 def _ComputerUse_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -159,26 +139,6 @@ def _Content_to_vertex(
 
   if getv(from_object, ['role']) is not None:
     setv(to_object, ['role'], getv(from_object, ['role']))
-
-  return to_object
-
-
-def _FileData_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError(
-        'display_name parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -337,9 +297,12 @@ def _GenerationConfig_to_vertex(
     )
 
   if getv(from_object, ['translation_config']) is not None:
-    raise ValueError(
-        'translation_config parameter is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    setv(
+        to_object,
+        ['translationConfig'],
+        _TranslationConfig_to_vertex(
+            getv(from_object, ['translation_config']), to_object
+        ),
     )
 
   if getv(from_object, ['audio_transcription_config']) is not None:
@@ -471,13 +434,7 @@ def _LiveClientMessage_to_mldev(
     )
 
   if getv(from_object, ['realtime_input']) is not None:
-    setv(
-        to_object,
-        ['realtimeInput'],
-        _LiveClientRealtimeInput_to_mldev(
-            getv(from_object, ['realtime_input']), to_object
-        ),
-    )
+    setv(to_object, ['realtimeInput'], getv(from_object, ['realtime_input']))
 
   if getv(from_object, ['tool_response']) is not None:
     setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
@@ -520,50 +477,6 @@ def _LiveClientMessage_to_vertex(
 
   if getv(from_object, ['tool_response']) is not None:
     setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
-
-  return to_object
-
-
-def _LiveClientRealtimeInput_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['media_chunks']) is not None:
-    setv(
-        to_object,
-        ['mediaChunks'],
-        [
-            _Blob_to_mldev(item, to_object)
-            for item in getv(from_object, ['media_chunks'])
-        ],
-    )
-
-  if getv(from_object, ['audio']) is not None:
-    setv(
-        to_object,
-        ['audio'],
-        _Blob_to_mldev(getv(from_object, ['audio']), to_object),
-    )
-
-  if getv(from_object, ['audio_stream_end']) is not None:
-    setv(to_object, ['audioStreamEnd'], getv(from_object, ['audio_stream_end']))
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Blob_to_mldev(getv(from_object, ['video']), to_object),
-    )
-
-  if getv(from_object, ['text']) is not None:
-    setv(to_object, ['text'], getv(from_object, ['text']))
-
-  if getv(from_object, ['activity_start']) is not None:
-    setv(to_object, ['activityStart'], getv(from_object, ['activity_start']))
-
-  if getv(from_object, ['activity_end']) is not None:
-    setv(to_object, ['activityEnd'], getv(from_object, ['activity_end']))
 
   return to_object
 
@@ -1341,28 +1254,17 @@ def _LiveSendRealtimeInputParameters_to_mldev(
     setv(
         to_object,
         ['mediaChunks'],
-        [
-            _Blob_to_mldev(item, to_object)
-            for item in t.t_blobs(getv(from_object, ['media']))
-        ],
+        [item for item in t.t_blobs(getv(from_object, ['media']))],
     )
 
   if getv(from_object, ['audio']) is not None:
-    setv(
-        to_object,
-        ['audio'],
-        _Blob_to_mldev(t.t_audio_blob(getv(from_object, ['audio'])), to_object),
-    )
+    setv(to_object, ['audio'], t.t_audio_blob(getv(from_object, ['audio'])))
 
   if getv(from_object, ['audio_stream_end']) is not None:
     setv(to_object, ['audioStreamEnd'], getv(from_object, ['audio_stream_end']))
 
   if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Blob_to_mldev(t.t_image_blob(getv(from_object, ['video'])), to_object),
-    )
+    setv(to_object, ['video'], t.t_image_blob(getv(from_object, ['video'])))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -1580,11 +1482,7 @@ def _Part_to_mldev(
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(
@@ -1601,11 +1499,7 @@ def _Part_to_mldev(
     )
 
   if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
