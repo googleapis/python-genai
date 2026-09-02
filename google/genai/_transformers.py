@@ -624,15 +624,23 @@ def handle_null_fields(schema: _common.StringDict) -> None:
     schema['nullable'] = True
     del schema['type']
   elif 'anyOf' in schema:
-    for item in schema['anyOf']:
-      if 'type' in item and item['type'] == 'null':
-        schema['nullable'] = True
-        schema['anyOf'].remove({'type': 'null'})
-        if len(schema['anyOf']) == 1:
-          # If there is only one type left after removing null, remove the anyOf field.
-          for key, val in schema['anyOf'][0].items():
-            schema[key] = val
-          del schema['anyOf']
+    # Identify null members by their 'type', not by exact dict equality: a null
+    # member may carry extra keys (e.g. {'type': 'null', 'title': 'N'}), in
+    # which case `list.remove({'type': 'null'})` raises ValueError. Rebuilding
+    # the list also avoids mutating it while iterating.
+    non_null_items = [
+        item
+        for item in schema['anyOf']
+        if not (isinstance(item, dict) and item.get('type') == 'null')
+    ]
+    if len(non_null_items) != len(schema['anyOf']):
+      schema['nullable'] = True
+      schema['anyOf'] = non_null_items
+      if len(schema['anyOf']) == 1:
+        # If there is only one type left after removing null, remove the anyOf field.
+        for key, val in schema['anyOf'][0].items():
+          schema[key] = val
+        del schema['anyOf']
 
 
 def _raise_for_unsupported_schema_type(origin: Any) -> None:
