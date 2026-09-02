@@ -22,6 +22,7 @@ from typing import Optional, assert_never
 import PIL.Image
 import pydantic
 import pytest
+from ... import models
 from ... import types
 
 _is_mcp_imported = False
@@ -113,6 +114,28 @@ def test_factory_method_part_from_function_response_with_multi_modal_parts():
   assert my_part.function_response.parts[0].inline_data.data == b'123'
   assert my_part.function_response.parts[0].inline_data.mime_type == 'image/png'
   assert isinstance(my_part, SubPart)
+
+
+def test_part_to_mldev_serializes_function_response_display_name():
+  my_part = SubPart.from_function_response(
+      name='get_image',
+      response={'image_ref': {'$ref': 'instrument.jpg'}},
+      parts=[
+          {
+              'inline_data': {
+                  'data': b'123',
+                  'mime_type': 'image/jpeg',
+                  'display_name': 'instrument.jpg',
+              }
+          }
+      ],
+  )
+
+  serialized = models._Part_to_mldev(my_part)
+
+  assert serialized['functionResponse']['parts'][0]['inlineData'][
+      'displayName'
+  ] == 'instrument.jpg'
 
 
 def test_factory_method_function_response_part_from_bytes():
