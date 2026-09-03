@@ -1599,6 +1599,15 @@ class BaseApiClient:
           )
           # Instantiate a new session with the updated SSL context.
           session = await self._get_aiohttp_session()  # type: ignore[assignment]
+          if (
+              self._use_google_auth_async()
+              and response.status == 401
+              and session._is_mtls
+          ):
+            client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
+            await session.configure_mtls_channel(  # type: ignore[union-attr]
+                client_cert_source
+            )
           response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
               url=url,
