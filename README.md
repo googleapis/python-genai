@@ -54,6 +54,23 @@ pip install google-genai
 uv pip install google-genai
 ```
 
+### Optional extras
+
+- Local text token counting for SentencePiece-backed models (for example
+  `gemini-2.5-flash`):
+
+  ```sh
+  pip install "google-genai[local-tokenizer]"
+  ```
+
+- Local text token counting for Gemma 4–backed models (for example
+  `gemini-3.5-flash`). This pulls the Hugging Face / PyTorch stack and is much
+  larger:
+
+  ```sh
+  pip install "google-genai[local-tokenizer-gemma4]"
+  ```
+
 ## Imports
 
 ```python
@@ -1212,10 +1229,14 @@ print(response)
 
 #### Local Count Tokens
 
+Install `google-genai[local-tokenizer]` for SentencePiece-backed models such as
+`gemini-2.5-flash`. For Gemma 4–backed models such as `gemini-3.5-flash`, install
+`google-genai[local-tokenizer-gemma4]` instead.
+
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
 result = tokenizer.count_tokens("What is your name?")
 ```
 
@@ -1224,7 +1245,7 @@ result = tokenizer.count_tokens("What is your name?")
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-2.5-flash')
 result = tokenizer.compute_tokens("What is your name?")
 ```
 
