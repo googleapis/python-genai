@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.22.1](https://github.com/googleapis/python-genai/compare/v2.22.0...v2.22.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* Remove unused field from FunctionResultDelta ([2843079](https://github.com/googleapis/python-genai/commit/28430799e32430265a1f8012383739a481d94629))
+
 ## [2.22.0](https://github.com/googleapis/python-genai/compare/v2.21.0...v2.22.0) (2026-09-02)
 
 
