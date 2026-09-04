@@ -182,6 +182,31 @@ class _BaseChat:
     else:
       return self._comprehensive_history
 
+  def _get_last_user_input(self) -> Content:
+    for content in reversed(self._curated_history):
+      if content.role == "user":
+        return content
+    raise ValueError("Cannot regenerate a chat with no user prompt.")
+
+  def _remove_last_turn(self) -> None:
+    last_user_index = next(
+        (index for index in range(len(self._curated_history) - 1, -1, -1)
+         if self._curated_history[index].role == "user"),
+        None,
+    )
+    if last_user_index is None:
+      raise ValueError("Cannot update a chat with no user prompt.")
+
+    del self._curated_history[last_user_index:]
+
+    comprehensive_user_index = next(
+        (index for index in range(len(self._comprehensive_history) - 1, -1, -1)
+         if self._comprehensive_history[index].role == "user"),
+        None,
+    )
+    if comprehensive_user_index is not None:
+      del self._comprehensive_history[comprehensive_user_index:]
+
 
 def _is_part_type(
     contents: Union[list[PartUnionDict], PartUnionDict],
@@ -217,6 +242,31 @@ class Chat(_BaseChat):
         config=config,
         history=history,
     )
+
+  def update_last_prompt(
+      self,
+      message: Union[list[PartUnionDict], PartUnionDict],
+      config: Optional[GenerateContentConfigOrDict] = None,
+  ) -> GenerateContentResponse:
+    """Replaces the last user prompt and generates a new response.
+
+    The message accepts the same text, media, and audio part types as
+    :meth:`send_message`.
+    """
+    if not _is_part_type(message):
+      raise ValueError(
+          f"Message must be a valid part type: {types.PartUnion} or"
+          f" {types.PartUnionDict}, got {type(message)}"
+      )
+    self._remove_last_turn()
+    return self.send_message(message, config)
+
+  def regenerate_last_turn(
+      self,
+      config: Optional[GenerateContentConfigOrDict] = None,
+  ) -> GenerateContentResponse:
+    """Regenerates the response for the last user prompt."""
+    return self.update_last_prompt(self._get_last_user_input().parts, config)
 
   def send_message(
       self,
@@ -601,6 +651,31 @@ class AsyncChat(_BaseChat):
         config=config,
         history=history,
     )
+
+  async def update_last_prompt(
+      self,
+      message: Union[list[PartUnionDict], PartUnionDict],
+      config: Optional[GenerateContentConfigOrDict] = None,
+  ) -> GenerateContentResponse:
+    """Replaces the last user prompt and generates a new response.
+
+    The message accepts the same text, media, and audio part types as
+    :meth:`send_message`.
+    """
+    if not _is_part_type(message):
+      raise ValueError(
+          f"Message must be a valid part type: {types.PartUnion} or"
+          f" {types.PartUnionDict}, got {type(message)}"
+      )
+    self._remove_last_turn()
+    return await self.send_message(message, config)
+
+  async def regenerate_last_turn(
+      self,
+      config: Optional[GenerateContentConfigOrDict] = None,
+  ) -> GenerateContentResponse:
+    """Regenerates the response for the last user prompt."""
+    return await self.update_last_prompt(self._get_last_user_input().parts, config)
 
   async def send_message(
       self,

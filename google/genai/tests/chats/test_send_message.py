@@ -16,6 +16,7 @@
 import json
 import os
 import sys
+from unittest.mock import Mock
 
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -23,6 +24,7 @@ import pytest
 
 from .. import pytest_helper
 from ... import errors
+from ...chats import Chat
 from ... import types
 
 try:
@@ -251,6 +253,40 @@ def test_history(client):
   chat.send_message('what is a + b?')
 
   assert len(chat.get_history()) > 2
+
+
+def test_update_last_prompt_replaces_previous_turn():
+  history = [
+      types.Content(role='user', parts=[types.Part.from_text(text='old prompt')]),
+      types.Content(role='model', parts=[types.Part.from_text(text='old response')]),
+  ]
+  chat = Chat(modules=Mock(), model=MODEL_NAME, history=history)
+  response = Mock()
+  chat.send_message = Mock(return_value=response)
+
+  result = chat.update_last_prompt(
+      [types.Part.from_text(text='updated prompt'), types.Part.from_text(text='audio')]
+  )
+
+  assert result is response
+  assert chat.get_history() == []
+  chat.send_message.assert_called_once()
+
+
+def test_regenerate_last_turn_reuses_previous_prompt():
+  history = [
+      types.Content(role='user', parts=[types.Part.from_text(text='keep this')]),
+      types.Content(role='model', parts=[types.Part.from_text(text='response')]),
+  ]
+  chat = Chat(modules=Mock(), model=MODEL_NAME, history=history)
+  response = Mock()
+  chat.send_message = Mock(return_value=response)
+
+  result = chat.regenerate_last_turn()
+
+  assert result is response
+  sent_parts = chat.send_message.call_args.args[0]
+  assert sent_parts[0].text == 'keep this'
 
 
 def test_send_2_messages(client):
