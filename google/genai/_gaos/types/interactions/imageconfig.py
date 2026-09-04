@@ -20,7 +20,7 @@ from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from pydantic import model_serializer
 from typing import Literal, Optional, Union
-from typing_extensions import NotRequired, TypedDict, deprecated
+from typing_extensions import NotRequired, TypedDict
 
 
 ImageConfigAspectRatio = Union[
@@ -42,6 +42,12 @@ ImageConfigAspectRatio = Union[
     ],
     UnrecognizedStr,
 ]
+r"""The aspect ratio of the image to generate. Supported aspect ratios: 1:1,
+2:3, 3:2, 3:4, 4:3, 9:16, 16:9, 21:9.
+
+If not specified, the model will choose a default aspect ratio based on any
+reference images provided.
+"""
 
 
 ImageConfigImageSize = Union[
@@ -53,27 +59,42 @@ ImageConfigImageSize = Union[
     ],
     UnrecognizedStr,
 ]
+r"""Specifies the size of generated images. Supported values are `1K`, `2K`,
+`4K`. If not specified, the model will use default value `1K`.
+"""
 
 
-@deprecated(
-    "warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-)
 class ImageConfigParam(TypedDict):
     r"""The configuration for image interaction."""
 
     aspect_ratio: NotRequired[ImageConfigAspectRatio]
+    r"""The aspect ratio of the image to generate. Supported aspect ratios: 1:1,
+    2:3, 3:2, 3:4, 4:3, 9:16, 16:9, 21:9.
+
+    If not specified, the model will choose a default aspect ratio based on any
+    reference images provided.
+    """
     image_size: NotRequired[ImageConfigImageSize]
+    r"""Specifies the size of generated images. Supported values are `1K`, `2K`,
+    `4K`. If not specified, the model will use default value `1K`.
+    """
 
 
-@deprecated(
-    "warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
-)
 class ImageConfig(BaseModel):
     r"""The configuration for image interaction."""
 
     aspect_ratio: Optional[ImageConfigAspectRatio] = None
+    r"""The aspect ratio of the image to generate. Supported aspect ratios: 1:1,
+    2:3, 3:2, 3:4, 4:3, 9:16, 16:9, 21:9.
+
+    If not specified, the model will choose a default aspect ratio based on any
+    reference images provided.
+    """
 
     image_size: Optional[ImageConfigImageSize] = None
+    r"""Specifies the size of generated images. Supported values are `1K`, `2K`,
+    `4K`. If not specified, the model will use default value `1K`.
+    """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

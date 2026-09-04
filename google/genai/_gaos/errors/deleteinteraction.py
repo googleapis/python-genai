@@ -32,7 +32,7 @@ class DeleteInteractionServerErrorData(BaseModel):
 
 @dataclass(unsafe_hash=True)
 class DeleteInteractionServerError(GenAiError):
-    r"""Error deleting interaction"""
+    r"""Server Error"""
 
     data: DeleteInteractionServerErrorData = field(hash=False)
 
@@ -55,7 +55,7 @@ class DeleteInteractionClientErrorData(BaseModel):
 
 @dataclass(unsafe_hash=True)
 class DeleteInteractionClientError(GenAiError):
-    r"""Error deleting interaction"""
+    r"""Client Error"""
 
     data: DeleteInteractionClientErrorData = field(hash=False)
 

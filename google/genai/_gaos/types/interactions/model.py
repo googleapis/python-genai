@@ -55,14 +55,14 @@ Model = Union[
         "nano-banana-pro-preview",
         # Gemini 3.1 Flash Image.
         "gemini-3.1-flash-image",
-        # Gemini 3.5 Flash - Our earlier Flash model, built for speed and foundational performance across routine, high-throughput workloads.
+        # Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
+        "gemini-3.1-flash-tts-preview",
+        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
         "gemini-3.5-flash",
-        # Gemini 3.6 Flash - Our previous generation Flash model, balancing speed and multimodal capabilities across general agentic and everyday tasks.
+        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
         "gemini-3.6-flash",
-        # Gemini 3.7 Flash - Our high-speed, efficient Flash model built for everyday coding, agentic tool use, and reliable multi-step execution.
+        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
         "gemini-3.7-flash",
-        # Gemini 3.8 Flash - Our most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.
-        "gemini-3.8-flash",
         # Our low-latency, music generation model optimized for high-fidelity audio clips and precise rhythmic control.
         "lyria-3-clip-preview",
         # Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.

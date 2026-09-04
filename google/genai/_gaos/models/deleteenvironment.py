@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class DeleteEnvironmentGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteEnvironmentGlobals(BaseModel):
@@ -34,7 +34,7 @@ class DeleteEnvironmentGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -55,22 +55,22 @@ class DeleteEnvironmentGlobals(BaseModel):
 
 class DeleteEnvironmentRequestParam(TypedDict):
     id: str
-    r"""Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122."""
+    r"""Required. The identifier of the environment to delete."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteEnvironmentRequest(BaseModel):
     id: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
-    r"""Resource ID segment making up resource `name`. It identifies the resource within its parent collection as described in https://google.aip.dev/122."""
+    r"""Required. The identifier of the environment to delete."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

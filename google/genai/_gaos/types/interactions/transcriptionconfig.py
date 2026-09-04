@@ -62,6 +62,8 @@ class TranscriptionConfigParam(TypedDict):
     r"""Optional. BCP-47 language codes providing hints about the languages present in the
     audio. If omitted or empty, defaults to automatic language detection.
     """
+    language_hints: NotRequired[List[str]]
+    r"""Deprecated: use language_codes. BCP-47 language codes providing hints about the languages present in the audio."""
     mode: NotRequired[TranscriptionConfigModeParam]
     r"""Discriminated transcription mode options or enum."""
     timestamp_granularities: NotRequired[List[str]]
@@ -99,6 +101,14 @@ class TranscriptionConfig(BaseModel):
     audio. If omitted or empty, defaults to automatic language detection.
     """
 
+    language_hints: Annotated[
+        Optional[List[str]],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Deprecated: use language_codes. BCP-47 language codes providing hints about the languages present in the audio."""
+
     mode: Optional[TranscriptionConfigMode] = None
     r"""Discriminated transcription mode options or enum."""
 
@@ -120,6 +130,7 @@ class TranscriptionConfig(BaseModel):
                 "custom_vocabulary",
                 "diarization_mode",
                 "language_codes",
+                "language_hints",
                 "mode",
                 "timestamp_granularities",
             ]

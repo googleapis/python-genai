@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GetWebhookGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetWebhookGlobals(BaseModel):
@@ -34,7 +34,7 @@ class GetWebhookGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -57,7 +57,7 @@ class GetWebhookRequestParam(TypedDict):
     id: str
     r"""Required. The ID of the webhook to retrieve."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetWebhookRequest(BaseModel):
@@ -70,7 +70,7 @@ class GetWebhookRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

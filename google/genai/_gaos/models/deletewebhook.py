@@ -26,7 +26,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class DeleteWebhookGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteWebhookGlobals(BaseModel):
@@ -34,7 +34,7 @@ class DeleteWebhookGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -59,7 +59,7 @@ class DeleteWebhookRequestParam(TypedDict):
     Format: `{webhook_id}`
     """
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteWebhookRequest(BaseModel):
@@ -74,7 +74,7 @@ class DeleteWebhookRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

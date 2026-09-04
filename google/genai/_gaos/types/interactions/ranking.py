@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class RankingParam(TypedDict):
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
 
     model_name: NotRequired[str]
     r"""Optional. The model name of the rank service."""
@@ -35,7 +35,7 @@ class RankingParam(TypedDict):
 
 
 class Ranking(BaseModel):
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
 
     model_name: Optional[str] = None
     r"""Optional. The model name of the rank service."""

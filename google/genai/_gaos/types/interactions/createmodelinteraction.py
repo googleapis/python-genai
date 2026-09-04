@@ -20,6 +20,7 @@ from __future__ import annotations
 from .environment import Environment, EnvironmentParam
 from .generationconfig import GenerationConfig, GenerationConfigParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
+from .localenvironmentconfig import LocalEnvironmentConfig, LocalEnvironmentConfigParam
 from .model import Model
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
@@ -35,49 +36,56 @@ from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 CreateModelInteractionEnvironmentParam = TypeAliasType(
-    "CreateModelInteractionEnvironmentParam", Union[EnvironmentParam, str]
+    "CreateModelInteractionEnvironmentParam",
+    Union[LocalEnvironmentConfigParam, EnvironmentParam, str],
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 CreateModelInteractionEnvironment = TypeAliasType(
-    "CreateModelInteractionEnvironment", Union[Environment, str]
+    "CreateModelInteractionEnvironment", Union[LocalEnvironmentConfig, Environment, str]
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 CreateModelInteractionResponseFormatParam = TypeAliasType(
     "CreateModelInteractionResponseFormatParam",
     Union[ResponseFormatParam, List[ResponseFormatParam]],
 )
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
 
 CreateModelInteractionResponseFormat = TypeAliasType(
     "CreateModelInteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
 )
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
 
 class CreateModelInteractionParam(TypedDict):
-    r"""Parameters for creating model interactions"""
+    r"""Interaction for generating the completion using models."""
 
-    input: InteractionsInputParam
-    r"""The input for the interaction."""
     model: Model
     r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
     background: NotRequired[bool]
     r"""Input only. Whether to run the model interaction in the background."""
+    cached_content: NotRequired[str]
+    r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
     environment: NotRequired[CreateModelInteractionEnvironmentParam]
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    r"""The environment configuration for the interaction."""
     generation_config: NotRequired[GenerationConfigParam]
     r"""Configuration parameters for model interactions."""
+    input: NotRequired[InteractionsInputParam]
+    r"""The input for the interaction."""
     labels: NotRequired[Dict[str, str]]
-    r"""The labels with user-defined metadata for the request."""
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
     previous_interaction_id: NotRequired[str]
     r"""The ID of the previous interaction, if any."""
     response_format: NotRequired[CreateModelInteractionResponseFormatParam]
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
     response_mime_type: NotRequired[str]
     r"""The mime type of the response. This is required if response_format is set."""
     response_modalities: NotRequired[List[ResponseModality]]
@@ -98,10 +106,7 @@ class CreateModelInteractionParam(TypedDict):
 
 
 class CreateModelInteraction(BaseModel):
-    r"""Parameters for creating model interactions"""
-
-    input: InteractionsInput
-    r"""The input for the interaction."""
+    r"""Interaction for generating the completion using models."""
 
     model: Model
     r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
@@ -109,20 +114,37 @@ class CreateModelInteraction(BaseModel):
     background: Optional[bool] = None
     r"""Input only. Whether to run the model interaction in the background."""
 
+    cached_content: Annotated[
+        Optional[str],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
+
     environment: Optional[CreateModelInteractionEnvironment] = None
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    r"""The environment configuration for the interaction."""
 
     generation_config: Optional[GenerationConfig] = None
     r"""Configuration parameters for model interactions."""
 
+    input: Optional[InteractionsInput] = None
+    r"""The input for the interaction."""
+
     labels: Optional[Dict[str, str]] = None
-    r"""The labels with user-defined metadata for the request."""
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
 
     previous_interaction_id: Optional[str] = None
     r"""The ID of the previous interaction, if any."""
 
     response_format: Optional[CreateModelInteractionResponseFormat] = None
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
     response_mime_type: Annotated[
         Optional[str],
@@ -165,8 +187,10 @@ class CreateModelInteraction(BaseModel):
         optional_fields = set(
             [
                 "background",
+                "cached_content",
                 "environment",
                 "generation_config",
+                "input",
                 "labels",
                 "previous_interaction_id",
                 "response_format",

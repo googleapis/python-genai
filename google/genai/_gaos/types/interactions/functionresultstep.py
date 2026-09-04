@@ -21,7 +21,12 @@ from .functionresultsubcontent import (
     FunctionResultSubcontent,
     FunctionResultSubcontentParam,
 )
-from .. import BaseModel, UNSET_SENTINEL
+from .. import (
+    Base64EncodedString,
+    Base64FileInput,
+    BaseModel,
+    UNSET_SENTINEL,
+)
 from ...utils import validate_const
 import pydantic
 from pydantic import model_serializer
@@ -63,6 +68,8 @@ class FunctionResultStepParam(TypedDict):
     r"""Whether the tool call resulted in an error."""
     name: NotRequired[str]
     r"""The name of the tool that was called."""
+    signature: NotRequired[Union[str, Base64FileInput]]
+    r"""A signature hash for backend validation."""
     type: Literal["function_result"]
 
 
@@ -81,6 +88,9 @@ class FunctionResultStep(BaseModel):
     name: Optional[str] = None
     r"""The name of the tool that was called."""
 
+    signature: Optional[Base64EncodedString] = None
+    r"""A signature hash for backend validation."""
+
     type: Annotated[
         Annotated[
             Literal["function_result"],
@@ -91,7 +101,7 @@ class FunctionResultStep(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["is_error", "name"])
+        optional_fields = set(["is_error", "name", "signature"])
         serialized = handler(self)
         m = {}
 

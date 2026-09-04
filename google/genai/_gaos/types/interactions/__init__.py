@@ -270,6 +270,10 @@ if TYPE_CHECKING:
         InteractionStatusUpdateStatus,
         InteractionStatusUpdateTypedDict,
     )
+    from .localenvironmentconfig import (
+        LocalEnvironmentConfig,
+        LocalEnvironmentConfigParam,
+    )
     from .mcpserver import MCPServer, MCPServerParam
     from .mcpservertoolcalldelta import (
         MCPServerToolCallDelta,
@@ -318,17 +322,23 @@ if TYPE_CHECKING:
     from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
     from .retrievalcallarguments import (
         RetrievalCallArguments,
-        RetrievalCallArgumentsTypedDict,
+        RetrievalCallArgumentsParam,
     )
     from .retrievalcalldelta import (
         RetrievalCallDelta,
         RetrievalCallDeltaRetrievalType,
         RetrievalCallDeltaTypedDict,
     )
+    from .retrievalcallstep import (
+        RetrievalCallStep,
+        RetrievalCallStepParam,
+        RetrievalCallStepRetrievalType,
+    )
     from .retrievalresultdelta import (
         RetrievalResultDelta,
         RetrievalResultDeltaTypedDict,
     )
+    from .retrievalresultstep import RetrievalResultStep, RetrievalResultStepParam
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
     from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
     from .servicetier import ServiceTier
@@ -352,6 +362,7 @@ if TYPE_CHECKING:
     from .stepdeltametadata import StepDeltaMetadata, StepDeltaMetadataTypedDict
     from .stepstart import StepStart, StepStartTypedDict
     from .stepstop import StepStop, StepStopTypedDict
+    from .streammetadata import StreamMetadata, StreamMetadataTypedDict
     from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDict
     from .textcontent import TextContent, TextContentParam
     from .textdelta import TextDelta, TextDeltaTypedDict
@@ -636,6 +647,8 @@ __all__ = [
     "InteractionsInput",
     "InteractionsInputParam",
     "Language",
+    "LocalEnvironmentConfig",
+    "LocalEnvironmentConfigParam",
     "MCPServer",
     "MCPServerParam",
     "MCPServerToolCallDelta",
@@ -696,13 +709,18 @@ __all__ = [
     "ResponseModality",
     "Retrieval",
     "RetrievalCallArguments",
-    "RetrievalCallArgumentsTypedDict",
+    "RetrievalCallArgumentsParam",
     "RetrievalCallDelta",
     "RetrievalCallDeltaRetrievalType",
     "RetrievalCallDeltaTypedDict",
+    "RetrievalCallStep",
+    "RetrievalCallStepParam",
+    "RetrievalCallStepRetrievalType",
     "RetrievalParam",
     "RetrievalResultDelta",
     "RetrievalResultDeltaTypedDict",
+    "RetrievalResultStep",
+    "RetrievalResultStepParam",
     "RetrievalRetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
@@ -738,6 +756,8 @@ __all__ = [
     "StepStartTypedDict",
     "StepStop",
     "StepStopTypedDict",
+    "StreamMetadata",
+    "StreamMetadataTypedDict",
     "Task",
     "TextAnnotationDelta",
     "TextAnnotationDeltaTypedDict",
@@ -1048,6 +1068,8 @@ _dynamic_imports: dict[str, str] = {
     "InteractionStatusUpdate": ".interactionstatusupdate",
     "InteractionStatusUpdateStatus": ".interactionstatusupdate",
     "InteractionStatusUpdateTypedDict": ".interactionstatusupdate",
+    "LocalEnvironmentConfig": ".localenvironmentconfig",
+    "LocalEnvironmentConfigParam": ".localenvironmentconfig",
     "MCPServer": ".mcpserver",
     "MCPServerParam": ".mcpserver",
     "MCPServerToolCallDelta": ".mcpservertoolcalldelta",
@@ -1101,12 +1123,17 @@ _dynamic_imports: dict[str, str] = {
     "RetrievalParam": ".retrieval",
     "RetrievalRetrievalType": ".retrieval",
     "RetrievalCallArguments": ".retrievalcallarguments",
-    "RetrievalCallArgumentsTypedDict": ".retrievalcallarguments",
+    "RetrievalCallArgumentsParam": ".retrievalcallarguments",
     "RetrievalCallDelta": ".retrievalcalldelta",
     "RetrievalCallDeltaRetrievalType": ".retrievalcalldelta",
     "RetrievalCallDeltaTypedDict": ".retrievalcalldelta",
+    "RetrievalCallStep": ".retrievalcallstep",
+    "RetrievalCallStepParam": ".retrievalcallstep",
+    "RetrievalCallStepRetrievalType": ".retrievalcallstep",
     "RetrievalResultDelta": ".retrievalresultdelta",
     "RetrievalResultDeltaTypedDict": ".retrievalresultdelta",
+    "RetrievalResultStep": ".retrievalresultstep",
+    "RetrievalResultStepParam": ".retrievalresultstep",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
     "Method": ".safetysetting",
@@ -1143,6 +1170,8 @@ _dynamic_imports: dict[str, str] = {
     "StepStartTypedDict": ".stepstart",
     "StepStop": ".stepstop",
     "StepStopTypedDict": ".stepstop",
+    "StreamMetadata": ".streammetadata",
+    "StreamMetadataTypedDict": ".streammetadata",
     "TextAnnotationDelta": ".textannotationdelta",
     "TextAnnotationDeltaTypedDict": ".textannotationdelta",
     "TextContent": ".textcontent",

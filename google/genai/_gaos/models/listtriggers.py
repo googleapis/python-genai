@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListTriggersGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListTriggersGlobals(BaseModel):
@@ -35,7 +35,7 @@ class ListTriggersGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,13 +56,15 @@ class ListTriggersGlobals(BaseModel):
 
 class ListTriggersRequestParam(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
     filter_: NotRequired[str]
-    r"""Optional. Filter expression (e.g., by state)."""
+    r"""Optional. Filter expression (e.g. `agent=\"agents/my-agent-id\"`). Only
+    equality filtering on the `agent` field is currently supported.
+    """
     page_size: NotRequired[int]
-    r"""Optional. The maximum number of triggers to return per page."""
+    r"""The maximum number of triggers to return per page."""
     page_token: NotRequired[str]
-    r"""Optional. A page token from a previous ListTriggers call."""
+    r"""A page token from a previous ListTriggers call."""
 
 
 class ListTriggersRequest(BaseModel):
@@ -70,26 +72,28 @@ class ListTriggersRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     filter_: Annotated[
         Optional[str],
         pydantic.Field(alias="filter"),
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. Filter expression (e.g., by state)."""
+    r"""Optional. Filter expression (e.g. `agent=\"agents/my-agent-id\"`). Only
+    equality filtering on the `agent` field is currently supported.
+    """
 
     page_size: Annotated[
         Optional[int],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. The maximum number of triggers to return per page."""
+    r"""The maximum number of triggers to return per page."""
 
     page_token: Annotated[
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. A page token from a previous ListTriggers call."""
+    r"""A page token from a previous ListTriggers call."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

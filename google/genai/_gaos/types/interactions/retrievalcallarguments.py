@@ -23,7 +23,7 @@ from typing import List, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
-class RetrievalCallArgumentsTypedDict(TypedDict):
+class RetrievalCallArgumentsParam(TypedDict):
     r"""The arguments to pass to Retrieval tools."""
 
     queries: NotRequired[List[str]]

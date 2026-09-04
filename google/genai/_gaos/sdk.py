@@ -73,6 +73,7 @@ class GenAI(BaseSDK):
         self,
         security: Optional[Union[types.Security, Callable[[], types.Security]]] = None,
         api_version: Optional[str] = None,
+        api_revision: Optional[str] = None,
         user_project: Optional[str] = None,
         server_idx: Optional[int] = None,
         url_params: Optional[Dict[str, str]] = None,
@@ -86,6 +87,7 @@ class GenAI(BaseSDK):
 
         :param security: The security details required for authentication
         :param api_version: Configures the api_version parameter for all supported operations
+        :param api_revision: Configures the api_revision parameter for all supported operations
         :param user_project: Configures the user_project parameter for all supported operations
         :param server_idx: The index of the server to use for all methods
         :param server_url: The server URL to use for all methods
@@ -113,6 +115,9 @@ class GenAI(BaseSDK):
         _globals = models.internal.Globals(
             api_version=utils.get_global_from_env(
                 api_version, "GOOGLE_GENAI_API_VERSION", str
+            ),
+            api_revision=utils.get_global_from_env(
+                api_revision, "GOOGLE_GENAI_API_REVISION", str
             ),
             user_project=utils.get_global_from_env(
                 user_project, "GOOGLE_GENAI_USER_PROJECT", str
@@ -284,6 +289,7 @@ class AsyncGenAI(AsyncBaseSDK):
         self,
         security: Optional[Union[types.Security, Callable[[], types.Security]]] = None,
         api_version: Optional[str] = None,
+        api_revision: Optional[str] = None,
         user_project: Optional[str] = None,
         server_idx: Optional[int] = None,
         url_params: Optional[Dict[str, str]] = None,
@@ -297,6 +303,7 @@ class AsyncGenAI(AsyncBaseSDK):
 
         :param security: The security details required for authentication
         :param api_version: Configures the api_version parameter for all supported operations
+        :param api_revision: Configures the api_revision parameter for all supported operations
         :param user_project: Configures the user_project parameter for all supported operations
         :param server_idx: The index of the server to use for all methods
         :param server_url: The server URL to use for all methods
@@ -322,6 +329,9 @@ class AsyncGenAI(AsyncBaseSDK):
         _globals = models.internal.Globals(
             api_version=utils.get_global_from_env(
                 api_version, "GOOGLE_GENAI_API_VERSION", str
+            ),
+            api_revision=utils.get_global_from_env(
+                api_revision, "GOOGLE_GENAI_API_REVISION", str
             ),
             user_project=utils.get_global_from_env(
                 user_project, "GOOGLE_GENAI_USER_PROJECT", str

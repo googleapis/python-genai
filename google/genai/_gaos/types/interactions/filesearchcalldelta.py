@@ -27,12 +27,17 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class FileSearchCallDeltaTypedDict(TypedDict):
+    id: NotRequired[str]
+    r"""Required. A unique ID for this specific tool call."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
     type: Literal["file_search_call"]
 
 
 class FileSearchCallDelta(BaseModel):
+    id: Optional[str] = None
+    r"""Required. A unique ID for this specific tool call."""
+
     signature: Optional[str] = None
     r"""A signature hash for backend validation."""
 
@@ -46,7 +51,7 @@ class FileSearchCallDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature"])
+        optional_fields = set(["id", "signature"])
         serialized = handler(self)
         m = {}
 

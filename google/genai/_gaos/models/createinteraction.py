@@ -33,7 +33,7 @@ from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 class CreateInteractionGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateInteractionGlobals(BaseModel):
@@ -41,7 +41,7 @@ class CreateInteractionGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -84,7 +84,7 @@ class CreateInteractionRequestParam(TypedDict):
     body: CreateInteractionRequestBodyParam
     r"""The request body."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateInteractionRequest(BaseModel):
@@ -98,7 +98,7 @@ class CreateInteractionRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

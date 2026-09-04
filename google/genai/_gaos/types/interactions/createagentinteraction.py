@@ -27,6 +27,7 @@ from .deepresearchagentconfig import (
 from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
 from .environment import Environment, EnvironmentParam
 from .interactionsinput import InteractionsInput, InteractionsInputParam
+from .localenvironmentconfig import LocalEnvironmentConfig, LocalEnvironmentConfigParam
 from .responseformat import ResponseFormat, ResponseFormatParam
 from .responsemodality import ResponseModality
 from .safetysetting import SafetySetting, SafetySettingParam
@@ -49,7 +50,7 @@ CreateAgentInteractionAgentConfigParam = TypeAliasType(
         CodeMenderAgentConfigParam,
     ],
 )
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 CreateAgentInteractionAgentConfig = Annotated[
@@ -61,53 +62,58 @@ CreateAgentInteractionAgentConfig = Annotated[
     ],
     Field(discriminator="type"),
 ]
-r"""Configuration parameters for the agent interaction."""
+r"""Parameters for the agent interaction."""
 
 
 CreateAgentInteractionEnvironmentParam = TypeAliasType(
-    "CreateAgentInteractionEnvironmentParam", Union[EnvironmentParam, str]
+    "CreateAgentInteractionEnvironmentParam",
+    Union[LocalEnvironmentConfigParam, EnvironmentParam, str],
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 CreateAgentInteractionEnvironment = TypeAliasType(
-    "CreateAgentInteractionEnvironment", Union[Environment, str]
+    "CreateAgentInteractionEnvironment", Union[LocalEnvironmentConfig, Environment, str]
 )
-r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+r"""The environment configuration for the interaction."""
 
 
 CreateAgentInteractionResponseFormatParam = TypeAliasType(
     "CreateAgentInteractionResponseFormatParam",
     Union[ResponseFormatParam, List[ResponseFormatParam]],
 )
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
 
 CreateAgentInteractionResponseFormat = TypeAliasType(
     "CreateAgentInteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
 )
-r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
 
 class CreateAgentInteractionParam(TypedDict):
-    r"""Parameters for creating agent interactions"""
+    r"""Interaction for generating the completion using agents."""
 
     agent: AgentOption
     r"""The agent to interact with."""
-    input: InteractionsInputParam
-    r"""The input for the interaction."""
     agent_config: NotRequired[CreateAgentInteractionAgentConfigParam]
-    r"""Configuration parameters for the agent interaction."""
+    r"""Parameters for the agent interaction."""
     background: NotRequired[bool]
     r"""Input only. Whether to run the model interaction in the background."""
     environment: NotRequired[CreateAgentInteractionEnvironmentParam]
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    r"""The environment configuration for the interaction."""
+    input: NotRequired[InteractionsInputParam]
+    r"""The input for the interaction."""
     labels: NotRequired[Dict[str, str]]
-    r"""The labels with user-defined metadata for the request."""
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
     previous_interaction_id: NotRequired[str]
     r"""The ID of the previous interaction, if any."""
     response_format: NotRequired[CreateAgentInteractionResponseFormatParam]
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
     response_mime_type: NotRequired[str]
     r"""The mime type of the response. This is required if response_format is set."""
     response_modalities: NotRequired[List[ResponseModality]]
@@ -128,31 +134,37 @@ class CreateAgentInteractionParam(TypedDict):
 
 
 class CreateAgentInteraction(BaseModel):
-    r"""Parameters for creating agent interactions"""
+    r"""Interaction for generating the completion using agents."""
 
     agent: AgentOption
     r"""The agent to interact with."""
 
-    input: InteractionsInput
-    r"""The input for the interaction."""
-
     agent_config: Optional[CreateAgentInteractionAgentConfig] = None
-    r"""Configuration parameters for the agent interaction."""
+    r"""Parameters for the agent interaction."""
 
     background: Optional[bool] = None
     r"""Input only. Whether to run the model interaction in the background."""
 
     environment: Optional[CreateAgentInteractionEnvironment] = None
-    r"""The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID."""
+    r"""The environment configuration for the interaction."""
+
+    input: Optional[InteractionsInput] = None
+    r"""The input for the interaction."""
 
     labels: Optional[Dict[str, str]] = None
-    r"""The labels with user-defined metadata for the request."""
+    r"""The labels with user-defined metadata for the request. It is used for
+    billing and reporting only.
+
+    Label keys and values can be no longer than 63 characters
+    (Unicode codepoints) and can only contain lowercase letters, numeric
+    characters, underscores, and dashes. International characters are allowed.
+    Label values are optional. Label keys must start with a letter.
+    """
 
     previous_interaction_id: Optional[str] = None
     r"""The ID of the previous interaction, if any."""
 
     response_format: Optional[CreateAgentInteractionResponseFormat] = None
-    r"""Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field."""
 
     response_mime_type: Annotated[
         Optional[str],
@@ -197,6 +209,7 @@ class CreateAgentInteraction(BaseModel):
                 "agent_config",
                 "background",
                 "environment",
+                "input",
                 "labels",
                 "previous_interaction_id",
                 "response_format",

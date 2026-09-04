@@ -53,7 +53,9 @@ class TriggerCreateParamsParam(TypedDict):
     interaction: InteractionParam
     r"""Required. The interaction request template to be executed."""
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
+    r"""Required. The cron schedule on which the trigger should run.
+    Standard cron format.
+    """
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
     display_name: NotRequired[str]
@@ -63,7 +65,9 @@ class TriggerCreateParamsParam(TypedDict):
     execution_timeout_seconds: NotRequired[int]
     r"""Optional. The execution timeout for the triggered interaction."""
     max_consecutive_failures: NotRequired[int]
-    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
+    r"""Optional. The maximum number of consecutive failures allowed before
+    the trigger is automatically paused (status becomes ERROR).
+    """
 
 
 class TriggerCreateParams(BaseModel):
@@ -73,7 +77,9 @@ class TriggerCreateParams(BaseModel):
     r"""Required. The interaction request template to be executed."""
 
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
+    r"""Required. The cron schedule on which the trigger should run.
+    Standard cron format.
+    """
 
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
@@ -88,7 +94,9 @@ class TriggerCreateParams(BaseModel):
     r"""Optional. The execution timeout for the triggered interaction."""
 
     max_consecutive_failures: Optional[int] = None
-    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
+    r"""Optional. The maximum number of consecutive failures allowed before
+    the trigger is automatically paused (status becomes ERROR).
+    """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

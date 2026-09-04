@@ -28,6 +28,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class GoogleMapsResultDeltaTypedDict(TypedDict):
+    call_id: NotRequired[str]
+    r"""Required. ID to match the ID from the function call block."""
     result: NotRequired[List[GoogleMapsResultParam]]
     r"""The results of the Google Maps."""
     signature: NotRequired[str]
@@ -36,6 +38,9 @@ class GoogleMapsResultDeltaTypedDict(TypedDict):
 
 
 class GoogleMapsResultDelta(BaseModel):
+    call_id: Optional[str] = None
+    r"""Required. ID to match the ID from the function call block."""
+
     result: Optional[List[GoogleMapsResult]] = None
     r"""The results of the Google Maps."""
 
@@ -52,7 +57,7 @@ class GoogleMapsResultDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["result", "signature"])
+        optional_fields = set(["call_id", "result", "signature"])
         serialized = handler(self)
         m = {}
 

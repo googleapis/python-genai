@@ -35,7 +35,7 @@ class RagRetrievalConfigParam(TypedDict):
     hybrid_search: NotRequired[HybridSearchParam]
     r"""Config for Hybrid Search."""
     ranking: NotRequired[RankingParam]
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
     top_k: NotRequired[int]
     r"""Optional. The number of contexts to retrieve."""
 
@@ -50,7 +50,7 @@ class RagRetrievalConfig(BaseModel):
     r"""Config for Hybrid Search."""
 
     ranking: Optional[Ranking] = None
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
 
     top_k: Optional[int] = None
     r"""Optional. The number of contexts to retrieve."""

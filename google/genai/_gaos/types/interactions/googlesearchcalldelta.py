@@ -33,6 +33,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class GoogleSearchCallDeltaTypedDict(TypedDict):
     arguments: GoogleSearchCallArgumentsParam
     r"""The arguments to pass to Google Search."""
+    id: NotRequired[str]
+    r"""Required. A unique ID for this specific tool call."""
     signature: NotRequired[str]
     r"""A signature hash for backend validation."""
     type: Literal["google_search_call"]
@@ -41,6 +43,9 @@ class GoogleSearchCallDeltaTypedDict(TypedDict):
 class GoogleSearchCallDelta(BaseModel):
     arguments: GoogleSearchCallArguments
     r"""The arguments to pass to Google Search."""
+
+    id: Optional[str] = None
+    r"""Required. A unique ID for this specific tool call."""
 
     signature: Optional[str] = None
     r"""A signature hash for backend validation."""
@@ -55,7 +60,7 @@ class GoogleSearchCallDelta(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["signature"])
+        optional_fields = set(["id", "signature"])
         serialized = handler(self)
         m = {}
 

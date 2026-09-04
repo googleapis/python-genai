@@ -48,12 +48,10 @@ class Interactions(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
-
-        Creates a new interaction.
+        r"""Generates a set of responses from the model.
 
         :param body: The request body.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -66,9 +64,10 @@ class Interactions(BaseSDK):
         *,
         api_version: Optional[str] = None,
         background: bool = ...,
+        cached_content: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         model: interactions.Model,
         previous_interaction_id: str = ...,
@@ -87,19 +86,24 @@ class Interactions(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -121,9 +125,10 @@ class Interactions(BaseSDK):
         *,
         api_version: Optional[str] = None,
         background: bool = ...,
+        cached_content: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         model: interactions.Model,
         previous_interaction_id: str = ...,
@@ -142,19 +147,24 @@ class Interactions(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -179,7 +189,7 @@ class Interactions(BaseSDK):
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         previous_interaction_id: str = ...,
         response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
@@ -197,19 +207,23 @@ class Interactions(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param environment: The environment configuration for the interaction.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -234,7 +248,7 @@ class Interactions(BaseSDK):
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         previous_interaction_id: str = ...,
         response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
@@ -252,19 +266,23 @@ class Interactions(BaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param environment: The environment configuration for the interaction.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -294,19 +312,24 @@ class Interactions(BaseSDK):
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -317,7 +340,7 @@ class Interactions(BaseSDK):
         :param tools: A list of tool declarations the model may call during interaction.
         :param webhook_config: Message for configuring webhook events for a request.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -337,19 +360,24 @@ class Interactions(BaseSDK):
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -360,12 +388,16 @@ class Interactions(BaseSDK):
         :param tools: A list of tool declarations the model may call during interaction.
         :param webhook_config: Message for configuring webhook events for a request.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
         :param timeout: Override the default request timeout configuration for this method in seconds
         """
+        if "cached_content" in body_kwargs and "agent" in body_kwargs:
+            raise ValueError("Cannot supply both 'cached_content' and 'agent'.")
+        if "cached_content" in body_kwargs and "agent_config" in body_kwargs:
+            raise ValueError("Cannot supply both 'cached_content' and 'agent_config'.")
         if "generation_config" in body_kwargs and "agent" in body_kwargs:
             raise ValueError("Cannot supply both 'generation_config' and 'agent'.")
         if "generation_config" in body_kwargs and "agent_config" in body_kwargs:
@@ -524,191 +556,8 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "simple",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": "Hello, how are you?"\n  }\'\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello, how are you?",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello, how are you?',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Hello, how are you?"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n      { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n      { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n        { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n        { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n        { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n        { type: 'user_input', content: [{ type: 'text', text: 'Hello' }] },\n        { type: 'model_output', content: [{ type: 'text', text: 'Hi there! How can I help you today?' }] },\n        { type: 'user_input', content: [{ type: 'text', text: 'What is the capital of France?' }] }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.ModelOutputStep;\nimport com.google.genai.gaos.models.interactions.Step;\nimport com.google.genai.gaos.models.interactions.TextContent;\nimport com.google.genai.gaos.models.interactions.UserInputStep;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\nList<Step> conversation = List.of(\n    UserInputStep.builder()\n        .content(List.of(TextContent.builder().text("Hello!").build()))\n        .build(),\n    ModelOutputStep.builder()\n        .content(List.of(TextContent.builder().text("Hi there! How can I help you today?").build()))\n        .build(),\n    UserInputStep.builder()\n        .content(List.of(TextContent.builder().text("What is the capital of France?").build()))\n        .build()\n);\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.ofStep(conversation))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      {\n        "type": "text",\n        "text": "What is in this picture?"\n      },\n      {\n        "type": "image",\n        "data": "BASE64_ENCODED_IMAGE",\n        "mime_type": "image/png"\n      }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n      { "type": "text", "text": "What is in this picture?" },\n      { "type": "image", "data": "BASE64_ENCODED_IMAGE", "mime_type": "image/png" }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n      { type: 'text', text: 'What is in this picture?' },\n      { type: 'image', data: 'BASE64_ENCODED_IMAGE', mime_type: 'image/png' }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.Content;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.ImageContent;\nimport com.google.genai.gaos.models.interactions.ImageContentMimeType;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.TextContent;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\nList<Content> content = List.of(\n    TextContent.builder().text("What is in this picture?").build(),\n    ImageContent.builder()\n        .data("BASE64_ENCODED_IMAGE")\n        .mimeType(ImageContentMimeType.IMAGE_PNG)\n        .build()\n);\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.ofContent(content))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "tools": [\n      {\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n          "type": "object",\n          "properties": {\n            "location": {\n              "type": "string",\n              "description": "The city and state, e.g. San Francisco, CA"\n            }\n          },\n          "required": [\n            "location"\n          ]\n        }\n      }\n    ],\n    "input": "What is the weather like in Boston, MA?"\n  }\'\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    tools=[{\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n            "type": "object",\n            "properties": {\n                "location": {\n                    "type": "string",\n                    "description": "The city and state, e.g. San Francisco, CA"\n                }\n            },\n            "required": ["location"]\n        }\n    }],\n    input="What is the weather like in Boston, MA?"\n)\nprint(response.steps[-1])\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    tools: [{\n        type: 'function',\n        name: 'get_weather',\n        description: 'Get the current weather in a given location',\n        parameters: {\n            type: 'object',\n            properties: {\n                location: {\n                    type: 'string',\n                    description: 'The city and state, e.g. San Francisco, CA'\n                }\n            },\n            required: ['location']\n        }\n    }],\n    input: 'What is the weather like in Boston, MA?'\n});\nconsole.log(interaction.steps.at(-1));\n",
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Function;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.Step;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\nimport java.util.Map;\n\nClient client = new Client();\nMap<String, Object> parameters = Map.of(\n    "type", "object",\n    "properties", Map.of(\n        "location", Map.of(\n            "type", "string",\n            "description", "The city and state, e.g. San Francisco, CA"\n        )\n    ),\n    "required", List.of("location")\n);\nFunction functionTool = Function.builder()\n    .name("get_weather")\n    .description("Get the current weather in a given location")\n    .parameters(parameters)\n    .build();\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .tools(List.of(functionTool))\n        .input(InteractionsInput.of("What is the weather like in Boston, MA?"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nList<Step> steps = interaction.steps().orElse(List.of());\nif (!steps.isEmpty()) {\n  System.out.println(steps.get(steps.size() - 1));\n}\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "deep-research-pro-preview-12-2025",\n    "input": "Find a cure to cancer",\n    "background": true\n  }\'\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="deep-research-pro-preview-12-2025",\n    input="find a cure to cancer",\n    background=True,\n)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'deep-research-pro-preview-12-2025',\n    input: 'find a cure to cancer',\n    background: true,\n});\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("deep-research-pro-preview-12-2025"))\n        .input(InteractionsInput.of("find a cure to cancer"))\n        .background(true)\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    environment="remote",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Read Hacker News, summarize the top 5 stories, and save results as a markdown file.',\n    environment: 'remote',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Read Hacker News, summarize the top 5 stories, and save results as a markdown file."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Create an interaction with a fresh remote environment.\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a hello world script at /workspace/hello.py.",\n    "environment": "remote"\n  }\')\nINTERACTION_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"agent\\": \\"antigravity-preview-05-2026\\",\n    \\"input\\": \\"Modify the script to accept a name argument and greet the user.\\",\n    \\"environment\\": \\"$ENV_ID\\",\n    \\"previous_interaction_id\\": \\"$INTERACTION_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Step 1: Create an interaction with a fresh remote environment.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a hello world script at /workspace/hello.py.",\n    environment="remote",\n)\nprint(f"Environment ID: {interaction.environment_id}")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ninteraction_2 = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Modify the script to accept a name argument and greet the user.",\n    environment=interaction.environment_id,\n    previous_interaction_id=interaction.id,\n)\nprint(interaction_2.output_text)\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create an interaction with a fresh remote environment.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a hello world script at /workspace/hello.py.',\n    environment: 'remote',\n});\nconsole.log(`Environment ID: ${interaction.environment_id}`);\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nconst interaction2 = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Modify the script to accept a name argument and greet the user.',\n    environment: interaction.environment_id,\n    previous_interaction_id: interaction.id,\n});\nconsole.log(interaction2.output_text);\n",
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\n\n// Step 1: Create an interaction with a fresh remote environment.\nCreateAgentInteraction params1 =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Write a hello world script at /workspace/hello.py."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse response1 =\n    client.interactions.create(CreateInteractionRequestBody.of(params1));\nInteraction interaction1 =\n    response1.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println("Environment ID: " + interaction1.environmentId().orElse(""));\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nCreateAgentInteraction params2 =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Modify the script to accept a name argument and greet the user."))\n        .environment(CreateAgentInteractionEnvironment.of(interaction1.environmentId().orElse("")))\n        .previousInteractionId(interaction1.id().orElse(null))\n        .build();\nCreateInteractionResponse response2 =\n    client.interactions.create(CreateInteractionRequestBody.of(params2));\nInteraction interaction2 =\n    response2.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction2.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "List all files under /workspace and summarize what you find.",\n    "environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "repository",\n          "source": "https://github.com/octocat/Spoon-Knife",\n          "target": "/workspace/repo"\n        },\n        {\n          "type": "inline",\n          "content": "Focus on Python files only.",\n          "target": "/workspace/notes.txt"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="List all files under /workspace and summarize what you find.",\n    environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "repository",\n                "source": "https://github.com/octocat/Spoon-Knife",\n                "target": "/workspace/repo",\n            },\n            {\n                "type": "inline",\n                "content": "Focus on Python files only.",\n                "target": "/workspace/notes.txt",\n            },\n        ],\n    },\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'List all files under /workspace and summarize what you find.',\n    environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'repository',\n                source: 'https://github.com/octocat/Spoon-Knife',\n                target: '/workspace/repo',\n            },\n            {\n                type: 'inline',\n                content: 'Focus on Python files only.',\n                target: '/workspace/notes.txt',\n            },\n        ],\n    },\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Environment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\nEnvironment env = Environment.builder()\n    .sources(List.of(\n        Source.builder()\n            .type(SourceType.REPOSITORY)\n            .source("https://github.com/octocat/Spoon-Knife")\n            .target("/workspace/repo")\n            .build(),\n        Source.builder()\n            .type(SourceType.INLINE)\n            .content("Focus on Python files only.")\n            .target("/workspace/notes.txt")\n            .build()\n    ))\n    .build();\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("List all files under /workspace and summarize what you find."))\n        .environment(CreateAgentInteractionEnvironment.of(env))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "sh",
-                        "source": '# Step 1: Create a custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "code-reviewer",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [{\n        "type": "repository",\n        "source": "https://github.com/octocat/Spoon-Knife",\n        "target": "/workspace/repo"\n      }]\n    }\n  }\'\n\n# Step 2: Use the custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "code-reviewer",\n    "input": "Review the latest changes in /workspace/repo/src and file a summary.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Create a custom agent.\nagent_id = f"code-reviewer-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    base_environment={\n        "type": "remote",\n        "sources": [{\n            "type": "repository",\n            "source": "https://github.com/octocat/Spoon-Knife",\n            "target": "/workspace/repo",\n        }],\n    },\n)\n\n# Step 2: Use the custom agent.\nresult = client.interactions.create(\n    agent=agent_id,\n    input="Review the latest changes in /workspace/repo/src and file a summary.",\n    environment="remote",\n)\nprint(result.output_text)\n\n# [cleanup]\nclient.agents.delete(agent_id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create a custom agent.\nconst agentId = `code-reviewer-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.',\n    base_environment: {\n        type: 'remote',\n        sources: [{\n            type: 'repository',\n            source: 'https://github.com/octocat/Spoon-Knife',\n            target: '/workspace/repo',\n        }],\n    },\n});\n\n// Step 2: Use the custom agent.\nconst result = await ai.interactions.create({\n    agent: agentId,\n    input: 'Review the latest changes in /workspace/repo/src and file a summary.',\n    environment: 'remote',\n});\nconsole.log(result.output_text);\n\n// [cleanup]\nawait ai.agents.delete(agentId);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Environment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// Step 1: Create a custom agent.\nString agentId = "code-reviewer-" + UUID.randomUUID().toString().substring(0, 8);\nEnvironment baseEnv = Environment.builder()\n    .sources(List.of(\n        Source.builder()\n            .type(SourceType.REPOSITORY)\n            .source("https://github.com/octocat/Spoon-Knife")\n            .target("/workspace/repo")\n            .build()\n    ))\n    .build();\nAgent customAgent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .systemInstruction("You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.")\n    .baseEnvironment(BaseEnvironment.of(baseEnv))\n    .build();\nclient.agents.create(customAgent);\n\n// Step 2: Use the custom agent.\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of(agentId))\n        .input(InteractionsInput.of("Review the latest changes in /workspace/repo/src and file a summary."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -771,12 +620,11 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ):
-        r"""Deleting an interaction
+        r"""Deletes an interaction.
 
-        Deletes the interaction by id.
-
-        :param id: The unique identifier of the interaction to delete.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to delete.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -805,7 +653,7 @@ class Interactions(BaseSDK):
         )
         req = self._build_request(
             method="DELETE",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -878,36 +726,8 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Hello"))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nclient.interactions.delete(interactionId);\nSystem.out.println("Interaction deleted successfully.");\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "dotnet",
-                        "source": 'using Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Hello"),\n    })\n);\n// [/setup]\n\nawait client.Interactions.DeleteAsync(id: created.Interaction!.Id!);\nConsole.WriteLine("Interaction deleted successfully.");\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -961,22 +781,22 @@ class Interactions(BaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
         stream: Union[Literal[False], None] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -988,22 +808,22 @@ class Interactions(BaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
         stream: Literal[True],
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1015,22 +835,22 @@ class Interactions(BaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
         stream: bool,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1041,22 +861,22 @@ class Interactions(BaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        stream: Optional[bool] = False,
+        stream: Optional[bool] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1077,8 +897,8 @@ class Interactions(BaseSDK):
 
         request = models.GetInteractionByIDRequest(
             api_version=api_version,
-            id=id,
             include_input=include_input,
+            id=id,
             last_event_id=last_event_id,
             stream=stream,
         )
@@ -1088,7 +908,7 @@ class Interactions(BaseSDK):
         )
         req = self._build_request(
             method="GET",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1191,31 +1011,8 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "get",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdRequest;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Say hello."))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nGetInteractionByIdResponse getResponse =\n    client.interactions.get(new GetInteractionByIdRequest(interactionId));\nInteraction interaction =\n    getResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1272,12 +1069,11 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Canceling an interaction
+        r"""Cancels an interaction.
 
-        Cancels an interaction by id. This only applies to background interactions that are still running.
-
-        :param id: The unique identifier of the interaction to cancel.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to cancel.
+            Format: `interactions/{interaction}`.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1306,7 +1102,7 @@ class Interactions(BaseSDK):
         )
         req = self._build_request(
             method="POST",
-            path="/{api_version}/interactions/{id}/cancel",
+            path="/{api_version}/interactions/{interactionsId}/cancel",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -1385,36 +1181,8 @@ class Interactions(BaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "cancel",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.ComputerUse;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CancelInteractionByIdResponse;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\n\n// Start a background interaction so it stays in-progress.\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Write a long essay about the history of computing."))\n        .tools(List.of(new ComputerUse()))\n        .background(true)\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n\n// Cancel the in-progress interaction.\nCancelInteractionByIdResponse cancelResponse = client.interactions.cancel(interactionId);\nInteraction interaction =\n    cancelResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "dotnet",
-                        "source": 'using System.Collections.Generic;\nusing Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Write a long essay about the history of computing."),\n        Tools = new List<Tool> { Tool.CreateComputerUse(new ComputerUse()) },\n        Background = true,\n    })\n);\n// [/setup]\n\nvar response = await client.Interactions.CancelAsync(id: created.Interaction!.Id!);\nConsole.WriteLine(response.Interaction!.Status);\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1516,12 +1284,10 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
-
-        Creates a new interaction.
+        r"""Generates a set of responses from the model.
 
         :param body: The request body.
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1534,9 +1300,10 @@ class AsyncInteractions(AsyncBaseSDK):
         *,
         api_version: Optional[str] = None,
         background: bool = ...,
+        cached_content: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         model: interactions.Model,
         previous_interaction_id: str = ...,
@@ -1555,19 +1322,24 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -1589,9 +1361,10 @@ class AsyncInteractions(AsyncBaseSDK):
         *,
         api_version: Optional[str] = None,
         background: bool = ...,
+        cached_content: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         model: interactions.Model,
         previous_interaction_id: str = ...,
@@ -1610,19 +1383,24 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -1647,7 +1425,7 @@ class AsyncInteractions(AsyncBaseSDK):
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         previous_interaction_id: str = ...,
         response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
@@ -1665,19 +1443,23 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param environment: The environment configuration for the interaction.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -1702,7 +1484,7 @@ class AsyncInteractions(AsyncBaseSDK):
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
-        input: interactions.InteractionsInputParam,
+        input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
         previous_interaction_id: str = ...,
         response_format: interactions.CreateAgentInteractionResponseFormatParam = ...,
@@ -1720,19 +1502,23 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param environment: The environment configuration for the interaction.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -1762,19 +1548,24 @@ class AsyncInteractions(AsyncBaseSDK):
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -1785,7 +1576,7 @@ class AsyncInteractions(AsyncBaseSDK):
         :param tools: A list of tool declarations the model may call during interaction.
         :param webhook_config: Message for configuring webhook events for a request.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1805,19 +1596,24 @@ class AsyncInteractions(AsyncBaseSDK):
         timeout: Optional[Union[float, httpx.Timeout]] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Creating an interaction
+        r"""Generates a set of responses from the model.
 
-        Creates a new interaction.
-
-        :param api_version: Which version of the API to use.
+        :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
-        :param environment: The environment configuration for the interaction. Can be an object specifying remote environment sources or a string referencing an existing environment ID.
+        :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param environment: The environment configuration for the interaction.
         :param generation_config: Configuration parameters for model interactions.
         :param input: The input for the interaction.
-        :param labels: The labels with user-defined metadata for the request.
+        :param labels: The labels with user-defined metadata for the request. It is used for
+            billing and reporting only.
+
+            Label keys and values can be no longer than 63 characters
+            (Unicode codepoints) and can only contain lowercase letters, numeric
+            characters, underscores, and dashes. International characters are allowed.
+            Label values are optional. Label keys must start with a letter.
         :param model: The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details.
         :param previous_interaction_id: The ID of the previous interaction, if any.
-        :param response_format: Enforces that the generated response is a JSON object that complies with the JSON schema specified in this field.
+        :param response_format:
         :param response_mime_type: The mime type of the response. This is required if response_format is set.
         :param response_modalities: The requested modalities of the response (TEXT, IMAGE, AUDIO).
         :param safety_settings: Safety settings for the interaction.
@@ -1828,12 +1624,16 @@ class AsyncInteractions(AsyncBaseSDK):
         :param tools: A list of tool declarations the model may call during interaction.
         :param webhook_config: Message for configuring webhook events for a request.
         :param agent: The agent to interact with.
-        :param agent_config: Configuration parameters for the agent interaction.
+        :param agent_config: Parameters for the agent interaction.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
         :param timeout: Override the default request timeout configuration for this method in seconds
         """
+        if "cached_content" in body_kwargs and "agent" in body_kwargs:
+            raise ValueError("Cannot supply both 'cached_content' and 'agent'.")
+        if "cached_content" in body_kwargs and "agent_config" in body_kwargs:
+            raise ValueError("Cannot supply both 'cached_content' and 'agent_config'.")
         if "generation_config" in body_kwargs and "agent" in body_kwargs:
             raise ValueError("Cannot supply both 'generation_config' and 'agent'.")
         if "generation_config" in body_kwargs and "agent_config" in body_kwargs:
@@ -1992,191 +1792,8 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "simple",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": "Hello, how are you?"\n  }\'\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello, how are you?",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello, how are you?',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "simple",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Hello, how are you?"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n      { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n      { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n        { "type": "user_input", "content": [{ "type": "text", "text": "Hello!" }] },\n        { "type": "model_output", "content": [{ "type": "text", "text": "Hi there! How can I help you today?" }] },\n        { "type": "user_input", "content": [{ "type": "text", "text": "What is the capital of France?" }] }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n        { type: 'user_input', content: [{ type: 'text', text: 'Hello' }] },\n        { type: 'model_output', content: [{ type: 'text', text: 'Hi there! How can I help you today?' }] },\n        { type: 'user_input', content: [{ type: 'text', text: 'What is the capital of France?' }] }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multi_turn",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.ModelOutputStep;\nimport com.google.genai.gaos.models.interactions.Step;\nimport com.google.genai.gaos.models.interactions.TextContent;\nimport com.google.genai.gaos.models.interactions.UserInputStep;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\nList<Step> conversation = List.of(\n    UserInputStep.builder()\n        .content(List.of(TextContent.builder().text("Hello!").build()))\n        .build(),\n    ModelOutputStep.builder()\n        .content(List.of(TextContent.builder().text("Hi there! How can I help you today?").build()))\n        .build(),\n    UserInputStep.builder()\n        .content(List.of(TextContent.builder().text("What is the capital of France?").build()))\n        .build()\n);\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.ofStep(conversation))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "input": [\n      {\n        "type": "text",\n        "text": "What is in this picture?"\n      },\n      {\n        "type": "image",\n        "data": "BASE64_ENCODED_IMAGE",\n        "mime_type": "image/png"\n      }\n    ]\n  }\'\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    input=[\n      { "type": "text", "text": "What is in this picture?" },\n      { "type": "image", "data": "BASE64_ENCODED_IMAGE", "mime_type": "image/png" }\n    ]\n)\nprint(response.output_text)\n',
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: [\n      { type: 'text', text: 'What is in this picture?' },\n      { type: 'image', data: 'BASE64_ENCODED_IMAGE', mime_type: 'image/png' }\n    ]\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "multimodal_image",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.Content;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.ImageContent;\nimport com.google.genai.gaos.models.interactions.ImageContentMimeType;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.TextContent;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\nList<Content> content = List.of(\n    TextContent.builder().text("What is in this picture?").build(),\n    ImageContent.builder()\n        .data("BASE64_ENCODED_IMAGE")\n        .mimeType(ImageContentMimeType.IMAGE_PNG)\n        .build()\n);\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.ofContent(content))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "model": "gemini-3.6-flash",\n    "tools": [\n      {\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n          "type": "object",\n          "properties": {\n            "location": {\n              "type": "string",\n              "description": "The city and state, e.g. San Francisco, CA"\n            }\n          },\n          "required": [\n            "location"\n          ]\n        }\n      }\n    ],\n    "input": "What is the weather like in Boston, MA?"\n  }\'\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\nresponse = client.interactions.create(\n    model="gemini-3.6-flash",\n    tools=[{\n        "type": "function",\n        "name": "get_weather",\n        "description": "Get the current weather in a given location",\n        "parameters": {\n            "type": "object",\n            "properties": {\n                "location": {\n                    "type": "string",\n                    "description": "The city and state, e.g. San Francisco, CA"\n                }\n            },\n            "required": ["location"]\n        }\n    }],\n    input="What is the weather like in Boston, MA?"\n)\nprint(response.steps[-1])\n',
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    tools: [{\n        type: 'function',\n        name: 'get_weather',\n        description: 'Get the current weather in a given location',\n        parameters: {\n            type: 'object',\n            properties: {\n                location: {\n                    type: 'string',\n                    description: 'The city and state, e.g. San Francisco, CA'\n                }\n            },\n            required: ['location']\n        }\n    }],\n    input: 'What is the weather like in Boston, MA?'\n});\nconsole.log(interaction.steps.at(-1));\n",
-                    },
-                    {
-                        "label": "function_calling",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Function;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.Step;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\nimport java.util.Map;\n\nClient client = new Client();\nMap<String, Object> parameters = Map.of(\n    "type", "object",\n    "properties", Map.of(\n        "location", Map.of(\n            "type", "string",\n            "description", "The city and state, e.g. San Francisco, CA"\n        )\n    ),\n    "required", List.of("location")\n);\nFunction functionTool = Function.builder()\n    .name("get_weather")\n    .description("Get the current weather in a given location")\n    .parameters(parameters)\n    .build();\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .tools(List.of(functionTool))\n        .input(InteractionsInput.of("What is the weather like in Boston, MA?"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nList<Step> steps = interaction.steps().orElse(List.of());\nif (!steps.isEmpty()) {\n  System.out.println(steps.get(steps.size() - 1));\n}\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "deep-research-pro-preview-12-2025",\n    "input": "Find a cure to cancer",\n    "background": true\n  }\'\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="deep-research-pro-preview-12-2025",\n    input="find a cure to cancer",\n    background=True,\n)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'deep-research-pro-preview-12-2025',\n    input: 'find a cure to cancer',\n    background: true,\n});\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "deep_research",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("deep-research-pro-preview-12-2025"))\n        .input(InteractionsInput.of("find a cure to cancer"))\n        .background(true)\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Read Hacker News, summarize the top 5 stories, and save results as a markdown file.",\n    environment="remote",\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Read Hacker News, summarize the top 5 stories, and save results as a markdown file.',\n    environment: 'remote',\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "antigravity",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Read Hacker News, summarize the top 5 stories, and save results as a markdown file."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "sh",
-                        "source": '# Step 1: Create an interaction with a fresh remote environment.\nRESPONSE=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "Write a hello world script at /workspace/hello.py.",\n    "environment": "remote"\n  }\')\nINTERACTION_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\nENV_ID=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin)[\'environment_id\'])")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d "{\n    \\"agent\\": \\"antigravity-preview-05-2026\\",\n    \\"input\\": \\"Modify the script to accept a name argument and greet the user.\\",\n    \\"environment\\": \\"$ENV_ID\\",\n    \\"previous_interaction_id\\": \\"$INTERACTION_ID\\"\n  }"\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Step 1: Create an interaction with a fresh remote environment.\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Write a hello world script at /workspace/hello.py.",\n    environment="remote",\n)\nprint(f"Environment ID: {interaction.environment_id}")\n\n# Step 2: Reuse the same environment in a follow-up interaction.\ninteraction_2 = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="Modify the script to accept a name argument and greet the user.",\n    environment=interaction.environment_id,\n    previous_interaction_id=interaction.id,\n)\nprint(interaction_2.output_text)\n',
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create an interaction with a fresh remote environment.\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Write a hello world script at /workspace/hello.py.',\n    environment: 'remote',\n});\nconsole.log(`Environment ID: ${interaction.environment_id}`);\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nconst interaction2 = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'Modify the script to accept a name argument and greet the user.',\n    environment: interaction.environment_id,\n    previous_interaction_id: interaction.id,\n});\nconsole.log(interaction2.output_text);\n",
-                    },
-                    {
-                        "label": "reuse_env",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\n\n// Step 1: Create an interaction with a fresh remote environment.\nCreateAgentInteraction params1 =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Write a hello world script at /workspace/hello.py."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse response1 =\n    client.interactions.create(CreateInteractionRequestBody.of(params1));\nInteraction interaction1 =\n    response1.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println("Environment ID: " + interaction1.environmentId().orElse(""));\n\n// Step 2: Reuse the same environment in a follow-up interaction.\nCreateAgentInteraction params2 =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("Modify the script to accept a name argument and greet the user."))\n        .environment(CreateAgentInteractionEnvironment.of(interaction1.environmentId().orElse("")))\n        .previousInteractionId(interaction1.id().orElse(null))\n        .build();\nCreateInteractionResponse response2 =\n    client.interactions.create(CreateInteractionRequestBody.of(params2));\nInteraction interaction2 =\n    response2.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction2.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "sh",
-                        "source": 'curl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "antigravity-preview-05-2026",\n    "input": "List all files under /workspace and summarize what you find.",\n    "environment": {\n      "type": "remote",\n      "sources": [\n        {\n          "type": "repository",\n          "source": "https://github.com/octocat/Spoon-Knife",\n          "target": "/workspace/repo"\n        },\n        {\n          "type": "inline",\n          "content": "Focus on Python files only.",\n          "target": "/workspace/notes.txt"\n        }\n      ]\n    }\n  }\'\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.create(\n    agent="antigravity-preview-05-2026",\n    input="List all files under /workspace and summarize what you find.",\n    environment={\n        "type": "remote",\n        "sources": [\n            {\n                "type": "repository",\n                "source": "https://github.com/octocat/Spoon-Knife",\n                "target": "/workspace/repo",\n            },\n            {\n                "type": "inline",\n                "content": "Focus on Python files only.",\n                "target": "/workspace/notes.txt",\n            },\n        ],\n    },\n)\nprint(interaction.output_text)\n',
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.create({\n    agent: 'antigravity-preview-05-2026',\n    input: 'List all files under /workspace and summarize what you find.',\n    environment: {\n        type: 'remote',\n        sources: [\n            {\n                type: 'repository',\n                source: 'https://github.com/octocat/Spoon-Knife',\n                target: '/workspace/repo',\n            },\n            {\n                type: 'inline',\n                content: 'Focus on Python files only.',\n                target: '/workspace/notes.txt',\n            },\n        ],\n    },\n});\nconsole.log(interaction.output_text);\n",
-                    },
-                    {
-                        "label": "with_sources",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Environment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\nEnvironment env = Environment.builder()\n    .sources(List.of(\n        Source.builder()\n            .type(SourceType.REPOSITORY)\n            .source("https://github.com/octocat/Spoon-Knife")\n            .target("/workspace/repo")\n            .build(),\n        Source.builder()\n            .type(SourceType.INLINE)\n            .content("Focus on Python files only.")\n            .target("/workspace/notes.txt")\n            .build()\n    ))\n    .build();\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of("antigravity-preview-05-2026"))\n        .input(InteractionsInput.of("List all files under /workspace and summarize what you find."))\n        .environment(CreateAgentInteractionEnvironment.of(env))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "sh",
-                        "source": '# Step 1: Create a custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/agents \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "id": "code-reviewer",\n    "base_agent": "antigravity-preview-05-2026",\n    "system_instruction": "You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    "base_environment": {\n      "type": "remote",\n      "sources": [{\n        "type": "repository",\n        "source": "https://github.com/octocat/Spoon-Knife",\n        "target": "/workspace/repo"\n      }]\n    }\n  }\'\n\n# Step 2: Use the custom agent.\ncurl -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{\n    "agent": "code-reviewer",\n    "input": "Review the latest changes in /workspace/repo/src and file a summary.",\n    "environment": "remote"\n  }\'\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "python",
-                        "source": 'import uuid\nfrom google import genai\n\nclient = genai.Client()\n\n# Step 1: Create a custom agent.\nagent_id = f"code-reviewer-{uuid.uuid4().hex[:8]}"\nclient.agents.create(\n    id=agent_id,\n    base_agent="antigravity-preview-05-2026",\n    system_instruction="You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.",\n    base_environment={\n        "type": "remote",\n        "sources": [{\n            "type": "repository",\n            "source": "https://github.com/octocat/Spoon-Knife",\n            "target": "/workspace/repo",\n        }],\n    },\n)\n\n# Step 2: Use the custom agent.\nresult = client.interactions.create(\n    agent=agent_id,\n    input="Review the latest changes in /workspace/repo/src and file a summary.",\n    environment="remote",\n)\nprint(result.output_text)\n\n# [cleanup]\nclient.agents.delete(agent_id)\n# [/cleanup]\n',
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Step 1: Create a custom agent.\nconst agentId = `code-reviewer-${crypto.randomUUID().slice(0, 8)}`;\nawait ai.agents.create({\n    id: agentId,\n    base_agent: 'antigravity-preview-05-2026',\n    system_instruction: 'You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.',\n    base_environment: {\n        type: 'remote',\n        sources: [{\n            type: 'repository',\n            source: 'https://github.com/octocat/Spoon-Knife',\n            target: '/workspace/repo',\n        }],\n    },\n});\n\n// Step 2: Use the custom agent.\nconst result = await ai.interactions.create({\n    agent: agentId,\n    input: 'Review the latest changes in /workspace/repo/src and file a summary.',\n    environment: 'remote',\n});\nconsole.log(result.output_text);\n\n// [cleanup]\nawait ai.agents.delete(agentId);\n// [/cleanup]\n",
-                    },
-                    {
-                        "label": "custom_agent",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.agents.Agent;\nimport com.google.genai.gaos.models.agents.BaseEnvironment;\nimport com.google.genai.gaos.models.interactions.AgentOption;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteraction;\nimport com.google.genai.gaos.models.interactions.CreateAgentInteractionEnvironment;\nimport com.google.genai.gaos.models.interactions.Environment;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.interactions.Source;\nimport com.google.genai.gaos.models.interactions.SourceType;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\nimport java.util.UUID;\n\nClient client = new Client();\n\n// Step 1: Create a custom agent.\nString agentId = "code-reviewer-" + UUID.randomUUID().toString().substring(0, 8);\nEnvironment baseEnv = Environment.builder()\n    .sources(List.of(\n        Source.builder()\n            .type(SourceType.REPOSITORY)\n            .source("https://github.com/octocat/Spoon-Knife")\n            .target("/workspace/repo")\n            .build()\n    ))\n    .build();\nAgent customAgent = Agent.builder()\n    .id(agentId)\n    .baseAgent("antigravity-preview-05-2026")\n    .systemInstruction("You are a senior code reviewer. Check every file for bugs, style issues, and security vulnerabilities.")\n    .baseEnvironment(BaseEnvironment.of(baseEnv))\n    .build();\nclient.agents.create(customAgent);\n\n// Step 2: Use the custom agent.\nCreateAgentInteraction params =\n    CreateAgentInteraction.builder()\n        .agent(AgentOption.of(agentId))\n        .input(InteractionsInput.of("Review the latest changes in /workspace/repo/src and file a summary."))\n        .environment(CreateAgentInteractionEnvironment.of("remote"))\n        .build();\nCreateInteractionResponse response =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nInteraction interaction =\n    response.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.outputText().orElse(""));\n\n// [cleanup]\nclient.agents.delete(agentId);\n// [/cleanup]\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2242,12 +1859,11 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ):
-        r"""Deleting an interaction
+        r"""Deletes an interaction.
 
-        Deletes the interaction by id.
-
-        :param id: The unique identifier of the interaction to delete.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to delete.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2276,7 +1892,7 @@ class AsyncInteractions(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="DELETE",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2349,36 +1965,8 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "delete",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Hello"))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nclient.interactions.delete(interactionId);\nSystem.out.println("Interaction deleted successfully.");\n',
-                    },
-                    {
-                        "label": "delete",
-                        "lang": "dotnet",
-                        "source": 'using Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Hello"),\n    })\n);\n// [/setup]\n\nawait client.Interactions.DeleteAsync(id: created.Interaction!.Id!);\nConsole.WriteLine("Interaction deleted successfully.");\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2435,22 +2023,22 @@ class AsyncInteractions(AsyncBaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
         stream: Union[Literal[False], None] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2462,22 +2050,22 @@ class AsyncInteractions(AsyncBaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
         stream: Literal[True],
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2489,22 +2077,22 @@ class AsyncInteractions(AsyncBaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
         stream: bool,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2515,22 +2103,22 @@ class AsyncInteractions(AsyncBaseSDK):
         id: str,
         *,
         api_version: Optional[str] = None,
-        include_input: Optional[bool] = False,
+        include_input: Optional[bool] = None,
         last_event_id: Optional[str] = None,
-        stream: Optional[bool] = False,
+        stream: Optional[bool] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
-        r"""Retrieving an interaction
+        r"""Gets an interaction.
 
-        Retrieves the full details of a single interaction based on its `Interaction.id`.
-
-        :param id: The unique identifier of the interaction to retrieve.
-        :param api_version: Which version of the API to use.
-        :param include_input: If set to true, includes the input in the response.
-        :param last_event_id: Optional. If set, resumes the interaction stream from the next chunk after the event marked by the event id. Can only be used if `stream` is true.
-        :param stream: If set to true, the generated content will be streamed incrementally.
+        :param id: Part of `name`. Required. The name of the interaction to retrieve.
+            Format: interactions/{interaction}
+        :param api_version: API version for request routing.
+        :param include_input: If true, includes the input in the response.
+        :param last_event_id: If set, resumes the interaction stream from the chunk after the event
+            marked by the event id. Can only be used if `stream` is true.
+        :param stream: If true, streams the interaction events as Server-Sent Events.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2551,8 +2139,8 @@ class AsyncInteractions(AsyncBaseSDK):
 
         request = models.GetInteractionByIDRequest(
             api_version=api_version,
-            id=id,
             include_input=include_input,
+            id=id,
             last_event_id=last_event_id,
             stream=stream,
         )
@@ -2562,7 +2150,7 @@ class AsyncInteractions(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="GET",
-            path="/{api_version}/interactions/{id}",
+            path="/{api_version}/interactions/{interactionsId}",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2665,31 +2253,8 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "get",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "get",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "get",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdRequest;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Say hello."))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nGetInteractionByIdResponse getResponse =\n    client.interactions.get(new GetInteractionByIdRequest(interactionId));\nInteraction interaction =\n    getResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2749,12 +2314,11 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> interactions.Interaction:
-        r"""Canceling an interaction
+        r"""Cancels an interaction.
 
-        Cancels an interaction by id. This only applies to background interactions that are still running.
-
-        :param id: The unique identifier of the interaction to cancel.
-        :param api_version: Which version of the API to use.
+        :param id: Part of `name`. Required. The name of the interaction to cancel.
+            Format: `interactions/{interaction}`.
+        :param api_version: API version for request routing.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2783,7 +2347,7 @@ class AsyncInteractions(AsyncBaseSDK):
         )
         req = self._build_request_async(
             method="POST",
-            path="/{api_version}/interactions/{id}/cancel",
+            path="/{api_version}/interactions/{interactionsId}/cancel",
             base_url=base_url,
             url_variables=url_variables,
             request=request,
@@ -2862,36 +2426,8 @@ class AsyncInteractions(AsyncBaseSDK):
             security_source=get_security_from_env(
                 self.sdk_configuration.security, types.Security
             ),
-            tags=None,
-            extensions={
-                "x-codeSamples": [
-                    {
-                        "label": "cancel",
-                        "lang": "sh",
-                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\ -d \'{"model": "gemini-3.6-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "python",
-                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "javascript",
-                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "java",
-                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.ComputerUse;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CancelInteractionByIdResponse;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\n\n// Start a background interaction so it stays in-progress.\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Write a long essay about the history of computing."))\n        .tools(List.of(new ComputerUse()))\n        .background(true)\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n\n// Cancel the in-progress interaction.\nCancelInteractionByIdResponse cancelResponse = client.interactions.cancel(interactionId);\nInteraction interaction =\n    cancelResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
-                    },
-                    {
-                        "label": "cancel",
-                        "lang": "dotnet",
-                        "source": 'using System.Collections.Generic;\nusing Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Write a long essay about the history of computing."),\n        Tools = new List<Tool> { Tool.CreateComputerUse(new ComputerUse()) },\n        Background = true,\n    })\n);\n// [/setup]\n\nvar response = await client.Interactions.CancelAsync(id: created.Interaction!.Id!);\nConsole.WriteLine(response.Interaction!.Status);\n',
-                    },
-                ]
-            },
+            tags=["interactions"],
+            extensions=None,
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
