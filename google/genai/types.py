@@ -5431,9 +5431,21 @@ def _validate_tool_list(v: object, handler: Any) -> Any:
 
 
 if typing.TYPE_CHECKING:
-  ToolUnion = Union[Tool, Callable[..., Any], mcp_types.Tool, McpClientSession]
+  from ._mcp_utils import AllowedToolsMcpSession as _AllowedToolsMcpSession
+
+  ToolUnion = Union[
+      Tool,
+      Callable[..., Any],
+      mcp_types.Tool,
+      McpClientSession,
+      _AllowedToolsMcpSession,
+  ]
   ToolUnionDict = Union[
-      ToolDict, Callable[..., Any], mcp_types.Tool, McpClientSession
+      ToolDict,
+      Callable[..., Any],
+      mcp_types.Tool,
+      McpClientSession,
+      _AllowedToolsMcpSession,
   ]
   ToolListUnion = list[ToolUnion]
   ToolListUnionDict = list[ToolUnionDict]
