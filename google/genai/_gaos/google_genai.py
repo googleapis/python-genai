@@ -299,7 +299,7 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             api_version: Optional[str] = None,
             include_input: Any = None,
             last_event_id: Any = None,
-            stream: Any = False,
+            stream: Any = None,
             extra_headers: Optional[Mapping[str, str]] = None,
             extra_query: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
@@ -307,7 +307,7 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             interactions.Interaction,
             eventstreaming.Stream[interactions.InteractionSSEEvent],
         ]:
-            stream_bool = bool(_optional_bool(stream, default=False))
+            stream_bool = _optional_bool(stream)
             response = wrap_sdk_call(
                 super().get,
                 id=id,
@@ -451,7 +451,7 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             api_version: Optional[str] = None,
             include_input: Any = None,
             last_event_id: Any = None,
-            stream: Any = False,
+            stream: Any = None,
             extra_headers: Optional[Mapping[str, str]] = None,
             extra_query: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
@@ -459,7 +459,7 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             interactions.Interaction,
             eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
         ]:
-            stream_bool = bool(_optional_bool(stream, default=False))
+            stream_bool = _optional_bool(stream)
             response = await async_wrap_sdk_call(
                 super().get,
                 id=id,
