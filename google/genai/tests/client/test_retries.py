@@ -19,6 +19,8 @@ import asyncio
 from collections.abc import Sequence
 import datetime
 from unittest import mock
+
+from google.auth import exceptions as auth_exceptions
 import pytest
 
 try:
@@ -202,6 +204,12 @@ def test_retry_args_retries_httpx_transport_errors():
   # Unrelated transport errors are not retried.
   assert not retry.predicate(httpx.InvalidURL('bad url'))
   assert not retry.predicate(ValueError('not a transport error'))
+
+
+def test_retry_args_retries_google_auth_transport_errors():
+  args = api_client.retry_args(types.HttpRetryOptions())
+  assert args['retry'].predicate(auth_exceptions.TransportError('refresh failed'))
+  assert not args['retry'].predicate(auth_exceptions.RefreshError('invalid credentials'))
 
 
 def _patch_auth_default():
