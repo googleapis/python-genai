@@ -27,6 +27,7 @@ from unittest import mock
 import certifi
 import google.auth
 from google.auth import credentials
+import google.auth.transport.requests
 import httpx
 import pytest
 import requests

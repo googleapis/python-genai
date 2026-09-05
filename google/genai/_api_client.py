@@ -837,7 +837,7 @@ class BaseApiClient:
             ' https://ai.google.dev/gemini-api/docs/api-key.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
-      self._http_options.api_version = 'v1beta'
+      self._http_options.api_version = 'v1'
     # Default options for both clients.
     self._http_options.headers = {'Content-Type': 'application/json'}
     if self.api_key:

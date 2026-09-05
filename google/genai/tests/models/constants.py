@@ -3,6 +3,6 @@ VERTEX_HTTP_OPTIONS = {
     'base_url': 'https://us-central1-aiplatform.googleapis.com/',
 }
 MLDEV_HTTP_OPTIONS = {
-    'api_version': 'v1beta',
+    'api_version': 'v1',
     'base_url': 'https://generativelanguage.googleapis.com/',
 }
