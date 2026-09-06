@@ -17,6 +17,7 @@
 """Tests for should_disable_afc."""
 
 import pytest
+from .. import pytest_helper
 from ... import types
 from ..._extra_utils import should_disable_afc
 

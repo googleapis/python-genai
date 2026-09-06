@@ -39,14 +39,14 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GetFileSearchStoreParameters(
             name=_EXISTING_FILE_SEARCH_STORE_NAME
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
     pytest_helper.TestTableItem(
         name="test_get_not_found",
         parameters=types._GetFileSearchStoreParameters(
             name=_NON_EXISTENT_FILE_SEARCH_STORE_NAME
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
         # Expect an exception to be raised by the mock
         exception_if_mldev="PERMISSION_DENIED",
     ),
@@ -55,7 +55,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GetFileSearchStoreParameters(
             name=_INVALID_FILE_SEARCH_STORE_NAME
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
         # Validation should catch this before the API call
         exception_if_mldev="INVALID_ARGUMENT",
     ),
@@ -64,7 +64,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GetFileSearchStoreParameters(
             name=_NOT_A_FILE_SEARCH_STORE_NAME
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
         exception_if_mldev="Not Found",
     ),
 ]

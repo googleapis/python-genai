@@ -29,8 +29,54 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.caches')
+
+
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError(
+        'api_key_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError(
+        'auth_type parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError(
+        'oauth_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError(
+        'oidc_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  return to_object
 
 
 def _Blob_to_mldev(
@@ -42,10 +88,44 @@ def _Blob_to_mldev(
     setv(to_object, ['data'], getv(from_object, ['data']))
 
   if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'display_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['mime_type']) is not None:
     setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+
+  return to_object
+
+
+def _ComputerUse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  if getv(from_object, ['excluded_predefined_functions']) is not None:
+    setv(
+        to_object,
+        ['excludedPredefinedFunctions'],
+        getv(from_object, ['excluded_predefined_functions']),
+    )
+
+  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
+    setv(
+        to_object,
+        ['enablePromptInjectionDetection'],
+        getv(from_object, ['enable_prompt_injection_detection']),
+    )
+
+  if getv(from_object, ['disabled_safety_policies']) is not None:
+    raise ValueError(
+        'disabled_safety_policies parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
 
   return to_object
 
@@ -61,6 +141,27 @@ def _Content_to_mldev(
         ['parts'],
         [
             _Part_to_mldev(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['role']) is not None:
+    setv(to_object, ['role'], getv(from_object, ['role']))
+
+  return to_object
+
+
+def _Content_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _Part_to_vertex(item, to_object)
             for item in getv(from_object, ['parts'])
         ],
     )
@@ -123,7 +224,10 @@ def _CreateCachedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['kms_key_name']) is not None:
-    raise ValueError('kms_key_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'kms_key_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -147,14 +251,19 @@ def _CreateCachedContentConfig_to_vertex(
     setv(
         parent_object,
         ['contents'],
-        [item for item in t.t_contents(getv(from_object, ['contents']))],
+        [
+            _Content_to_vertex(item, to_object)
+            for item in t.t_contents(getv(from_object, ['contents']))
+        ],
     )
 
   if getv(from_object, ['system_instruction']) is not None:
     setv(
         parent_object,
         ['systemInstruction'],
-        t.t_content(getv(from_object, ['system_instruction'])),
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
     )
 
   if getv(from_object, ['tools']) is not None:
@@ -168,7 +277,11 @@ def _CreateCachedContentConfig_to_vertex(
     )
 
   if getv(from_object, ['tool_config']) is not None:
-    setv(parent_object, ['toolConfig'], getv(from_object, ['tool_config']))
+    setv(
+        parent_object,
+        ['toolConfig'],
+        _ToolConfig_to_vertex(getv(from_object, ['tool_config']), to_object),
+    )
 
   if getv(from_object, ['kms_key_name']) is not None:
     setv(
@@ -286,7 +399,10 @@ def _FileData_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'display_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['file_uri']) is not None:
     setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
@@ -312,10 +428,16 @@ def _FunctionCall_to_mldev(
     setv(to_object, ['name'], getv(from_object, ['name']))
 
   if getv(from_object, ['partial_args']) is not None:
-    raise ValueError('partial_args parameter is not supported in Gemini API.')
+    raise ValueError(
+        'partial_args parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['will_continue']) is not None:
-    raise ValueError('will_continue parameter is not supported in Gemini API.')
+    raise ValueError(
+        'will_continue parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -325,9 +447,6 @@ def _FunctionCallingConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['mode']) is not None:
-    setv(to_object, ['mode'], getv(from_object, ['mode']))
-
   if getv(from_object, ['allowed_function_names']) is not None:
     setv(
         to_object,
@@ -335,47 +454,13 @@ def _FunctionCallingConfig_to_mldev(
         getv(from_object, ['allowed_function_names']),
     )
 
+  if getv(from_object, ['mode']) is not None:
+    setv(to_object, ['mode'], getv(from_object, ['mode']))
+
   if getv(from_object, ['stream_function_call_arguments']) is not None:
     raise ValueError(
-        'stream_function_call_arguments parameter is not supported in Gemini'
-        ' API.'
-    )
-
-  return to_object
-
-
-def _FunctionDeclaration_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['behavior']) is not None:
-    raise ValueError('behavior parameter is not supported in Vertex AI.')
-
-  if getv(from_object, ['description']) is not None:
-    setv(to_object, ['description'], getv(from_object, ['description']))
-
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['parameters']) is not None:
-    setv(to_object, ['parameters'], getv(from_object, ['parameters']))
-
-  if getv(from_object, ['parameters_json_schema']) is not None:
-    setv(
-        to_object,
-        ['parametersJsonSchema'],
-        getv(from_object, ['parameters_json_schema']),
-    )
-
-  if getv(from_object, ['response']) is not None:
-    setv(to_object, ['response'], getv(from_object, ['response']))
-
-  if getv(from_object, ['response_json_schema']) is not None:
-    setv(
-        to_object,
-        ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
+        'stream_function_call_arguments parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -419,10 +504,20 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  if getv(from_object, ['grounding_types']) is not None:
+    raise ValueError(
+        'grounding_types parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -432,14 +527,19 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
-        'blocking_confidence parameter is not supported in Gemini API.'
+        'blocking_confidence parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -562,6 +662,26 @@ def _ListCachedContentsResponse_from_vertex(
   return to_object
 
 
+def _McpServer_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    raise ValueError(
+        'name parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['streamable_http_transport']) is not None:
+    raise ValueError(
+        'streamable_http_transport parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
 def _Part_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -626,6 +746,112 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
+
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
+    )
+
+  return to_object
+
+
+def _Part_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['code_execution_result']) is not None:
+    setv(
+        to_object,
+        ['codeExecutionResult'],
+        getv(from_object, ['code_execution_result']),
+    )
+
+  if getv(from_object, ['executable_code']) is not None:
+    setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['function_call']) is not None:
+    setv(to_object, ['functionCall'], getv(from_object, ['function_call']))
+
+  if getv(from_object, ['function_response']) is not None:
+    setv(
+        to_object,
+        ['functionResponse'],
+        getv(from_object, ['function_response']),
+    )
+
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['thought']) is not None:
+    setv(to_object, ['thought'], getv(from_object, ['thought']))
+
+  if getv(from_object, ['thought_signature']) is not None:
+    setv(
+        to_object,
+        ['thoughtSignature'],
+        getv(from_object, ['thought_signature']),
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['tool_call']) is not None:
+    raise ValueError(
+        'tool_call parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['tool_response']) is not None:
+    raise ValueError(
+        'tool_response parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['part_metadata']) is not None:
+    raise ValueError(
+        'part_metadata parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
+
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
+    )
+
   return to_object
 
 
@@ -634,6 +860,11 @@ def _ToolConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval_config']) is not None:
+    setv(
+        to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
   if getv(from_object, ['function_calling_config']) is not None:
     setv(
         to_object,
@@ -643,9 +874,38 @@ def _ToolConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['include_server_side_tool_invocations']) is not None:
+    setv(
+        to_object,
+        ['includeServerSideToolInvocations'],
+        getv(from_object, ['include_server_side_tool_invocations']),
+    )
+
+  return to_object
+
+
+def _ToolConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
   if getv(from_object, ['retrieval_config']) is not None:
     setv(
         to_object, ['retrievalConfig'], getv(from_object, ['retrieval_config'])
+    )
+
+  if getv(from_object, ['function_calling_config']) is not None:
+    setv(
+        to_object,
+        ['functionCallingConfig'],
+        getv(from_object, ['function_calling_config']),
+    )
+
+  if getv(from_object, ['include_server_side_tool_invocations']) is not None:
+    raise ValueError(
+        'include_server_side_tool_invocations parameter is only supported in'
+        ' Gemini Developer API mode, not in Gemini Enterprise Agent Platform'
+        ' mode.'
     )
 
   return to_object
@@ -656,21 +916,10 @@ def _Tool_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['google_search_retrieval']) is not None:
-    setv(
-        to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
+    raise ValueError(
+        'retrieval parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['computer_use']) is not None:
@@ -679,12 +928,11 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
+  if getv(from_object, ['google_search']) is not None:
+    setv(
+        to_object,
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_maps']) is not None:
@@ -694,15 +942,50 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
-  if getv(from_object, ['google_search']) is not None:
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
+  if getv(from_object, ['exa_ai_search']) is not None:
+    raise ValueError(
+        'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -712,31 +995,27 @@ def _Tool_to_vertex(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['function_declarations']) is not None:
-    setv(
-        to_object,
-        ['functionDeclarations'],
-        [
-            _FunctionDeclaration_to_vertex(item, to_object)
-            for item in getv(from_object, ['function_declarations'])
-        ],
-    )
-
   if getv(from_object, ['retrieval']) is not None:
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
-  if getv(from_object, ['google_search_retrieval']) is not None:
+  if getv(from_object, ['computer_use']) is not None:
     setv(
         to_object,
-        ['googleSearchRetrieval'],
-        getv(from_object, ['google_search_retrieval']),
+        ['computerUse'],
+        _ComputerUse_to_vertex(getv(from_object, ['computer_use']), to_object),
     )
 
-  if getv(from_object, ['computer_use']) is not None:
-    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
-
   if getv(from_object, ['file_search']) is not None:
-    raise ValueError('file_search parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_search parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
 
   if getv(from_object, ['code_execution']) is not None:
     setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
@@ -748,14 +1027,42 @@ def _Tool_to_vertex(
         getv(from_object, ['enterprise_web_search']),
     )
 
-  if getv(from_object, ['google_maps']) is not None:
-    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
 
-  if getv(from_object, ['google_search']) is not None:
-    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    setv(
+        to_object,
+        ['parallelAiSearch'],
+        getv(from_object, ['parallel_ai_search']),
+    )
 
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [
+            _McpServer_to_vertex(item, to_object)
+            for item in getv(from_object, ['mcp_servers'])
+        ],
+    )
+
+  if getv(from_object, ['exa_ai_search']) is not None:
+    setv(to_object, ['exaAiSearch'], getv(from_object, ['exa_ai_search']))
 
   return to_object
 
@@ -906,7 +1213,22 @@ class Caches(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -971,7 +1293,22 @@ class Caches(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1046,7 +1383,22 @@ class Caches(_api_module.BaseModule):
       response_dict = _DeleteCachedContentResponse_from_mldev(response_dict)
 
     return_value = types.DeleteCachedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1120,7 +1472,22 @@ class Caches(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1176,7 +1543,22 @@ class Caches(_api_module.BaseModule):
       response_dict = _ListCachedContentsResponse_from_mldev(response_dict)
 
     return_value = types.ListCachedContentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1288,7 +1670,22 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1356,7 +1753,22 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1432,7 +1844,22 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _DeleteCachedContentResponse_from_mldev(response_dict)
 
     return_value = types.DeleteCachedContentResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1506,7 +1933,22 @@ class AsyncCaches(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     return_value = types.CachedContent._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1564,7 +2006,22 @@ class AsyncCaches(_api_module.BaseModule):
       response_dict = _ListCachedContentsResponse_from_mldev(response_dict)
 
     return_value = types.ListCachedContentsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers

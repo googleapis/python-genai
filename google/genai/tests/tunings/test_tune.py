@@ -20,6 +20,12 @@ from ... import types as genai_types
 from .. import pytest_helper
 import pytest
 
+
+VERTEX_HTTP_OPTIONS = {
+    'api_version': 'v1beta1',
+    'base_url': 'https://us-central1-autopush-aiplatform.sandbox.googleapis.com/',
+}
+
 evaluation_config=genai_types.EvaluationConfig(
     metrics=[
         genai_types.Metric(name="bleu", prompt_template="test prompt template")
@@ -40,7 +46,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
             ),
         ),
-        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_pretuned_model",
@@ -50,7 +56,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl",
             ),
         ),
-        exception_if_mldev="is not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_pretuned_model_with_checkpoint_id",
@@ -63,7 +69,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 pre_tuned_model_checkpoint_id="3",
             ),
         ),
-        exception_if_mldev="is not supported in Gemini API",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_simple_dpo",
@@ -78,7 +84,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 method="PREFERENCE_TUNING",
             ),
         ),
-        exception_if_mldev="parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_tune_dpo_with_beta",
@@ -94,7 +100,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 beta=0.5,
             ),
         ),
-        exception_if_mldev="parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_non_pretuned_model_with_checkpoint_id",
@@ -107,7 +113,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 pre_tuned_model_checkpoint_id="3",
             ),
         ),
-        exception_if_mldev="is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_gcs_uri_all_parameters",
@@ -126,7 +132,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev="gcs_uri parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_vertex_dataset_resource",
@@ -136,7 +142,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 vertex_dataset_resource="projects/801452371447/locations/us-central1/datasets/5779918772206829568",
             ),
         ),
-        exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_dataset_dataset_resource_all_parameters",
@@ -156,7 +162,182 @@ test_table: list[pytest_helper.TestTableItem] = [
                 labels={"testlabelkey": "testlabelvalue"},
             ),
         ),
-        exception_if_mldev="vertex_dataset_resource parameter is not supported in Gemini API.",
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_distillation",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                method="DISTILLATION",
+                base_teacher_model="deepseek-ai/deepseek-v3.1-maas",
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_sft",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                custom_base_model="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder/postprocess/node-0/checkpoints/final",
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_sft_hyperparams",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                learning_rate=2.5e-4,
+                tuning_mode="TUNING_MODE_FULL",
+                custom_base_model="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder/postprocess/node-0/checkpoints/final",
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_distillation",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="meta/llama3_1@llama-3.1-8b-instruct",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                method="DISTILLATION",
+                base_teacher_model="deepseek-ai/deepseek-v3.1-maas",
+                epoch_count=20,
+                validation_dataset=genai_types.TuningValidationDataset(
+                    gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-val-openai-opposites.jsonl",
+                ),
+                custom_base_model="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test-folder/postprocess/node-0/checkpoints/final",
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_oss_distillation_hyperparams",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="qwen/qwen3@qwen3-4b",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://nathreya-oss-tuning-sdk-test/distillation-openai-opposites.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                method="DISTILLATION",
+                base_teacher_model="deepseek-ai/deepseek-r1-0528-maas",
+                learning_rate=1e-4,
+                batch_size=4,
+                output_uri="gs://nathreya-oss-tuning-sdk-test/ayushagra-distillation-test",
+                tuning_mode="TUNING_MODE_FULL",
+                http_options=VERTEX_HTTP_OPTIONS,
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_encryption_spec",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                encryption_spec=genai_types.EncryptionSpec(
+                    kms_key_name="projects/vertex-sdk-dev/locations/us-central1/keyRings/ayush-test-key/cryptoKeys/ayush-key",
+                ),
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_reinforcement",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                tuned_model_display_name="Model display name",
+                epoch_count=1,
+                method="REINFORCEMENT_TUNING",
+                adapter_size="ADAPTER_SIZE_ONE",
+                learning_rate_multiplier=1.0,
+                batch_size=4,
+                samples_per_prompt=4,
+                evaluate_interval=100,
+                checkpoint_interval=100,
+                max_output_tokens=2048,
+                reward_config=genai_types.SingleReinforcementTuningRewardConfig(
+                    autorater_scorer=genai_types.ReinforcementTuningAutoraterScorer(
+                        autorater_config=genai_types.AutoraterConfig(
+                            autorater_model="test-model"
+                        )
+                    )
+                ),
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
+    ),
+    pytest_helper.TestTableItem(
+        name="test_tune_reinforcement_composite",
+        parameters=genai_types.CreateTuningJobParameters(
+            base_model="gemini-2.5-flash",
+            training_dataset=genai_types.TuningDataset(
+                gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-1_5/text/sft_train_data.jsonl",
+            ),
+            config=genai_types.CreateTuningJobConfig(
+                tuned_model_display_name="Model display name",
+                epoch_count=1,
+                method="REINFORCEMENT_TUNING",
+                adapter_size="ADAPTER_SIZE_ONE",
+                learning_rate_multiplier=1.0,
+                composite_reward_config=genai_types.CompositeReinforcementTuningRewardConfig(
+                    weighted_reward_configs=[
+                        genai_types.CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
+                            weight=1.0,
+                            reward_config=genai_types.SingleReinforcementTuningRewardConfig(
+                                autorater_scorer=genai_types.ReinforcementTuningAutoraterScorer(
+                                    autorater_config=genai_types.AutoraterConfig(
+                                        autorater_model="test-model"
+                                    )
+                                )
+                            )
+                        )
+                    ]
+                ),
+            ),
+        ),
+        exception_if_mldev="parameter is only supported in Gemini Enterprise Agent Platform mode",
     ),
 ]
 
@@ -240,6 +421,118 @@ def test_eval_config_with_metrics(client):
       ),
     )
     assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+
+
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
+def test_eval_config_with_unified_metrics(client):
+  """Tests tuning with eval config metrics."""
+  if client._api_client.vertexai:
+    evaluation_config=genai_types.EvaluationConfig(
+        metrics=[
+            genai_types.UnifiedMetric(
+                pointwise_metric_spec=genai_types.PointwiseMetricSpec(
+                  metric_prompt_template=(
+                      "How well does the response address the prompt?: "
+                      "PROMPT: {request}\n RESPONSE: {response}\n"
+                  ),
+                  system_instruction=(
+                      "You are a cat. Make all evaluations from this perspective."
+                  ),
+                  custom_output_format_config=genai_types.CustomOutputFormatConfig(
+                      return_raw_output=True
+                  ),
+                )
+            ),
+            genai_types.UnifiedMetric(
+                bleu_spec=genai_types.BleuSpec(use_effective_order=True)
+            ),
+            genai_types.UnifiedMetric(
+                rouge_spec=genai_types.RougeSpec(rouge_type="rouge1")
+            ),
+        ],
+        output_config=genai_types.OutputConfig(
+            gcs_destination=genai_types.GcsDestination(
+                output_uri_prefix="gs://sararob_test/"
+            )
+        ),
+        autorater_config=genai_types.AutoraterConfig(
+            sampling_count=1,
+            autorater_model="test-model",
+        ),
+        inference_generation_config=genai_types.GenerationConfig(
+            temperature=0.5,
+            max_output_tokens=1024,
+        ),
+    )
+    tuning_job = client.tunings.tune(
+      base_model="gemini-2.5-flash",
+      training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
+      config=genai_types.CreateTuningJobConfig(
+          tuned_model_display_name="tuning job with eval config",
+          epoch_count=1,
+          learning_rate_multiplier=1.0,
+          adapter_size="ADAPTER_SIZE_ONE",
+          validation_dataset=genai_types.TuningValidationDataset(
+              gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_validation_data.jsonl"
+          ),
+          evaluation_config=evaluation_config,
+      ),
+    )
+    assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+
+
+@pytest.mark.skipif(
+    "config.getoption('--private')",
+    reason="Skipping in pre-public tests"
+)
+def test_eval_config_with_metrics_dict(client):
+  """Tests tuning with eval config metrics."""
+  if client._api_client.vertexai:
+    evaluation_config=genai_types.EvaluationConfig(
+        metrics = [
+            {
+                "name": "prompt-relevance",
+                "prompt_template": "How well does the response address the prompt?: PROMPT: {request}\n RESPONSE: {response}\n",
+                "return_raw_output": True,
+                "judge_model_system_instruction": "You are a cat. Make all evaluations from this perspective.",
+            },
+            {"name": "bleu"},
+            {"name": "rouge_1"},
+            {
+                "bleu_spec": {
+                    "use_effective_order": True
+                }
+            },
+        ],
+        output_config=genai_types.OutputConfig(
+            gcs_destination=genai_types.GcsDestination(
+                output_uri_prefix="gs://sararob_test/"
+            )
+        ),
+        autorater_config=genai_types.AutoraterConfig(
+            sampling_count=1,
+            autorater_model="test-model",
+        ),
+    )
+    tuning_job = client.tunings.tune(
+      base_model="gemini-2.5-flash",
+      training_dataset=genai_types.TuningDataset(gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_train_data.jsonl"),
+      config=genai_types.CreateTuningJobConfig(
+          tuned_model_display_name="tuning job with eval config",
+          epoch_count=1,
+          learning_rate_multiplier=1.0,
+          adapter_size="ADAPTER_SIZE_ONE",
+          validation_dataset=genai_types.TuningValidationDataset(
+              gcs_uri="gs://cloud-samples-data/ai-platform/generative_ai/gemini-2_0/text/sft_validation_data.jsonl"
+          ),
+          evaluation_config=evaluation_config,
+      ),
+    )
+    assert tuning_job.state == genai_types.JobState.JOB_STATE_PENDING
+
 
 
 @pytest.mark.skipif(

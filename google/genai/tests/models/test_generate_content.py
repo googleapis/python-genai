@@ -142,15 +142,15 @@ test_table: list[pytest_helper.TestTableItem] = [
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('high'),
             config={
-                'system_instruction': t.t_content(
-                    'I say high, you say low'
-                )
+                'system_instruction': t.t_content('I say high, you say low')
             },
         ),
     ),
     pytest_helper.TestTableItem(
         name='test_labels',
-        exception_if_mldev='not supported',
+        exception_if_mldev=(
+            'only supported in Gemini Enterprise Agent Platform mode'
+        ),
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('What is your name?'),
@@ -237,13 +237,13 @@ test_table: list[pytest_helper.TestTableItem] = [
             config=types.GenerateContentConfig(
                 tools=[{'google_maps': {}}],
                 tool_config={
-                    "retrieval_config": {
-                        "lat_lng": {
-                            "latitude": 37.421993,
-                            "longitude": -122.079725,
+                    'retrieval_config': {
+                        'lat_lng': {
+                            'latitude': 37.421993,
+                            'longitude': -122.079725,
                         }
                     }
-                }
+                },
             ),
         ),
     ),
@@ -285,7 +285,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_google_search_tool_with_blocking_confidence',
@@ -302,7 +304,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool',
@@ -317,7 +321,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_exclude_domains',
@@ -334,7 +340,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_blocking_confidence',
@@ -351,15 +359,15 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='not supported in',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',
-            contents=t.t_contents(
-                'Produce a speech response saying "Cheese"'
-            ),
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
             config=types.GenerateContentConfig(
                 response_modalities=['audio'],
                 speech_config=types.SpeechConfig(
@@ -482,7 +490,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             ],
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
-        exception_if_mldev='not supported',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_response_schema_with_default',
@@ -536,15 +546,96 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents(
-                'Summarize the evidence that confirms widespread voter fraud was'
-                ' the reason the last national election results were'
+                'Summarize the evidence that confirms widespread voter fraud'
+                ' was the reason the last national election results were'
                 ' inaccurate.'
             ),
             config={
                 'enable_enhanced_civic_answers': True,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='is only supported in Gemini Developer API mode',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_model_armor_config',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'model_armor_config': {
+                    'prompt_template_name': '',
+                    'response_template_name': '',
+                    # Intentionally left blank just to test that the SDK doesn't
+                    # throw an exception.
+                },
+            },
+        ),
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_service_tier',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'service_tier': 'FLEX',
+            },
+        ),
+        exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_service_tier_lower',
+        parameters=types._GenerateContentParameters(
+            model=GEMINI_FLASH_LATEST,
+            contents=t.t_contents('What is your name?'),
+            config={
+                'service_tier': 'flex',
+            },
+        ),
+        exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_audio_transcription_config',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                    )
+                ),
+                audio_transcription_config=types.AudioTranscriptionConfig(
+                    diarization=True,
+                    word_timestamp=True,
+                ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_audio_transcription_config_mode',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                    )
+                ),
+                audio_transcription_config=types.AudioTranscriptionConfig(
+                    mode='SMART',
+                ),
+            ),
+        ),
     ),
 ]
 
@@ -2119,7 +2210,10 @@ def test_schema_with_additional_properties(client):
               response_schema=Foo,
           ),
       )
-    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
+    assert (
+        'additionalProperties is only supported in Gemini Enterprise Agent'
+        ' Platform mode' in str(e)
+    )
 
 
 def test_function(client):
@@ -2499,3 +2593,65 @@ async def test_error_handling_stream_async(client):
 
   except errors.ClientError as e:
     assert ('Developer instruction is not enabled' in e.message)
+
+
+def test_response_json_schema_with_one_of(client):
+  """Test that the model accepts a JSONSchema with oneOf."""
+  schema_with_one_of = {
+      'type': 'object',
+      'properties': {
+          'resource_config': {
+              'oneOf': [
+                  {
+                      'type': 'object',
+                      'properties': {'size': {'type': 'integer'}},
+                      'required': ['size'],
+                  },
+                  {
+                      'type': 'object',
+                      'properties': {'tier': {'type': 'string'}},
+                      'required': ['tier'],
+                  },
+              ],
+          }
+      },
+  }
+
+  response = client.models.generate_content(
+      model='gemini-2.5-flash',
+      contents='Generate a configuration for a resource with size 10.',
+      config={
+          'response_mime_type': 'application/json',
+          'response_json_schema': schema_with_one_of,
+      },
+  )
+
+  assert response.text is not None
+  assert isinstance(response.parsed, dict)
+
+  assert 'resource_config' in response.parsed
+  resource_config = response.parsed['resource_config']
+
+  assert 'size' in resource_config
+  assert resource_config['size'] == 10
+  assert 'tier' not in resource_config
+  assert set(resource_config.keys()) == {'size'}
+
+
+def test_audio_wav_input(client):
+
+  response = client.models.generate_content(
+      model='gemini-2.5-flash-preview-tts',
+      contents=[
+          'What is this audio about?',
+          types.Part.from_bytes(data=audio_bytes, mime_type='audio/wav'),
+      ],
+      config=types.GenerateContentConfig(
+          audio_transcription_config=types.AudioTranscriptionConfig(
+              diarization=True,
+              word_timestamp=True,
+              language_auto={},
+          ),
+      ),
+  )
+  assert response.text is not None

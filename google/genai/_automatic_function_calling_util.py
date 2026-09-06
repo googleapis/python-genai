@@ -40,6 +40,8 @@ __all__ = [
     '_is_default_value_compatible',
     '_parse_schema_from_parameter',
     '_get_required_fields',
+    '_get_required_fields_from_json_schema',
+    'parse_function_declaration_json_schema',
 ]
 
 _py_builtin_type_to_schema_type = {
@@ -138,7 +140,7 @@ def _is_default_value_compatible(
 
 
 def _parse_schema_from_parameter(  # type: ignore[return]
-    api_option: Literal['VERTEX_AI', 'GEMINI_API'],
+    api_option: Literal['ENTERPRISE', 'GEMINI_API', 'VERTEX_AI'],
     param: inspect.Parameter,
     func_name: str,
 ) -> types.Schema:
@@ -323,3 +325,125 @@ def _get_required_fields(schema: types.Schema) -> Optional[list[str]]:
       for field_name, field_schema in schema.properties.items()
       if not field_schema.nullable and field_schema.default is None
   ]
+
+
+def _get_required_fields_from_json_schema(json_schema: dict[str, Any]) -> Optional[list[str]]:
+  properties = json_schema.get('properties', {})
+  if not properties:
+    return None
+  required_fields = []
+  for field_name, field_schema in properties.items():
+    if not field_schema:
+      continue
+    if 'nullable' in field_schema and not field_schema['nullable']:
+      required_fields.append(field_name)
+    if 'default' not in field_schema and field_name not in required_fields:
+      required_fields.append(field_name)
+  return required_fields
+
+
+def parse_function_declaration_json_schema(
+    callable: Callable[..., Any],
+    behavior: Optional[types.Behavior]
+    ) -> types.FunctionDeclaration:
+  """Parse function declaration JSON schema from a callable."""
+  annotation_under_future = typing.get_type_hints(callable)
+  parameters_properties_json_schema = {}
+  root_defs = {}
+
+  for name, param in inspect.signature(callable).parameters.items():
+    if param.kind in (
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        inspect.Parameter.KEYWORD_ONLY,
+        inspect.Parameter.POSITIONAL_ONLY,
+    ):
+      try:
+        param = _handle_params_as_deferred_annotations(
+            param, annotation_under_future, name
+        )
+        json_schema_dict = {}
+        if _extra_utils.is_annotation_pydantic_model(param.annotation):
+          json_schema_dict = param.annotation.model_json_schema()
+        else:
+          param_schema_adapter = pydantic.TypeAdapter(
+              param.annotation,
+              config=pydantic.ConfigDict(arbitrary_types_allowed=True),
+          )
+          json_schema_dict = param_schema_adapter.json_schema()
+          json_schema_dict = _add_unevaluated_items_to_fixed_len_tuple_schema(
+              json_schema_dict
+          )
+
+        # Extract parameter-level $defs and promote to top-level root_defs
+        if '$defs' in json_schema_dict:
+          root_defs.update(json_schema_dict.pop('$defs'))
+        if 'definitions' in json_schema_dict:
+          root_defs.update(json_schema_dict.pop('definitions'))
+        # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
+        # but Vertex requires it.
+        if not 'type' in json_schema_dict and 'anyOf' in json_schema_dict:
+          json_schema_dict['type'] = 'object'
+        if param.default is not inspect._empty:
+          json_schema_dict['default'] = param.default
+        parameters_properties_json_schema[name] = json_schema_dict
+      except Exception as e:
+        _raise_for_unsupported_param(
+            param, callable.__name__, e
+        )
+
+  declaration = types.FunctionDeclaration(
+      name=callable.__name__,
+      description=inspect.cleandoc(callable.__doc__)
+      if callable.__doc__
+      else '',
+      behavior=behavior,
+  )
+  if parameters_properties_json_schema:
+    declaration.parameters_json_schema = {
+        'type': 'object',
+        'properties': parameters_properties_json_schema,
+    }
+    if root_defs:
+      declaration.parameters_json_schema['$defs'] = root_defs
+    declaration.parameters_json_schema['required'] = (
+        _get_required_fields_from_json_schema(
+            declaration.parameters_json_schema
+        )
+    )
+    return_annotation = inspect.signature(callable).return_annotation
+    if return_annotation is inspect.Parameter.empty:
+      return declaration
+
+    return_value = inspect.Parameter(
+        'return_value',
+        inspect.Parameter.POSITIONAL_OR_KEYWORD,
+        annotation=return_annotation,
+    )
+    # This snippet catches the case when type hints are stored as strings
+    if isinstance(return_value.annotation, str):
+      return_value = return_value.replace(
+          annotation=annotation_under_future['return']
+      )
+    response_json_schema: dict[str, Any] = {}
+    try:
+      if _extra_utils.is_annotation_pydantic_model(return_value.annotation):
+        response_json_schema = return_value.annotation.model_json_schema()
+      else:
+        return_value_schema_adapter = pydantic.TypeAdapter(
+            return_value.annotation,
+            config=pydantic.ConfigDict(arbitrary_types_allowed=True),
+        )
+        response_json_schema = return_value_schema_adapter.json_schema()
+      response_json_schema = _add_unevaluated_items_to_fixed_len_tuple_schema(
+          response_json_schema
+      )
+      # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
+      # but Vertex requires it.
+      if 'type' not in response_json_schema and 'anyOf' in response_json_schema:
+        response_json_schema['type'] = 'object'
+    except Exception as e:
+      _raise_for_unsupported_param(
+          return_value, callable.__name__, e
+      )
+    declaration.response_json_schema = response_json_schema
+  return declaration

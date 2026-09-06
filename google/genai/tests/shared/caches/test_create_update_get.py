@@ -17,6 +17,7 @@
 
 from .... import types as genai_types
 from ... import pytest_helper
+from ... import shared
 
 
 def create_update_get(client, parameters):
@@ -50,7 +51,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_create_update_get",
         parameters=genai_types._CreateCachedContentParameters(
-            model="gemini-2.5-flash",
+            model=shared.GEMINI_MODEL,
             config=genai_types.CreateCachedContentConfig(
                 contents=[genai_types.Part.from_uri(
                     file_uri="gs://cloud-samples-data/generative-ai/image/a-man-and-a-dog.png",

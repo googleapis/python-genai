@@ -38,6 +38,10 @@ class TestTableItem(types.TestTableItem):
   parameters: SerializeAsAny[BaseModel] = Field(
       description="""The parameters to the test. Use pydantic models.""",
   )
+  skip_in_private: Optional[str] = Field(
+      default=None,
+      description="""When set to a reason string, this test will be skipped in private SDK mode.""",
+  )
 
 
 def base_test_function(
@@ -48,6 +52,11 @@ def base_test_function(
     test_table_item: TestTableItem,
     globals_for_file: dict[str, Any],
 ):
+  if (
+      getattr(client._api_client, '_private', False)
+      and test_table_item.skip_in_private
+  ):
+    pytest.skip(test_table_item.skip_in_private)
   replay_id = (
       test_table_item.override_replay_id
       if test_table_item.override_replay_id
@@ -79,6 +88,13 @@ def base_test_function(
       assert False, 'Should have raised exception in Vertex.'
     client._api_client.close()
   except Exception as e:
+    # Gracefully skip the test if we hit a live API quota limit
+    if getattr(e, 'code', None) == 429 and getattr(client._api_client, '_mode', None) == 'api':
+      pytest.skip(
+          'Resource Exhausted (429). Skipping test instead of'
+          f' failing: {e}'
+      )
+
     if test_table_item.exception_if_mldev and not client._api_client.vertexai:
       if test_table_item.exception_if_mldev not in str(e):
         raise AssertionError(
@@ -227,3 +243,20 @@ def camel_to_snake(camel_str: str) -> str:
 def get_value_ignore_key_case(obj, key):
   """Returns the value of the key in the object, converting to camelCase or snake_case if necessary."""
   return obj.get(snake_to_camel(key), obj.get(camel_to_snake(key), None))
+
+
+def camel_to_snake_all_keys(data):
+  """Converts all keys in a dictionary or list to snake_case."""
+  if isinstance(data, dict):
+    new_dict = {}
+    for key, value in data.items():
+      if isinstance(key, str):
+        new_key = camel_to_snake(key)
+      else:
+        new_key = key
+      new_dict[new_key] = camel_to_snake_all_keys(value)
+    return new_dict
+  elif isinstance(data, list):
+    return [camel_to_snake_all_keys(item) for item in data]
+  else:
+    return data

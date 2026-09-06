@@ -16,6 +16,7 @@
 
 """Tests for batches.get()."""
 
+import re
 import pytest
 
 from ... import types
@@ -29,7 +30,7 @@ _BATCH_JOB_FULL_RESOURCE_NAME = (
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
 # MLDev batch operation name.
-_MLDEV_BATCH_OPERATION_NAME = 'batches/0yew7plxupyybd7appsrq5vw7w0lp3l79lab'
+_MLDEV_BATCH_OPERATION_NAME = 'batches/z2p8ksus4lyxt25rntl3fpd67p2niw4hfij5'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 
@@ -76,3 +77,15 @@ async def test_async_get(client):
   batch_job = await client.aio.batches.get(name=name)
 
   assert batch_job
+
+
+@pytest.mark.asyncio
+async def test_async_get_with_multimodal_dataset_output(client):
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+    batch_job = await client.aio.batches.get(name=name)
+
+    assert re.match(
+        r'^projects/[^/]+/locations/[^/]+/datasets/[^/]+$',
+        batch_job.output_info.vertex_multimodal_dataset_name,
+    )

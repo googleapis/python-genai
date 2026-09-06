@@ -62,14 +62,15 @@ def test_function(client):
       function_declarations=[
           types.FunctionDeclaration(
               name='test_func',
-              parameters=types.Schema(
-                  type='OBJECT',
-                  properties={
-                      'arg1': types.Schema(type='STRING'),
-                      'arg2': types.Schema(type='INTEGER'),
+              description='',
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'arg1': {'type': 'string'},
+                      'arg2': {'type': 'integer'},
                   },
-                  required=['arg1', 'arg2'],
-              ),
+                  'required': ['arg1', 'arg2'],
+              },
           )
       ]
   )

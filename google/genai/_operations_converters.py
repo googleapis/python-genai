@@ -27,13 +27,22 @@ def _FetchPredictOperationParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['operation_name']) is not None:
-    raise ValueError('operation_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'operation_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['resource_name']) is not None:
-    raise ValueError('resource_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'resource_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Gemini API.')
+    raise ValueError(
+        'config parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 

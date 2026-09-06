@@ -35,27 +35,27 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_get_success",
         parameters=types._GetDocumentParameters(name=_EXISTING_DOCUMENT_NAME),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
     pytest_helper.TestTableItem(
         name="test_get_not_found",
         parameters=types._GetDocumentParameters(
             name=_NON_EXISTENT_DOCUMENT_NAME
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
         exception_if_mldev="Documents does not exist",
     ),
     pytest_helper.TestTableItem(
         name="test_get_invalid_name",
         parameters=types._GetDocumentParameters(name=_INVALID_DOCUMENT_NAME),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
         # Validation should catch this before the API call
         exception_if_mldev="INVALID_ARGUMENT",
     ),
     pytest_helper.TestTableItem(
         name="test_get_not_a_document_name",
         parameters=types._GetDocumentParameters(name=_NOT_A_DOCUMENT_NAME),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
         exception_if_mldev="Not Found",
     ),
 ]

@@ -20,13 +20,14 @@ import base64
 import contextlib
 import json
 import logging
+import sys
 import typing
 from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
 import google.auth
 import pydantic
-from websockets import ConnectionClosed
+import websockets
 
 from . import _api_module
 from . import _common
@@ -35,12 +36,15 @@ from . import _mcp_utils
 from . import _transformers as t
 from . import errors
 from . import types
+from ._adapters import McpToGenAiToolAdapter
 from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
+from ._mcp_utils import mcp_to_gemini_tool
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
 
+ConnectionClosed = websockets.ConnectionClosed
 
 try:
   from websockets.asyncio.client import ClientConnection
@@ -50,30 +54,27 @@ except ModuleNotFoundError:
   from websockets.client import ClientConnection  # type: ignore
   from websockets.client import connect as ws_connect  # type: ignore
 
-try:
-  from google.auth.transport import requests
-except ImportError:
-  requests = None  # type: ignore[assignment]
+
+def _auth_requests() -> Any:
+  """Returns google-auth's requests transport, or None if it is unavailable.
+
+  Resolved on use rather than at module scope, because importing it pulls in
+  the whole `requests` stack and only credential refresh below needs it.
+  """
+  try:
+    from google.auth.transport import requests
+
+    return requests
+  except ImportError:
+    return None
+
 
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
   from mcp.types import Tool as McpTool
-  from ._adapters import McpToGenAiToolAdapter
-  from ._mcp_utils import mcp_to_gemini_tool
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  McpToGenAiToolAdapter: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-    from ._adapters import McpToGenAiToolAdapter
-    from ._mcp_utils import mcp_to_gemini_tool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
-    McpToGenAiToolAdapter = None
-    mcp_to_gemini_tool = None
 
 logger = logging.getLogger('google_genai.live')
 
@@ -91,10 +92,12 @@ class AsyncSession:
       api_client: BaseApiClient,
       websocket: ClientConnection,
       session_id: Optional[str] = None,
+      setup_complete: Optional[types.LiveServerSetupComplete] = None,
   ):
     self._api_client = api_client
     self._ws = websocket
     self.session_id = session_id
+    self.setup_complete = setup_complete
 
   async def send(
       self,
@@ -204,7 +207,7 @@ class AsyncSession:
       from google.genai import types
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -276,7 +279,7 @@ class AsyncSession:
 
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -371,7 +374,7 @@ class AsyncSession:
 
       import os
 
-      if os.environ.get('GOOGLE_GENAI_USE_VERTEXAI'):
+      if os.environ.get('GOOGLE_GENAI_USE_ENTERPRISE'):
         MODEL_NAME = 'gemini-2.0-flash-live-preview-04-09'
       else:
         MODEL_NAME = 'gemini-live-2.5-flash-preview';
@@ -534,6 +537,14 @@ class AsyncSession:
       raw_response = await self._ws.recv(decode=False)
     except TypeError:
       raw_response = await self._ws.recv()  # type: ignore[assignment]
+    except ConnectionClosed as e:
+      if e.rcvd:
+        code = e.rcvd.code
+        reason = e.rcvd.reason
+      else:
+        code = 1006
+        reason = websockets.frames.CLOSE_CODE_EXPLANATIONS.get(code, 'Abnormal closure.')
+      errors.APIError.raise_error(code, reason, None)
     if raw_response:
       try:
         response = json.loads(raw_response)
@@ -545,8 +556,11 @@ class AsyncSession:
     if self._api_client.vertexai:
       response_dict = live_converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = response
+      response_dict = live_converters._LiveServerMessage_from_mldev(response)
 
+    if not response_dict and response:
+      # Error handling.
+      errors.APIError.raise_error(response.get('code'), response, None)
     return types.LiveServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
@@ -1033,10 +1047,11 @@ class AsyncLive(_api_module.BaseModule):
         # creds.valid is False, and creds.token is None
         # Need to refresh credentials to populate those
         if not (creds.token and creds.valid):
-          if requests is None:
+          auth_requests = _auth_requests()
+          if auth_requests is None:
             raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
-          auth_req = requests.Request()  # type: ignore
-          creds.refresh(auth_req)
+          auth_req = auth_requests.Request()
+          creds.refresh(auth_req)  # type: ignore[no-untyped-call]
         bearer_token = creds.token
 
         original_headers = self._api_client._http_options.headers
@@ -1093,6 +1108,14 @@ class AsyncLive(_api_module.BaseModule):
         raw_response = await ws.recv(decode=False)
       except TypeError:
         raw_response = await ws.recv()  # type: ignore[assignment]
+      except ConnectionClosed as e:
+        if e.rcvd:
+          code = e.rcvd.code
+          reason = e.rcvd.reason
+        else:
+          code = 1006
+          reason = 'Abnormal closure.'
+        errors.APIError.raise_error(code, reason, None)
       if raw_response:
         try:
           response = json.loads(raw_response)
@@ -1111,12 +1134,15 @@ class AsyncLive(_api_module.BaseModule):
       )
       if setup_response.setup_complete:
         session_id = setup_response.setup_complete.session_id
+        setup_complete = setup_response.setup_complete
       else:
         session_id = None
+        setup_complete = None
       yield AsyncSession(
           api_client=self._api_client,
           websocket=ws,
           session_id=session_id,
+          setup_complete=setup_complete,
       )
 
 
@@ -1149,23 +1175,35 @@ async def _t_live_connect_config(
   parameter_model_copy = parameter_model.model_copy(update={'tools': None})
   if parameter_model.tools:
     parameter_model_copy.tools = []
-    for tool in parameter_model.tools:
-      if McpClientSession is not None and isinstance(tool, McpClientSession):
-        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
-        )
-        # Extend the config with the MCP session tools converted to GenAI tools.
-        parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
-      elif McpTool is not None and isinstance(tool, McpTool):
-        parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
-      else:
-        parameter_model_copy.tools.append(tool)
+    if not _mcp_utils._is_mcp_loaded():
+      # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
+      parameter_model_copy.tools.extend(parameter_model.tools)
+    else:
+      try:
+        from mcp import ClientSession as _McpClientSession  # pylint: disable=g-import-not-at-top
+        from mcp.types import Tool as _McpTool  # pylint: disable=g-import-not-at-top
+      except ImportError:
+        _McpClientSession = type('DummySession', (), {})  # type: ignore
+        _McpTool = type('DummyTool', (), {})  # type: ignore
+
+      for tool in parameter_model.tools:
+        if isinstance(tool, _McpClientSession):
+          mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+              tool, await tool.list_tools()
+          )
+          # Extend the config with the MCP session tools converted to GenAI
+          # tools.
+          parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+        elif isinstance(tool, _McpTool):
+          parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
+        else:
+          parameter_model_copy.tools.append(tool)
 
   if parameter_model_copy.generation_config is not None:
     warnings.warn(
         'Setting `LiveConnectConfig.generation_config` is deprecated, '
-        'please set the fields on `LiveConnectConfig` directly. This will '
-        'become an error in a future version (not before Q3 2025)',
+        'please set the fields on `LiveConnectConfig` directly. It will be '
+        'removed in the next major version (not before 7/31/2026).',
         DeprecationWarning,
         stacklevel=4,
     )

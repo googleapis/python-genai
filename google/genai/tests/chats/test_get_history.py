@@ -55,7 +55,7 @@ def mock_api_client(vertexai=False):
 
 
 @pytest.fixture
-def mock_generate_content_invalid_content():
+def mock_generate_content_with_empty_text_part():
   with mock.patch.object(
       models.Models, 'generate_content'
   ) as mock_generate_content:
@@ -84,7 +84,7 @@ def mock_generate_content_empty_content():
 
 
 @pytest.fixture
-def mock_generate_content_stream_invalid_content():
+def mock_generate_content_stream_with_empty_text_part():
   with mock.patch.object(
       models.Models, 'generate_content_stream'
   ) as mock_generate_content:
@@ -95,7 +95,8 @@ def mock_generate_content_stream_invalid_content():
                     content=types.Content(
                         role='model',
                         parts=[types.Part(text='')],
-                    )
+                    ),
+                    finish_reason=types.FinishReason.STOP,
                 )
             ]
         )
@@ -110,47 +111,6 @@ def mock_generate_content_stream_empty_content():
   ) as mock_generate_content:
     mock_generate_content.return_value = [
         types.GenerateContentResponse(candidates=[])
-    ]
-    yield mock_generate_content
-
-
-@pytest.fixture
-def mock_generate_content_afc_history():
-  with mock.patch.object(
-      models.Models, 'generate_content'
-  ) as mock_generate_content:
-    mock_generate_content.return_value = types.GenerateContentResponse(
-        candidates=[
-            types.Candidate(
-                content=types.Content(
-                    role='model',
-                    parts=[types.Part.from_text(text='afc output')],
-                )
-            )
-        ],
-        automatic_function_calling_history=AFC_HISTORY,
-    )
-    yield mock_generate_content
-
-
-@pytest.fixture
-def mock_generate_content_stream_afc_history():
-  with mock.patch.object(
-      models.Models, 'generate_content_stream'
-  ) as mock_generate_content:
-    mock_generate_content.return_value = [
-        types.GenerateContentResponse(
-            candidates=[
-                types.Candidate(
-                    content=types.Content(
-                        role='model',
-                        parts=[types.Part.from_text(text='afc output')],
-                    ),
-                    finish_reason=types.FinishReason.STOP,
-                )
-            ],
-            automatic_function_calling_history=AFC_HISTORY,
-        )
     ]
     yield mock_generate_content
 
@@ -481,7 +441,7 @@ def test_history_with_invalid_turns():
   assert chat.get_history(curated=True) == curated_history
 
 
-def test_chat_with_invalid_content(mock_generate_content_invalid_content):
+def test_chat_with_empty_text_part(mock_generate_content_with_empty_text_part):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(model='gemini-2.5-flash')
@@ -496,7 +456,7 @@ def test_chat_with_invalid_content(mock_generate_content_invalid_content):
       ),
   ]
   assert chat.get_history() == expected_comprehensive_history
-  assert not chat.get_history(curated=True)
+  assert chat.get_history(curated=True) == expected_comprehensive_history
 
 
 def test_chat_with_empty_content(mock_generate_content_empty_content):
@@ -517,8 +477,8 @@ def test_chat_with_empty_content(mock_generate_content_empty_content):
   assert not chat.get_history(curated=True)
 
 
-def test_chat_stream_with_invalid_content(
-    mock_generate_content_stream_invalid_content,
+def test_chat_stream_with_empty_text_part(
+    mock_generate_content_stream_with_empty_text_part,
 ):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
@@ -536,7 +496,7 @@ def test_chat_stream_with_invalid_content(
       ),
   ]
   assert chat.get_history() == expected_comprehensive_history
-  assert not chat.get_history(curated=True)
+  assert chat.get_history(curated=True) == expected_comprehensive_history
 
 
 def test_chat_stream_with_empty_content(
@@ -559,39 +519,3 @@ def test_chat_stream_with_empty_content(
   ]
   assert chat.get_history() == expected_comprehensive_history
   assert not chat.get_history(curated=True)
-
-
-def test_chat_with_afc_history(mock_generate_content_afc_history):
-  models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-flash')
-
-  chat.send_message('Hello')
-
-  expected_history = AFC_HISTORY + [
-      types.Content(
-          role='model',
-          parts=[types.Part.from_text(text='afc output')],
-      ),
-  ]
-  assert chat.get_history() == expected_history
-  assert chat.get_history(curated=True) == expected_history
-
-
-def test_chat_stream_with_afc_history(mock_generate_content_stream_afc_history):
-  models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-flash')
-
-  chunks = chat.send_message_stream('Hello')
-  for chunk in chunks:
-    pass
-
-  expected_history = AFC_HISTORY + [
-      types.Content(
-          role='model',
-          parts=[types.Part.from_text(text='afc output')],
-      ),
-  ]
-  assert chat.get_history() == expected_history
-  assert chat.get_history(curated=True) == expected_history

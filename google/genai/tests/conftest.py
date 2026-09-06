@@ -25,6 +25,42 @@ import pytest
 from .. import _common
 from .. import _replay_api_client
 from .. import client as google_genai_client_module
+from .. import types
+
+
+# Retry options for the shared integration tests, applied to every request the
+# test client makes so that a transient 5xx or 429 does not fail the nightly.
+#
+# Deliberately shorter than the SDK defaults: a multistep test retries per
+# request, so the backoff has to stay well inside the test timeout. Keep aligned with
+# the shared test clients in the other SDKs.
+_SHARED_TEST_RETRY_OPTIONS = types.HttpRetryOptions(
+    attempts=3,
+    initial_delay=1.0,
+    max_delay=10.0,
+    exp_base=2.0,
+    http_status_codes=[408, 429, 500, 502, 503, 504],
+)
+
+
+def _is_shared_integration_test(request):
+  """True only for the curated cross-SDK suite under tests/shared."""
+  return 'shared' in os.fspath(request.path).split(os.sep)
+
+
+def _with_shared_test_retry_options(http_options):
+  """Adds the shared retry options, leaving any caller-supplied ones alone."""
+  if http_options is None:
+    return types.HttpOptions(retry_options=_SHARED_TEST_RETRY_OPTIONS)
+  if isinstance(http_options, dict):
+    if http_options.get('retry_options') or http_options.get('retryOptions'):
+      return http_options
+    return {**http_options, 'retry_options': _SHARED_TEST_RETRY_OPTIONS}
+  if getattr(http_options, 'retry_options', None):
+    return http_options
+  return http_options.model_copy(
+      update={'retry_options': _SHARED_TEST_RETRY_OPTIONS}
+  )
 
 
 def pytest_addoption(parser):
@@ -55,10 +91,36 @@ def use_vertex():
   return False
 
 
+@pytest.fixture(autouse=True)
+def skip_based_on_api_mode_env_vars(request):
+  mode = request.config.getoption('--mode')
+  if mode == 'api':
+    use_vertex = None
+    if hasattr(request, 'node') and hasattr(request.node, 'callspec'):
+      use_vertex = request.node.callspec.params.get('use_vertex')
+    elif 'use_vertex' in request.fixturenames:
+      use_vertex = request.getfixturevalue('use_vertex')
+
+    run_vertex_only = os.environ.get('GOOGLE_GENAI_RUN_VERTEX_ONLY_IN_API_MODE')
+    run_gemini_only = os.environ.get('GOOGLE_GENAI_RUN_GEMINI_ONLY_IN_API_MODE')
+
+    if use_vertex is True and run_gemini_only:
+      pytest.skip('Skipping Vertex AI tests in API mode (GEMINI ONLY config enabled).')
+    elif use_vertex is False and run_vertex_only:
+      pytest.skip('Skipping Gemini API tests in API mode (VERTEX ONLY config enabled).')
+
+
 # Overridden at the module level for each test file.
 @pytest.fixture
 def replays_prefix():
   return 'test'
+
+
+# Overridden by test packages whose Vertex model is not served at the configured
+# location. Returning None leaves GOOGLE_CLOUD_LOCATION as-is.
+@pytest.fixture
+def location_override():
+  return None
 
 
 def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
@@ -72,7 +134,7 @@ def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
 
 
 @pytest.fixture
-def client(use_vertex, replays_prefix, http_options, request):
+def client(use_vertex, replays_prefix, http_options, request, location_override):
   mode = request.config.getoption('--mode')
   if mode not in ['auto', 'record', 'replay', 'api', 'tap']:
     raise ValueError('Invalid mode: ' + mode)
@@ -115,19 +177,36 @@ def client(use_vertex, replays_prefix, http_options, request):
     os.environ['GOOGLE_GENAI_REPLAYS_DIRECTORY'] = replays_root_directory
   # Get private arg.
   private = request.config.getoption('--private')
+
+  if not use_vertex:
+    location_override = None
+  elif location_override is None and 'tunings' in replays_prefix:
+    # Tuning jobs are not supported on the global endpoint.
+    if os.environ.get('GOOGLE_CLOUD_LOCATION') == 'global':
+      location_override = 'us-central1'
+
+  # Scoped to the shared suite rather than all of api mode, so no other test's
+  # behaviour changes.
+  if mode == 'api' and _is_shared_integration_test(request):
+    http_options = _with_shared_test_retry_options(http_options)
+
   replay_client = _replay_api_client.ReplayApiClient(
       mode=mode,
       replay_id=replay_id,
       vertexai=use_vertex,
       http_options=http_options,
       private=private,
+      location=location_override,
   )
 
   with mock.patch.object(
       google_genai_client_module.Client, '_get_api_client'
   ) as patch_method:
     patch_method.return_value = replay_client
-    google_genai_client = google_genai_client_module.Client(vertexai=use_vertex)
+    kwargs = {'vertexai': use_vertex}
+    if location_override:
+      kwargs['location'] = location_override
+    google_genai_client = google_genai_client_module.Client(**kwargs)
 
     # Yield the client so that cleanup can be completed at the end of the test.
     yield google_genai_client

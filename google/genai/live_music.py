@@ -19,15 +19,18 @@ import contextlib
 import json
 import logging
 from typing import AsyncIterator
+import websockets
 
 from . import _api_module
 from . import _common
 from . import _live_converters as live_converters
 from . import _transformers as t
+from . import errors
 from . import types
 from ._api_client import BaseApiClient
 from ._common import set_value_by_path as setv
 
+ConnectionClosed = websockets.ConnectionClosed
 
 try:
   from websockets.asyncio.client import ClientConnection
@@ -122,6 +125,14 @@ class AsyncMusicSession:
       raw_response = await self._ws.recv(decode=False)
     except TypeError:
       raw_response = await self._ws.recv()  # type: ignore[assignment]
+    except ConnectionClosed as e:
+      if e.rcvd:
+        code = e.rcvd.code
+        reason = e.rcvd.reason
+      else:
+        code = 1006
+        reason = websockets.frames.CLOSE_CODE_EXPLANATIONS.get(code, 'Abnormal closure.')
+      errors.APIError.raise_error(code, reason, None)
     if raw_response:
       try:
         response = json.loads(raw_response)
@@ -134,7 +145,9 @@ class AsyncMusicSession:
       raise NotImplementedError('Live music generation is not supported in Vertex AI.')
     else:
       response_dict = response
-
+    if not response_dict and response:
+      # Error handling.
+      errors.APIError.raise_error(response.get('code'), response, None)
     return types.LiveMusicServerMessage._from_response(
         response=response_dict, kwargs=parameter_model.model_dump()
     )
@@ -162,10 +175,10 @@ class AsyncLiveMusic(_api_module.BaseModule):
     transformed_model = t.t_model(self._api_client, model)
 
     if self._api_client.api_key:
-      api_key = self._api_client.api_key
       version = self._api_client._http_options.api_version
-      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateMusic?key={api_key}'
-      headers = self._api_client._http_options.headers
+      uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.BidiGenerateMusic'
+      original_headers = self._api_client._http_options.headers
+      headers = original_headers.copy() if original_headers is not None else {}
 
       # Only mldev supported
       request_dict = _common.convert_to_dict(

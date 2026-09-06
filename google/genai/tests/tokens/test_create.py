@@ -54,6 +54,25 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='only supported in the Gemini Developer client',
     ),
     pytest_helper.TestTableItem(
+        name='test_create_with_streaming_translation_config',
+        parameters=types.CreateAuthTokenParameters(
+            config={
+                'http_options': {'api_version': 'v1alpha'},
+                'uses': 2,
+                'live_connect_constraints': {
+                    'model': _MODEL,
+                    'config': {
+                        'translation_config': {
+                            'target_language_code': 'es',
+                            'echo_target_language': True,
+                        },
+                    },
+                },
+            },
+        ),
+        exception_if_vertex='only supported in the Gemini Developer client',
+    ),
+    pytest_helper.TestTableItem(
         name='test_create_lock_non_null_fields',
         parameters=types.CreateAuthTokenParameters(
             # remove v1alpha after v1beta is available.

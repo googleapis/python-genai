@@ -27,7 +27,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 page_size=2,
             ),
         ),
-        exception_if_vertex='only supported in the Gemini Developer client',
+        exception_if_vertex='only supported in Gemini Developer API mode',
     ),
 ]
 

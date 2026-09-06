@@ -101,11 +101,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 negative_prompt="ugly, low quality",
                 enhance_prompt=True,
                 compression_quality=types.VideoCompressionQuality.LOSSLESS,
+                labels={"veo_label_key": "generate_videos"},
             ),
         ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
-        ),
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_source",
@@ -158,7 +157,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "parameter is only supported in Gemini Enterprise Agent Platform mode"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -178,7 +177,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "parameter is only supported in Gemini Enterprise Agent Platform mode"
         ),
     ),
     pytest_helper.TestTableItem(
@@ -201,9 +200,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
-        ),
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
@@ -249,7 +246,40 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "output_gcs_uri parameter is not supported in Gemini API"
+            "only supported in Gemini Enterprise Agent Platform mode"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_with_webhook_config",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            prompt="Man with a dog",
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                webhook_config=types.WebhookConfig(
+                    uris=["https://example.com/webhook"],
+                    user_metadata={"job_id": "video_123"},
+                ),
+            ),
+        ),
+        exception_if_vertex=(
+            "parameter is only supported in Gemini Developer API mode"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_with_webhook_config_dict",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            prompt="Man with a dog",
+            config={
+                "number_of_videos": 1,
+                "webhook_config": {
+                    "uris": ["https://example.com/webhook"],
+                },
+            },
+        ),
+        exception_if_vertex=(
+            "parameter is only supported in Gemini Developer API mode"
         ),
     ),
 ]
@@ -303,6 +333,8 @@ def test_text_and_image_to_video_poll(client):
       image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
       config=types.GenerateVideosConfig(
           output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+          resize_mode=(types.ImageResizeMode.CROP
+                       if client.vertexai else None),
       ),
   )
   while not operation.done:
@@ -756,4 +788,3 @@ async def test_generated_video_extension_from_source_poll_async(client):
   video2 = operation2.result.generated_videos[0].video
   assert video2.uri
   assert await client.aio.files.download(file=video2)
-

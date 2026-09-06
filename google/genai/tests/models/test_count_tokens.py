@@ -75,17 +75,17 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_system_instruction',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=_COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION,
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_tools',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=_COUNT_TOKENS_PARAMS_WITH_TOOLS,
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_generation_config',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=_COUNT_TOKENS_PARAMS_WITH_GENERATION_CONFIG,
     ),
 ]

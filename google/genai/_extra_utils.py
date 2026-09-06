@@ -19,11 +19,12 @@ import asyncio
 import inspect
 import io
 import logging
-import sys
-import typing
-from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
 import mimetypes
 import os
+import sys
+import typing
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
+
 import pydantic
 
 from . import _common
@@ -31,6 +32,7 @@ from . import _mcp_utils
 from . import _transformers as t
 from . import errors
 from . import types
+from . import version as public_version
 from ._adapters import McpToGenAiToolAdapter
 
 
@@ -45,12 +47,9 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
+
+
+C = TypeVar('C', bound='_common.BaseModel')
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -120,18 +119,9 @@ def format_destination(
 
 def find_afc_incompatible_tool_indexes(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    is_agent_platform: bool = False,
 ) -> list[int]:
-  """Checks if the config contains any AFC incompatible tools.
-
-  A `types.Tool` object that contains `function_declarations` is considered a
-  non-AFC tool for this execution path.
-
-  Args:
-    config: The GenerateContentConfig to check for incompatible tools.
-
-  Returns:
-    A list of indexes of the incompatible tools in the config.
-  """
+  """Checks if the config contains any AFC incompatible tools."""
   if not config:
     return []
   config_model = _create_generate_content_config_model(config)
@@ -141,10 +131,42 @@ def find_afc_incompatible_tool_indexes(
     return incompatible_tools_indexes
 
   for index, tool in enumerate(config_model.tools):
-    if isinstance(tool, types.Tool) and tool.function_declarations:
+    if not isinstance(tool, types.Tool):
+      continue
+    if getattr(tool, 'function_declarations', None):
       incompatible_tools_indexes.append(index)
 
+    # Only mark it incompatible if it's MLDev, not Agent Platform.
+    if getattr(tool, 'mcp_servers', None) and not is_agent_platform:
+      incompatible_tools_indexes.append(index)
   return incompatible_tools_indexes
+
+
+def log_afc_incompatible_tools_warning(
+    config: Optional[types.GenerateContentConfigOrDict],
+    incompatible_tools_indexes: list[int],
+) -> None:
+  """Logs a warning if any tools are incompatible with automatic function calling."""
+  if not incompatible_tools_indexes:
+    return
+  original_tools_length = 0
+  if isinstance(config, types.GenerateContentConfig):
+    if config.tools:
+      original_tools_length = len(config.tools)
+  elif isinstance(config, dict):
+    tools = config.get('tools', [])
+    if tools:
+      original_tools_length = len(tools)
+  if len(incompatible_tools_indexes) != original_tools_length:
+    indices_str = ', '.join(map(str, incompatible_tools_indexes))
+    logger.warning(
+        'Tools at indices [%s] are not compatible with automatic function '
+        'calling (AFC). AFC is disabled. If AFC is intended, please '
+        'include python callables in the tool list, and do not include '
+        'function declaration and MCP server in the tool list.',
+        indices_str,
+    )
+
 
 
 def get_function_map(
@@ -380,18 +402,26 @@ async def get_function_response_parts_async(
       if not part.function_call:
         continue
       func_name = part.function_call.name
-      if func_name is not None and part.function_call.args is not None:
+      if func_name is not None:
         func = function_map[func_name]
-        args = convert_number_values_for_dict_function_call_args(
+        # Treat None as an empty dictionary for execution
+        raw_args = (
             part.function_call.args
+            if part.function_call.args is not None
+            else {}
         )
-        func_response: _common.StringDict
+        args = convert_number_values_for_dict_function_call_args(raw_args)
         try:
           if isinstance(func, McpToGenAiToolAdapter):
             mcp_tool_response = await func.call_tool(
                 types.FunctionCall(name=func_name, args=args)
             )
-            if mcp_tool_response.isError:
+            is_error = getattr(
+                mcp_tool_response,
+                'is_error',
+                getattr(mcp_tool_response, 'isError', False),
+            )
+            if is_error:
               func_response = {'error': mcp_tool_response}
             else:
               func_response = {'result': mcp_tool_response}
@@ -406,7 +436,7 @@ async def get_function_response_parts_async(
                 )
             }
         except Exception as e:  # pylint: disable=broad-except
-          func_response = {'error': str(e)}
+          func_response = {'error': str(e)}  # type: ignore[dict-item]
         func_response_part = types.Part.from_function_response(
             name=func_name, response=func_response
         )
@@ -550,6 +580,7 @@ def parse_config_for_mcp_usage(
 
 async def parse_config_for_mcp_sessions(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    is_agent_platform: bool = False,
 ) -> tuple[
     Optional[types.GenerateContentConfig],
     dict[str, McpToGenAiToolAdapter],
@@ -567,27 +598,37 @@ async def parse_config_for_mcp_sessions(
   parsed_config_copy = parsed_config.model_copy(update={'tools': None})
   if parsed_config.tools:
     parsed_config_copy.tools = []
-    for tool in parsed_config.tools:
-      if McpClientSession is not None and isinstance(tool, McpClientSession):
-        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
-        )
-        # Extend the config with the MCP session tools converted to GenAI tools.
-        parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
-        for genai_tool in mcp_to_genai_tool_adapter.tools:
-          if genai_tool.function_declarations:
-            for function_declaration in genai_tool.function_declarations:
-              if function_declaration.name:
-                if mcp_to_genai_tool_adapters.get(function_declaration.name):
-                  raise ValueError(
-                      f'Tool {function_declaration.name} is already defined for'
-                      ' the request.'
+    if not _mcp_utils._is_mcp_loaded():
+      # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
+      parsed_config_copy.tools.extend(parsed_config.tools)
+    else:
+      try:
+        from mcp import ClientSession as _McpClientSession  # pylint: disable=g-import-not-at-top
+      except ImportError:
+        _McpClientSession = type('DummySession', (), {})  # type: ignore
+
+      for tool in parsed_config.tools:
+        if isinstance(tool, _McpClientSession):
+          mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+              tool, await tool.list_tools(), is_agent_platform=is_agent_platform
+          )
+          # Extend the config with the MCP session tools converted to GenAI
+          # tools.
+          parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+          for genai_tool in mcp_to_genai_tool_adapter.tools:
+            if genai_tool.function_declarations:
+              for function_declaration in genai_tool.function_declarations:
+                if function_declaration.name is not None:
+                  if mcp_to_genai_tool_adapters.get(function_declaration.name):
+                    raise ValueError(
+                        f'Tool {function_declaration.name} is already defined'
+                        ' for the request.'
+                    )
+                  mcp_to_genai_tool_adapters[function_declaration.name] = (
+                      mcp_to_genai_tool_adapter
                   )
-                mcp_to_genai_tool_adapters[function_declaration.name] = (
-                    mcp_to_genai_tool_adapter
-                )
-      else:
-        parsed_config_copy.tools.append(tool)
+        else:
+          parsed_config_copy.tools.append(tool)
 
   return parsed_config_copy, mcp_to_genai_tool_adapters
 
@@ -676,3 +717,65 @@ def prepare_resumable_upload(
         http_options.headers = {}
     http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
   return http_options, size_bytes, mime_type
+
+
+def has_agent_platform_mcp_servers(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> bool:
+    """Checks whether the configuration contains any MCP server requests."""
+    if not config:
+      return False
+    config_model = _create_generate_content_config_model(config)
+    if not config_model.tools:
+      return False
+
+    for tool in config_model.tools:
+      if getattr(tool, 'mcp_servers', None):
+        return True
+    return False
+
+
+def get_usage_header(
+    config: Optional[Union[dict[str, Any], C]], config_cls: Type[C], usage: str
+) -> C:
+  """Returns the usage header for the config."""
+  usage_header = f'google-genai-sdk/{public_version.__version__}+{usage}'
+  if not config:
+    config_model = config_cls()
+  elif isinstance(config, dict):
+    config_model = config_cls(**config)
+  else:
+    config_model = config
+
+  # Many configs have http_options, safely initialize it if it's missing
+  if not hasattr(config_model, 'http_options'):
+    return config_model
+
+  http_options = getattr(config_model, 'http_options', None)
+  if http_options is None:
+    http_options = types.HttpOptions()
+    setattr(config_model, 'http_options', http_options)
+
+  http_options = typing.cast(types.HttpOptions, http_options)
+  existing_headers = http_options.headers or {}
+
+  for header_key in ('user-agent', 'x-goog-api-client'):
+    if header_key in existing_headers:
+      if (
+          f'+{usage}' not in existing_headers[header_key]
+          and usage_header not in existing_headers[header_key]
+      ):
+        if (
+            f'google-genai-sdk/{public_version.__version__}'
+            in existing_headers[header_key]
+        ):
+          existing_headers[header_key] = existing_headers[header_key].replace(
+              f'google-genai-sdk/{public_version.__version__}', usage_header
+          )
+        else:
+          existing_headers[header_key] += f' {usage_header}'
+    else:
+      existing_headers[header_key] = usage_header
+
+  http_options.headers = existing_headers
+  return config_model

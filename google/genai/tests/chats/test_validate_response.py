@@ -14,8 +14,10 @@
 #
 
 
+from ... import chats
 from ... import types
-from ...chats import _validate_response
+
+_validate_response = chats._validate_response
 
 
 def test_validate_response_default_response():
@@ -53,7 +55,7 @@ def test_validate_response_part_with_empty_text():
       ]
   )
 
-  assert not _validate_response(response)
+  assert _validate_response(response)
 
 
 def test_validate_response_part_with_text():
