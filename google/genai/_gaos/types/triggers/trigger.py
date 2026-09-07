@@ -19,10 +19,16 @@
 from __future__ import annotations
 from datetime import datetime
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
-from ..interactions import interaction as interactions_interaction
+from ..interactions import (
+    cronconfig as interactions_cronconfig,
+    interaction as interactions_interaction,
+    trigger as interactions_trigger,
+    webhooktriggerconfig as interactions_webhooktriggerconfig,
+)
+import pydantic
 from pydantic import model_serializer
 from typing import Literal, Optional, Union
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 TriggerStatus = Union[
@@ -41,26 +47,28 @@ class TriggerTypedDict(TypedDict):
 
     id: str
     r"""Required. Output only. Identifier. The ID of the trigger."""
-    interaction: interactions_interaction.InteractionTypedDict
-    r"""The Interaction resource."""
-    schedule: str
-    r"""Required. The cron schedule on which the trigger should run.
-    Standard cron format.
+    agent_id: NotRequired[str]
+    r"""The agent that owns this trigger. Set automatically when creating
+    via the agent-scoped endpoint.
     """
-    time_zone: str
-    r"""Required. Time zone in which the schedule should be interpreted."""
     consecutive_failure_count: NotRequired[int]
     r"""Output only. The number of consecutive failures that have occurred
     since the last successful execution.
     """
     create_time: NotRequired[datetime]
     r"""Output only. The time when the trigger was created."""
+    cron: NotRequired[interactions_cronconfig.CronConfigTypedDict]
+    r"""Cron-specific trigger configuration."""
     display_name: NotRequired[str]
     r"""Optional. The display name of the trigger."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the trigger execution."""
     execution_timeout_seconds: NotRequired[int]
     r"""Optional. The execution timeout for the triggered interaction."""
+    interaction: NotRequired[interactions_interaction.InteractionTypedDict]
+    r"""The Interaction resource."""
+    interaction_template: NotRequired[interactions_interaction.InteractionTypedDict]
+    r"""The Interaction resource."""
     last_pause_time: NotRequired[datetime]
     r"""Output only. The time when the trigger was last paused."""
     last_resume_time: NotRequired[datetime]
@@ -75,10 +83,25 @@ class TriggerTypedDict(TypedDict):
     r"""Output only. The time when the trigger is scheduled to run next."""
     previous_interaction_id: NotRequired[str]
     r"""Output only. The ID of the last interaction created by this trigger."""
+    schedule: NotRequired[str]
+    r"""Deprecated: Use cron.schedule instead.
+    The cron schedule on which the trigger should run.
+    Standard cron format.
+    """
+    script: NotRequired[interactions_trigger.ScriptTypedDict]
+    r"""Execute a script inside the agent's container environment."""
     status: NotRequired[TriggerStatus]
     r"""Output only. The current status of the trigger."""
+    time_zone: NotRequired[str]
+    r"""Deprecated: Use cron.time_zone instead.
+    Time zone in which the schedule should be interpreted.
+    """
     update_time: NotRequired[datetime]
     r"""Output only. The time when the trigger was last updated."""
+    webhook: NotRequired[
+        interactions_webhooktriggerconfig.WebhookTriggerConfigTypedDict
+    ]
+    r"""Webhook-specific trigger configuration."""
 
 
 class Trigger(BaseModel):
@@ -87,16 +110,10 @@ class Trigger(BaseModel):
     id: str
     r"""Required. Output only. Identifier. The ID of the trigger."""
 
-    interaction: interactions_interaction.Interaction
-    r"""The Interaction resource."""
-
-    schedule: str
-    r"""Required. The cron schedule on which the trigger should run.
-    Standard cron format.
+    agent_id: Optional[str] = None
+    r"""The agent that owns this trigger. Set automatically when creating
+    via the agent-scoped endpoint.
     """
-
-    time_zone: str
-    r"""Required. Time zone in which the schedule should be interpreted."""
 
     consecutive_failure_count: Optional[int] = None
     r"""Output only. The number of consecutive failures that have occurred
@@ -106,6 +123,9 @@ class Trigger(BaseModel):
     create_time: Optional[datetime] = None
     r"""Output only. The time when the trigger was created."""
 
+    cron: Optional[interactions_cronconfig.CronConfig] = None
+    r"""Cron-specific trigger configuration."""
+
     display_name: Optional[str] = None
     r"""Optional. The display name of the trigger."""
 
@@ -114,6 +134,12 @@ class Trigger(BaseModel):
 
     execution_timeout_seconds: Optional[int] = None
     r"""Optional. The execution timeout for the triggered interaction."""
+
+    interaction: Optional[interactions_interaction.Interaction] = None
+    r"""The Interaction resource."""
+
+    interaction_template: Optional[interactions_interaction.Interaction] = None
+    r"""The Interaction resource."""
 
     last_pause_time: Optional[datetime] = None
     r"""Output only. The time when the trigger was last paused."""
@@ -135,29 +161,64 @@ class Trigger(BaseModel):
     previous_interaction_id: Optional[str] = None
     r"""Output only. The ID of the last interaction created by this trigger."""
 
+    schedule: Annotated[
+        Optional[str],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Deprecated: Use cron.schedule instead.
+    The cron schedule on which the trigger should run.
+    Standard cron format.
+    """
+
+    script: Optional[interactions_trigger.Script] = None
+    r"""Execute a script inside the agent's container environment."""
+
     status: Optional[TriggerStatus] = None
     r"""Output only. The current status of the trigger."""
 
+    time_zone: Annotated[
+        Optional[str],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Deprecated: Use cron.time_zone instead.
+    Time zone in which the schedule should be interpreted.
+    """
+
     update_time: Optional[datetime] = None
     r"""Output only. The time when the trigger was last updated."""
+
+    webhook: Optional[interactions_webhooktriggerconfig.WebhookTriggerConfig] = None
+    r"""Webhook-specific trigger configuration."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
         optional_fields = set(
             [
+                "agent_id",
                 "consecutive_failure_count",
                 "create_time",
+                "cron",
                 "display_name",
                 "environment_id",
                 "execution_timeout_seconds",
+                "interaction",
+                "interaction_template",
                 "last_pause_time",
                 "last_resume_time",
                 "last_run_time",
                 "max_consecutive_failures",
                 "next_run_time",
                 "previous_interaction_id",
+                "schedule",
+                "script",
                 "status",
+                "time_zone",
                 "update_time",
+                "webhook",
             ]
         )
         serialized = handler(self)

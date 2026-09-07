@@ -88,6 +88,7 @@ if TYPE_CHECKING:
         CreateModelInteractionResponseFormat,
         CreateModelInteractionResponseFormatParam,
     )
+    from .cronconfig import CronConfig, CronConfigTypedDict
     from .deepresearchagentconfig import (
         DeepResearchAgentConfig,
         DeepResearchAgentConfigParam,
@@ -134,6 +135,7 @@ if TYPE_CHECKING:
     )
     from .filesearchresultstep import FileSearchResultStep, FileSearchResultStepParam
     from .filter_ import Filter, FilterParam
+    from .filterrule import FilterRule, FilterRuleTypedDict, Operator
     from .findrequest import FindRequest, FindRequestParam, Mode
     from .fixrequest import FixRequest, FixRequestParam
     from .function import Function, FunctionParam
@@ -388,6 +390,7 @@ if TYPE_CHECKING:
         TranscriptionModeParam,
         UnknownTranscriptionMode,
     )
+    from .trigger import Script, ScriptTypedDict
     from .urlcitation import URLCitation, URLCitationParam
     from .urlcontext import URLContext, URLContextParam
     from .urlcontextcallarguments import (
@@ -431,6 +434,14 @@ if TYPE_CHECKING:
         VideoResponseFormatParam,
     )
     from .webhookconfig import WebhookConfig, WebhookConfigParam
+    from .webhooktriggerconfig import (
+        Verification,
+        VerificationTypedDict,
+        WebhookTriggerConfig,
+        WebhookTriggerConfigFilter,
+        WebhookTriggerConfigFilterTypedDict,
+        WebhookTriggerConfigTypedDict,
+    )
     from .wordinfo import WordInfo, WordInfoParam
 
 __all__ = [
@@ -489,6 +500,8 @@ __all__ = [
     "CreateModelInteractionParam",
     "CreateModelInteractionResponseFormat",
     "CreateModelInteractionResponseFormatParam",
+    "CronConfig",
+    "CronConfigTypedDict",
     "DeepResearchAgentConfig",
     "DeepResearchAgentConfigParam",
     "Disabled",
@@ -532,6 +545,8 @@ __all__ = [
     "FileSearchResultTypedDict",
     "Filter",
     "FilterParam",
+    "FilterRule",
+    "FilterRuleTypedDict",
     "FindRequest",
     "FindRequestParam",
     "FixRequest",
@@ -667,6 +682,7 @@ __all__ = [
     "Network",
     "NetworkEnum",
     "NetworkParam",
+    "Operator",
     "ParallelAISearchConfig",
     "ParallelAISearchConfigParam",
     "PlaceCitation",
@@ -708,6 +724,8 @@ __all__ = [
     "ReviewSnippetParam",
     "SafetySetting",
     "SafetySettingParam",
+    "Script",
+    "ScriptTypedDict",
     "ServiceTier",
     "SessionConfig",
     "SessionConfigParam",
@@ -808,6 +826,8 @@ __all__ = [
     "UserInputStepParam",
     "VerbatimTranscriptionMode",
     "VerbatimTranscriptionModeParam",
+    "Verification",
+    "VerificationTypedDict",
     "VertexAISearchConfig",
     "VertexAISearchConfigParam",
     "VideoConfig",
@@ -825,6 +845,10 @@ __all__ = [
     "Visualization",
     "WebhookConfig",
     "WebhookConfigParam",
+    "WebhookTriggerConfig",
+    "WebhookTriggerConfigFilter",
+    "WebhookTriggerConfigFilterTypedDict",
+    "WebhookTriggerConfigTypedDict",
     "WordInfo",
     "WordInfoParam",
 ]
@@ -890,6 +914,8 @@ _dynamic_imports: dict[str, str] = {
     "CreateModelInteractionParam": ".createmodelinteraction",
     "CreateModelInteractionResponseFormat": ".createmodelinteraction",
     "CreateModelInteractionResponseFormatParam": ".createmodelinteraction",
+    "CronConfig": ".cronconfig",
+    "CronConfigTypedDict": ".cronconfig",
     "DeepResearchAgentConfig": ".deepresearchagentconfig",
     "DeepResearchAgentConfigParam": ".deepresearchagentconfig",
     "Visualization": ".deepresearchagentconfig",
@@ -937,6 +963,9 @@ _dynamic_imports: dict[str, str] = {
     "FileSearchResultStepParam": ".filesearchresultstep",
     "Filter": ".filter_",
     "FilterParam": ".filter_",
+    "FilterRule": ".filterrule",
+    "FilterRuleTypedDict": ".filterrule",
+    "Operator": ".filterrule",
     "FindRequest": ".findrequest",
     "FindRequestParam": ".findrequest",
     "Mode": ".findrequest",
@@ -1177,6 +1206,8 @@ _dynamic_imports: dict[str, str] = {
     "TranscriptionMode": ".transcriptionmode",
     "TranscriptionModeParam": ".transcriptionmode",
     "UnknownTranscriptionMode": ".transcriptionmode",
+    "Script": ".trigger",
+    "ScriptTypedDict": ".trigger",
     "URLCitation": ".urlcitation",
     "URLCitationParam": ".urlcitation",
     "URLContext": ".urlcontext",
@@ -1221,6 +1252,12 @@ _dynamic_imports: dict[str, str] = {
     "VideoResponseFormatParam": ".videoresponseformat",
     "WebhookConfig": ".webhookconfig",
     "WebhookConfigParam": ".webhookconfig",
+    "Verification": ".webhooktriggerconfig",
+    "VerificationTypedDict": ".webhooktriggerconfig",
+    "WebhookTriggerConfig": ".webhooktriggerconfig",
+    "WebhookTriggerConfigFilter": ".webhooktriggerconfig",
+    "WebhookTriggerConfigFilterTypedDict": ".webhooktriggerconfig",
+    "WebhookTriggerConfigTypedDict": ".webhooktriggerconfig",
     "WordInfo": ".wordinfo",
     "WordInfoParam": ".wordinfo",
 }
