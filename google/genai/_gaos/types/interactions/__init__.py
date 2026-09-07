@@ -107,6 +107,8 @@ if TYPE_CHECKING:
     from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
     from .empty import Empty, EmptyTypedDict
     from .environment import (
+        Env,
+        EnvParam,
         Environment,
         EnvironmentParam,
         Network,
@@ -120,6 +122,7 @@ if TYPE_CHECKING:
         EnvironmentNetworkEgressAllowlist,
         EnvironmentNetworkEgressAllowlistParam,
     )
+    from .envvar import EnvVar, EnvVarParam
     from .error import Error, ErrorTypedDict
     from .errorevent import ErrorEvent, ErrorEventTypedDict
     from .exaaisearchconfig import ExaAISearchConfig, ExaAISearchConfigParam
@@ -504,6 +507,10 @@ __all__ = [
     "DynamicAgentConfigParam",
     "Empty",
     "EmptyTypedDict",
+    "Env",
+    "EnvParam",
+    "EnvVar",
+    "EnvVarParam",
     "Environment",
     "EnvironmentEnum",
     "EnvironmentNetworkEgressAllowlist",
@@ -904,6 +911,8 @@ _dynamic_imports: dict[str, str] = {
     "DynamicAgentConfigParam": ".dynamicagentconfig",
     "Empty": ".empty",
     "EmptyTypedDict": ".empty",
+    "Env": ".environment",
+    "EnvParam": ".environment",
     "Environment": ".environment",
     "EnvironmentParam": ".environment",
     "Network": ".environment",
@@ -914,6 +923,8 @@ _dynamic_imports: dict[str, str] = {
     "Disabled": ".environmentnetworkegressallowlist",
     "EnvironmentNetworkEgressAllowlist": ".environmentnetworkegressallowlist",
     "EnvironmentNetworkEgressAllowlistParam": ".environmentnetworkegressallowlist",
+    "EnvVar": ".envvar",
+    "EnvVarParam": ".envvar",
     "Error": ".error",
     "ErrorTypedDict": ".error",
     "ErrorEvent": ".errorevent",
