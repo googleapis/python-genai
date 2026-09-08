@@ -2977,3 +2977,4 @@ def test_computer_use_types():
   assert c.enable_prompt_injection_detection is True
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
+
