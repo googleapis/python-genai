@@ -45,8 +45,8 @@ class TriggerTypedDict(TypedDict):
     interaction: interactions_interaction.InteractionTypedDict
     r"""The Interaction resource."""
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run.
-    Standard cron format.
+    r"""Required. The cron schedule on which the trigger should run. Standard cron
+    format.
     """
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
@@ -69,8 +69,8 @@ class TriggerTypedDict(TypedDict):
     last_run_time: NotRequired[datetime]
     r"""Output only. The time when the trigger was last run."""
     max_consecutive_failures: NotRequired[int]
-    r"""Optional. The maximum number of consecutive failures allowed before
-    the trigger is automatically paused (status becomes ERROR).
+    r"""Optional. The maximum number of consecutive failures allowed before the
+    trigger is automatically paused (status becomes ERROR).
     """
     next_run_time: NotRequired[datetime]
     r"""Output only. The time when the trigger is scheduled to run next."""
@@ -92,8 +92,8 @@ class Trigger(BaseModel):
     r"""The Interaction resource."""
 
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run.
-    Standard cron format.
+    r"""Required. The cron schedule on which the trigger should run. Standard cron
+    format.
     """
 
     time_zone: str
@@ -126,8 +126,8 @@ class Trigger(BaseModel):
     r"""Output only. The time when the trigger was last run."""
 
     max_consecutive_failures: Optional[int] = None
-    r"""Optional. The maximum number of consecutive failures allowed before
-    the trigger is automatically paused (status becomes ERROR).
+    r"""Optional. The maximum number of consecutive failures allowed before the
+    trigger is automatically paused (status becomes ERROR).
     """
 
     next_run_time: Optional[datetime] = None
