@@ -24,6 +24,14 @@ import pydantic
 import pytest
 from ... import types
 
+
+def test_finish_reason_malformed_response():
+  assert types.FinishReason.MALFORMED_RESPONSE.value == 'MALFORMED_RESPONSE'
+  assert (
+      types.FinishReason('MALFORMED_RESPONSE')
+      is types.FinishReason.MALFORMED_RESPONSE
+  )
+
 _is_mcp_imported = False
 if typing.TYPE_CHECKING:
   from mcp import types as mcp_types
@@ -2969,4 +2977,3 @@ def test_computer_use_types():
   assert c.enable_prompt_injection_detection is True
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
-
