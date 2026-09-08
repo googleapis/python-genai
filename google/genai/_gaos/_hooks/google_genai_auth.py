@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # pyformat: disable
+# pylint: skip-file
 
 """Google GenAI authentication hooks for the embedded Speakeasy SDK."""
 
