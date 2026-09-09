@@ -611,6 +611,111 @@ async def test_async_session_resumption_update(
   assert message == expected_result
 
 
+def test_is_interaction_complete():
+  assert not live._is_interaction_complete(None)
+  assert not live._is_interaction_complete(
+      types.LiveServerContent(turn_complete=False)
+  )
+  assert live._is_interaction_complete(
+      types.LiveServerContent(turn_complete=True)
+  )
+  assert not live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=True,
+          interaction_status=types.InteractionStatus.IN_PROGRESS,
+      )
+  )
+  assert live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=True, interaction_status=types.InteractionStatus.IDLE
+      )
+  )
+  assert live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=True,
+          interaction_status=types.InteractionStatus.INTERACTION_STATUS_UNSPECIFIED,
+      )
+  )
+  assert not live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=False,
+          interaction_status=types.InteractionStatus.INTERACTION_STATUS_UNSPECIFIED,
+      )
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_interaction_status_idle(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "hello"}]}}}',
+          (
+              '{"serverContent": {"turnComplete": true, "interactionStatus":'
+              ' "IDLE"}}'
+          ),
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  assert len(messages) == 2
+  assert isinstance(messages[0], types.LiveServerMessage)
+  assert messages[0].server_content.model_turn.parts[0].text == 'hello'
+  assert isinstance(messages[1], types.LiveServerMessage)
+  assert messages[1].server_content.turn_complete is True
+  assert (
+      messages[1].server_content.interaction_status
+      == types.InteractionStatus.IDLE
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_interaction_status_in_progress_then_idle(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          (
+              '{"serverContent": {"modelTurn": {"parts":[{"text":'
+              ' "thinking..."}]}}}'
+          ),
+          (
+              '{"serverContent": {"turnComplete": true, "interactionStatus":'
+              ' "IN_PROGRESS"}}'
+          ),
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "answer"}]}}}',
+          (
+              '{"serverContent": {"turnComplete": true, "interactionStatus":'
+              ' "IDLE"}}'
+          ),
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  assert len(messages) == 4
+  assert messages[0].server_content.model_turn.parts[0].text == 'thinking...'
+  assert messages[1].server_content.turn_complete is True
+  assert (
+      messages[1].server_content.interaction_status
+      == types.InteractionStatus.IN_PROGRESS
+  )
+  assert messages[2].server_content.model_turn.parts[0].text == 'answer'
+  assert messages[3].server_content.turn_complete is True
+  assert (
+      messages[3].server_content.interaction_status
+      == types.InteractionStatus.IDLE
+  )
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_start_stream(
