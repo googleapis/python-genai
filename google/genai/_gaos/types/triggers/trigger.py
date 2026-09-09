@@ -59,7 +59,7 @@ class TriggerTypedDict(TypedDict):
     display_name: NotRequired[str]
     r"""Optional. The display name of the trigger."""
     environment_id: NotRequired[str]
-    r"""Optional. The environment ID for the trigger execution."""
+    r"""Output only. The environment ID used for trigger execution."""
     execution_timeout_seconds: NotRequired[int]
     r"""Optional. The execution timeout for the triggered interaction."""
     last_pause_time: NotRequired[datetime]
@@ -111,7 +111,7 @@ class Trigger(BaseModel):
     r"""Optional. The display name of the trigger."""
 
     environment_id: Optional[str] = None
-    r"""Optional. The environment ID for the trigger execution."""
+    r"""Output only. The environment ID used for trigger execution."""
 
     execution_timeout_seconds: Optional[int] = None
     r"""Optional. The execution timeout for the triggered interaction."""
