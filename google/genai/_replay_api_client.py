@@ -24,7 +24,7 @@ import io
 import json
 import os
 import re
-from typing import Any, Literal, Optional, Union, Iterator, AsyncIterator
+from typing import Any, AsyncIterator, Iterator, Literal, Optional, Union, cast, overload
 
 import google.auth
 
@@ -410,7 +410,7 @@ class ReplayApiClient(BaseApiClient):
           headers=dict(http_response.headers),
           body_segments=list(http_response.segments()),
           byte_segments=[
-              seg[:100] + b'...' for seg in http_response.byte_segments()
+              seg[:100] for seg in http_response.byte_segments()
           ],
           status_code=http_response.status_code,
           sdk_response_segments=[],
@@ -426,7 +426,7 @@ class ReplayApiClient(BaseApiClient):
       response = ReplayResponse(
           headers={},
           body_segments=[],
-          byte_segments=[http_response],
+          byte_segments=[http_response[:64 * 1024]],
           sdk_response_segments=[],
       )
     else:
@@ -672,34 +672,128 @@ class ReplayApiClient(BaseApiClient):
     else:
       return self._build_response_from_replay(request)
 
+  @overload
   def download_file(
-      self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
-  ) -> Union[HttpResponse, bytes, Any]:
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: None = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> bytes:
+    ...
+
+  @overload
+  def download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Union[str, os.PathLike[str], io.IOBase],
+      chunk_size: int = 1024 * 1024,
+  ) -> None:
+    ...
+
+  def download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Optional[Union[str, os.PathLike[str], io.IOBase]] = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> Optional[bytes]:
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
       with _record_on_api_error(self, request):
-        result = super().download_file(path, http_options=http_options)
-      self._record_interaction(request, result)
-      return result
+        content = super().download_file(
+            path,
+            http_options=http_options,
+            destination=None,
+            chunk_size=chunk_size,
+        )
+        self._record_interaction(request, content)
     else:
-      return self._build_response_from_replay(request).byte_stream[0]
+      content = cast(
+          bytes, self._build_response_from_replay(request).byte_stream[0]
+      )
+
+    if destination is not None:
+      if isinstance(destination, (str, os.PathLike)):
+        with open(destination, 'wb') as f:
+          f.write(content)
+      elif hasattr(destination, 'write'):
+        destination.write(content)
+      else:
+        raise ValueError(
+            f'Unsupported destination type: {type(destination)}. '
+            'Expected str, os.PathLike, or a writable file-like object.'
+        )
+      return None
+    return content
+
+  @overload
+  async def async_download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: None = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> bytes:
+    ...
+
+  @overload
+  async def async_download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Union[str, os.PathLike[str], io.IOBase],
+      chunk_size: int = 1024 * 1024,
+  ) -> None:
+    ...
 
   async def async_download_file(
-      self, path: str, *, http_options: Optional[HttpOptionsOrDict] = None
-  ) -> Any:
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Optional[Union[str, os.PathLike[str], io.IOBase]] = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> Optional[bytes]:
     self._initialize_replay_session_if_not_loaded()
     request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
     if self._should_call_api():
       async with _async_record_on_api_error(self, request):
-        result = await super().async_download_file(
-            path, http_options=http_options
+        content = await super().async_download_file(
+            path,
+            http_options=http_options,
+            destination=None,
+            chunk_size=chunk_size,
         )
-      self._record_interaction(request, result)
-      return result
+        self._record_interaction(request, content)
     else:
-      return self._build_response_from_replay(request).byte_stream[0]
+      content = cast(
+          bytes, self._build_response_from_replay(request).byte_stream[0]
+      )
+
+    if destination is not None:
+      if isinstance(destination, (str, os.PathLike)):
+        with open(destination, 'wb') as f:
+          f.write(content)
+      elif hasattr(destination, 'write'):
+        res = destination.write(content)
+        if inspect.isawaitable(res):
+          await res
+      else:
+        raise ValueError(
+            f'Unsupported destination type: {type(destination)}. '
+            'Expected str, os.PathLike, or a writable file-like object.'
+        )
+      return None
+    return content

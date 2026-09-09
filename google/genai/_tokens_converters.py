@@ -466,7 +466,9 @@ def _LiveConnectConfig_to_mldev(
     setv(
         parent_object,
         ['setup', 'generationConfig', 'translationConfig'],
-        getv(from_object, ['translation_config']),
+        _TranslationConfig_to_mldev(
+            getv(from_object, ['translation_config']), to_object
+        ),
     )
 
   return to_object
@@ -575,6 +577,11 @@ def _Part_to_mldev(
         to_object,
         ['audioTranscription'],
         getv(from_object, ['audio_transcription']),
+    )
+
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
     )
 
   return to_object
@@ -691,6 +698,28 @@ def _Tool_to_mldev(
     raise ValueError(
         'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
         ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  return to_object
+
+
+def _TranslationConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['echo_target_language']) is not None:
+    setv(
+        to_object,
+        ['echoTargetLanguage'],
+        getv(from_object, ['echo_target_language']),
+    )
+
+  if getv(from_object, ['target_language_code']) is not None:
+    setv(
+        to_object,
+        ['targetLanguageCode'],
+        getv(from_object, ['target_language_code']),
     )
 
   return to_object

@@ -1,5 +1,36 @@
 # Changelog
 
+## [2.22.0](https://github.com/googleapis/python-genai/compare/v2.21.0...v2.22.0) (2026-09-02)
+
+
+### Features
+
+* Add Gemini 3.8 Flash model to SDKs and update Flash model descriptions ([660001a](https://github.com/googleapis/python-genai/commit/660001adf8ccbd6a4a54a414cbdaf26f07571f7e))
+
+## [2.21.0](https://github.com/googleapis/python-genai/compare/v2.20.0...v2.21.0) (2026-08-31)
+
+
+### Features
+
+* Add destination parameter to client.files.download to support streaming downloads to disk or file-like objects ([fcf9e3f](https://github.com/googleapis/python-genai/commit/fcf9e3fe8bdf9cc18a09a7fff3d65742913a6b06))
+* Add support for the audio/webm MIME type. ([67ec3d7](https://github.com/googleapis/python-genai/commit/67ec3d75df7ee1bf984e7ae8a6d45894579375d1))
+* Add translation_config SDK support for GEAP. ([ff153a7](https://github.com/googleapis/python-genai/commit/ff153a757362d776b935819bcc13aa20d9696a2a))
+* Add Video Understanding support to the Interactions API ([2cc99a9](https://github.com/googleapis/python-genai/commit/2cc99a9b365bda40ad60da33b206a31c096a79c5))
+
+
+### Bug Fixes
+
+* Expose ProcessingCallStep and ProcessingResultStep in Interactions SDK ([df0ab55](https://github.com/googleapis/python-genai/commit/df0ab55c09994da4de26ad3038f206fc986ced3a))
+
+## [2.20.0](https://github.com/googleapis/python-genai/compare/v2.19.0...v2.20.0) (2026-08-25)
+
+
+### Features
+
+* Add AudioTranscriptionConfigMode ([4a80954](https://github.com/googleapis/python-genai/commit/4a809546fdba31376d483ec018ec27f02e717d1c))
+* Add environment files support and scotty file download helper ([3074263](https://github.com/googleapis/python-genai/commit/30742636766a888f5ebe3eb272f912c843c74564))
+* Add TYPE_JPEG2000 to VideoContent.MimeType enum ([ef39c40](https://github.com/googleapis/python-genai/commit/ef39c40eb053aecdf0ae791410ecfe598281252d))
+
 ## [2.19.0](https://github.com/googleapis/python-genai/compare/v2.18.1...v2.19.0) (2026-08-19)
 
 

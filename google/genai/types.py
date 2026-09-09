@@ -1013,6 +1013,17 @@ class ComputationBasedMetricType(_common.CaseInSensitiveEnum):
   """ROUGE metric."""
 
 
+class MediaProcessing(_common.CaseInSensitiveEnum):
+  """How the model processes input media for understanding."""
+
+  MEDIA_PROCESSING_UNSPECIFIED = 'MEDIA_PROCESSING_UNSPECIFIED'
+  """Default. Uses model-specific processing"""
+  STATIC = 'STATIC'
+  """Fixed-rate frame extraction. All frames placed in context."""
+  AGENTIC = 'AGENTIC'
+  """Model-driven dynamic navigation. Recommended for most use cases."""
+
+
 class PartMediaResolutionLevel(_common.CaseInSensitiveEnum):
   """The tokenization quality used for given media."""
 
@@ -1043,6 +1054,8 @@ class ToolType(_common.CaseInSensitiveEnum):
   """Google maps tool, maps to Tool.google_maps."""
   FILE_SEARCH = 'FILE_SEARCH'
   """File search tool, maps to Tool.file_search."""
+  MEDIA_PROCESSING = 'MEDIA_PROCESSING'
+  """Media processing tool."""
 
 
 class ResourceScope(_common.CaseInSensitiveEnum):
@@ -1358,6 +1371,17 @@ class VoiceActivityType(_common.CaseInSensitiveEnum):
   """Start of sentence signal."""
   ACTIVITY_END = 'ACTIVITY_END'
   """End of sentence signal."""
+
+
+class AudioTranscriptionConfigMode(_common.CaseInSensitiveEnum):
+  """Transcription mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Unspecified transcription mode."""
+  VERBATIM = 'VERBATIM'
+  """Verbatim transcription mode."""
+  SMART = 'SMART'
+  """Smart transcription mode."""
 
 
 class StartSensitivity(_common.CaseInSensitiveEnum):
@@ -2293,6 +2317,10 @@ class Part(_common.BaseModel):
       default=None,
       description="""Output only. The transcription of the audio part.""",
   )
+  media_processing: Optional[MediaProcessing] = Field(
+      default=None,
+      description="""How the model processes this part's media for understanding.""",
+  )
 
   def __init__(
       self,
@@ -2526,6 +2554,9 @@ class PartDict(TypedDict, total=False):
 
   audio_transcription: Optional[TranscriptionDict]
   """Output only. The transcription of the audio part."""
+
+  media_processing: Optional[MediaProcessing]
+  """How the model processes this part's media for understanding."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -6371,6 +6402,10 @@ class AudioTranscriptionConfig(_common.BaseModel):
       description="""Configures speaker diarization.
       """,
   )
+  mode: Optional[AudioTranscriptionConfigMode] = Field(
+      default=None,
+      description="""Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`.""",
+  )
 
 
 class AudioTranscriptionConfigDict(TypedDict, total=False):
@@ -6398,6 +6433,9 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   diarization: Optional[bool]
   """Configures speaker diarization.
       """
+
+  mode: Optional[AudioTranscriptionConfigMode]
+  """Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`."""
 
 
 AudioTranscriptionConfigOrDict = Union[
@@ -11357,11 +11395,11 @@ class TranslationConfig(_common.BaseModel):
 
   echo_target_language: Optional[bool] = Field(
       default=None,
-      description="""Optional. If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language.""",
+      description="""If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language.""",
   )
   target_language_code: Optional[str] = Field(
       default=None,
-      description="""Required. The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr").""",
+      description="""The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr").""",
   )
 
 
@@ -11369,10 +11407,10 @@ class TranslationConfigDict(TypedDict, total=False):
   """Config for stream translation."""
 
   echo_target_language: Optional[bool]
-  """Optional. If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language."""
+  """If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language."""
 
   target_language_code: Optional[str]
-  """Required. The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr")."""
+  """The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr")."""
 
 
 TranslationConfigOrDict = Union[TranslationConfig, TranslationConfigDict]
