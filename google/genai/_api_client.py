@@ -1512,8 +1512,20 @@ class BaseApiClient:
       )
       response = self._httpx_client.send(httpx_request, stream=stream)  # type: ignore[union-attr, arg-type]
     errors.APIError.raise_for_response(response)
+    if stream:
+      return HttpResponse(response.headers, response)
+    
+    text = response.text
+    # Eagerly release memory to prevent unbounded growth (Issue #2369)
+    if hasattr(response, "close"):
+      response.close()
+    if hasattr(response, "_content"):
+      response._content = b""
+    if hasattr(response, "_text"):
+      response._text = ""
+      
     return HttpResponse(
-        response.headers, response if stream else [response.text]
+        response.headers, [text]
     )
 
   def _request(
@@ -1659,8 +1671,14 @@ class BaseApiClient:
           if hasattr(unwrapped_response, '_response'):
             unwrapped_response = unwrapped_response._response
 
+          text = await unwrapped_response.text()
+          if hasattr(unwrapped_response, 'release'):
+            unwrapped_response.release()
+          if hasattr(unwrapped_response, '_body'):
+            unwrapped_response._body = None
+
           return HttpResponse(
-              unwrapped_response.headers, [await unwrapped_response.text()]
+              unwrapped_response.headers, [text]
           )
         except (
             aiohttp.ClientConnectorError,
@@ -1693,9 +1711,15 @@ class BaseApiClient:
           if hasattr(unwrapped_retry_response, '_response'):
             unwrapped_retry_response = unwrapped_retry_response._response
 
+          text = await unwrapped_retry_response.text()
+          if hasattr(unwrapped_retry_response, 'release'):
+            unwrapped_retry_response.release()
+          if hasattr(unwrapped_retry_response, '_body'):
+            unwrapped_retry_response._body = None
+
           return HttpResponse(
               unwrapped_retry_response.headers,
-              [await unwrapped_retry_response.text()],
+              [text],
           )
       else:
         # aiohttp is not available. Fall back to httpx.
@@ -1707,7 +1731,17 @@ class BaseApiClient:
             timeout=http_request.timeout,
         )
         await errors.APIError.raise_for_async_response(client_response)
-        return HttpResponse(client_response.headers, [client_response.text])
+        
+        text = client_response.text
+        # Eagerly release memory to prevent unbounded growth (Issue #2369)
+        if hasattr(client_response, "aclose"):
+          await client_response.aclose()
+        if hasattr(client_response, "_content"):
+          client_response._content = b""
+        if hasattr(client_response, "_text"):
+          client_response._text = ""
+
+        return HttpResponse(client_response.headers, [text])
 
   async def _async_request(
       self,
