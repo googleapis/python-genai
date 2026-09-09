@@ -1624,24 +1624,38 @@ async def test_bidi_setup_to_api_with_translation_config(vertexai):
       },
   }
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        api_client=api_client, model='test_model', config=config_dict
-    )
+  result = await get_connect_message(
+      api_client=api_client, model='test_model', config=config_dict
+  )
 
-  if not vertexai:
+  if vertexai:
+    expected_result = {
+        'setup': {
+            'model': (
+                'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+            ),
+            'generationConfig': {
+                'responseModalities': ['AUDIO'],
+                'translationConfig': {
+                    'echoTargetLanguage': True,
+                    'targetLanguageCode': 'es',
+                },
+            },
+        }
+    }
+  else:
     expected_result = {
         'setup': {
             'model': 'models/test_model',
             'generationConfig': {
                 'translationConfig': {
-                    'echo_target_language': True,
-                    'target_language_code': 'es',
+                    'echoTargetLanguage': True,
+                    'targetLanguageCode': 'es',
                 },
             },
         }
     }
-    assert result == expected_result
+  assert result == expected_result
 
   # Test 2: Config defined using types.LiveConnectConfig.
   config = types.LiveConnectConfig(
@@ -1651,13 +1665,11 @@ async def test_bidi_setup_to_api_with_translation_config(vertexai):
       )
   )
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        api_client=api_client, model='test_model', config=config
-    )
+  result = await get_connect_message(
+      api_client=api_client, model='test_model', config=config
+  )
 
-  if not vertexai:
-    assert result == expected_result
+  assert result == expected_result
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -2303,4 +2315,3 @@ async def test_bidi_setup_replicated_voice_config_with_consent(vertexai):
       replicated_sig['voice_consent_signature'].get('signature')
       == 'test_sig_abc123'
   )
-

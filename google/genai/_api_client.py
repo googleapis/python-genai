@@ -34,7 +34,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 import warnings
@@ -637,6 +637,9 @@ class AsyncHttpxClient(httpx.AsyncClient):
 
 class BaseApiClient:
   """Client for calling HTTP APIs sending and receiving JSON."""
+
+  vertexai: Optional[bool] = None
+  custom_base_url: Optional[str] = None
 
   def __init__(
       self,
@@ -1962,21 +1965,55 @@ class BaseApiClient:
       raise ValueError('Failed to upload file: Upload status is not finalized.')
     return HttpResponse(response.headers, response_stream=[response.text])
 
+  @overload
   def download_file(
       self,
       path: str,
       *,
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Union[Any, bytes]:
+      destination: None = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> bytes:
+    ...
+
+  @overload
+  def download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Union[str, os.PathLike[str], io.IOBase],
+      chunk_size: int = 1024 * 1024,
+  ) -> None:
+    ...
+
+  def download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Optional[Union[str, os.PathLike[str], io.IOBase]] = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> Optional[bytes]:
     """Downloads the file data.
 
     Args:
       path: The request path with query params.
       http_options: The http options to use for the request.
+      destination: Optional local file path or writable stream.
+      chunk_size: The chunk size in bytes to stream.
 
-    returns:
-          The file bytes
+    Returns:
+      The file bytes if destination is None, otherwise None.
     """
+    if destination is not None and not isinstance(
+        destination, (str, os.PathLike)
+    ) and not hasattr(destination, 'write'):
+      raise ValueError(
+          f'Unsupported destination type: {type(destination)}. '
+          'Expected str, os.PathLike, or a writable file-like object.'
+      )
+
     http_request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
@@ -1988,18 +2025,86 @@ class BaseApiClient:
       else:
         data = http_request.data
 
-    response = self._httpx_client.request(  # type: ignore[union-attr]
-        method=http_request.method,
-        url=http_request.url,
-        headers=http_request.headers,
-        content=data,
-        timeout=http_request.timeout,
-    )
+    def _write_chunks(chunks: Iterator[bytes]) -> None:
+      if isinstance(destination, (str, os.PathLike)):
+        with open(destination, 'wb') as f:
+          for chunk in chunks:
+            f.write(chunk)
+      elif destination is not None and hasattr(destination, 'write'):
+        for chunk in chunks:
+          destination.write(chunk)
 
-    errors.APIError.raise_for_response(response)
-    return HttpResponse(
-        response.headers, byte_stream=[response.read()]
-    ).byte_stream[0]
+    if self._use_google_auth_sync():
+      url = str(http_request.url)
+      if self._authorized_session is None:
+        from google.auth.transport.requests import AuthorizedSession  # pylint: disable=g-import-not-at-top
+
+        self._authorized_session = AuthorizedSession(  # type: ignore[no-untyped-call]
+            self._credentials,
+            max_refresh_attempts=1,
+        )
+        client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
+        self._authorized_session.configure_mtls_channel(
+            client_cert_source
+        )  # type: ignore[no-untyped-call]
+      if self._authorized_session._is_mtls and 'googleapis.com' in url:
+        if 'sandbox' in url:
+          url = url.replace(
+              'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
+          )
+        else:
+          url = url.replace('googleapis.com', 'mtls.googleapis.com')
+      if destination is not None:
+        response = self._authorized_session.request(  # type: ignore[no-untyped-call]
+            method=http_request.method.upper(),
+            url=url,
+            data=data,
+            headers=http_request.headers,
+            timeout=http_request.timeout,
+            stream=True,
+        )
+        try:
+          errors.APIError.raise_for_response(response)
+          _write_chunks(response.iter_content(chunk_size=chunk_size))
+        finally:
+          response.close()
+        return None
+      else:
+        response = self._authorized_session.request(  # type: ignore[no-untyped-call]
+            method=http_request.method.upper(),
+            url=url,
+            data=data,
+            headers=http_request.headers,
+            timeout=http_request.timeout,
+        )
+        errors.APIError.raise_for_response(response)
+        return cast(bytes, response.content)
+    else:
+      if destination is not None:
+        httpx_request = self._httpx_client.build_request(  # type: ignore[union-attr]
+            method=http_request.method,
+            url=http_request.url,
+            content=data,
+            headers=http_request.headers,
+            timeout=http_request.timeout,
+        )
+        response = self._httpx_client.send(httpx_request, stream=True)  # type: ignore[union-attr, arg-type]
+        try:
+          errors.APIError.raise_for_response(response)
+          _write_chunks(response.iter_bytes(chunk_size=chunk_size))
+        finally:
+          response.close()
+        return None
+      else:
+        response = self._httpx_client.request(  # type: ignore[union-attr]
+            method=http_request.method,
+            url=http_request.url,
+            content=data,
+            headers=http_request.headers,
+            timeout=http_request.timeout,
+        )
+        errors.APIError.raise_for_response(response)
+        return cast(bytes, response.read())
 
   async def async_upload_file(
       self,
@@ -2237,21 +2342,55 @@ class BaseApiClient:
           client_response.headers, response_stream=[client_response.text]
       )
 
+  @overload
   async def async_download_file(
       self,
       path: str,
       *,
       http_options: Optional[HttpOptionsOrDict] = None,
-  ) -> Union[Any, bytes]:
-    """Downloads the file data.
+      destination: None = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> bytes:
+    ...
+
+  @overload
+  async def async_download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Union[str, os.PathLike[str], io.IOBase],
+      chunk_size: int = 1024 * 1024,
+  ) -> None:
+    ...
+
+  async def async_download_file(
+      self,
+      path: str,
+      *,
+      http_options: Optional[HttpOptionsOrDict] = None,
+      destination: Optional[Union[str, os.PathLike[str], io.IOBase]] = None,
+      chunk_size: int = 1024 * 1024,
+  ) -> Optional[bytes]:
+    """Downloads the file data asynchronously.
 
     Args:
       path: The request path with query params.
       http_options: The http options to use for the request.
+      destination: Optional local file path or writable stream.
+      chunk_size: The chunk size in bytes to stream.
 
-    returns:
-          The file bytes
+    Returns:
+      The file bytes if destination is None, otherwise None.
     """
+    if destination is not None and not isinstance(
+        destination, (str, os.PathLike)
+    ) and not hasattr(destination, 'write'):
+      raise ValueError(
+          f'Unsupported destination type: {type(destination)}. '
+          'Expected str, os.PathLike, or a writable file-like object.'
+      )
+
     http_request = self._build_request(
         'get', path=path, request_dict={}, http_options=http_options
     )
@@ -2263,34 +2402,89 @@ class BaseApiClient:
       else:
         data = http_request.data
 
+    async def _write_chunks(chunks: AsyncIterator[bytes]) -> None:
+      if isinstance(destination, (str, os.PathLike)):
+        with open(destination, 'wb') as f:
+          async for chunk in chunks:
+            f.write(chunk)
+      elif destination is not None and hasattr(destination, 'write'):
+        async for chunk in chunks:
+          res = destination.write(chunk)
+          if inspect.isawaitable(res):
+            await res
+
     if self._use_aiohttp():
       session = await self._get_aiohttp_session()  # type: ignore[assignment]
+      url = http_request.url
+      if self._use_google_auth_async():
+        client_cert_source = mtls.default_client_cert_source()  # type: ignore[no-untyped-call]
+        await session.configure_mtls_channel(  # type: ignore[union-attr]
+            client_cert_source
+        )
+        if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
+          if 'sandbox' in url:
+            url = url.replace(
+                'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
+            )
+          else:
+            url = url.replace('googleapis.com', 'mtls.googleapis.com')
       response = await session.request(  # type: ignore[union-attr]
           method=http_request.method,
-          url=http_request.url,
+          url=url,
           headers=http_request.headers,
           data=data,
           timeout=aiohttp.ClientTimeout(total=http_request.timeout),
+          **self._async_client_session_request_args,
       )
-      await errors.APIError.raise_for_async_response(response)
-
-      return HttpResponse(
-          response.headers, byte_stream=[await response.read()]
-      ).byte_stream[0]
+      if destination is not None:
+        try:
+          await errors.APIError.raise_for_async_response(response)
+          if hasattr(response, '_response'):
+            raw_response = response._response
+          else:
+            raw_response = response
+          await _write_chunks(raw_response.content.iter_chunked(chunk_size))
+        finally:
+          response.close()
+        return None
+      else:
+        try:
+          await errors.APIError.raise_for_async_response(response)
+          return cast(bytes, await response.read())
+        finally:
+          response.close()
     else:
       # aiohttp is not available. Fall back to httpx.
-      client_response = await self._async_httpx_client.request(  # type: ignore[union-attr]
-          method=http_request.method,
-          url=http_request.url,
-          headers=http_request.headers,
-          content=data,
-          timeout=http_request.timeout,
-      )
-      await errors.APIError.raise_for_async_response(client_response)
-
-      return HttpResponse(
-          client_response.headers, byte_stream=[client_response.read()]
-      ).byte_stream[0]
+      if destination is not None:
+        httpx_request = self._async_httpx_client.build_request(  # type: ignore[union-attr]
+            method=http_request.method,
+            url=http_request.url,
+            content=data,
+            headers=http_request.headers,
+            timeout=http_request.timeout,
+        )
+        client_response = await self._async_httpx_client.send(  # type: ignore[union-attr]
+            httpx_request,  # type: ignore[arg-type]
+            stream=True,
+        )
+        try:
+          await errors.APIError.raise_for_async_response(client_response)
+          await _write_chunks(
+              client_response.aiter_bytes(chunk_size=chunk_size)
+          )
+        finally:
+          await client_response.aclose()
+        return None
+      else:
+        client_response = await self._async_httpx_client.request(  # type: ignore[union-attr]
+            method=http_request.method,
+            url=http_request.url,
+            headers=http_request.headers,
+            content=data,
+            timeout=http_request.timeout,
+        )
+        await errors.APIError.raise_for_async_response(client_response)
+        return cast(bytes, client_response.read())
 
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the
