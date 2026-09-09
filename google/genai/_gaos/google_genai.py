@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # pyformat: disable
+# pylint: skip-file
 
 """Helpers for embedding the generated NextGen SDK in the Google GenAI client."""
 
