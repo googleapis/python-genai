@@ -102,3 +102,13 @@ async def test_constructor_with_aiohttp_clients():
   )
   assert not vertexai_client.models._api_client._aiohttp_session.trust_env
 
+
+def test_env_var_google_genai_http_client_httpx(monkeypatch):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  assert target_api_client._get_http_client_backend() == 'httpx'
+  client = Client(api_key='google_api_key')
+  assert isinstance(
+      client.models._api_client._httpx_client, target_api_client.SyncHttpxClient
+  )
+

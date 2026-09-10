@@ -26,6 +26,7 @@ injected `httpx2` client (see issue #2680):
   must recognize an `httpx2.Response`.
 """
 
+import httpx
 import pytest
 
 try:
@@ -147,3 +148,61 @@ async def test_httpx2_response_flows_through_async_stream():
   chunks = [chunk async for chunk in http_response._aiter_response_stream()]
 
   assert chunks == ['{"first": 1}', '{"second": 2}']
+
+
+def test_default_client_uses_httpx(monkeypatch):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  client = Client(api_key='fake_api_key')
+  assert isinstance(client._api_client._httpx_client, httpx.Client)
+  assert isinstance(
+      client._api_client._httpx_client, target_api_client.SyncHttpxClient
+  )
+
+
+def test_env_var_override_to_httpx(monkeypatch):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  client = Client(api_key='fake_api_key')
+  assert isinstance(client._api_client._httpx_client, httpx.Client)
+  assert isinstance(
+      client._api_client._httpx_client, target_api_client.SyncHttpxClient
+  )
+
+
+def test_env_var_override_to_httpx2(monkeypatch):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  client = Client(api_key='fake_api_key')
+  assert isinstance(client._api_client._httpx_client, httpx2.Client)
+  assert isinstance(
+      client._api_client._httpx_client, target_api_client.SyncHttpx2Client
+  )
+
+
+def test_env_var_httpx2_missing_raises(monkeypatch):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  monkeypatch.setattr(target_api_client, 'httpx2', None)
+  with pytest.raises(ImportError, match='httpx2 is configured'):
+    Client(api_key='fake_api_key')
+
+
+def test_env_var_httpx_missing_raises(monkeypatch):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  monkeypatch.setattr(target_api_client, 'httpx', None)
+  with pytest.raises(ImportError, match='httpx is configured'):
+    Client(api_key='fake_api_key')
+
+
+def test_default_falls_back_to_httpx2_when_httpx_missing(monkeypatch):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  monkeypatch.setattr(target_api_client, 'httpx', None)
+  client = Client(api_key='fake_api_key')
+  assert isinstance(client._api_client._httpx_client, httpx2.Client)
+  assert isinstance(
+      client._api_client._httpx_client, target_api_client.SyncHttpx2Client
+  )
+
