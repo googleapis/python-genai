@@ -6472,7 +6472,7 @@ class GenerateContentConfig(_common.BaseModel):
       creative results.
       """,
   )
-  top_p: Optional[float] = Field(
+  top_p: Optional[float] = Field(default=0.95, 
       default=None,
       description="""Tokens are selected from the most to least probable until the sum
       of their probabilities equals this value. Use a lower value for less
@@ -10913,7 +10913,7 @@ class Model(_common.BaseModel):
       description="""The maximum temperature value used for sampling set when the
       dataset was saved. This value is used to tune the degree of randomness.""",
   )
-  top_p: Optional[float] = Field(
+  top_p: Optional[float] = Field(default=0.95, 
       default=None,
       description="""Optional. Specifies the nucleus sampling threshold. The model
       considers only the smallest set of tokens whose cumulative probability is
@@ -11503,7 +11503,7 @@ class GenerationConfig(_common.BaseModel):
       default=None,
       description="""Optional. Specifies the top-k sampling threshold. The model considers only the top k most probable tokens for the next token. This can be useful for generating more coherent and less random text. For example, a `top_k` of 40 means the model will choose the next word from the 40 most likely words.""",
   )
-  top_p: Optional[float] = Field(
+  top_p: Optional[float] = Field(default=0.95, 
       default=None,
       description="""Optional. Specifies the nucleus sampling threshold. The model considers only the smallest set of tokens whose cumulative probability is at least `top_p`. This helps generate more diverse and less repetitive responses. For example, a `top_p` of 0.9 means the model considers tokens until the cumulative probability of the tokens to select from reaches 0.9. It's recommended to adjust either temperature or `top_p`, but not both.""",
   )
@@ -21581,7 +21581,7 @@ class LiveConnectConfig(_common.BaseModel):
       creative results.
       """,
   )
-  top_p: Optional[float] = Field(
+  top_p: Optional[float] = Field(default=0.95, 
       default=None,
       description="""Tokens are selected from the most to least probable until the sum
       of their probabilities equals this value. Use a lower value for less
