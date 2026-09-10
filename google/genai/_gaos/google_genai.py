@@ -26,6 +26,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Mapping, Optional, TypeVar, Union, cast
 
+import io
+import json
+import mimetypes
+import os
+
 import httpx
 
 from ._hooks.google_genai_auth import (
@@ -793,17 +798,21 @@ class GeminiNextGenEnvironmentFiles(GeneratedFiles):
     def download(
         self,
         *,
-        environment: str,
         path: str,
+        environment: Optional[str] = None,
+        environment_id: Optional[str] = None,
         http_options: Optional[Any] = None,
     ) -> bytes:
         """Downloads binary file content from an environment workspace."""
         if not self._api_client:
             raise AttributeError('api_client is required to download files.')
+        target_env = environment or environment_id
+        if not target_env:
+            raise ValueError('environment or environment_id is required.')
         env_name = (
-            environment
-            if environment.startswith('environments/')
-            else f'environments/{environment}'
+            target_env
+            if target_env.startswith('environments/')
+            else f'environments/{target_env}'
         )
         clean_path = path.lstrip('/')
         download_path = f'{env_name}/files/{clean_path}?alt=media'
@@ -811,6 +820,130 @@ class GeminiNextGenEnvironmentFiles(GeneratedFiles):
             download_path,
             http_options=http_options,
         )
+
+    def upload(
+        self,
+        *,
+        path: str,
+        file: Union[str, os.PathLike[str], io.IOBase, bytes],
+        environment: Optional[str] = None,
+        environment_id: Optional[str] = None,
+        mime_type: Optional[str] = None,
+        overwrite: Optional[bool] = None,
+        extract: Optional[bool] = None,
+        http_options: Optional[Any] = None,
+    ) -> Union[environments.EnvironmentFile, environments.GetEnvironmentFilesResponse, Any]:
+        """Uploads a file or extracts an archive inside an environment workspace."""
+        if not self._api_client:
+            raise AttributeError('api_client is required to upload files.')
+        target_env = environment or environment_id
+        if not target_env:
+            raise ValueError('environment or environment_id is required.')
+        env_name = (
+            target_env
+            if target_env.startswith('environments/')
+            else f'environments/{target_env}'
+        )
+        clean_path = path.lstrip('/')
+
+        file_obj: Union[str, io.IOBase]
+        if isinstance(file, (bytes, bytearray)):
+            file_obj = io.BytesIO(file)
+            size_bytes = len(file)
+        elif isinstance(file, io.IOBase):
+            file_obj = file
+            offset = file_obj.tell()
+            file_obj.seek(0, os.SEEK_END)
+            size_bytes = file_obj.tell() - offset
+            file_obj.seek(offset, os.SEEK_SET)
+        else:
+            fs_path = os.fspath(file)
+            if not fs_path or not os.path.isfile(fs_path):
+                raise FileNotFoundError(f'{file} is not a valid file path.')
+            size_bytes = os.path.getsize(fs_path)
+            file_obj = fs_path
+            if mime_type is None:
+                mime_type, _ = mimetypes.guess_type(fs_path)
+
+        if mime_type is None:
+            mime_type = 'application/octet-stream'
+
+        query_params = []
+        if overwrite is not None:
+            query_params.append(f'overwrite={"true" if overwrite else "false"}')
+        if extract is not None:
+            query_params.append(f'extract={"true" if extract else "false"}')
+        query_str = '&'.join(query_params)
+        handshake_path = f'{env_name}/files/{clean_path}'
+        if query_str:
+            handshake_path = f'{handshake_path}?{query_str}'
+
+        user_headers = {}
+        if http_options:
+            if isinstance(http_options, dict):
+                user_headers = http_options.get('headers', {}) or {}
+            elif hasattr(http_options, 'headers') and http_options.headers:
+                user_headers = dict(http_options.headers)
+
+        upload_headers = {
+            **user_headers,
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': str(size_bytes),
+            'X-Goog-Upload-Header-Content-Type': mime_type,
+        }
+
+        if http_options:
+            if isinstance(http_options, dict):
+                merged_options = {**http_options, 'headers': upload_headers}
+            else:
+                merged_options = http_options.model_copy()
+                merged_options.headers = upload_headers
+        else:
+            merged_options = {'headers': upload_headers}
+
+        response = self._api_client.request(
+            'put',
+            handshake_path,
+            request_dict={},
+            http_options=merged_options,
+        )
+
+        if (
+            response is None
+            or response.headers is None
+            or 'x-goog-upload-url' not in response.headers
+        ):
+            raise KeyError(
+                'Failed to upload file: Upload URL was not returned from the upload request.'
+            )
+        upload_url = response.headers['x-goog-upload-url']
+
+        upload_response = self._api_client.upload_file(
+            file_obj,
+            upload_url,
+            size_bytes,
+            http_options=http_options,
+        )
+
+        body_text = (
+            upload_response.response_stream[0]
+            if upload_response and upload_response.response_stream
+            else '{}'
+        )
+        try:
+            res_json = json.loads(body_text) if body_text else {}
+        except Exception:
+            return body_text
+
+        if isinstance(res_json, dict):
+            if 'file' in res_json and isinstance(res_json['file'], dict):
+                return environments.EnvironmentFile.model_validate(res_json['file'])
+            elif 'files' in res_json and isinstance(res_json['files'], list):
+                return environments.GetEnvironmentFilesResponse.model_validate(res_json)
+            elif 'name' in res_json or 'path' in res_json:
+                return environments.EnvironmentFile.model_validate(res_json)
+        return res_json
 
 
 class AsyncGeminiNextGenEnvironmentFiles(GeneratedAsyncFiles):
@@ -841,17 +974,21 @@ class AsyncGeminiNextGenEnvironmentFiles(GeneratedAsyncFiles):
     async def download(
         self,
         *,
-        environment: str,
         path: str,
+        environment: Optional[str] = None,
+        environment_id: Optional[str] = None,
         http_options: Optional[Any] = None,
     ) -> bytes:
         """Downloads binary file content from an environment workspace."""
         if not self._api_client:
             raise AttributeError('api_client is required to download files.')
+        target_env = environment or environment_id
+        if not target_env:
+            raise ValueError('environment or environment_id is required.')
         env_name = (
-            environment
-            if environment.startswith('environments/')
-            else f'environments/{environment}'
+            target_env
+            if target_env.startswith('environments/')
+            else f'environments/{target_env}'
         )
         clean_path = path.lstrip('/')
         download_path = f'{env_name}/files/{clean_path}?alt=media'
@@ -859,6 +996,130 @@ class AsyncGeminiNextGenEnvironmentFiles(GeneratedAsyncFiles):
             download_path,
             http_options=http_options,
         )
+
+    async def upload(
+        self,
+        *,
+        path: str,
+        file: Union[str, os.PathLike[str], io.IOBase, bytes],
+        environment: Optional[str] = None,
+        environment_id: Optional[str] = None,
+        mime_type: Optional[str] = None,
+        overwrite: Optional[bool] = None,
+        extract: Optional[bool] = None,
+        http_options: Optional[Any] = None,
+    ) -> Union[environments.EnvironmentFile, environments.GetEnvironmentFilesResponse, Any]:
+        """Uploads a file or extracts an archive inside an environment workspace."""
+        if not self._api_client:
+            raise AttributeError('api_client is required to upload files.')
+        target_env = environment or environment_id
+        if not target_env:
+            raise ValueError('environment or environment_id is required.')
+        env_name = (
+            target_env
+            if target_env.startswith('environments/')
+            else f'environments/{target_env}'
+        )
+        clean_path = path.lstrip('/')
+
+        file_obj: Union[str, io.IOBase]
+        if isinstance(file, (bytes, bytearray)):
+            file_obj = io.BytesIO(file)
+            size_bytes = len(file)
+        elif isinstance(file, io.IOBase):
+            file_obj = file
+            offset = file_obj.tell()
+            file_obj.seek(0, os.SEEK_END)
+            size_bytes = file_obj.tell() - offset
+            file_obj.seek(offset, os.SEEK_SET)
+        else:
+            fs_path = os.fspath(file)
+            if not fs_path or not os.path.isfile(fs_path):
+                raise FileNotFoundError(f'{file} is not a valid file path.')
+            size_bytes = os.path.getsize(fs_path)
+            file_obj = fs_path
+            if mime_type is None:
+                mime_type, _ = mimetypes.guess_type(fs_path)
+
+        if mime_type is None:
+            mime_type = 'application/octet-stream'
+
+        query_params = []
+        if overwrite is not None:
+            query_params.append(f'overwrite={"true" if overwrite else "false"}')
+        if extract is not None:
+            query_params.append(f'extract={"true" if extract else "false"}')
+        query_str = '&'.join(query_params)
+        handshake_path = f'{env_name}/files/{clean_path}'
+        if query_str:
+            handshake_path = f'{handshake_path}?{query_str}'
+
+        user_headers = {}
+        if http_options:
+            if isinstance(http_options, dict):
+                user_headers = http_options.get('headers', {}) or {}
+            elif hasattr(http_options, 'headers') and http_options.headers:
+                user_headers = dict(http_options.headers)
+
+        upload_headers = {
+            **user_headers,
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': str(size_bytes),
+            'X-Goog-Upload-Header-Content-Type': mime_type,
+        }
+
+        if http_options:
+            if isinstance(http_options, dict):
+                merged_options = {**http_options, 'headers': upload_headers}
+            else:
+                merged_options = http_options.model_copy()
+                merged_options.headers = upload_headers
+        else:
+            merged_options = {'headers': upload_headers}
+
+        response = await self._api_client.async_request(
+            'put',
+            handshake_path,
+            request_dict={},
+            http_options=merged_options,
+        )
+
+        if (
+            response is None
+            or response.headers is None
+            or 'x-goog-upload-url' not in response.headers
+        ):
+            raise KeyError(
+                'Failed to upload file: Upload URL was not returned from the upload request.'
+            )
+        upload_url = response.headers['x-goog-upload-url']
+
+        upload_response = await self._api_client.async_upload_file(
+            file_obj,
+            upload_url,
+            size_bytes,
+            http_options=http_options,
+        )
+
+        body_text = (
+            upload_response.response_stream[0]
+            if upload_response and upload_response.response_stream
+            else '{}'
+        )
+        try:
+            res_json = json.loads(body_text) if body_text else {}
+        except Exception:
+            return body_text
+
+        if isinstance(res_json, dict):
+            if 'file' in res_json and isinstance(res_json['file'], dict):
+                return environments.EnvironmentFile.model_validate(res_json['file'])
+            elif 'files' in res_json and isinstance(res_json['files'], list):
+                return environments.GetEnvironmentFilesResponse.model_validate(res_json)
+            elif 'name' in res_json or 'path' in res_json:
+                return environments.EnvironmentFile.model_validate(res_json)
+        return res_json
 
 
 class GeminiNextGenEnvironments(GeneratedEnvironments):
