@@ -234,6 +234,7 @@ class Environments(BaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
+        from_environment: Optional[str] = None,
         network: Optional[
             Union[
                 environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
@@ -254,6 +255,9 @@ class Environments(BaseSDK):
         r"""Creates an environment.
 
         :param api_version: Which version of the API to use.
+        :param from_environment: Optional. The source environment to copy/fork from.
+            Format: `environments/{environment_id}` or `{environment_id}`.
+            When specified, `sources` and `env` must be empty.
         :param network: Network configuration for the environment.
         :param sources: Sources to be mounted into the environment.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -278,6 +282,7 @@ class Environments(BaseSDK):
         request = models.CreateEnvironmentRequest(
             api_version=api_version,
             body=environments.CreateEnvironmentRequest(
+                from_environment=from_environment,
                 network=utils.get_pydantic_model(
                     network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
                 ),
@@ -1025,6 +1030,7 @@ class AsyncEnvironments(AsyncBaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
+        from_environment: Optional[str] = None,
         network: Optional[
             Union[
                 environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
@@ -1045,6 +1051,9 @@ class AsyncEnvironments(AsyncBaseSDK):
         r"""Creates an environment.
 
         :param api_version: Which version of the API to use.
+        :param from_environment: Optional. The source environment to copy/fork from.
+            Format: `environments/{environment_id}` or `{environment_id}`.
+            When specified, `sources` and `env` must be empty.
         :param network: Network configuration for the environment.
         :param sources: Sources to be mounted into the environment.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -1069,6 +1078,7 @@ class AsyncEnvironments(AsyncBaseSDK):
         request = models.CreateEnvironmentRequest(
             api_version=api_version,
             body=environments.CreateEnvironmentRequest(
+                from_environment=from_environment,
                 network=utils.get_pydantic_model(
                     network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
                 ),
