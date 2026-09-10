@@ -24,7 +24,7 @@ from .types import BaseModel, OptionalNullable, UNSET, interactions
 from .utils import get_security_from_env, response_helpers
 from .utils.eventstreaming import AsyncStream, Stream
 from .utils.unmarshal_json_response import unmarshal_json_response
-import httpx
+import httpx2 as httpx
 from typing import Any, Dict, List, Literal, Mapping, Optional, Union, cast, overload
 
 

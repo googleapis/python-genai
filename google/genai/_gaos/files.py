@@ -23,7 +23,7 @@ from .basesdk import AsyncBaseSDK, BaseSDK
 from .types import OptionalNullable, UNSET, environments
 from .utils import get_security_from_env, response_helpers
 from .utils.unmarshal_json_response import unmarshal_json_response
-import httpx
+import httpx2 as httpx
 from typing import Any, Mapping, Optional, Union, cast
 
 

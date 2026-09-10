@@ -29,22 +29,22 @@ import inspect
 import json
 from typing import Any, Awaitable, Callable, Optional, TypeVar, cast
 
-try:
-    import httpx2
-except ImportError:
-    httpx2 = None
+import httpx2 as httpx
 
-import httpx
+try:
+    import httpx as httpx1
+except ImportError:
+    httpx1 = None
 
 _HTTPX_TIMEOUT_ERRORS = (
     (httpx.TimeoutException,)
-    if httpx2 is None
-    else (httpx.TimeoutException, httpx2.TimeoutException)
+    if httpx1 is None
+    else (httpx.TimeoutException, httpx1.TimeoutException)
 )
 _HTTPX_HTTP_ERRORS = (
     (httpx.HTTPError,)
-    if httpx2 is None
-    else (httpx.HTTPError, httpx2.HTTPError)
+    if httpx1 is None
+    else (httpx.HTTPError, httpx1.HTTPError)
 )
 
 from ..errors.genaierror import GenAiError
@@ -336,8 +336,8 @@ def wrap_sdk_error(error: BaseException) -> BaseException:
 
 _WRAP_EXCEPTIONS = (
     (GenAiError, NoResponseError, httpx.HTTPError)
-    if httpx2 is None
-    else (GenAiError, NoResponseError, httpx.HTTPError, httpx2.HTTPError)
+    if httpx1 is None
+    else (GenAiError, NoResponseError, httpx.HTTPError, httpx1.HTTPError)
 )
 
 

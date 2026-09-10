@@ -26,18 +26,24 @@ from ._hooks import (
 )
 from .sdkconfiguration import SDKConfiguration
 from .utils import RetryConfig, SerializedRequestBody, get_body_content
-import httpx
+import httpx2 as httpx
 
 try:
-    import httpx2
+    import httpx as httpx1
 except ImportError:
-    httpx2 = None
+    httpx1 = None
 
 _HTTPX_TIMEOUT_TYPES = (
     (httpx.Timeout,)
-    if httpx2 is None
-    else (httpx.Timeout, httpx2.Timeout)
+    if httpx1 is None
+    else (httpx.Timeout, httpx1.Timeout)
 )
+
+
+def _default_timeout(client):
+    if httpx1 is not None and isinstance(client, (httpx1.Client, httpx1.AsyncClient)):
+        return httpx1.USE_CLIENT_DEFAULT
+    return httpx.USE_CLIENT_DEFAULT
 from typing import Any, Callable, List, Mapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
@@ -234,7 +240,7 @@ class BaseSDK:
             data=serialized_request_body.data,
             files=serialized_request_body.files,
             headers=headers,
-            timeout=timeout if timeout is not None else httpx.USE_CLIENT_DEFAULT,
+            timeout=timeout if timeout is not None else _default_timeout(client),
         )
 
     def do_request(
@@ -501,7 +507,7 @@ class AsyncBaseSDK:
             data=serialized_request_body.data,
             files=serialized_request_body.files,
             headers=headers,
-            timeout=timeout if timeout is not None else httpx.USE_CLIENT_DEFAULT,
+            timeout=timeout if timeout is not None else _default_timeout(client),
         )
 
     async def do_request_async(

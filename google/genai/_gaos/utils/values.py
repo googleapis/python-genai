@@ -24,7 +24,7 @@ from functools import partial
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union, cast
 
-from httpx import Response
+from httpx2 import Response
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 
