@@ -19,7 +19,13 @@
 
 from __future__ import annotations
 from .retrievalcallarguments import RetrievalCallArguments, RetrievalCallArgumentsParam
-from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
+from .. import (
+    Base64EncodedString,
+    Base64FileInput,
+    BaseModel,
+    UNSET_SENTINEL,
+    UnrecognizedStr,
+)
 from ...utils import validate_const
 import pydantic
 from pydantic import model_serializer
@@ -28,7 +34,7 @@ from typing import Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-RetrievalCallDeltaRetrievalType = Union[
+RetrievalCallStepRetrievalType = Union[
     Literal[
         "vertex_ai_search",
         "rag_store",
@@ -40,32 +46,39 @@ RetrievalCallDeltaRetrievalType = Union[
 r"""The type of retrieval tools."""
 
 
-class RetrievalCallDeltaTypedDict(TypedDict):
-    r"""Used by Vertex Retrieval tools such as Parallel AI, Exa AI, Vertex AI Search,
+class RetrievalCallStepParam(TypedDict):
+    r"""Retrieval call step.
+    Used by Vertex Retrieval tools such as Parallel AI, Exa AI, Vertex AI Search,
     etc. RetrievalType decides which tool is used.
     """
 
     arguments: RetrievalCallArgumentsParam
     r"""The arguments to pass to Retrieval tools."""
-    retrieval_type: NotRequired[RetrievalCallDeltaRetrievalType]
+    id: str
+    r"""Required. A unique ID for this specific tool call."""
+    retrieval_type: NotRequired[RetrievalCallStepRetrievalType]
     r"""The type of retrieval tools."""
-    signature: NotRequired[str]
+    signature: NotRequired[Union[str, Base64FileInput]]
     r"""A signature hash for backend validation."""
     type: Literal["retrieval_call"]
 
 
-class RetrievalCallDelta(BaseModel):
-    r"""Used by Vertex Retrieval tools such as Parallel AI, Exa AI, Vertex AI Search,
+class RetrievalCallStep(BaseModel):
+    r"""Retrieval call step.
+    Used by Vertex Retrieval tools such as Parallel AI, Exa AI, Vertex AI Search,
     etc. RetrievalType decides which tool is used.
     """
 
     arguments: RetrievalCallArguments
     r"""The arguments to pass to Retrieval tools."""
 
-    retrieval_type: Optional[RetrievalCallDeltaRetrievalType] = None
+    id: str
+    r"""Required. A unique ID for this specific tool call."""
+
+    retrieval_type: Optional[RetrievalCallStepRetrievalType] = None
     r"""The type of retrieval tools."""
 
-    signature: Optional[str] = None
+    signature: Optional[Base64EncodedString] = None
     r"""A signature hash for backend validation."""
 
     type: Annotated[
@@ -93,6 +106,6 @@ class RetrievalCallDelta(BaseModel):
 
 
 try:
-    RetrievalCallDelta.model_rebuild()
+    RetrievalCallStep.model_rebuild()
 except NameError:
     pass
