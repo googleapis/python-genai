@@ -371,6 +371,7 @@ def retry_with_backoff(
                 retry_after_ms = _parse_retry_after_ms_header(exception.response)
                 if retry_after_ms is not None:
                     exception.retry_after = retry_after_ms
+                exception.response.close()
             sleep = _get_sleep_interval(
                 exception,
                 initial_interval,
@@ -409,6 +410,7 @@ def retry_with_attempt_count_backoff(
                 retry_after_ms = _parse_retry_after_ms_header(exception.response)
                 if retry_after_ms is not None:
                     exception.retry_after = retry_after_ms
+                exception.response.close()
             sleep = _get_sleep_interval(
                 exception,
                 initial_interval,
@@ -450,6 +452,7 @@ async def retry_with_backoff_async(
                 retry_after_ms = _parse_retry_after_ms_header(exception.response)
                 if retry_after_ms is not None:
                     exception.retry_after = retry_after_ms
+                await exception.response.aclose()
             sleep = _get_sleep_interval(
                 exception,
                 initial_interval,
@@ -488,6 +491,7 @@ async def retry_with_attempt_count_backoff_async(
                 retry_after_ms = _parse_retry_after_ms_header(exception.response)
                 if retry_after_ms is not None:
                     exception.retry_after = retry_after_ms
+                await exception.response.aclose()
             sleep = _get_sleep_interval(
                 exception,
                 initial_interval,
