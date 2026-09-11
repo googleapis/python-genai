@@ -83,6 +83,26 @@ def test_interactions_gemini_retry(monkeypatch):
         client.interactions.create(model='gemini-1.5-flash', input='Hello')
         assert mock_send.call_count == 3
 
+
+def test_interactions_delete_does_not_retry_501(monkeypatch):
+    """HTTP 501 Not Implemented is permanent; do not retry like transient 5XX.
+
+    Regression coverage for https://github.com/googleapis/python-genai/issues/2803.
+    """
+    monkeypatch.setenv('GOOGLE_API_KEY', 'test-api-key')
+    client = Client()
+
+    with mock.patch.object(HTTPClient, "send") as mock_send:
+        mock_send.return_value = Response(
+            501,
+            request=Request('DELETE', ''),
+            headers={'content-type': 'application/json'},
+            content='{"error": {"message": "Not Implemented", "code": "not_implemented"}}',
+        )
+        with pytest.raises(Exception):
+            client.interactions.delete(id='test-interaction-id')
+        assert mock_send.call_count == 1
+
 def test_interactions_gemini_extra_headers(monkeypatch):
     monkeypatch.setenv('GOOGLE_API_KEY', 'test-api-key')
     client = Client()
@@ -306,6 +326,24 @@ async def test_async_interactions_gemini_retry(monkeypatch):
         ]
         await client.aio.interactions.create(model='gemini-1.5-flash', input='Hello')
         assert mock_send.call_count == 3
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_delete_does_not_retry_501(monkeypatch):
+    """HTTP 501 Not Implemented is permanent; do not retry like transient 5XX."""
+    monkeypatch.setenv('GOOGLE_API_KEY', 'test-api-key')
+    client = Client()
+
+    with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
+        mock_send.return_value = Response(
+            501,
+            request=Request('DELETE', ''),
+            headers={'content-type': 'application/json'},
+            content='{"error": {"message": "Not Implemented", "code": "not_implemented"}}',
+        )
+        with pytest.raises(Exception):
+            await client.aio.interactions.delete(id='test-interaction-id')
+        assert mock_send.call_count == 1
 
 @pytest.mark.asyncio
 async def test_async_interactions_gemini_extra_headers(monkeypatch):
