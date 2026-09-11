@@ -546,3 +546,33 @@ async def test_generate_content_stream_with_thought_summaries_async(
     assert chunk.automatic_function_calling_history[i].model_dump(
         exclude_none=True
     ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
+
+
+def test_generate_content_skips_afc_when_no_tools(caplog):
+  models_instance = models.Models(api_client_=mock.MagicMock())
+  models_instance._generate_content = mock.MagicMock(
+      return_value=types.GenerateContentResponse()
+  )
+
+  models.Models._logged_afc_warning = False
+  with caplog.at_level('WARNING'):
+    models_instance.generate_content(
+        model='test_model',
+        contents='hello',
+        config=None,
+    )
+    models_instance.generate_content(
+        model='test_model',
+        contents='hello',
+        config={'tools': None},
+    )
+    models_instance.generate_content(
+        model='test_model',
+        contents='hello',
+        config={'tools': []},
+    )
+
+  assert not any(
+      'Direct use of automatic function calling (AFC)' in record.message
+      for record in caplog.records
+  )
