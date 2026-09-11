@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.23.0](https://github.com/googleapis/python-genai/compare/v2.22.0...v2.23.0) (2026-09-10)
+
+
+### Features
+
+* Add from_environment support for environment copying ([e6d3168](https://github.com/googleapis/python-genai/commit/e6d316866aca21c7d05c5495ca6355f48ca040fc))
+* Support dynamic turn completion via interaction_status in live.py receive() ([455df80](https://github.com/googleapis/python-genai/commit/455df80f3c308b6e0cb6f2e0d7583ab2146aee8f))
+
+
+### Bug Fixes
+
+* Remove unused field from FunctionResultDelta ([2843079](https://github.com/googleapis/python-genai/commit/28430799e32430265a1f8012383739a481d94629))
+
 ## [2.22.0](https://github.com/googleapis/python-genai/compare/v2.21.0...v2.22.0) (2026-09-02)
 
 
