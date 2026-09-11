@@ -155,6 +155,30 @@ def test_factory_method_from_code_execution_result_part():
   assert isinstance(my_part, SubPart)
 
 
+def test_generate_content_response_accepts_grounding_chunk_metadata():
+  response = types.GenerateContentResponse.model_validate({
+      'candidates': [{
+          'content': {'parts': [{'text': 'ok'}], 'role': 'model'},
+          'groundingMetadata': {
+              'groundingChunks': [{
+                  'chunkMetadata': {'query': 'dummy_query'},
+                  'web': {
+                      'title': 'youtube.com',
+                      'uri': (
+                          'https://vertexaisearch.cloud.google.com/'
+                          'grounding-api-redirect/id'
+                      ),
+                  },
+              }]
+          },
+      }]
+  })
+
+  chunk = response.candidates[0].grounding_metadata.grounding_chunks[0]
+  assert chunk.chunk_metadata == {'query': 'dummy_query'}
+  assert chunk.web.title == 'youtube.com'
+
+
 def test_factory_method_from_mcp_call_tool_function_response_on_error():
   if not _is_mcp_imported:
     return
