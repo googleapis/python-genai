@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.24.0](https://github.com/googleapis/python-genai/compare/v2.23.0...v2.24.0) (2026-09-11)
+
+
+### Features
+
+* Add RetrievalCallStep and RetrievalResultStep to interactions schema and SDKs. ([9052efd](https://github.com/googleapis/python-genai/commit/9052efddccae9f91e699d9b76e0d5a3e032637f5))
+
+
+### Bug Fixes
+
+* Do not run functions once the automatic function calling budget is spent ([2580638](https://github.com/googleapis/python-genai/commit/2580638558b182b89abcfcb94bf2b164b7f81c7b))
+
 ## [2.23.0](https://github.com/googleapis/python-genai/compare/v2.22.0...v2.23.0) (2026-09-10)
 
 
