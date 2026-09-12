@@ -42,11 +42,13 @@ from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 if TYPE_CHECKING:
   from ._gaos.google_genai import (
       AsyncGeminiNextGenAgents,
+      AsyncGeminiNextGenCredentials,
       AsyncGeminiNextGenEnvironments,
       AsyncGeminiNextGenInteractions,
       AsyncGeminiNextGenTriggers,
       AsyncGeminiNextGenWebhooks,
       GeminiNextGenAgents,
+      GeminiNextGenCredentials,
       GeminiNextGenEnvironments,
       GeminiNextGenInteractions,
       GeminiNextGenTriggers,
@@ -58,6 +60,7 @@ if TYPE_CHECKING:
 _agent_experimental_warned = False
 _trigger_experimental_warned = False
 _environment_experimental_warned = False
+_credential_experimental_warned = False
 
 
 class AsyncClient:
@@ -81,6 +84,7 @@ class AsyncClient:
     self._webhooks: Optional[AsyncGeminiNextGenWebhooks] = None
     self._triggers: Optional[AsyncGeminiNextGenTriggers] = None
     self._environments: Optional[AsyncGeminiNextGenEnvironments] = None
+    self._credentials: Optional[AsyncGeminiNextGenCredentials] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
@@ -156,6 +160,23 @@ class AsyncClient:
 
       self._environments = AsyncGeminiNextGenEnvironments(self._api_client)
     return self._environments
+
+  @property
+  def credentials(self) -> AsyncGeminiNextGenCredentials:
+    """Credentials resource."""
+    global _credential_experimental_warned
+    if not _credential_experimental_warned:
+      _credential_experimental_warned = True
+      warnings.warn(
+          'Credentials usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    if self._credentials is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenCredentials
+
+      self._credentials = AsyncGeminiNextGenCredentials(self._api_client)
+    return self._credentials
 
   @property
   def models(self) -> AsyncModels:
@@ -411,6 +432,7 @@ class Client:
     self._webhooks: Optional[GeminiNextGenWebhooks] = None
     self._triggers: Optional[GeminiNextGenTriggers] = None
     self._environments: Optional[GeminiNextGenEnvironments] = None
+    self._credentials: Optional[GeminiNextGenCredentials] = None
 
   @staticmethod
   def _get_api_client(
@@ -521,6 +543,22 @@ class Client:
 
       self._environments = GeminiNextGenEnvironments(self._api_client)
     return self._environments
+
+  @property
+  def credentials(self) -> GeminiNextGenCredentials:
+    global _credential_experimental_warned
+    if not _credential_experimental_warned:
+      _credential_experimental_warned = True
+      warnings.warn(
+          'Credentials usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
+    if self._credentials is None:
+      from ._gaos.google_genai import GeminiNextGenCredentials
+
+      self._credentials = GeminiNextGenCredentials(self._api_client)
+    return self._credentials
 
   @property
   def chats(self) -> Chats:

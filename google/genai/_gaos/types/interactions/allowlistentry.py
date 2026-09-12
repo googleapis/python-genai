@@ -39,6 +39,8 @@ class AllowlistEntryParam(TypedDict):
 
     domain: str
     r"""Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains."""
+    credential: NotRequired[str]
+    r"""Optional. Reference to a server-managed Credential resource by ID."""
     transform: NotRequired[TransformParam]
     r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
@@ -49,12 +51,15 @@ class AllowlistEntry(BaseModel):
     domain: str
     r"""Domain to allow outbound requests to. Supports wildcards (e.g. '*.googleapis.com'). Use '*' to allow all domains."""
 
+    credential: Optional[str] = None
+    r"""Optional. Reference to a server-managed Credential resource by ID."""
+
     transform: Optional[Transform] = None
     r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["transform"])
+        optional_fields = set(["credential", "transform"])
         serialized = handler(self)
         m = {}
 
