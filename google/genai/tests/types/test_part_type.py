@@ -15,6 +15,7 @@
 
 
 import pytest
+from ... import models
 from ... import types
 
 
@@ -81,6 +82,40 @@ def test_two_candidates_text(caplog, generate_content_response):
       for record in caplog.records
   )
   generate_content_response.candidates = None
+
+
+def test_mldev_candidate_count_keeps_candidate_parts_separate():
+  response_dict = models._GenerateContentResponse_from_mldev({
+      'candidates': [
+          {
+              'content': {
+                  'parts': [
+                      {'text': 'first'},
+                      {'text': 'second'},
+                      {'text': 'third'},
+                  ]
+              }
+          },
+          {'content': {'parts': [{'text': 'second'}]}},
+          {'content': {'parts': [{'text': 'third'}]}},
+      ]
+  })
+
+  response = types.GenerateContentResponse._from_response(
+      response=response_dict,
+      kwargs={},
+  )
+
+  assert [part.text for part in response.candidates[0].content.parts] == [
+      'first'
+  ]
+  assert [part.text for part in response.candidates[1].content.parts] == [
+      'second'
+  ]
+  assert [part.text for part in response.candidates[2].content.parts] == [
+      'third'
+  ]
+  assert response.text == 'first'
 
 
 def test_thought_signature_no_warning(caplog, generate_content_response):
