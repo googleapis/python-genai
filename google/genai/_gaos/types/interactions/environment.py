@@ -22,14 +22,23 @@ from .environmentnetworkegressallowlist import (
     EnvironmentNetworkEgressAllowlist,
     EnvironmentNetworkEgressAllowlistParam,
 )
+from .envvar import EnvVar, EnvVarParam
 from .source import Source, SourceParam
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
+
+
+EnvParam = TypeAliasType("EnvParam", Union[Dict[str, EnvVarParam], str])
+r"""Environment variables to set in the sandbox environment."""
+
+
+Env = TypeAliasType("Env", Union[Dict[str, EnvVar], str])
+r"""Environment variables to set in the sandbox environment."""
 
 
 NetworkEnum = Literal["disabled",]
@@ -50,6 +59,8 @@ r"""Network configuration for the environment."""
 class EnvironmentParam(TypedDict):
     r"""Configuration for a custom environment."""
 
+    env: NotRequired[EnvParam]
+    r"""Environment variables to set in the sandbox environment."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
@@ -62,6 +73,9 @@ class EnvironmentParam(TypedDict):
 
 class Environment(BaseModel):
     r"""Configuration for a custom environment."""
+
+    env: Optional[Env] = None
+    r"""Environment variables to set in the sandbox environment."""
 
     environment_id: Optional[str] = None
     r"""Optional. The environment ID for the interaction. If specified, the request will
@@ -80,7 +94,7 @@ class Environment(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["environment_id", "network", "sources"])
+        optional_fields = set(["env", "environment_id", "network", "sources"])
         serialized = handler(self)
         m = {}
 
