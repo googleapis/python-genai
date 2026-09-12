@@ -6281,15 +6281,19 @@ class Models(_api_module.BaseModule):
           or not response.candidates[0].content.parts
       ):
         break
+      logger.info(f'AFC remote call {i} is done.')
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        # No request is left to send a result with, so the functions are not
+        # called at all. The model's function call is returned to the caller to
+        # run and answer themselves.
+        logger.info('Reached max remote calls for automatic function calling.')
+        break
       func_response_parts = _extra_utils.get_function_response_parts(
           response, function_map
       )
       if not func_response_parts:
         break
-      logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
 
       func_call_content = response.candidates[0].content
       func_response_content = types.Content(
@@ -6440,6 +6444,13 @@ class Models(_api_module.BaseModule):
       response = self._generate_content_stream(
           model=model, contents=contents, config=parsed_config_to_call
       )
+      remaining_remote_calls_afc -= 1
+      # No request is left to send a result with, so the functions are not
+      # called at all. The chunks are still yielded, and the model's function
+      # call is left for the caller to run and answer themselves.
+      is_last_remote_call_afc = remaining_remote_calls_afc == 0
+      if is_last_remote_call_afc:
+        logger.info('Reached max remote calls for automatic function calling.')
 
       model_output = []
       func_response_parts = []
@@ -6455,7 +6466,8 @@ class Models(_api_module.BaseModule):
           )
 
         if (
-            function_map
+            not is_last_remote_call_afc
+            and function_map
             and chunk.candidates
             and chunk.candidates[0].content
             and chunk.candidates[0].content.parts
@@ -6471,13 +6483,12 @@ class Models(_api_module.BaseModule):
 
         yield chunk
 
+      if is_last_remote_call_afc:
+        break
       if not function_map or not func_response_parts:
         break
 
       logger.info(f'AFC remote call {i} is done.')
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info('Reached max remote calls for automatic function calling.')
 
       # Append function call and function response parts to contents for the next request.
       func_response_content = types.Content(
@@ -8453,9 +8464,13 @@ class AsyncModels(_api_module.BaseModule):
         )
         remaining_remote_calls_afc -= 1
         if remaining_remote_calls_afc == 0:
+          # No request is left to send a result with, so the functions are not
+          # called at all. The model's function call is returned to the caller
+          # to run and answer themselves.
           logger.info(
               'Reached max remote calls for automatic function calling.'
           )
+          break
 
         if not function_map:
           break
@@ -8705,6 +8720,15 @@ class AsyncModels(_api_module.BaseModule):
               contents=loop_contents,
               config=final_parsed_config_to_call,
           )
+          remaining_remote_calls_afc -= 1
+          # No request is left to send a result with, so the functions are not
+          # called at all. The chunks are still yielded, and the model's
+          # function call is left for the caller to run and answer themselves.
+          is_last_remote_call_afc = remaining_remote_calls_afc == 0
+          if is_last_remote_call_afc:
+            logger.info(
+                'Reached max remote calls for automatic function calling.'
+            )
 
           model_output = []
           func_response_parts = []
@@ -8720,7 +8744,8 @@ class AsyncModels(_api_module.BaseModule):
               )
 
             if (
-                function_map
+                not is_last_remote_call_afc
+                and function_map
                 and chunk.candidates
                 and chunk.candidates[0].content
                 and chunk.candidates[0].content.parts
@@ -8738,15 +8763,12 @@ class AsyncModels(_api_module.BaseModule):
 
             yield chunk
 
+          if is_last_remote_call_afc:
+            break
           if not function_map or not func_response_parts:
             break
 
           logger.info(f'AFC remote call {i} is done.')
-          remaining_remote_calls_afc -= 1
-          if remaining_remote_calls_afc == 0:
-            logger.info(
-                'Reached max remote calls for automatic function calling.'
-            )
 
           # Append function response parts to contents for the next request.
           func_response_content = types.Content(
