@@ -6256,8 +6256,8 @@ class Models(_api_module.BaseModule):
     response = types.GenerateContentResponse()
     i = 0
     while remaining_remote_calls_afc > 0:
-      parsed_config_to_call = (
-          parsed_config.model_copy(deep=True) if parsed_config else None
+      parsed_config_to_call = _extra_utils.copy_generate_content_config(
+          parsed_config
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
@@ -6432,8 +6432,8 @@ class Models(_api_module.BaseModule):
     automatic_function_calling_history: list[types.Content] = []
     i = 0
     while remaining_remote_calls_afc > 0:
-      parsed_config_to_call = (
-          parsed_config.model_copy(deep=True) if parsed_config else None
+      parsed_config_to_call = _extra_utils.copy_generate_content_config(
+          parsed_config
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
@@ -8343,12 +8343,8 @@ class AsyncModels(_api_module.BaseModule):
         )
     )
 
-    if not config:
-      parsed_config = None
-    elif isinstance(config, dict):
-      parsed_config = types.GenerateContentConfig(**config)
-    else:
-      parsed_config = config.model_copy(deep=True)
+    # Deep-copy config without pickling MCP sessions / other live tools (#2669).
+    parsed_config = _extra_utils.copy_generate_content_config(config)
 
     # Use AsyncExitStack to keep MCP connections alive across the entire AFC loop
     async with contextlib.AsyncExitStack() as stack:
@@ -8449,9 +8445,7 @@ class AsyncModels(_api_module.BaseModule):
             is_caller_method_async=True,
         )
         final_parsed_config_to_call = (
-            final_parsed_config.model_copy(deep=True)
-            if final_parsed_config
-            else None
+            _extra_utils.copy_generate_content_config(final_parsed_config)
         )
         if function_map:
           final_parsed_config_to_call = _extra_utils.get_usage_header(
@@ -8578,12 +8572,8 @@ class AsyncModels(_api_module.BaseModule):
       # The image shows a flat lay arrangement of freshly baked blueberry
       # scones.
     """
-    if not config:
-      parsed_config = None
-    elif isinstance(config, dict):
-      parsed_config = types.GenerateContentConfig(**config)
-    else:
-      parsed_config = config.model_copy(deep=True)
+    # Deep-copy config without pickling MCP sessions / other live tools (#2669).
+    parsed_config = _extra_utils.copy_generate_content_config(config)
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(
@@ -8702,9 +8692,7 @@ class AsyncModels(_api_module.BaseModule):
           )
 
           final_parsed_config_to_call = (
-              final_parsed_config.model_copy(deep=True)
-              if final_parsed_config
-              else None
+              _extra_utils.copy_generate_content_config(final_parsed_config)
           )
           if function_map:
             final_parsed_config_to_call = _extra_utils.get_usage_header(
