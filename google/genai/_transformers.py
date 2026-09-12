@@ -643,15 +643,13 @@ def _raise_for_unsupported_schema_type(origin: Any) -> None:
 def _raise_for_unsupported_mldev_properties(
     schema: Any, client: Optional[_api_client.BaseApiClient]
 ) -> None:
-  if (
-      client
-      and not client.vertexai
-      and (
-          schema.get('additionalProperties')
-          or schema.get('additional_properties')
-      )
+  if client and (
+      schema.get('additionalProperties') or schema.get('additional_properties')
   ):
-    raise ValueError('additionalProperties is only supported in Gemini Enterprise Agent Platform mode, , not in Gemini Developer API mode.')
+    raise ValueError(
+        'additionalProperties is only supported in Gemini Enterprise Agent '
+        'Platform mode, not in Gemini Developer API or Vertex AI mode.'
+    )
 
 
 def process_schema(
