@@ -34,3 +34,8 @@ jobs:
       - name: Run import test
         run: |
           pytest google/genai/tests/imports/test_no_optional_imports.py
+
+      - name: Run HTTPX upload regression tests
+        run: |
+          pip install -c requirements.txt pytest-asyncio
+          pytest google/genai/tests/client/test_upload_errors.py --mode=replay
