@@ -216,14 +216,17 @@ def get_tokenizer_name(model_name: str) -> str:
 
 def get_huggingface_tokenizer(tokenizer_name: str) -> Any:
   """Loads huggingface tokenizer from the given tokenizer name."""
-  # Load the processor which includes the tokenizer
+  # Load the processor which includes the tokenizer. These deps are intentionally
+  # not part of the lightweight ``local-tokenizer`` extra; install
+  # ``google-genai[local-tokenizer-gemma4]`` for Gemma 4 models.
   try:
     from transformers import AutoProcessor
-  except ImportError:
+  except ImportError as e:
     raise ImportError(
-        "Please install transformers to use huggingface tokenizer: pip install"
-        " transformers"
-    ) from ImportError
+        'The Gemma 4 local tokenizer requires the Hugging Face stack '
+        '(transformers, torch, etc.). Install it with: '
+        'pip install "google-genai[local-tokenizer-gemma4]"'
+    ) from e
   processor = AutoProcessor.from_pretrained(  # type: ignore[no-untyped-call]
       GEMMA_TOKENIZER_TO_MODEL_NAMES[tokenizer_name]
   )

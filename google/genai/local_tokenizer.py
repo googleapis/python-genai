@@ -280,6 +280,11 @@ class LocalTokenizer:
 
   This class provides a local tokenizer for text only token counting.
 
+  Install ``google-genai[local-tokenizer]`` for SentencePiece-backed models
+  (for example ``gemini-2.5-flash``). Gemma 4–backed models (for example
+  ``gemini-3.5-flash``) need the heavier ``google-genai[local-tokenizer-gemma4]``
+  extra.
+
   LIMITATIONS:
   - Only supports text based tokenization and no multimodal tokenization.
   - Forward compatibility depends on the open-source tokenizer models for future

@@ -39,7 +39,14 @@ dependencies = [
 
 [project.optional-dependencies]
 aiohttp = ["aiohttp>=3.10.11, <4.0.0"]
+# SentencePiece path used by Gemini 2.x / gemma3 local tokenizers.
 local-tokenizer = [
+    "sentencepiece>=0.2.0",
+    "protobuf",
+]
+# Hugging Face AutoProcessor path used by Gemma 4 local tokenizers
+# (e.g. gemini-3.5-flash). Pulls torch/transformers and is much larger.
+local-tokenizer-gemma4 = [
     "sentencepiece>=0.2.0",
     "protobuf",
     "pillow",
