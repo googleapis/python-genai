@@ -14,7 +14,9 @@
 #
 
 import typing
+from typing import Union
 
+from ._mcp_utils import AllowedToolsMcpSession
 from ._mcp_utils import mcp_to_gemini_tools
 from .types import FunctionCall, Tool
 
@@ -28,8 +30,8 @@ class McpToGenAiToolAdapter:
 
   def __init__(
       self,
-      session: "mcp.ClientSession",  # type: ignore # noqa: F821
-      list_tools_result: "mcp_types.ListToolsResult",  # type: ignore
+      session: Union['ClientSession', AllowedToolsMcpSession],
+      list_tools_result: 'mcp_types.ListToolsResult',  # type: ignore
       is_agent_platform: bool = False,
   ) -> None:
     self._mcp_session = session
