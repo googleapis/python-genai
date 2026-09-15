@@ -87,13 +87,12 @@ module = [
 # for imports. This will only affect the _gaos module.
 ignore_errors = true
 
-# This particularly for interactions.py.
+# This particularly for interactions.py (star-imports from generated packages).
 [[tool.mypy.overrides]]
 module = "google.genai.interactions"
 disable_error_code = [
     "misc",
     "assignment",
-    # Intentionally overriding imported alias, runtime safe.
     "no-redef",
 ]
 
