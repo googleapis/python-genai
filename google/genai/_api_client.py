@@ -1122,7 +1122,7 @@ class BaseApiClient:
       Does not override the SSL context if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
+        args: The client args to check for SSL context.
         ctx: The SSL context to set.
 
       Returns:
@@ -1189,7 +1189,7 @@ class BaseApiClient:
       Does not override the SSL context if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
+        args: The client args to check for SSL context.
         ctx: The SSL context to set.
 
       Returns:
@@ -1260,7 +1260,7 @@ class BaseApiClient:
       Does not override the SSL context if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
+        args: The client args to check for SSL context.
         ctx: The SSL context to set.
 
       Returns:
