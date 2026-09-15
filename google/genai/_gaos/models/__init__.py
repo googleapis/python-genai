@@ -34,12 +34,6 @@ if TYPE_CHECKING:
         CreateAgentRequest,
         CreateAgentRequestParam,
     )
-    from .createcredential import (
-        CreateCredentialGlobals,
-        CreateCredentialGlobalsTypedDict,
-        CreateCredentialRequest,
-        CreateCredentialRequestParam,
-    )
     from .createenvironment import (
         CreateEnvironmentGlobals,
         CreateEnvironmentGlobalsTypedDict,
@@ -74,12 +68,6 @@ if TYPE_CHECKING:
         DeleteAgentRequest,
         DeleteAgentRequestParam,
     )
-    from .deletecredential import (
-        DeleteCredentialGlobals,
-        DeleteCredentialGlobalsTypedDict,
-        DeleteCredentialRequest,
-        DeleteCredentialRequestParam,
-    )
     from .deleteenvironment import (
         DeleteEnvironmentGlobals,
         DeleteEnvironmentGlobalsTypedDict,
@@ -109,12 +97,6 @@ if TYPE_CHECKING:
         GetAgentGlobalsTypedDict,
         GetAgentRequest,
         GetAgentRequestParam,
-    )
-    from .getcredential import (
-        GetCredentialGlobals,
-        GetCredentialGlobalsTypedDict,
-        GetCredentialRequest,
-        GetCredentialRequestParam,
     )
     from .getenvironment import (
         GetEnvironmentGlobals,
@@ -153,12 +135,6 @@ if TYPE_CHECKING:
         ListAgentsGlobalsTypedDict,
         ListAgentsRequest,
         ListAgentsRequestParam,
-    )
-    from .listcredentials import (
-        ListCredentialsGlobals,
-        ListCredentialsGlobalsTypedDict,
-        ListCredentialsRequest,
-        ListCredentialsRequestParam,
     )
     from .listenvironments import (
         ListEnvironmentsGlobals,
@@ -202,12 +178,6 @@ if TYPE_CHECKING:
         RunTriggerRequest,
         RunTriggerRequestParam,
     )
-    from .updatecredential import (
-        UpdateCredentialGlobals,
-        UpdateCredentialGlobalsTypedDict,
-        UpdateCredentialRequest,
-        UpdateCredentialRequestParam,
-    )
     from .updatetrigger import (
         UpdateTriggerGlobals,
         UpdateTriggerGlobalsTypedDict,
@@ -231,10 +201,6 @@ __all__ = [
     "CreateAgentGlobalsTypedDict",
     "CreateAgentRequest",
     "CreateAgentRequestParam",
-    "CreateCredentialGlobals",
-    "CreateCredentialGlobalsTypedDict",
-    "CreateCredentialRequest",
-    "CreateCredentialRequestParam",
     "CreateEnvironmentGlobals",
     "CreateEnvironmentGlobalsTypedDict",
     "CreateEnvironmentRequest",
@@ -259,10 +225,6 @@ __all__ = [
     "DeleteAgentGlobalsTypedDict",
     "DeleteAgentRequest",
     "DeleteAgentRequestParam",
-    "DeleteCredentialGlobals",
-    "DeleteCredentialGlobalsTypedDict",
-    "DeleteCredentialRequest",
-    "DeleteCredentialRequestParam",
     "DeleteEnvironmentGlobals",
     "DeleteEnvironmentGlobalsTypedDict",
     "DeleteEnvironmentRequest",
@@ -283,10 +245,6 @@ __all__ = [
     "GetAgentGlobalsTypedDict",
     "GetAgentRequest",
     "GetAgentRequestParam",
-    "GetCredentialGlobals",
-    "GetCredentialGlobalsTypedDict",
-    "GetCredentialRequest",
-    "GetCredentialRequestParam",
     "GetEnvironmentFilesGlobals",
     "GetEnvironmentFilesGlobalsTypedDict",
     "GetEnvironmentFilesRequest",
@@ -313,10 +271,6 @@ __all__ = [
     "ListAgentsGlobalsTypedDict",
     "ListAgentsRequest",
     "ListAgentsRequestParam",
-    "ListCredentialsGlobals",
-    "ListCredentialsGlobalsTypedDict",
-    "ListCredentialsRequest",
-    "ListCredentialsRequestParam",
     "ListEnvironmentsGlobals",
     "ListEnvironmentsGlobalsTypedDict",
     "ListEnvironmentsRequest",
@@ -345,10 +299,6 @@ __all__ = [
     "RunTriggerGlobalsTypedDict",
     "RunTriggerRequest",
     "RunTriggerRequestParam",
-    "UpdateCredentialGlobals",
-    "UpdateCredentialGlobalsTypedDict",
-    "UpdateCredentialRequest",
-    "UpdateCredentialRequestParam",
     "UpdateTriggerGlobals",
     "UpdateTriggerGlobalsTypedDict",
     "UpdateTriggerRequest",
@@ -368,10 +318,6 @@ _dynamic_imports: dict[str, str] = {
     "CreateAgentGlobalsTypedDict": ".createagent",
     "CreateAgentRequest": ".createagent",
     "CreateAgentRequestParam": ".createagent",
-    "CreateCredentialGlobals": ".createcredential",
-    "CreateCredentialGlobalsTypedDict": ".createcredential",
-    "CreateCredentialRequest": ".createcredential",
-    "CreateCredentialRequestParam": ".createcredential",
     "CreateEnvironmentGlobals": ".createenvironment",
     "CreateEnvironmentGlobalsTypedDict": ".createenvironment",
     "CreateEnvironmentRequest": ".createenvironment",
@@ -396,10 +342,6 @@ _dynamic_imports: dict[str, str] = {
     "DeleteAgentGlobalsTypedDict": ".deleteagent",
     "DeleteAgentRequest": ".deleteagent",
     "DeleteAgentRequestParam": ".deleteagent",
-    "DeleteCredentialGlobals": ".deletecredential",
-    "DeleteCredentialGlobalsTypedDict": ".deletecredential",
-    "DeleteCredentialRequest": ".deletecredential",
-    "DeleteCredentialRequestParam": ".deletecredential",
     "DeleteEnvironmentGlobals": ".deleteenvironment",
     "DeleteEnvironmentGlobalsTypedDict": ".deleteenvironment",
     "DeleteEnvironmentRequest": ".deleteenvironment",
@@ -420,10 +362,6 @@ _dynamic_imports: dict[str, str] = {
     "GetAgentGlobalsTypedDict": ".getagent",
     "GetAgentRequest": ".getagent",
     "GetAgentRequestParam": ".getagent",
-    "GetCredentialGlobals": ".getcredential",
-    "GetCredentialGlobalsTypedDict": ".getcredential",
-    "GetCredentialRequest": ".getcredential",
-    "GetCredentialRequestParam": ".getcredential",
     "GetEnvironmentGlobals": ".getenvironment",
     "GetEnvironmentGlobalsTypedDict": ".getenvironment",
     "GetEnvironmentRequest": ".getenvironment",
@@ -450,10 +388,6 @@ _dynamic_imports: dict[str, str] = {
     "ListAgentsGlobalsTypedDict": ".listagents",
     "ListAgentsRequest": ".listagents",
     "ListAgentsRequestParam": ".listagents",
-    "ListCredentialsGlobals": ".listcredentials",
-    "ListCredentialsGlobalsTypedDict": ".listcredentials",
-    "ListCredentialsRequest": ".listcredentials",
-    "ListCredentialsRequestParam": ".listcredentials",
     "ListEnvironmentsGlobals": ".listenvironments",
     "ListEnvironmentsGlobalsTypedDict": ".listenvironments",
     "ListEnvironmentsRequest": ".listenvironments",
@@ -482,10 +416,6 @@ _dynamic_imports: dict[str, str] = {
     "RunTriggerGlobalsTypedDict": ".runtrigger",
     "RunTriggerRequest": ".runtrigger",
     "RunTriggerRequestParam": ".runtrigger",
-    "UpdateCredentialGlobals": ".updatecredential",
-    "UpdateCredentialGlobalsTypedDict": ".updatecredential",
-    "UpdateCredentialRequest": ".updatecredential",
-    "UpdateCredentialRequestParam": ".updatecredential",
     "UpdateTriggerGlobals": ".updatetrigger",
     "UpdateTriggerGlobalsTypedDict": ".updatetrigger",
     "UpdateTriggerRequest": ".updatetrigger",
