@@ -646,6 +646,26 @@ await async_pager.next_page()
 print(async_pager[0])
 ```
 
+### Get Model
+
+Retrieve information about a specific model:
+
+```python
+model = client.models.get(model='gemini-2.5-flash')
+
+print(f'Display name: {model.display_name}')
+print(f'Description: {model.description}')
+print(f'Input token limit: {model.input_token_limit}')
+print(f'Output token limit: {model.output_token_limit}')
+```
+
+#### Get Model (Asynchronous)
+
+```python
+model = await client.aio.models.get(model='gemini-2.5-flash')
+print(f'Display name: {model.display_name}')
+```
+
 ### Safety Settings
 
 ```python
