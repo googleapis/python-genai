@@ -19,6 +19,7 @@ import asyncio
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import threading
+from typing import Any
 
 import pytest
 
@@ -28,6 +29,9 @@ from ..._gaos.google_genai import (
     GeminiNextGenEnvironmentFiles,
 )
 from ..._gaos.models.getenvironmentfiles import GetEnvironmentFilesRequest
+from ..._gaos.types.environments.createenvironmentrequest import (
+    CreateEnvironmentRequest,
+)
 from ..._gaos.types.environments.environmentfile import EnvironmentFile
 from ..._gaos.types.environments.getenvironmentfilesresponse import (
     GetEnvironmentFilesResponse,
@@ -121,13 +125,18 @@ def test_python_environments_lifecycle_routes_through_google_genai_client(
             }
         ]
     )
+    forked_environment = client.environments.create(
+        from_environment="environments/env_abc_1234",
+    )
     client.environments.list()
     fetched = client.environments.get(id="env_abc_1234")
     client.environments.delete(id="env_abc_1234")
 
     assert environment.id == "env_abc_1234"
+    assert forked_environment.id == "env_abc_1234"
     assert fetched.id == "env_abc_1234"
     assert captured == [
+        "POST /v1beta/environments",
         "POST /v1beta/environments",
         "GET /v1beta/environments",
         "GET /v1beta/environments/env_abc_1234",
@@ -136,6 +145,49 @@ def test_python_environments_lifecycle_routes_through_google_genai_client(
 
     create_body = captured_bodies[0]
     assert create_body["sources"][0]["content"] == "print('hello')"
+    forked_body = captured_bodies[1]
+    assert forked_body["from_environment"] == "environments/env_abc_1234"
+
+  finally:
+    server.shutdown()
+    thread.join()
+    server.server_close()
+
+
+@pytest.mark.asyncio
+async def test_python_environments_async_create_with_from_environment(
+    monkeypatch,
+):
+  """Tests creating an environment asynchronously with from_environment."""
+  monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
+  captured: list[str] = []
+  captured_bodies: list[dict[str, Any]] = []
+  handler = type(
+      "Handler",
+      (_RecordingHandler,),
+      {
+          "captured": captured,
+          "captured_bodies": captured_bodies,
+      },
+  )
+  server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+  thread = threading.Thread(target=server.serve_forever, daemon=True)
+  thread.start()
+  try:
+    client = Client(
+        api_key="test-api-key",
+        http_options={
+            "api_version": "v1beta",
+            "base_url": f"http://127.0.0.1:{server.server_port}",
+        },
+    )
+
+    forked_environment = await client.aio.environments.create(
+        from_environment="environments/env_abc_1234",
+    )
+    assert forked_environment.id == "env_abc_1234"
+    assert captured == ["POST /v1beta/environments"]
+    assert captured_bodies[0]["from_environment"] == "environments/env_abc_1234"
 
   finally:
     server.shutdown()
@@ -372,6 +424,7 @@ def test_python_environments_types_and_models():
   assert req.recursive is True
   assert req.api_version == "v1beta"
 
-
-
-
+  create_req = CreateEnvironmentRequest(
+      from_environment="environments/env_abc_1234",
+  )
+  assert create_req.from_environment == "environments/env_abc_1234"

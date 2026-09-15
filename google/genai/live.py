@@ -84,6 +84,21 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
 )
 
 
+def _is_interaction_complete(
+    server_content: Optional[types.LiveServerContent],
+) -> bool:
+  """Returns True if the server_content indicates the interaction is complete."""
+  if not server_content:
+    return False
+  if (
+      server_content.interaction_status is not None
+      and server_content.interaction_status
+      != types.InteractionStatus.INTERACTION_STATUS_UNSPECIFIED
+  ):
+    return server_content.interaction_status == types.InteractionStatus.IDLE
+  return bool(server_content.turn_complete)
+
+
 class AsyncSession:
   """[Preview] AsyncSession."""
 
@@ -454,7 +469,7 @@ class AsyncSession:
     """
     # TODO(b/365983264) Handle intermittent issues for the user.
     while result := await self._receive():
-      if result.server_content and result.server_content.turn_complete:
+      if _is_interaction_complete(result.server_content):
         yield result
         break
       yield result

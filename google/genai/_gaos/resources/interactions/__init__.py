@@ -85,7 +85,9 @@ from ...types.interactions.processingcallstep import ProcessingCallStep
 from ...types.interactions.processingresultstep import ProcessingResultStep
 from ...types.interactions.retrievalcallarguments import RetrievalCallArguments
 from ...types.interactions.retrievalcalldelta import RetrievalCallDelta
+from ...types.interactions.retrievalcallstep import RetrievalCallStep
 from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
+from ...types.interactions.retrievalresultstep import RetrievalResultStep
 from ...types.interactions.safetysetting import SafetySetting
 from ...types.interactions.speechconfig import SpeechConfig
 from ...types.interactions.step import Step
@@ -124,6 +126,7 @@ from . import googlesearchcallstep
 from . import googlesearchresultstep
 from . import placecitation
 from . import retrievalcalldelta
+from . import retrievalcallstep
 from . import stepdelta
 from . import tool
 from . import transcriptionmode
@@ -193,7 +196,9 @@ __all__ = [
     "ProcessingResultStep",
     "RetrievalCallArguments",
     "RetrievalCallDelta",
+    "RetrievalCallStep",
     "RetrievalResultDelta",
+    "RetrievalResultStep",
     "SafetySetting",
     "SpeechConfig",
     "Step",
@@ -232,6 +237,7 @@ __all__ = [
     "googlesearchresultstep",
     "placecitation",
     "retrievalcalldelta",
+    "retrievalcallstep",
     "stepdelta",
     "tool",
     "transcriptionmode",
