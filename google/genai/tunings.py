@@ -222,6 +222,38 @@ def _CompositeReinforcementTuningRewardConfig_to_vertex(
   return to_object
 
 
+def _ComputerUse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['environment']) is not None:
+    setv(to_object, ['environment'], getv(from_object, ['environment']))
+
+  if getv(from_object, ['excluded_predefined_functions']) is not None:
+    setv(
+        to_object,
+        ['excludedPredefinedFunctions'],
+        getv(from_object, ['excluded_predefined_functions']),
+    )
+
+  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
+    setv(
+        to_object,
+        ['enablePromptInjectionDetection'],
+        getv(from_object, ['enable_prompt_injection_detection']),
+    )
+
+  if getv(from_object, ['disabled_safety_policies']) is not None:
+    raise ValueError(
+        'disabled_safety_policies parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  return to_object
+
+
 def _Content_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1200,6 +1232,15 @@ def _GenerationConfig_from_vertex(
         [item for item in getv(from_object, ['responseFormat'])],
     )
 
+  if getv(from_object, ['translationConfig']) is not None:
+    setv(
+        to_object,
+        ['translation_config'],
+        _TranslationConfig_from_vertex(
+            getv(from_object, ['translationConfig']), to_object, root_object
+        ),
+    )
+
   if getv(from_object, ['audioTranscriptionConfig']) is not None:
     setv(
         to_object,
@@ -1336,9 +1377,12 @@ def _GenerationConfig_to_vertex(
     )
 
   if getv(from_object, ['translation_config']) is not None:
-    raise ValueError(
-        'translation_config parameter is only supported in Gemini Developer API'
-        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    setv(
+        to_object,
+        ['translationConfig'],
+        _TranslationConfig_to_vertex(
+            getv(from_object, ['translation_config']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['audio_transcription_config']) is not None:
@@ -1436,6 +1480,27 @@ def _ListTuningJobsResponse_from_vertex(
             _TuningJob_from_vertex(item, to_object, root_object)
             for item in getv(from_object, ['tuningJobs'])
         ],
+    )
+
+  return to_object
+
+
+def _McpServer_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    raise ValueError(
+        'name parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['streamable_http_transport']) is not None:
+    raise ValueError(
+        'streamable_http_transport parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1660,6 +1725,16 @@ def _ReinforcementTuningExample_to_vertex(
         _Content_to_vertex(
             getv(from_object, ['system_instruction']), to_object, root_object
         ),
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        to_object,
+        ['tools'],
+        [
+            _Tool_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['tools'])
+        ],
     )
 
   return to_object
@@ -1888,6 +1963,132 @@ def _SpeechConfig_to_vertex(
             to_object,
             root_object,
         ),
+    )
+
+  return to_object
+
+
+def _Tool_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['retrieval']) is not None:
+    setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
+
+  if getv(from_object, ['computer_use']) is not None:
+    setv(
+        to_object,
+        ['computerUse'],
+        _ComputerUse_to_vertex(
+            getv(from_object, ['computer_use']), to_object, root_object
+        ),
+    )
+
+  if getv(from_object, ['file_search']) is not None:
+    raise ValueError(
+        'file_search parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['google_search']) is not None:
+    setv(to_object, ['googleSearch'], getv(from_object, ['google_search']))
+
+  if getv(from_object, ['google_maps']) is not None:
+    setv(to_object, ['googleMaps'], getv(from_object, ['google_maps']))
+
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    setv(
+        to_object,
+        ['enterpriseWebSearch'],
+        getv(from_object, ['enterprise_web_search']),
+    )
+
+  if getv(from_object, ['function_declarations']) is not None:
+    setv(
+        to_object,
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
+    )
+
+  if getv(from_object, ['google_search_retrieval']) is not None:
+    setv(
+        to_object,
+        ['googleSearchRetrieval'],
+        getv(from_object, ['google_search_retrieval']),
+    )
+
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    setv(
+        to_object,
+        ['parallelAiSearch'],
+        getv(from_object, ['parallel_ai_search']),
+    )
+
+  if getv(from_object, ['url_context']) is not None:
+    setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [
+            _McpServer_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['mcp_servers'])
+        ],
+    )
+
+  if getv(from_object, ['exa_ai_search']) is not None:
+    setv(to_object, ['exaAiSearch'], getv(from_object, ['exa_ai_search']))
+
+  return to_object
+
+
+def _TranslationConfig_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['echoTargetLanguage']) is not None:
+    setv(
+        to_object,
+        ['echo_target_language'],
+        getv(from_object, ['echoTargetLanguage']),
+    )
+
+  if getv(from_object, ['targetLanguageCode']) is not None:
+    setv(
+        to_object,
+        ['target_language_code'],
+        getv(from_object, ['targetLanguageCode']),
+    )
+
+  return to_object
+
+
+def _TranslationConfig_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['echo_target_language']) is not None:
+    setv(
+        to_object,
+        ['echoTargetLanguage'],
+        getv(from_object, ['echo_target_language']),
+    )
+
+  if getv(from_object, ['target_language_code']) is not None:
+    setv(
+        to_object,
+        ['targetLanguageCode'],
+        getv(from_object, ['target_language_code']),
     )
 
   return to_object
