@@ -47,6 +47,7 @@ from .lib.compat_errors import (
 )
 from .sdk import AsyncGenAI, GenAI
 from .types import environments
+from .types import credentials
 from .types import interactions
 from .types.security import Security
 from .utils import BackoffStrategy, RetryConfig, eventstreaming
@@ -56,6 +57,8 @@ from .webhooks import AsyncWebhooks as GeneratedAsyncWebhooks
 from .webhooks import Webhooks as GeneratedWebhooks
 from .environments import AsyncEnvironments as GeneratedAsyncEnvironments
 from .environments import Environments as GeneratedEnvironments
+from .credentials import AsyncCredentials as GeneratedAsyncCredentials
+from .credentials import Credentials as GeneratedCredentials
 from .files import AsyncFiles as GeneratedAsyncFiles
 from .files import Files as GeneratedFiles
 
@@ -609,6 +612,76 @@ class AsyncGeminiNextGenWebhooks(GeneratedAsyncWebhooks):
 
         async def ping(self, *args: Any, **kwargs: Any) -> Any:
             return await async_wrap_sdk_call(super().ping, *args, **kwargs)
+
+
+class GeminiNextGenCredentials(GeneratedCredentials):
+    """Public credentials resource backed by the NextGen client.
+
+    Subclasses the generated resource so every public method is wrapped in
+    `wrap_sdk_call`, translating per-operation `GenAiError` raises into the
+    status-code `APIError` hierarchy exposed at the
+    `google.genai._interactions` import surface.
+    """
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def list(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().list, *args, **kwargs)
+
+        def get(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().get, *args, **kwargs)
+
+        def update(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().update, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class AsyncGeminiNextGenCredentials(GeneratedAsyncCredentials):
+    """Async public credentials resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_async_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def list(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().list, *args, **kwargs)
+
+        async def get(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().get, *args, **kwargs)
+
+        async def update(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().update, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
 
 
 class GeminiNextGenAgents(GeneratedAgents):
