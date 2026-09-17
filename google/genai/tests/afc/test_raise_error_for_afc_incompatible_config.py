@@ -16,6 +16,8 @@
 
 """Tests for raise_error_for_afc_incompatible_config."""
 
+import logging
+
 import pytest
 from ... import types
 from ..._extra_utils import raise_error_for_afc_incompatible_config
@@ -157,3 +159,50 @@ def test_incompatible_config_stream_function_call_arguments_set_no_disable_afc()
             ),
         )
     )
+
+
+@pytest.mark.parametrize(
+    ('mode', 'disable_afc', 'should_warn'),
+    [
+        (types.FunctionCallingConfigMode.ANY, False, True),
+        (types.FunctionCallingConfigMode.ANY, True, False),
+        (types.FunctionCallingConfigMode.AUTO, False, False),
+    ],
+)
+def test_function_calling_mode_warns_when_afc_is_enabled(
+    caplog, mode, disable_afc, should_warn
+):
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+
+  raise_error_for_afc_incompatible_config(
+      types.GenerateContentConfig(
+          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+              disable=disable_afc,
+          ),
+          tool_config=types.ToolConfig(
+              function_calling_config=types.FunctionCallingConfig(mode=mode),
+          ),
+      )
+  )
+
+  if should_warn:
+    assert 'mode is set to ANY' in caplog.text
+    assert 'automatic function calling' in caplog.text
+  else:
+    assert not caplog.records
+
+
+def test_any_function_calling_mode_warns_when_afc_config_is_unset(caplog):
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+
+  raise_error_for_afc_incompatible_config(
+      types.GenerateContentConfig(
+          tool_config=types.ToolConfig(
+              function_calling_config=types.FunctionCallingConfig(
+                  mode=types.FunctionCallingConfigMode.ANY,
+              ),
+          ),
+      )
+  )
+
+  assert 'mode is set to ANY' in caplog.text
