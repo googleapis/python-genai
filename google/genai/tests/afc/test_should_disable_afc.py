@@ -27,7 +27,7 @@ def test_config_is_none():
 
 
 def test_afc_config_unset():
-  assert should_disable_afc(types.GenerateContentConfig()) is False
+  assert should_disable_afc(types.GenerateContentConfig()) is True
 
 
 def test_afc_enable_unset_max_0():
@@ -72,6 +72,9 @@ def test_afc_enable_unset_max_1():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   maximum_remote_calls=1,
               ),
+              tools=[types.Tool(function_declarations=[
+                  types.FunctionDeclaration(name='tool_name')
+              ])],
           )
       )
       is False
@@ -81,7 +84,10 @@ def test_afc_enable_unset_max_1():
 def test_afc_enable_unset_max_1_0():
   assert (
       should_disable_afc(
-          {'automatic_function_calling': {'maximum_remote_calls': 1.0}}
+          {
+              'automatic_function_calling': {'maximum_remote_calls': 1.0},
+              'tools': [{'function_declarations': [{'name': 'tool_name'}]}]
+          }
       )
       is False
   )
@@ -158,6 +164,9 @@ def test_afc_enable_true_max_unset():
               automatic_function_calling=types.AutomaticFunctionCallingConfig(
                   disable=False,
               ),
+              tools=[types.Tool(function_declarations=[
+                  types.FunctionDeclaration(name='tool_name')
+              ])],
           )
       )
       is False
@@ -211,5 +220,5 @@ def test_afc_enable_true_max_1():
               ),
           )
       )
-      is False
+      is True
   )
