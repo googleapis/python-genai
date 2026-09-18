@@ -10,6 +10,8 @@ on:
 jobs:
   test-import:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -17,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -34,3 +36,8 @@ jobs:
       - name: Run import test
         run: |
           pytest google/genai/tests/imports/test_no_optional_imports.py
+
+      - name: Run HTTPX upload regression tests
+        run: |
+          pip install -c requirements.txt pytest-asyncio
+          pytest google/genai/tests/client/test_upload_errors.py --mode=replay
