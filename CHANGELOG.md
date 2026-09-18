@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.25.0](https://github.com/googleapis/python-genai/compare/v2.24.0...v2.25.0) (2026-09-18)
+
+
+### Features
+
+* Support field.value_field syntax for map add_union_value annotations. ([ad00721](https://github.com/googleapis/python-genai/commit/ad00721acd27258ae45180dbb7dadfaa8f8bed71))
+* Update discovery doc ([fa91716](https://github.com/googleapis/python-genai/commit/fa917165422ebd78f69bfd7a1b6285d2ad35780b))
+
+
+### Bug Fixes
+
+* Sanitize path parameter descriptions in GAOS OpenAPI generation ([25b0094](https://github.com/googleapis/python-genai/commit/25b00947000778c45fd804dffee282f3bdd7e3e7))
+
 ## [2.24.0](https://github.com/googleapis/python-genai/compare/v2.23.0...v2.24.0) (2026-09-16)
 
 
