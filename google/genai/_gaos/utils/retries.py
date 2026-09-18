@@ -26,17 +26,6 @@ from typing import List, Optional
 
 import httpx
 
-try:
-    import httpx2
-except ImportError:
-    httpx2 = None
-
-_RETRY_EXCEPTIONS = (
-    (httpx.NetworkError, httpx.TimeoutException)
-    if httpx2 is None
-    else (httpx.NetworkError, httpx.TimeoutException, httpx2.NetworkError, httpx2.TimeoutException)
-)
-
 
 class BackoffStrategy:
     """Exponential backoff strategy configuration."""
@@ -140,6 +129,18 @@ class PermanentError(Exception):
 
     def __init__(self, inner: Exception):
         self.inner = inner
+
+
+_TRANSPORT_ERROR_NAMES = frozenset({"NetworkError", "TimeoutException"})
+_TRANSPORT_ERROR_BASES = frozenset({"TransportError", "RequestError", "HTTPError"})
+
+
+def _is_transport_error(exception: BaseException) -> bool:
+    """Report whether an exception is a connection or timeout failure."""
+    if isinstance(exception, (httpx.NetworkError, httpx.TimeoutException)):
+        return True
+    names = {base.__name__ for base in type(exception).__mro__}
+    return bool(names & _TRANSPORT_ERROR_NAMES) and _TRANSPORT_ERROR_BASES <= names
 
 
 def _parse_retry_after_header(response: httpx.Response) -> Optional[int]:
@@ -248,14 +249,15 @@ def retry(func, retries: Retries):
 
                 if should_retry:
                     raise TemporaryError(res)
-            except _RETRY_EXCEPTIONS as exception:
-                if retries.config.retry_connection_errors:
-                    raise
-
-                raise PermanentError(exception) from exception
             except TemporaryError:
                 raise
             except Exception as exception:
+                if (
+                    _is_transport_error(exception)
+                    and retries.config.retry_connection_errors
+                ):
+                    raise
+
                 raise PermanentError(exception) from exception
 
             return res
@@ -308,14 +310,15 @@ async def retry_async(func, retries: Retries):
 
                 if should_retry:
                     raise TemporaryError(res)
-            except _RETRY_EXCEPTIONS as exception:
-                if retries.config.retry_connection_errors:
-                    raise
-
-                raise PermanentError(exception) from exception
             except TemporaryError:
                 raise
             except Exception as exception:
+                if (
+                    _is_transport_error(exception)
+                    and retries.config.retry_connection_errors
+                ):
+                    raise
+
                 raise PermanentError(exception) from exception
 
             return res

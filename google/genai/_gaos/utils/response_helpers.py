@@ -53,6 +53,7 @@ from typing_extensions import TypeAliasType
 from .._version import __response_mode_header__
 from .._hooks.types import AfterParseErrorContext
 from .eventstreaming import Stream, AsyncStream
+from .serializers import ALLOW_UNKNOWN_UNION_VARIANTS
 from .unmarshal_json_response import unmarshal_json_response
 
 P = ParamSpec("P")
@@ -207,7 +208,9 @@ def _build_event_stream(
                 raise ValueError(
                     f"Synthesized SSE decoder expected an envelope of shape {{'data': ...}}, got {envelope!r}. Pass decoder=<fn> to parse(...) to handle non-standard envelopes."
                 )
-            return _t.model_validate(envelope["data"])
+            return _t.model_validate(
+                envelope["data"], context={ALLOW_UNKNOWN_UNION_VARIANTS: True}
+            )
 
         resolved_decoder = _synthesized_decoder
 

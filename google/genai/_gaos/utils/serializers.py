@@ -129,11 +129,26 @@ def validate_const(v):
     return validate
 
 
+ALLOW_UNKNOWN_UNION_VARIANTS = "speakeasy_allow_unknown_union_variants"
+"""Validation-context key enabling the Unknown fallback on open discriminated
+unions. The SDK sets it when deserializing server responses; validation
+without it (e.g. of user-constructed request payloads) stays strict. Pass
+``context={ALLOW_UNKNOWN_UNION_VARIANTS: True}`` to ``model_validate`` to
+opt in when parsing response payloads manually."""
+
+
 def unmarshal_json(raw, typ: Any) -> Any:
-    return unmarshal(from_json(raw), typ, coerce_iterables=False)
+    return unmarshal(
+        from_json(raw), typ, coerce_iterables=False, allow_unknown_union_variants=True
+    )
 
 
-def unmarshal(val, typ: Any, coerce_iterables: bool = True) -> Any:
+def unmarshal(
+    val,
+    typ: Any,
+    coerce_iterables: bool = True,
+    allow_unknown_union_variants: bool = False,
+) -> Any:
     if coerce_iterables:
         val = _coerce_iterables_for_type(val, typ)
     unmarshaller = create_model(
@@ -142,7 +157,12 @@ def unmarshal(val, typ: Any, coerce_iterables: bool = True) -> Any:
         __config__=ConfigDict(populate_by_name=True, arbitrary_types_allowed=True),
     )
 
-    m = unmarshaller(body=val)
+    if allow_unknown_union_variants:
+        m = unmarshaller.model_validate(
+            {"body": val}, context={ALLOW_UNKNOWN_UNION_VARIANTS: True}
+        )
+    else:
+        m = unmarshaller(body=val)
 
     # pyright: ignore[reportAttributeAccessIssue]
     return m.body  # type: ignore
@@ -153,7 +173,9 @@ _CONSTRUCT_UNVALIDATED_MAX_DEPTH = 64
 
 def construct_unvalidated(value: Any, typ: Any, _depth: int = 0) -> Any:
     try:
-        return unmarshal(value, typ, coerce_iterables=True)
+        return unmarshal(
+            value, typ, coerce_iterables=True, allow_unknown_union_variants=True
+        )
     except Exception:
         try:
             return _construct_lenient(value, typ, _depth)
