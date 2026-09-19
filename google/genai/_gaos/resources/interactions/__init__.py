@@ -114,6 +114,7 @@ from ...types.interactions.videocontent import VideoContent
 from ...types.interactions.videoresponseformat import VideoResponseFormat
 from ...types.interactions.webhookconfig import WebhookConfig
 from ...types.interactions.wordinfo import WordInfo
+from . import annotation
 from . import codeexecutioncallstep
 from . import codemenderagentconfig
 from . import environment
@@ -224,6 +225,7 @@ __all__ = [
     "VideoResponseFormat",
     "WebhookConfig",
     "WordInfo",
+    "annotation",
     "codeexecutioncallstep",
     "codemenderagentconfig",
     "environment",

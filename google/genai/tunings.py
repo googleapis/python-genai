@@ -1608,6 +1608,9 @@ def _Part_to_vertex(
         to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
     )
 
+  if getv(from_object, ['speech_metadata']) is not None:
+    setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
   return to_object
 
 
@@ -2602,6 +2605,9 @@ def _VoiceConfig_to_vertex(
         ['prebuiltVoiceConfig'],
         getv(from_object, ['prebuilt_voice_config']),
     )
+
+  if getv(from_object, ['voice']) is not None:
+    setv(to_object, ['voice'], getv(from_object, ['voice']))
 
   return to_object
 
