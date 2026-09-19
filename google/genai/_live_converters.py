@@ -607,6 +607,9 @@ def _LiveClientSetup_to_mldev(
         ],
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(to_object, ['labels'], getv(from_object, ['labels']))
+
   return to_object
 
 
@@ -696,6 +699,12 @@ def _LiveClientSetup_to_vertex(
         to_object,
         ['safetySettings'],
         [item for item in getv(from_object, ['safety_settings'])],
+    )
+
+  if getv(from_object, ['labels']) is not None:
+    raise ValueError(
+        'labels parameter is only supported in Gemini Developer API mode, not'
+        ' in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
