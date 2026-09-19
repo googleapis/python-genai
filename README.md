@@ -250,6 +250,47 @@ client = genai.Client(
 )
 ```
 
+### HTTP retry options
+
+By default, the SDK does not retry HTTP requests. To enable retries with the
+default settings, pass an empty `HttpRetryOptions` object:
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    api_key='GEMINI_API_KEY',
+    http_options=types.HttpOptions(
+        retry_options=types.HttpRetryOptions()
+    ),
+)
+```
+
+The default retry configuration attempts the original request plus four retries.
+It retries on HTTP status codes `408`, `429`, `500`, `502`, `503`, and `504`, as
+well as timeout and connection errors. The default backoff waits approximately
+`1`, `2`, `4`, and `8` seconds between attempts, capped by `max_delay=60`.
+
+Retry behavior can be customized by setting fields on `HttpRetryOptions`.
+Unset fields use their defaults:
+
+```python
+client = genai.Client(
+    api_key='GEMINI_API_KEY',
+    http_options=types.HttpOptions(
+        retry_options=types.HttpRetryOptions(
+            attempts=3,
+            initial_delay=1.0,
+            max_delay=10.0,
+            exp_base=2.0,
+            jitter=1.0,
+            http_status_codes=[429, 500, 503],
+        )
+    ),
+)
+```
+
 ### Faster async client option: Aiohttp
 
 By default we use httpx for both sync and async client implementations. In order
