@@ -1,5 +1,6 @@
 [build-system]
 requires = ["setuptools", "wheel", "twine>=6.1.0", "packaging>=24.2", "pkginfo>=1.12.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "google-genai"
