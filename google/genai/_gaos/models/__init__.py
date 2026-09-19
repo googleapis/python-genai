@@ -62,6 +62,12 @@ if TYPE_CHECKING:
         CreateTriggerRequest,
         CreateTriggerRequestParam,
     )
+    from .createvoice import (
+        CreateVoiceGlobals,
+        CreateVoiceGlobalsTypedDict,
+        CreateVoiceRequest,
+        CreateVoiceRequestParam,
+    )
     from .createwebhook import (
         CreateWebhookGlobals,
         CreateWebhookGlobalsTypedDict,
@@ -97,6 +103,12 @@ if TYPE_CHECKING:
         DeleteTriggerGlobalsTypedDict,
         DeleteTriggerRequest,
         DeleteTriggerRequestParam,
+    )
+    from .deletevoice import (
+        DeleteVoiceGlobals,
+        DeleteVoiceGlobalsTypedDict,
+        DeleteVoiceRequest,
+        DeleteVoiceRequestParam,
     )
     from .deletewebhook import (
         DeleteWebhookGlobals,
@@ -142,6 +154,12 @@ if TYPE_CHECKING:
         GetTriggerRequest,
         GetTriggerRequestParam,
     )
+    from .getvoice import (
+        GetVoiceGlobals,
+        GetVoiceGlobalsTypedDict,
+        GetVoiceRequest,
+        GetVoiceRequestParam,
+    )
     from .getwebhook import (
         GetWebhookGlobals,
         GetWebhookGlobalsTypedDict,
@@ -177,6 +195,12 @@ if TYPE_CHECKING:
         ListTriggersGlobalsTypedDict,
         ListTriggersRequest,
         ListTriggersRequestParam,
+    )
+    from .listvoices import (
+        ListVoicesGlobals,
+        ListVoicesGlobalsTypedDict,
+        ListVoicesRequest,
+        ListVoicesRequestParam,
     )
     from .listwebhooks import (
         ListWebhooksGlobals,
@@ -259,6 +283,10 @@ __all__ = [
     "CreateTriggerGlobalsTypedDict",
     "CreateTriggerRequest",
     "CreateTriggerRequestParam",
+    "CreateVoiceGlobals",
+    "CreateVoiceGlobalsTypedDict",
+    "CreateVoiceRequest",
+    "CreateVoiceRequestParam",
     "CreateWebhookGlobals",
     "CreateWebhookGlobalsTypedDict",
     "CreateWebhookRequest",
@@ -283,6 +311,10 @@ __all__ = [
     "DeleteTriggerGlobalsTypedDict",
     "DeleteTriggerRequest",
     "DeleteTriggerRequestParam",
+    "DeleteVoiceGlobals",
+    "DeleteVoiceGlobalsTypedDict",
+    "DeleteVoiceRequest",
+    "DeleteVoiceRequestParam",
     "DeleteWebhookGlobals",
     "DeleteWebhookGlobalsTypedDict",
     "DeleteWebhookRequest",
@@ -313,6 +345,10 @@ __all__ = [
     "GetTriggerGlobalsTypedDict",
     "GetTriggerRequest",
     "GetTriggerRequestParam",
+    "GetVoiceGlobals",
+    "GetVoiceGlobalsTypedDict",
+    "GetVoiceRequest",
+    "GetVoiceRequestParam",
     "GetWebhookGlobals",
     "GetWebhookGlobalsTypedDict",
     "GetWebhookRequest",
@@ -337,6 +373,10 @@ __all__ = [
     "ListTriggersGlobalsTypedDict",
     "ListTriggersRequest",
     "ListTriggersRequestParam",
+    "ListVoicesGlobals",
+    "ListVoicesGlobalsTypedDict",
+    "ListVoicesRequest",
+    "ListVoicesRequestParam",
     "ListWebhooksGlobals",
     "ListWebhooksGlobalsTypedDict",
     "ListWebhooksRequest",
@@ -402,6 +442,10 @@ _dynamic_imports: dict[str, str] = {
     "CreateTriggerGlobalsTypedDict": ".createtrigger",
     "CreateTriggerRequest": ".createtrigger",
     "CreateTriggerRequestParam": ".createtrigger",
+    "CreateVoiceGlobals": ".createvoice",
+    "CreateVoiceGlobalsTypedDict": ".createvoice",
+    "CreateVoiceRequest": ".createvoice",
+    "CreateVoiceRequestParam": ".createvoice",
     "CreateWebhookGlobals": ".createwebhook",
     "CreateWebhookGlobalsTypedDict": ".createwebhook",
     "CreateWebhookRequest": ".createwebhook",
@@ -426,6 +470,10 @@ _dynamic_imports: dict[str, str] = {
     "DeleteTriggerGlobalsTypedDict": ".deletetrigger",
     "DeleteTriggerRequest": ".deletetrigger",
     "DeleteTriggerRequestParam": ".deletetrigger",
+    "DeleteVoiceGlobals": ".deletevoice",
+    "DeleteVoiceGlobalsTypedDict": ".deletevoice",
+    "DeleteVoiceRequest": ".deletevoice",
+    "DeleteVoiceRequestParam": ".deletevoice",
     "DeleteWebhookGlobals": ".deletewebhook",
     "DeleteWebhookGlobalsTypedDict": ".deletewebhook",
     "DeleteWebhookRequest": ".deletewebhook",
@@ -456,6 +504,10 @@ _dynamic_imports: dict[str, str] = {
     "GetTriggerGlobalsTypedDict": ".gettrigger",
     "GetTriggerRequest": ".gettrigger",
     "GetTriggerRequestParam": ".gettrigger",
+    "GetVoiceGlobals": ".getvoice",
+    "GetVoiceGlobalsTypedDict": ".getvoice",
+    "GetVoiceRequest": ".getvoice",
+    "GetVoiceRequestParam": ".getvoice",
     "GetWebhookGlobals": ".getwebhook",
     "GetWebhookGlobalsTypedDict": ".getwebhook",
     "GetWebhookRequest": ".getwebhook",
@@ -480,6 +532,10 @@ _dynamic_imports: dict[str, str] = {
     "ListTriggersGlobalsTypedDict": ".listtriggers",
     "ListTriggersRequest": ".listtriggers",
     "ListTriggersRequestParam": ".listtriggers",
+    "ListVoicesGlobals": ".listvoices",
+    "ListVoicesGlobalsTypedDict": ".listvoices",
+    "ListVoicesRequest": ".listvoices",
+    "ListVoicesRequestParam": ".listvoices",
     "ListWebhooksGlobals": ".listwebhooks",
     "ListWebhooksGlobalsTypedDict": ".listwebhooks",
     "ListWebhooksRequest": ".listwebhooks",
