@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from .environments import AsyncEnvironments, Environments
     from .interactions import AsyncInteractions, Interactions
     from .triggers import AsyncTriggers, Triggers
+    from .voices import AsyncVoices, Voices
     from .webhooks import AsyncWebhooks, Webhooks
 
 
@@ -63,6 +64,7 @@ class GenAI(BaseSDK):
     credentials: "Credentials"
     interactions: "Interactions"
     triggers: "Triggers"
+    voices: "Voices"
     webhooks: "Webhooks"
     _sub_sdk_map = {
         "environments": (".environments", "Environments"),
@@ -70,6 +72,7 @@ class GenAI(BaseSDK):
         "credentials": (".credentials", "Credentials"),
         "interactions": (".interactions", "Interactions"),
         "triggers": (".triggers", "Triggers"),
+        "voices": (".voices", "Voices"),
         "webhooks": (".webhooks", "Webhooks"),
     }
 
@@ -235,6 +238,10 @@ class GenAIWithRawResponse:
         return self._sdk.triggers.with_raw_response
 
     @property
+    def voices(self):
+        return self._sdk.voices.with_raw_response
+
+    @property
     def webhooks(self):
         return self._sdk.webhooks.with_raw_response
 
@@ -264,6 +271,10 @@ class GenAIWithStreamingResponse:
         return self._sdk.triggers.with_streaming_response
 
     @property
+    def voices(self):
+        return self._sdk.voices.with_streaming_response
+
+    @property
     def webhooks(self):
         return self._sdk.webhooks.with_streaming_response
 
@@ -284,6 +295,7 @@ class AsyncGenAI(AsyncBaseSDK):
     credentials: "AsyncCredentials"
     interactions: "AsyncInteractions"
     triggers: "AsyncTriggers"
+    voices: "AsyncVoices"
     webhooks: "AsyncWebhooks"
     _sub_sdk_map = {
         "environments": (".environments", "AsyncEnvironments"),
@@ -291,6 +303,7 @@ class AsyncGenAI(AsyncBaseSDK):
         "credentials": (".credentials", "AsyncCredentials"),
         "interactions": (".interactions", "AsyncInteractions"),
         "triggers": (".triggers", "AsyncTriggers"),
+        "voices": (".voices", "AsyncVoices"),
         "webhooks": (".webhooks", "AsyncWebhooks"),
     }
 
@@ -454,6 +467,10 @@ class AsyncGenAIWithRawResponse:
         return self._sdk.triggers.with_raw_response
 
     @property
+    def voices(self):
+        return self._sdk.voices.with_raw_response
+
+    @property
     def webhooks(self):
         return self._sdk.webhooks.with_raw_response
 
@@ -481,6 +498,10 @@ class AsyncGenAIWithStreamingResponse:
     @property
     def triggers(self):
         return self._sdk.triggers.with_streaming_response
+
+    @property
+    def voices(self):
+        return self._sdk.voices.with_streaming_response
 
     @property
     def webhooks(self):

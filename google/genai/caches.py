@@ -719,6 +719,9 @@ def _Part_to_mldev(
         to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
     )
 
+  if getv(from_object, ['speech_metadata']) is not None:
+    setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
   return to_object
 
 
@@ -803,6 +806,9 @@ def _Part_to_vertex(
     setv(
         to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
     )
+
+  if getv(from_object, ['speech_metadata']) is not None:
+    setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
 
   return to_object
 

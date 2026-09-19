@@ -20,6 +20,7 @@
 from __future__ import annotations
 from .filecitation import FileCitation, FileCitationParam
 from .placecitation import PlaceCitation, PlaceCitationParam
+from .speechannotation import SpeechAnnotation, SpeechAnnotationParam
 from .urlcitation import URLCitation, URLCitationParam
 from .wordinfo import WordInfo, WordInfoParam
 from functools import partial
@@ -33,7 +34,13 @@ from typing_extensions import Annotated, TypeAliasType
 
 AnnotationParam = TypeAliasType(
     "AnnotationParam",
-    Union[URLCitationParam, PlaceCitationParam, WordInfoParam, FileCitationParam],
+    Union[
+        SpeechAnnotationParam,
+        URLCitationParam,
+        PlaceCitationParam,
+        WordInfoParam,
+        FileCitationParam,
+    ],
 )
 r"""Citation information for model-generated content."""
 
@@ -51,13 +58,21 @@ class UnknownAnnotation(BaseModel):
 _ANNOTATION_VARIANTS: dict[str, Any] = {
     "file_citation": FileCitation,
     "place_citation": PlaceCitation,
+    "speech_metadata": SpeechAnnotation,
     "url_citation": URLCitation,
     "word_info": WordInfo,
 }
 
 
 Annotation = Annotated[
-    Union[FileCitation, PlaceCitation, URLCitation, WordInfo, UnknownAnnotation],
+    Union[
+        FileCitation,
+        PlaceCitation,
+        SpeechAnnotation,
+        URLCitation,
+        WordInfo,
+        UnknownAnnotation,
+    ],
     BeforeValidator(
         partial(
             parse_open_union,
