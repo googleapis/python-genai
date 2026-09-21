@@ -69,10 +69,14 @@ class GenerationConfigParam(TypedDict):
     r"""Optional. Speech and multi-speaker configuration."""
     stop_sequences: NotRequired[List[str]]
     r"""A list of character sequences that will stop output interaction."""
+    temperature: NotRequired[float]
+    r"""Controls the randomness of the output."""
     thinking_level: NotRequired[ThinkingLevel]
     thinking_summaries: NotRequired[ThinkingSummaries]
     tool_choice: NotRequired[ToolChoiceParam]
     r"""The tool choice configuration."""
+    top_p: NotRequired[float]
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
     transcription_config: NotRequired[TranscriptionConfigParam]
     r"""Configuration for speech recognition (transcription)."""
     video_config: NotRequired[VideoConfigParam]
@@ -102,12 +106,28 @@ class GenerationConfig(BaseModel):
     stop_sequences: Optional[List[str]] = None
     r"""A list of character sequences that will stop output interaction."""
 
+    temperature: Annotated[
+        Optional[float],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""Controls the randomness of the output."""
+
     thinking_level: Optional[ThinkingLevel] = None
 
     thinking_summaries: Optional[ThinkingSummaries] = None
 
     tool_choice: Optional[ToolChoice] = None
     r"""The tool choice configuration."""
+
+    top_p: Annotated[
+        Optional[float],
+        pydantic.Field(
+            deprecated="warning: ** DEPRECATED ** - This will be removed in a future release, please migrate away from it as soon as possible."
+        ),
+    ] = None
+    r"""The maximum cumulative probability of tokens to consider when sampling."""
 
     transcription_config: Optional[TranscriptionConfig] = None
     r"""Configuration for speech recognition (transcription)."""
@@ -124,9 +144,11 @@ class GenerationConfig(BaseModel):
                 "seed",
                 "speech_config",
                 "stop_sequences",
+                "temperature",
                 "thinking_level",
                 "thinking_summaries",
                 "tool_choice",
+                "top_p",
                 "transcription_config",
                 "video_config",
             ]
