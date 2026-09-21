@@ -681,6 +681,204 @@ class Agents(BaseSDK):
                 parse_exc_,
             )
 
+    def update_agent(
+        self,
+        agents_id: str,
+        *,
+        api_version: Optional[str] = None,
+        update_mask: Optional[str] = None,
+        agent_config: Optional[
+            Union[agents_agent.AgentConfig, agents_agent.AgentConfigParam]
+        ] = None,
+        base_agent: Optional[str] = None,
+        base_environment: Optional[
+            Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
+        ] = None,
+        description: Optional[str] = None,
+        id: Optional[str] = None,
+        system_instruction: Optional[str] = None,
+        tools: Optional[
+            Union[
+                Iterable[agents_agenttool.AgentTool],
+                Iterable[agents_agenttool.AgentToolParam],
+            ]
+        ] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        extra_body: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> agents.Agent:
+        r"""Updates an existing Agent.
+
+        :param agents_id: Required. The name of the agent to update. or
+            `agents/{agent}`
+        :param api_version: API version for request routing.
+        :param update_mask: Optional. The list of fields to update.
+        :param agent_config: Configuration parameters for the agent.
+        :param base_agent: The base agent to extend.
+        :param base_environment: The environment configuration for the agent.
+        :param description: Agent description for developers to quickly read and understand.
+        :param id: The unique identifier for the agent.
+        :param system_instruction: System instruction for the agent.
+        :param tools: The tools available to the agent.
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param extra_body: Additional JSON object fields to merge into request bodies.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = models.UpdateAgentRequest(
+            api_version=api_version,
+            agents_id=agents_id,
+            update_mask=update_mask,
+            body=agents.Agent(
+                agent_config=utils.get_pydantic_model(
+                    agent_config, Optional[agents.AgentConfig]
+                ),
+                base_agent=base_agent,
+                base_environment=utils.get_pydantic_model(
+                    base_environment, Optional[agents.BaseEnvironment]
+                ),
+                description=description,
+                id=id,
+                system_instruction=system_instruction,
+                tools=utils.get_pydantic_model(tools, Optional[List[agents.AgentTool]]),
+            ),
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request(
+            method="PATCH",
+            path="/{api_version}/agents/{agentsId}",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=False,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.UpdateAgentGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            get_serialized_body=lambda: utils.serialize_request_body(
+                request.body if request is not None else None,
+                False,
+                True,
+                "json",
+                Optional[agents.Agent],
+                extra_body=extra_body,
+            ),
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        def _speakeasy_parse_response(http_res):
+            if utils.match_response(http_res, "4XX", "*"):
+                http_res_text = utils.stream_to_text(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "5XX", "*"):
+                http_res_text = utils.stream_to_text(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(agents.Agent, http_res, validate=False)
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="UpdateAgent",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=["agents"],
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
+        )
+        http_res = self.do_request(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                http_res.read()
+                try:
+                    _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    response_helpers.raise_parse_error(
+                        self.sdk_configuration.__dict__["_hooks"],
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.StreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.APIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                ),
+            )
+        try:
+            return _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            response_helpers.raise_parse_error(
+                self.sdk_configuration.__dict__["_hooks"],
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
 
 class AgentsWithRawResponse:
     def __init__(self, sdk: Agents) -> None:
@@ -693,6 +891,9 @@ class AgentsWithRawResponse:
             sdk.delete, "extra_headers"
         )
         self.get = response_helpers.to_raw_response_wrapper(sdk.get, "extra_headers")
+        self.update_agent = response_helpers.to_raw_response_wrapper(
+            sdk.update_agent, "extra_headers"
+        )
 
 
 class AgentsWithStreamingResponse:
@@ -709,6 +910,9 @@ class AgentsWithStreamingResponse:
         )
         self.get = response_helpers.to_streamed_response_wrapper(
             sdk.get, "extra_headers"
+        )
+        self.update_agent = response_helpers.to_streamed_response_wrapper(
+            sdk.update_agent, "extra_headers"
         )
 
 
@@ -1374,6 +1578,207 @@ class AsyncAgents(AsyncBaseSDK):
                 parse_exc_,
             )
 
+    async def update_agent(
+        self,
+        agents_id: str,
+        *,
+        api_version: Optional[str] = None,
+        update_mask: Optional[str] = None,
+        agent_config: Optional[
+            Union[agents_agent.AgentConfig, agents_agent.AgentConfigParam]
+        ] = None,
+        base_agent: Optional[str] = None,
+        base_environment: Optional[
+            Union[agents_agent.BaseEnvironment, agents_agent.BaseEnvironmentParam]
+        ] = None,
+        description: Optional[str] = None,
+        id: Optional[str] = None,
+        system_instruction: Optional[str] = None,
+        tools: Optional[
+            Union[
+                Iterable[agents_agenttool.AgentTool],
+                Iterable[agents_agenttool.AgentToolParam],
+            ]
+        ] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        extra_query: Optional[Mapping[str, Any]] = None,
+        extra_body: Optional[Mapping[str, Any]] = None,
+        timeout: Optional[Union[float, httpx.Timeout]] = None,
+    ) -> agents.Agent:
+        r"""Updates an existing Agent.
+
+        :param agents_id: Required. The name of the agent to update. or
+            `agents/{agent}`
+        :param api_version: API version for request routing.
+        :param update_mask: Optional. The list of fields to update.
+        :param agent_config: Configuration parameters for the agent.
+        :param base_agent: The base agent to extend.
+        :param base_environment: The environment configuration for the agent.
+        :param description: Agent description for developers to quickly read and understand.
+        :param id: The unique identifier for the agent.
+        :param system_instruction: System instruction for the agent.
+        :param tools: The tools available to the agent.
+        :param extra_headers: Additional headers to set or replace on requests.
+        :param extra_query: Additional query parameters to append to requests.
+        :param extra_body: Additional JSON object fields to merge into request bodies.
+        :param timeout: Override the default request timeout configuration for this method in seconds
+        """
+        base_url = None
+        url_variables = None
+        retries: OptionalNullable[utils.RetryConfig] = UNSET
+        server_url = None
+        http_headers = extra_headers
+        timeout_ms = self._coerce_timeout_ms(timeout)
+        if timeout_ms is None:
+            timeout_ms = self.sdk_configuration.timeout_ms
+
+        if server_url is not None:
+            base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
+
+        request = models.UpdateAgentRequest(
+            api_version=api_version,
+            agents_id=agents_id,
+            update_mask=update_mask,
+            body=agents.Agent(
+                agent_config=utils.get_pydantic_model(
+                    agent_config, Optional[agents.AgentConfig]
+                ),
+                base_agent=base_agent,
+                base_environment=utils.get_pydantic_model(
+                    base_environment, Optional[agents.BaseEnvironment]
+                ),
+                description=description,
+                id=id,
+                system_instruction=system_instruction,
+                tools=utils.get_pydantic_model(tools, Optional[List[agents.AgentTool]]),
+            ),
+        )
+
+        _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
+            http_headers
+        )
+        req = self._build_request_async(
+            method="PATCH",
+            path="/{api_version}/agents/{agentsId}",
+            base_url=base_url,
+            url_variables=url_variables,
+            request=request,
+            request_body_required=False,
+            request_has_path_params=True,
+            request_has_query_params=True,
+            user_agent_header="user-agent",
+            accept_header_value="application/json",
+            http_headers=http_headers,
+            extra_query_params=extra_query,
+            _globals=models.UpdateAgentGlobals(
+                api_version=self.sdk_configuration.globals.api_version,
+            ),
+            security=self.sdk_configuration.security,
+            get_serialized_body=lambda: utils.serialize_request_body(
+                request.body if request is not None else None,
+                False,
+                True,
+                "json",
+                Optional[agents.Agent],
+                extra_body=extra_body,
+            ),
+            allow_empty_value=None,
+            timeout_ms=timeout_ms,
+        )
+
+        if retries == UNSET:
+            if self.sdk_configuration.retry_config is not UNSET:
+                retries = self.sdk_configuration.retry_config
+            else:
+                retries = utils.RetryConfig(
+                    "attempt-count-backoff",
+                    utils.BackoffStrategy(500, 8000, 2, 30000),
+                    True,
+                    max_retries=4,
+                )
+
+        retry_config = None
+        if isinstance(retries, utils.RetryConfig):
+            retry_config = (retries, ["408", "409", "429", "5XX"])
+
+        async def _speakeasy_parse_response(http_res):
+            if utils.match_response(http_res, "4XX", "*"):
+                http_res_text = await utils.stream_to_text_async(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "5XX", "*"):
+                http_res_text = await utils.stream_to_text_async(http_res)
+                raise errors.GenAiDefaultError(
+                    "API error occurred", http_res, http_res_text
+                )
+            if utils.match_response(http_res, "default", "application/json"):
+                return unmarshal_json_response(agents.Agent, http_res, validate=False)
+
+            raise errors.GenAiDefaultError("Unexpected response received", http_res)
+
+        _speakeasy_hook_ctx = HookContext(
+            config=self.sdk_configuration,
+            base_url=base_url or "",
+            operation_id="UpdateAgent",
+            oauth2_scopes=None,
+            security_source=get_security_from_env(
+                self.sdk_configuration.security, types.Security
+            ),
+            tags=["agents"],
+            extensions=None,
+            response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
+        )
+        http_res = await self.do_request_async(
+            hook_ctx=_speakeasy_hook_ctx,
+            request=req,
+            is_error_status_code=lambda c: utils.match_status_codes(["4XX", "5XX"], c),
+            stream=_speakeasy_response_mode == "streaming",
+            retry_config=retry_config,
+        )
+        if _speakeasy_response_mode != "parsed":
+            if utils.match_status_codes(["4XX", "5XX"], http_res.status_code):
+                await http_res.aread()
+                try:
+                    await _speakeasy_parse_response(http_res)
+                except Exception as parse_exc_:
+                    await response_helpers.raise_parse_error_async(
+                        self.sdk_configuration.__dict__.get("_async_hooks"),
+                        self.sdk_configuration.__dict__.get("_hooks"),
+                        AfterParseErrorContext(_speakeasy_hook_ctx),
+                        http_res,
+                        parse_exc_,
+                    )
+            _speakeasy_response_cls = (
+                response_helpers.AsyncStreamedAPIResponse
+                if _speakeasy_response_mode == "streaming"
+                else response_helpers.AsyncAPIResponse
+            )
+            return cast(
+                Any,
+                _speakeasy_response_cls(
+                    raw=http_res,
+                    parser=_speakeasy_parse_response,
+                    mode="buffered",
+                    client_ref=self,
+                    hook_ctx=AfterParseErrorContext(_speakeasy_hook_ctx),
+                    hooks=self.sdk_configuration.__dict__.get("_hooks"),
+                    async_hooks=self.sdk_configuration.__dict__.get("_async_hooks"),
+                ),
+            )
+        try:
+            return await _speakeasy_parse_response(http_res)
+        except Exception as parse_exc_:
+            await response_helpers.raise_parse_error_async(
+                self.sdk_configuration.__dict__.get("_async_hooks"),
+                self.sdk_configuration.__dict__.get("_hooks"),
+                AfterParseErrorContext(_speakeasy_hook_ctx),
+                http_res,
+                parse_exc_,
+            )
+
 
 class AsyncAgentsWithRawResponse:
     def __init__(self, sdk: AsyncAgents) -> None:
@@ -1389,6 +1794,9 @@ class AsyncAgentsWithRawResponse:
         )
         self.get = response_helpers.async_to_raw_response_wrapper(
             sdk.get, "extra_headers"
+        )
+        self.update_agent = response_helpers.async_to_raw_response_wrapper(
+            sdk.update_agent, "extra_headers"
         )
 
 
@@ -1406,4 +1814,7 @@ class AsyncAgentsWithStreamingResponse:
         )
         self.get = response_helpers.async_to_streamed_response_wrapper(
             sdk.get, "extra_headers"
+        )
+        self.update_agent = response_helpers.async_to_streamed_response_wrapper(
+            sdk.update_agent, "extra_headers"
         )
