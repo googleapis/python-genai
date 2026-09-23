@@ -78,7 +78,13 @@ def test_mcp_tool_raises_error():
   if not _is_mcp_imported:
     return
 
-  session = McpClientSession(read_stream=None, write_stream=None)
+  class MockMcpClientSession(McpClientSession):
+
+    def __init__(self):
+      self._read_stream = None
+      self._write_stream = None
+
+  session = MockMcpClientSession()
   config = GenerateContentConfig(tools=[session])
   mcp_to_genai_tool_adapters = {'tool': McpToGenAiToolAdapter(session, [])}
   with pytest.raises(UnsupportedFunctionError):

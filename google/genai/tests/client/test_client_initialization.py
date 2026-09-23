@@ -931,19 +931,37 @@ def test_vertexai_apikey_from_env_both_api_keys(monkeypatch, caplog):
   )
 
 
-def test_vertexai_apikey_invalid_constructor1():
-  # Vertex AI Express mode uses API key on Vertex AI.
+def test_gemini_project_location_invalid(monkeypatch):
+  monkeypatch.setenv("GOOGLE_API_KEY", "test_key")
+  with pytest.raises(
+      ValueError, match="Gemini API does not support project/location."
+  ):
+    Client(project="fake_project_id", vertexai=False)
+
+
+def test_vertexai_apikey_with_project_and_location(monkeypatch):
   api_key = "vertexai_api_key"
   project_id = "fake_project_id"
-  location = "fake-location"
+  location = "us-central1"
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
 
-  with pytest.raises(ValueError):
-    Client(
-        api_key=api_key,
-        project=project_id,
-        location=location,
-        vertexai=True,
-    )
+  client = Client(
+      api_key=api_key,
+      project=project_id,
+      location=location,
+      vertexai=True,
+  )
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert client.models._api_client.project == project_id
+  assert client.models._api_client.location == location
+  assert client._api_client._http_options.base_url == (
+      "https://us-central1-aiplatform.googleapis.com/"
+  )
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_combo1(monkeypatch):

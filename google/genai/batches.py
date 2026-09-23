@@ -443,26 +443,6 @@ def _BatchJob_from_vertex(
   return to_object
 
 
-def _Blob_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError(
-        'display_name parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
 def _CancelBatchJobParameters_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -942,26 +922,6 @@ def _EmbeddingsBatchJobSource_to_mldev(
   return to_object
 
 
-def _FileData_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError(
-        'display_name parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
 def _FunctionCall_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1094,7 +1054,7 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
+        t.t_json_schema(getv(from_object, ['response_json_schema'])),
     )
 
   if getv(from_object, ['routing_config']) is not None:
@@ -1137,10 +1097,7 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError(
-        'labels parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['cached_content']) is not None:
     setv(
@@ -1201,6 +1158,13 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['service_tier']) is not None:
     setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
+
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        getv(from_object, ['audio_transcription_config']),
+    )
 
   return to_object
 
@@ -1289,6 +1253,12 @@ def _GoogleMaps_to_mldev(
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  if getv(from_object, ['grounding_types']) is not None:
+    raise ValueError(
+        'grounding_types parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -1574,11 +1544,7 @@ def _Part_to_mldev(
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(
@@ -1595,11 +1561,7 @@ def _Part_to_mldev(
     )
 
   if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -1625,6 +1587,21 @@ def _Part_to_mldev(
 
   if getv(from_object, ['part_metadata']) is not None:
     setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
+
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
+    )
+
+  if getv(from_object, ['speech_metadata']) is not None:
+    setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
 
   return to_object
 
@@ -1746,6 +1723,12 @@ def _Tool_to_mldev(
         to_object,
         ['mcpServers'],
         [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
+  if getv(from_object, ['exa_ai_search']) is not None:
+    raise ValueError(
+        'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object

@@ -22,6 +22,10 @@ from ... import _mcp_utils
 from ... import types
 from ..._api_client import BaseApiClient
 
+try:
+  import httpx2
+except ImportError:
+  httpx2 = None
 
 try:
   from mcp import types as mcp_types
@@ -310,8 +314,11 @@ def test_agent_platform_preserves_unknown_fields():
     assert schema['some_new_future_field'] == 'value'
 
 
+@pytest.mark.skipif(
+    httpx2 is None, reason='httpx2 is not available'
+)
 @pytest.mark.asyncio
-@mock.patch('httpx.AsyncClient')
+@mock.patch('httpx2.AsyncClient')
 @mock.patch.object(_mcp_utils, 'streamable_http_client')
 @mock.patch.object(_mcp_utils, 'McpClientSession')
 @mock.patch('google.auth.default')

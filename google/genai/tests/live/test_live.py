@@ -611,6 +611,111 @@ async def test_async_session_resumption_update(
   assert message == expected_result
 
 
+def test_is_interaction_complete():
+  assert not live._is_interaction_complete(None)
+  assert not live._is_interaction_complete(
+      types.LiveServerContent(turn_complete=False)
+  )
+  assert live._is_interaction_complete(
+      types.LiveServerContent(turn_complete=True)
+  )
+  assert not live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=True,
+          interaction_status=types.InteractionStatus.IN_PROGRESS,
+      )
+  )
+  assert live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=True, interaction_status=types.InteractionStatus.IDLE
+      )
+  )
+  assert live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=True,
+          interaction_status=types.InteractionStatus.INTERACTION_STATUS_UNSPECIFIED,
+      )
+  )
+  assert not live._is_interaction_complete(
+      types.LiveServerContent(
+          turn_complete=False,
+          interaction_status=types.InteractionStatus.INTERACTION_STATUS_UNSPECIFIED,
+      )
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_interaction_status_idle(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "hello"}]}}}',
+          (
+              '{"serverContent": {"turnComplete": true, "interactionStatus":'
+              ' "IDLE"}}'
+          ),
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  assert len(messages) == 2
+  assert isinstance(messages[0], types.LiveServerMessage)
+  assert messages[0].server_content.model_turn.parts[0].text == 'hello'
+  assert isinstance(messages[1], types.LiveServerMessage)
+  assert messages[1].server_content.turn_complete is True
+  assert (
+      messages[1].server_content.interaction_status
+      == types.InteractionStatus.IDLE
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_async_session_receive_interaction_status_in_progress_then_idle(
+    mock_websocket, vertexai
+):
+  mock_websocket.recv = AsyncMock(
+      side_effect=[
+          (
+              '{"serverContent": {"modelTurn": {"parts":[{"text":'
+              ' "thinking..."}]}}}'
+          ),
+          (
+              '{"serverContent": {"turnComplete": true, "interactionStatus":'
+              ' "IN_PROGRESS"}}'
+          ),
+          '{"serverContent": {"modelTurn": {"parts":[{"text": "answer"}]}}}',
+          (
+              '{"serverContent": {"turnComplete": true, "interactionStatus":'
+              ' "IDLE"}}'
+          ),
+      ]
+  )
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+  messages = session.receive()
+  messages = await _async_iterator_to_list(messages)
+  assert len(messages) == 4
+  assert messages[0].server_content.model_turn.parts[0].text == 'thinking...'
+  assert messages[1].server_content.turn_complete is True
+  assert (
+      messages[1].server_content.interaction_status
+      == types.InteractionStatus.IN_PROGRESS
+  )
+  assert messages[2].server_content.model_turn.parts[0].text == 'answer'
+  assert messages[3].server_content.turn_complete is True
+  assert (
+      messages[3].server_content.interaction_status
+      == types.InteractionStatus.IDLE
+  )
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_start_stream(
@@ -1133,17 +1238,18 @@ async def test_bidi_setup_to_api_with_config_tools_function_directly(
           'model': 'test_model',
           'tools': [{
               'functionDeclarations': [{
-                  'parameters': {
-                      'type': 'OBJECT',
+                  'parameters_json_schema': {
+                      'type': 'object',
                       'properties': {
                           'location': {
-                              'type': 'STRING',
+                              'type': 'string',
                               'description': (
                                   'The location to get the weather for'
                               ),
                           },
-                          'unit': {'type': 'STRING', 'enum': ['C', 'F']},
+                          'unit': {'type': 'string', 'enum': ['C', 'F']},
                       },
+                      'required': ['location', 'unit'],
                   },
                   'name': 'get_current_weather',
                   'description': 'Get the current weather in a city.',
@@ -1623,24 +1729,38 @@ async def test_bidi_setup_to_api_with_translation_config(vertexai):
       },
   }
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        api_client=api_client, model='test_model', config=config_dict
-    )
+  result = await get_connect_message(
+      api_client=api_client, model='test_model', config=config_dict
+  )
 
-  if not vertexai:
+  if vertexai:
+    expected_result = {
+        'setup': {
+            'model': (
+                'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+            ),
+            'generationConfig': {
+                'responseModalities': ['AUDIO'],
+                'translationConfig': {
+                    'echoTargetLanguage': True,
+                    'targetLanguageCode': 'es',
+                },
+            },
+        }
+    }
+  else:
     expected_result = {
         'setup': {
             'model': 'models/test_model',
             'generationConfig': {
                 'translationConfig': {
-                    'echo_target_language': True,
-                    'target_language_code': 'es',
+                    'echoTargetLanguage': True,
+                    'targetLanguageCode': 'es',
                 },
             },
         }
     }
-    assert result == expected_result
+  assert result == expected_result
 
   # Test 2: Config defined using types.LiveConnectConfig.
   config = types.LiveConnectConfig(
@@ -1650,13 +1770,11 @@ async def test_bidi_setup_to_api_with_translation_config(vertexai):
       )
   )
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    result = await get_connect_message(
-        api_client=api_client, model='test_model', config=config
-    )
+  result = await get_connect_message(
+      api_client=api_client, model='test_model', config=config
+  )
 
-  if not vertexai:
-    assert result == expected_result
+  assert result == expected_result
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -2302,4 +2420,3 @@ async def test_bidi_setup_replicated_voice_config_with_consent(vertexai):
       replicated_sig['voice_consent_signature'].get('signature')
       == 'test_sig_abc123'
   )
-

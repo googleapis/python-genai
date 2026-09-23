@@ -148,7 +148,6 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_labels',
-        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('What is your name?'),
@@ -283,7 +282,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_google_search_tool_with_blocking_confidence',
@@ -300,7 +301,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool',
@@ -315,7 +318,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_exclude_domains',
@@ -332,7 +337,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_enterprise_web_search_tool_with_blocking_confidence',
@@ -349,7 +356,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ]
             ),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_speech_with_config',
@@ -478,7 +487,9 @@ test_table: list[pytest_helper.TestTableItem] = [
             ],
             config=types.GenerateContentConfig(audio_timestamp=True),
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_response_schema_with_default',
@@ -556,7 +567,9 @@ test_table: list[pytest_helper.TestTableItem] = [
                 },
             },
         ),
-        exception_if_mldev='is only supported in Gemini Enterprise Agent Platform mode',
+        exception_if_mldev=(
+            'is only supported in Gemini Enterprise Agent Platform mode'
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_service_tier',
@@ -579,6 +592,47 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         exception_if_vertex='400',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_audio_transcription_config',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                    )
+                ),
+                audio_transcription_config=types.AudioTranscriptionConfig(
+                    diarization=True,
+                    word_timestamp=True,
+                ),
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_audio_transcription_config_mode',
+        parameters=types._GenerateContentParameters(
+            model='gemini-2.5-flash-preview-tts',
+            contents=t.t_contents('Produce a speech response saying "Cheese"'),
+            config=types.GenerateContentConfig(
+                response_modalities=['audio'],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                            voice_name='charon'
+                        )
+                    )
+                ),
+                audio_transcription_config=types.AudioTranscriptionConfig(
+                    mode='SMART',
+                ),
+            ),
+        ),
     ),
 ]
 
@@ -2159,10 +2213,6 @@ def test_schema_with_additional_properties(client):
     )
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC removed from private models.py',
-)
 def test_function(client):
   def get_weather(city: str) -> str:
     """Returns the weather in a city."""
@@ -2583,3 +2633,22 @@ def test_response_json_schema_with_one_of(client):
   assert resource_config['size'] == 10
   assert 'tier' not in resource_config
   assert set(resource_config.keys()) == {'size'}
+
+
+def test_audio_wav_input(client):
+
+  response = client.models.generate_content(
+      model='gemini-2.5-flash-preview-tts',
+      contents=[
+          'What is this audio about?',
+          types.Part.from_bytes(data=audio_bytes, mime_type='audio/wav'),
+      ],
+      config=types.GenerateContentConfig(
+          audio_transcription_config=types.AudioTranscriptionConfig(
+              diarization=True,
+              word_timestamp=True,
+              language_auto={},
+          ),
+      ),
+  )
+  assert response.text is not None

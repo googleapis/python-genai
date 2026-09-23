@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+import sys
 from typing import Any
 import pytest
 from ... import _transformers as t
@@ -24,8 +25,6 @@ try:
   from mcp import types as mcp_types
   from mcp import ClientSession as McpClientSession
 except ImportError as e:
-  import sys
-
   if sys.version_info < (3, 10):
     raise ImportError(
         'MCP Tool requires Python 3.10 or above. Please upgrade your Python'
@@ -105,9 +104,8 @@ async def test_mcp_tools_with_custom_headers_async(client):
   }
 
 
-@pytest.mark.skipif(
-    'config.getoption("--private")',
-    reason='AFC by default is disabled in private models.py',
+@pytest.mark.skip(
+    reason='pydantic serialization inconsistant issue',
 )
 @pytest.mark.asyncio
 async def test_mcp_tools_subsequent_calls_async(client):
@@ -161,14 +159,14 @@ async def test_mcp_tools_subsequent_calls_async(client):
   }
 
   response = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model='gemini-3.5-flash',
       contents=t.t_contents('What is the weather in Boston?'),
       config=config,
   )
   assert 'sunny' in response.text.lower()
 
   response_2 = await client.aio.models.generate_content(
-      model='gemini-2.5-flash',
+      model='gemini-3.5-flash',
       contents=t.t_contents('What is 50 + 50?'),
       config=config,
   )

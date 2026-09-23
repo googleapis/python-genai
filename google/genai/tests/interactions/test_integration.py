@@ -23,7 +23,6 @@ from ... import client as client_lib
 pytest_plugins = ("pytest_asyncio",)
 
 
-
 def test_client_timeout():
   with mock.patch.object(
       gaos_google_genai, "GenAI", spec_set=True
@@ -96,4 +95,31 @@ def test_unrecognized_model_request_serialization():
   assert dumped["body"]["model"] == "gemini-3.5-flash"
 
 
+def test_allowlist_entry_with_dict_transform():
+  from ..._gaos.types.interactions.allowlistentry import AllowlistEntry
 
+  # Should construct successfully with a single dict
+  entry = AllowlistEntry(
+      domain="github.com", transform={"Authorization": "Bearer TOKEN"}
+  )
+  assert entry.domain == "github.com"
+  assert entry.transform == {"Authorization": "Bearer TOKEN"}
+
+  # Serialization should preserve it as a dict
+  dumped = entry.model_dump()
+  assert dumped["transform"] == {"Authorization": "Bearer TOKEN"}
+
+
+def test_allowlist_entry_with_list_transform():
+  from ..._gaos.types.interactions.allowlistentry import AllowlistEntry
+
+  # Should construct successfully with a list of dicts
+  entry = AllowlistEntry(
+      domain="github.com", transform=[{"Authorization": "Bearer TOKEN"}]
+  )
+  assert entry.domain == "github.com"
+  assert entry.transform == [{"Authorization": "Bearer TOKEN"}]
+
+  # Serialization should preserve it as a list
+  dumped = entry.model_dump()
+  assert dumped["transform"] == [{"Authorization": "Bearer TOKEN"}]

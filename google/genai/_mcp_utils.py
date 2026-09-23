@@ -17,16 +17,22 @@
 import contextlib
 import httpx
 
+try:
+  import httpx2
+except ImportError:
+  httpx2 = None  # type: ignore[assignment]
+import sys
+
 from importlib.metadata import PackageNotFoundError, version
 import typing
 from typing import Any
 
-import google.auth
-from google.auth.transport.requests import Request
-
 from . import _common
 from . import types
 from ._api_client import _MULTI_REGIONAL_LOCATIONS
+
+def _is_mcp_loaded() -> bool:
+  return "mcp" in sys.modules
 
 if typing.TYPE_CHECKING:
   from mcp.types import Tool as McpTool
@@ -39,27 +45,20 @@ else:
   streamable_http_client: Any = None
   create_mcp_http_client: Any = None
 
-  try:
-    from mcp.types import Tool as McpTool
-    from mcp import ClientSession as McpClientSession
-    from mcp.client.streamable_http import streamable_http_client
-    from mcp.shared._httpx_utils import create_mcp_http_client
-  except ImportError:
-    McpTool = None
-    McpClientSession = None
-    streamable_http_client = None
-    create_mcp_http_client = None
-
-
 def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
   """Translates an MCP tool to a Google GenAI tool."""
+  input_schema = getattr(tool, "inputSchema", getattr(tool, "input_schema", {}))
   return types.Tool(
       function_declarations=[{
           "name": tool.name,
           "description": tool.description,
           "parameters": types.Schema.from_json_schema(
               json_schema=types.JSONSchema(
-                  **_filter_to_supported_schema(tool.inputSchema)
+                  **_filter_to_supported_schema(
+                      getattr(
+                          tool, "input_schema", getattr(tool, "inputSchema", {})
+                      )
+                  )
               )
           ),
       }]
@@ -68,14 +67,15 @@ def mcp_to_gemini_tool(tool: McpTool) -> types.Tool:
 
 def agent_platform_to_gemini_tool(tool: McpTool) -> types.Tool:
   """Translates an Agent Platform tool to a Google GenAI tool."""
+  input_schema = getattr(tool, "inputSchema", getattr(tool, "input_schema", {}))
   return types.Tool(
-      function_declarations=[
-          {
-              "name": tool.name,
-              "description": tool.description,
-              "parameters_json_schema": tool.inputSchema,
-          }
-      ]
+      function_declarations=[{
+          "name": tool.name,
+          "description": tool.description,
+          "parameters_json_schema": getattr(
+              tool, "input_schema", getattr(tool, "inputSchema", {})
+          ),
+      }]
   )
 
 
@@ -91,27 +91,39 @@ def mcp_to_gemini_tools(
 
 def has_mcp_tool_usage(tools: types.ToolListUnion) -> bool:
   """Checks whether the list of tools contains any MCP tools or sessions."""
-  if McpClientSession is None:
+  if not _is_mcp_loaded():
     return False
+  try:
+    from mcp import ClientSession as _McpClientSession
+    from mcp.types import Tool as _McpTool
+  except ImportError:
+    _McpClientSession = type('DummySession', (), {})  # type: ignore
+    _McpTool = type('DummyTool', (), {})  # type: ignore
+
   for tool in tools:
-    if isinstance(tool, McpTool) or isinstance(tool, McpClientSession):
+    if isinstance(tool, _McpTool) or isinstance(tool, _McpClientSession):
       return True
   return False
 
 
 def has_mcp_session_usage(tools: types.ToolListUnion) -> bool:
   """Checks whether the list of tools contains any MCP sessions."""
-  if McpClientSession is None:
+  if not _is_mcp_loaded():
     return False
+  try:
+    from mcp import ClientSession as _McpClientSession
+  except ImportError:
+    _McpClientSession = type('DummySession', (), {})  # type: ignore
+
   for tool in tools:
-    if isinstance(tool, McpClientSession):
+    if isinstance(tool, _McpClientSession):
       return True
   return False
 
 
 def set_mcp_usage_header(headers: dict[str, str]) -> None:
   """Sets the MCP version label in the Google API client header."""
-  if McpClientSession is None:
+  if not _is_mcp_loaded():
     return
   try:
     version_label = version("mcp")
@@ -159,7 +171,6 @@ def _filter_to_supported_schema(
 
   return filtered_schema
 
-
 @contextlib.asynccontextmanager
 async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typing.AsyncIterator[Any]:
   """Internal helper to manage the Agent Platform MCP lifecycle per request."""
@@ -198,14 +209,19 @@ async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typ
 
   set_mcp_usage_header(headers)
 
-  http_client = httpx.AsyncClient(headers=headers, timeout=None)
+  http_client: Any
+  if httpx2 is not None:
+    http_client = httpx2.AsyncClient(headers=headers, timeout=None)
+  else:
+    http_client = httpx.AsyncClient(headers=headers, timeout=None)
 
   try:
     async with http_client:
       async with streamable_http_client(
           url=mcp_url, http_client=http_client
       ) as streams:
-        read_stream, write_stream, _ = streams
+        read_stream = streams[0]
+        write_stream = streams[1]
         async with McpClientSession(read_stream, write_stream) as session:
           await session.initialize()
           try:

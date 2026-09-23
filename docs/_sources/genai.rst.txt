@@ -9,56 +9,66 @@ genai.client module
    :undoc-members:
    :show-inheritance:
 
-genai.batches module
---------------------
 
-.. automodule:: genai.batches
+GAOS Client Resources
+^^^^^^^^^^^^^^^^^^^^^
+
+The following resource classes are returned by the client properties
+``client.interactions``, ``client.agents``, ``client.webhooks``,
+``client.triggers``, and ``client.environments``.
+
+.. autoclass:: genai._gaos.google_genai.GeminiNextGenInteractions
    :members:
    :undoc-members:
    :show-inheritance:
 
-genai.caches module
--------------------
-
-.. automodule:: genai.caches
+.. autoclass:: genai._gaos.google_genai.AsyncGeminiNextGenInteractions
    :members:
    :undoc-members:
    :show-inheritance:
 
-genai.chats module
-------------------
-
-.. automodule:: genai.chats
+.. autoclass:: genai._gaos.google_genai.GeminiNextGenAgents
    :members:
    :undoc-members:
    :show-inheritance:
 
-genai.file_search_stores module
--------------------------------
-
-.. automodule:: genai.file_search_stores
+.. autoclass:: genai._gaos.google_genai.AsyncGeminiNextGenAgents
    :members:
    :undoc-members:
    :show-inheritance:
 
-genai.files module
-------------------
-
-.. automodule:: genai.files
+.. autoclass:: genai._gaos.google_genai.GeminiNextGenWebhooks
    :members:
    :undoc-members:
    :show-inheritance:
 
-genai.interactions module
--------------------------------------------------
+.. autoclass:: genai._gaos.google_genai.AsyncGeminiNextGenWebhooks
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. automodule:: genai._interactions.resources.interactions
+.. autoclass:: genai._gaos.google_genai.GeminiNextGenTriggers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: genai._gaos.google_genai.AsyncGeminiNextGenTriggers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: genai._gaos.google_genai.GeminiNextGenEnvironments
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: genai._gaos.google_genai.AsyncGeminiNextGenEnvironments
    :members:
    :undoc-members:
    :show-inheritance:
 
 genai.live module
-------------------
+-----------------
 
 .. automodule:: genai.live
    :members:
@@ -74,13 +84,12 @@ genai.models module
    :show-inheritance:
 
 genai.tokens module
---------------------
+-------------------
 
 .. automodule:: genai.tokens
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 genai.tunings module
 --------------------

@@ -36,7 +36,11 @@ def test_interactions_paths(mock_auth_default, client):
     mock_auth_default.return_value = (mock_creds, "test-project")
 
     if client._api_client.vertexai:
-        expected_base_url = f'https://{client._api_client.location}-aiplatform.googleapis.com/v1beta1/projects/{client._api_client.project}/locations/{client._api_client.location}'
+        if client._api_client.project and client._api_client.location:
+            host = "aiplatform.googleapis.com" if client._api_client.location == "global" else f"{client._api_client.location}-aiplatform.googleapis.com"
+            expected_base_url = f'https://{host}/v1beta1/projects/{client._api_client.project}/locations/{client._api_client.location}'
+        else:
+            expected_base_url = "https://aiplatform.googleapis.com/v1beta1"
     else:
         expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
 
@@ -73,7 +77,11 @@ async def test_async_interactions_paths(mock_auth_default, client):
     mock_auth_default.return_value = (mock_creds, "test-project")
 
     if client._api_client.vertexai:
-        expected_base_url = f'https://{client._api_client.location}-aiplatform.googleapis.com/v1beta1/projects/{client._api_client.project}/locations/{client._api_client.location}'
+        if client._api_client.project and client._api_client.location:
+            host = "aiplatform.googleapis.com" if client._api_client.location == "global" else f"{client._api_client.location}-aiplatform.googleapis.com"
+            expected_base_url = f'https://{host}/v1beta1/projects/{client._api_client.project}/locations/{client._api_client.location}'
+        else:
+            expected_base_url = "https://aiplatform.googleapis.com/v1beta1"
     else:
         expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
 

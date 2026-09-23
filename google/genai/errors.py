@@ -18,7 +18,12 @@
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import httpx
 import json
-import requests
+
+try:
+  import httpx2
+except ImportError:
+  httpx2 = None  # type: ignore[assignment]
+
 from . import _common
 
 
@@ -26,13 +31,23 @@ if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
   import aiohttp
   from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
+  import requests  # pylint: disable=g-import-not-at-top
+
+
+# httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
+# separate import namespace, so its Response is not an instance of
+# httpx.Response. Widen the runtime type checks to accept either when httpx2 is
+# installed.
+_HTTPX_RESPONSE_TYPES = (
+    (httpx.Response,) if httpx2 is None else (httpx.Response, httpx2.Response)
+)
 
 
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
   response: Union[
-      requests.Response,
+      'requests.Response',
       'ReplayResponse',
       httpx.Response,
       'AsyncAuthorizedSessionResponse',
@@ -47,7 +62,7 @@ class APIError(Exception):
       response_json: Any,
       response: Optional[
           Union[
-              requests.Response,
+              'requests.Response',
               'ReplayResponse',
               httpx.Response,
               'AsyncAuthorizedSessionResponse',
@@ -123,13 +138,14 @@ class APIError(Exception):
 
   @classmethod
   def raise_for_response(
-      cls, response: Union['ReplayResponse', httpx.Response, requests.Response]
+      cls,
+      response: Union['ReplayResponse', httpx.Response, 'requests.Response'],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
       return
 
-    if isinstance(response, httpx.Response):
+    if isinstance(response, _HTTPX_RESPONSE_TYPES):
       try:
         response.read()
         response_json = response.json()
@@ -139,7 +155,9 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
-    elif isinstance(response, requests.Response):
+    elif (requests := _common.loaded_requests()) is not None and isinstance(
+        response, requests.Response
+    ):
       try:
         # do not do any extra muanipulation on the response.
         # return the raw response json as is.
@@ -163,7 +181,7 @@ class APIError(Exception):
           Union[
               'ReplayResponse',
               httpx.Response,
-              requests.Response,
+              'requests.Response',
           ]
       ],
   ) -> None:
@@ -198,7 +216,7 @@ class APIError(Exception):
       ],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    if isinstance(response, httpx.Response):
+    if isinstance(response, _HTTPX_RESPONSE_TYPES):
       if response.status_code == 200:
         return
       try:
