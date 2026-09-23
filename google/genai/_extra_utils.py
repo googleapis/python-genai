@@ -65,6 +65,36 @@ def _create_generate_content_config_model(
     return config
 
 
+def copy_generate_content_config(
+    config: Optional[types.GenerateContentConfigOrDict],
+    *,
+    deep: bool = True,
+) -> Optional[types.GenerateContentConfig]:
+  """Copies GenerateContentConfig without pickling unpickleable tools.
+
+  MCP ``ClientSession`` tools (and other live objects such as callables) cannot
+  be deep-copied via pickle. Pydantic applies ``deep`` before ``update``, so
+  tools must be cleared with a shallow copy first, then optionally deep-copied,
+  then reattached by reference. See
+  https://github.com/googleapis/python-genai/issues/2669.
+  """
+  if not config:
+    return None
+  config_model = _create_generate_content_config_model(config)
+  tools = config_model.tools
+  # Clear tools before any deep copy; model_copy(deep=True, update=...) still
+  # deep-copies tools before applying update.
+  config_without_tools = config_model.model_copy(update={'tools': None})
+  config_copy = (
+      config_without_tools.model_copy(deep=True)
+      if deep
+      else config_without_tools
+  )
+  if tools is not None:
+    config_copy.tools = list(tools)
+  return config_copy
+
+
 def _get_gcs_uri(
     src: Union[str, types.BatchJobSourceOrDict]
 ) -> Optional[str]:
@@ -559,14 +589,13 @@ def parse_config_for_mcp_usage(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> Optional[types.GenerateContentConfig]:
   """Returns a parsed config with an appended MCP header if MCP tools or sessions are used."""
-  if not config:
+  # Shallow-copy so callers' configs are not mutated; tools may be unpickleable.
+  config_model_copy = copy_generate_content_config(config, deep=False)
+  if not config_model_copy:
     return None
-  config_model = _create_generate_content_config_model(config)
-  # Create a copy of the config model with the tools field cleared since some
-  # tools may not be pickleable.
-  config_model_copy = config_model.model_copy(update={'tools': None})
-  config_model_copy.tools = config_model.tools
-  if config_model.tools and _mcp_utils.has_mcp_tool_usage(config_model.tools):
+  if config_model_copy.tools and _mcp_utils.has_mcp_tool_usage(
+      config_model_copy.tools
+  ):
     if config_model_copy.http_options is None:
       config_model_copy.http_options = types.HttpOptions(headers={})
     if config_model_copy.http_options.headers is None:
