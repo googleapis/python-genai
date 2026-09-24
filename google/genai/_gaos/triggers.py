@@ -21,10 +21,10 @@ from . import errors, models, types, utils
 from ._hooks import AfterParseErrorContext, HookContext, ResponseContext
 from .basesdk import AsyncBaseSDK, BaseSDK
 from .types import OptionalNullable, UNSET, interactions, triggers
-from .types.interactions import (
-    createagentinteraction as interactions_createagentinteraction,
+from .types.triggers import (
+    triggercreateparams as triggers_triggercreateparams,
+    triggerupdate as triggers_triggerupdate,
 )
-from .types.triggers import triggerupdate as triggers_triggerupdate
 from .utils import get_security_from_env, response_helpers
 from .utils.unmarshal_json_response import unmarshal_json_response
 import httpx
@@ -200,8 +200,8 @@ class Triggers(BaseSDK):
         self,
         *,
         interaction: Union[
-            interactions_createagentinteraction.CreateAgentInteraction,
-            interactions_createagentinteraction.CreateAgentInteractionParam,
+            triggers_triggercreateparams.Interaction,
+            triggers_triggercreateparams.InteractionParam,
         ],
         schedule: str,
         time_zone: str,
@@ -218,7 +218,7 @@ class Triggers(BaseSDK):
         r"""Creates a new trigger that will invoke the specified agent on the given
         cron schedule.
 
-        :param interaction: Interaction for generating the completion using agents.
+        :param interaction: Required. The interaction request template to be executed.
         :param schedule: Required. The cron schedule on which the trigger should run.
             Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
@@ -253,9 +253,7 @@ class Triggers(BaseSDK):
                 display_name=display_name,
                 environment_id=environment_id,
                 execution_timeout_seconds=execution_timeout_seconds,
-                interaction=utils.get_pydantic_model(
-                    interaction, interactions.CreateAgentInteraction
-                ),
+                interaction=utils.get_pydantic_model(interaction, triggers.Interaction),
                 max_consecutive_failures=max_consecutive_failures,
                 schedule=schedule,
                 time_zone=time_zone,
@@ -1377,8 +1375,8 @@ class AsyncTriggers(AsyncBaseSDK):
         self,
         *,
         interaction: Union[
-            interactions_createagentinteraction.CreateAgentInteraction,
-            interactions_createagentinteraction.CreateAgentInteractionParam,
+            triggers_triggercreateparams.Interaction,
+            triggers_triggercreateparams.InteractionParam,
         ],
         schedule: str,
         time_zone: str,
@@ -1395,7 +1393,7 @@ class AsyncTriggers(AsyncBaseSDK):
         r"""Creates a new trigger that will invoke the specified agent on the given
         cron schedule.
 
-        :param interaction: Interaction for generating the completion using agents.
+        :param interaction: Required. The interaction request template to be executed.
         :param schedule: Required. The cron schedule on which the trigger should run.
             Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
@@ -1430,9 +1428,7 @@ class AsyncTriggers(AsyncBaseSDK):
                 display_name=display_name,
                 environment_id=environment_id,
                 execution_timeout_seconds=execution_timeout_seconds,
-                interaction=utils.get_pydantic_model(
-                    interaction, interactions.CreateAgentInteraction
-                ),
+                interaction=utils.get_pydantic_model(interaction, triggers.Interaction),
                 max_consecutive_failures=max_consecutive_failures,
                 schedule=schedule,
                 time_zone=time_zone,
