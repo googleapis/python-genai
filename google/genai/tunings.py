@@ -2457,6 +2457,9 @@ def _TuningJob_from_vertex(
         ),
     )
 
+  if getv(from_object, ['gcsMetricsUri']) is not None:
+    setv(to_object, ['gcs_metrics_uri'], getv(from_object, ['gcsMetricsUri']))
+
   return to_object
 
 
