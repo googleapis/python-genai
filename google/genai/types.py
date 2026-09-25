@@ -15656,6 +15656,10 @@ class TuningJob(_common.BaseModel):
   distillation_sampling_spec: Optional[DistillationSamplingSpec] = Field(
       default=None, description=""""""
   )
+  gcs_metrics_uri: Optional[str] = Field(
+      default=None,
+      description="""The Cloud Storage metrics URI associated with this tuning job.""",
+  )
 
   @property
   def has_ended(self) -> bool:
@@ -15772,6 +15776,9 @@ class TuningJobDict(TypedDict, total=False):
 
   distillation_sampling_spec: Optional[DistillationSamplingSpecDict]
   """"""
+
+  gcs_metrics_uri: Optional[str]
+  """The Cloud Storage metrics URI associated with this tuning job."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
