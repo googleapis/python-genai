@@ -234,6 +234,18 @@ if TYPE_CHECKING:
         StartEnvironmentFileUploadResponse,
         StartEnvironmentFileUploadResponseTypedDict,
     )
+    from .updateagent import (
+        UpdateAgentGlobals,
+        UpdateAgentGlobalsTypedDict,
+        UpdateAgentRequest,
+        UpdateAgentRequestParam,
+    )
+    from .updateagentbyprojectsidandlocationsidandagentsid import (
+        UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDGlobals,
+        UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDGlobalsTypedDict,
+        UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDRequest,
+        UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDRequestParam,
+    )
     from .updatecredential import (
         UpdateCredentialGlobals,
         UpdateCredentialGlobalsTypedDict,
@@ -399,6 +411,14 @@ __all__ = [
     "StartEnvironmentFileUploadRequestParam",
     "StartEnvironmentFileUploadResponse",
     "StartEnvironmentFileUploadResponseTypedDict",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDGlobals",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDGlobalsTypedDict",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDRequest",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDRequestParam",
+    "UpdateAgentGlobals",
+    "UpdateAgentGlobalsTypedDict",
+    "UpdateAgentRequest",
+    "UpdateAgentRequestParam",
     "UpdateCredentialGlobals",
     "UpdateCredentialGlobalsTypedDict",
     "UpdateCredentialRequest",
@@ -558,6 +578,14 @@ _dynamic_imports: dict[str, str] = {
     "StartEnvironmentFileUploadRequestParam": ".startenvironmentfileupload",
     "StartEnvironmentFileUploadResponse": ".startenvironmentfileupload",
     "StartEnvironmentFileUploadResponseTypedDict": ".startenvironmentfileupload",
+    "UpdateAgentGlobals": ".updateagent",
+    "UpdateAgentGlobalsTypedDict": ".updateagent",
+    "UpdateAgentRequest": ".updateagent",
+    "UpdateAgentRequestParam": ".updateagent",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDGlobals": ".updateagentbyprojectsidandlocationsidandagentsid",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDGlobalsTypedDict": ".updateagentbyprojectsidandlocationsidandagentsid",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDRequest": ".updateagentbyprojectsidandlocationsidandagentsid",
+    "UpdateAgentByProjectsIDAndLocationsIDAndAgentsIDRequestParam": ".updateagentbyprojectsidandlocationsidandagentsid",
     "UpdateCredentialGlobals": ".updatecredential",
     "UpdateCredentialGlobalsTypedDict": ".updatecredential",
     "UpdateCredentialRequest": ".updatecredential",
