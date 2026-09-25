@@ -21,6 +21,7 @@ import os
 import pytest
 
 from ... import _transformers as t
+from ... import models
 from ... import types
 from .. import pytest_helper
 
@@ -225,6 +226,78 @@ pytestmark = pytest_helper.setup(
     test_method='models.embed_content',
     test_table=test_table,
 )
+
+
+class _FakeApiClient:
+  vertexai = False
+
+
+def test_gemini_embedding_2_text_list_stays_batched(
+    monkeypatch, use_vertex, replays_prefix, http_options
+):
+  module = models.Models(_FakeApiClient())
+  captured = {}
+
+  def fake_embed_content(**kwargs):
+    captured.update(kwargs)
+    return types.EmbedContentResponse()
+
+  monkeypatch.setattr(module, '_embed_content', fake_embed_content)
+
+  module.embed_content(
+      model='gemini-embedding-2-preview',
+      contents=['first text', 'second text'],
+  )
+
+  assert captured['contents'] == ['first text', 'second text']
+
+
+def test_gemini_embedding_2_mixed_content_still_combines_parts(
+    monkeypatch, use_vertex, replays_prefix, http_options
+):
+  module = models.Models(_FakeApiClient())
+  captured = {}
+
+  def fake_embed_content(**kwargs):
+    captured.update(kwargs)
+    return types.EmbedContentResponse()
+
+  monkeypatch.setattr(module, '_embed_content', fake_embed_content)
+
+  module.embed_content(
+      model='gemini-embedding-2-preview',
+      contents=[
+          'Similar things to the following image:',
+          types.Part.from_uri(
+              file_uri='gs://generativeai-downloads/images/scones.jpg',
+              mime_type='image/jpeg',
+          ),
+      ],
+  )
+
+  assert len(captured['contents']) == 1
+  assert len(captured['contents'][0].parts) == 2
+
+
+@pytest.mark.asyncio
+async def test_async_gemini_embedding_2_text_list_stays_batched(
+    monkeypatch, use_vertex, replays_prefix, http_options
+):
+  module = models.AsyncModels(_FakeApiClient())
+  captured = {}
+
+  async def fake_embed_content(**kwargs):
+    captured.update(kwargs)
+    return types.EmbedContentResponse()
+
+  monkeypatch.setattr(module, '_embed_content', fake_embed_content)
+
+  await module.embed_content(
+      model='gemini-embedding-2-preview',
+      contents=['first text', 'second text'],
+  )
+
+  assert captured['contents'] == ['first text', 'second text']
 
 
 def test_gemini_embedding_2_content_combination(client):
