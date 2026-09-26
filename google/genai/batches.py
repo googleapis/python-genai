@@ -31,8 +31,54 @@ from ._common import move_value_by_path as movev
 from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
-
 logger = logging.getLogger('google_genai.batches')
+
+
+def _AuthConfig_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['api_key']) is not None:
+    setv(to_object, ['apiKey'], getv(from_object, ['api_key']))
+
+  if getv(from_object, ['api_key_config']) is not None:
+    raise ValueError(
+        'api_key_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['auth_type']) is not None:
+    raise ValueError(
+        'auth_type parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['google_service_account_config']) is not None:
+    raise ValueError(
+        'google_service_account_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['http_basic_auth_config']) is not None:
+    raise ValueError(
+        'http_basic_auth_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['oauth_config']) is not None:
+    raise ValueError(
+        'oauth_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['oidc_config']) is not None:
+    raise ValueError(
+        'oidc_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  return to_object
 
 
 def _BatchJobDestination_from_mldev(
@@ -97,6 +143,15 @@ def _BatchJobDestination_from_vertex(
         getv(from_object, ['bigqueryDestination', 'outputUri']),
     )
 
+  if getv(from_object, ['vertexMultimodalDatasetDestination']) is not None:
+    setv(
+        to_object,
+        ['vertex_dataset'],
+        _VertexMultimodalDatasetDestination_from_vertex(
+            getv(from_object, ['vertexMultimodalDatasetDestination']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -123,17 +178,30 @@ def _BatchJobDestination_to_vertex(
     )
 
   if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_name parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
+    )
 
   if getv(from_object, ['inlined_responses']) is not None:
     raise ValueError(
-        'inlined_responses parameter is not supported in Vertex AI.'
+        'inlined_responses parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   if getv(from_object, ['inlined_embed_content_responses']) is not None:
     raise ValueError(
-        'inlined_embed_content_responses parameter is not supported in'
-        ' Vertex AI.'
+        'inlined_embed_content_responses parameter is only supported in Gemini'
+        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['vertex_dataset']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetDestination'],
+        _VertexMultimodalDatasetDestination_to_vertex(
+            getv(from_object, ['vertex_dataset']), to_object
+        ),
     )
 
   return to_object
@@ -157,6 +225,16 @@ def _BatchJobSource_from_vertex(
         getv(from_object, ['bigquerySource', 'inputUri']),
     )
 
+  if (
+      getv(from_object, ['vertexMultimodalDatasetSource', 'datasetName'])
+      is not None
+  ):
+    setv(
+        to_object,
+        ['vertex_dataset_name'],
+        getv(from_object, ['vertexMultimodalDatasetSource', 'datasetName']),
+    )
+
   return to_object
 
 
@@ -167,13 +245,22 @@ def _BatchJobSource_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['format']) is not None:
-    raise ValueError('format parameter is not supported in Gemini API.')
+    raise ValueError(
+        'format parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError('gcs_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'gcs_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['bigquery_uri']) is not None:
-    raise ValueError('bigquery_uri parameter is not supported in Gemini API.')
+    raise ValueError(
+        'bigquery_uri parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['file_name']) is not None:
     setv(to_object, ['fileName'], getv(from_object, ['file_name']))
@@ -186,6 +273,12 @@ def _BatchJobSource_to_mldev(
             _InlinedRequest_to_mldev(api_client, item, to_object)
             for item in getv(from_object, ['inlined_requests'])
         ],
+    )
+
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    raise ValueError(
+        'vertex_dataset_name parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -210,11 +303,22 @@ def _BatchJobSource_to_vertex(
     )
 
   if getv(from_object, ['file_name']) is not None:
-    raise ValueError('file_name parameter is not supported in Vertex AI.')
+    raise ValueError(
+        'file_name parameter is only supported in Gemini Developer API mode,'
+        ' not in Gemini Enterprise Agent Platform mode.'
+    )
 
   if getv(from_object, ['inlined_requests']) is not None:
     raise ValueError(
-        'inlined_requests parameter is not supported in Vertex AI.'
+        'inlined_requests parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['vertex_dataset_name']) is not None:
+    setv(
+        to_object,
+        ['vertexMultimodalDatasetSource', 'datasetName'],
+        getv(from_object, ['vertex_dataset_name']),
     )
 
   return to_object
@@ -333,22 +437,8 @@ def _BatchJob_from_vertex(
         to_object, ['completion_stats'], getv(from_object, ['completionStats'])
     )
 
-  return to_object
-
-
-def _Blob_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['data']) is not None:
-    setv(to_object, ['data'], getv(from_object, ['data']))
-
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
+  if getv(from_object, ['outputInfo']) is not None:
+    setv(to_object, ['output_info'], getv(from_object, ['outputInfo']))
 
   return to_object
 
@@ -408,15 +498,15 @@ def _Candidate_from_mldev(
   if getv(from_object, ['finishReason']) is not None:
     setv(to_object, ['finish_reason'], getv(from_object, ['finishReason']))
 
-  if getv(from_object, ['avgLogprobs']) is not None:
-    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
-
   if getv(from_object, ['groundingMetadata']) is not None:
     setv(
         to_object,
         ['grounding_metadata'],
         getv(from_object, ['groundingMetadata']),
     )
+
+  if getv(from_object, ['avgLogprobs']) is not None:
+    setv(to_object, ['avg_logprobs'], getv(from_object, ['avgLogprobs']))
 
   if getv(from_object, ['index']) is not None:
     setv(to_object, ['index'], getv(from_object, ['index']))
@@ -491,7 +581,17 @@ def _CreateBatchJobConfig_to_mldev(
     )
 
   if getv(from_object, ['dest']) is not None:
-    raise ValueError('dest parameter is not supported in Gemini API.')
+    raise ValueError(
+        'dest parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['webhook_config']) is not None:
+    setv(
+        parent_object,
+        ['batch', 'webhookConfig'],
+        getv(from_object, ['webhook_config']),
+    )
 
   return to_object
 
@@ -512,6 +612,12 @@ def _CreateBatchJobConfig_to_vertex(
         _BatchJobDestination_to_vertex(
             t.t_batch_job_destination(getv(from_object, ['dest'])), to_object
         ),
+    )
+
+  if getv(from_object, ['webhook_config']) is not None:
+    raise ValueError(
+        'webhook_config parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -731,7 +837,6 @@ def _EmbedContentConfig_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-
   if getv(from_object, ['task_type']) is not None:
     setv(
         parent_object,
@@ -750,10 +855,28 @@ def _EmbedContentConfig_to_mldev(
     )
 
   if getv(from_object, ['mime_type']) is not None:
-    raise ValueError('mime_type parameter is not supported in Gemini API.')
+    raise ValueError(
+        'mime_type parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['auto_truncate']) is not None:
-    raise ValueError('auto_truncate parameter is not supported in Gemini API.')
+    raise ValueError(
+        'auto_truncate parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['document_ocr']) is not None:
+    raise ValueError(
+        'document_ocr parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['audio_track_extraction']) is not None:
+    raise ValueError(
+        'audio_track_extraction parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -779,23 +902,6 @@ def _EmbeddingsBatchJobSource_to_mldev(
   return to_object
 
 
-def _FileData_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['display_name']) is not None:
-    raise ValueError('display_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['file_uri']) is not None:
-    setv(to_object, ['fileUri'], getv(from_object, ['file_uri']))
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  return to_object
-
-
 def _FunctionCall_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -811,10 +917,16 @@ def _FunctionCall_to_mldev(
     setv(to_object, ['name'], getv(from_object, ['name']))
 
   if getv(from_object, ['partial_args']) is not None:
-    raise ValueError('partial_args parameter is not supported in Gemini API.')
+    raise ValueError(
+        'partial_args parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['will_continue']) is not None:
-    raise ValueError('will_continue parameter is not supported in Gemini API.')
+    raise ValueError(
+        'will_continue parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -836,8 +948,8 @@ def _FunctionCallingConfig_to_mldev(
 
   if getv(from_object, ['stream_function_call_arguments']) is not None:
     raise ValueError(
-        'stream_function_call_arguments parameter is not supported in Gemini'
-        ' API.'
+        'stream_function_call_arguments parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -922,15 +1034,19 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['responseJsonSchema'],
-        getv(from_object, ['response_json_schema']),
+        t.t_json_schema(getv(from_object, ['response_json_schema'])),
     )
 
   if getv(from_object, ['routing_config']) is not None:
-    raise ValueError('routing_config parameter is not supported in Gemini API.')
+    raise ValueError(
+        'routing_config parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['model_selection_config']) is not None:
     raise ValueError(
-        'model_selection_config parameter is not supported in Gemini API.'
+        'model_selection_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['safety_settings']) is not None:
@@ -961,7 +1077,7 @@ def _GenerateContentConfig_to_mldev(
     )
 
   if getv(from_object, ['labels']) is not None:
-    raise ValueError('labels parameter is not supported in Gemini API.')
+    setv(parent_object, ['labels'], getv(from_object, ['labels']))
 
   if getv(from_object, ['cached_content']) is not None:
     setv(
@@ -993,7 +1109,8 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['audio_timestamp']) is not None:
     raise ValueError(
-        'audio_timestamp parameter is not supported in Gemini API.'
+        'audio_timestamp parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['thinking_config']) is not None:
@@ -1015,7 +1132,18 @@ def _GenerateContentConfig_to_mldev(
 
   if getv(from_object, ['model_armor_config']) is not None:
     raise ValueError(
-        'model_armor_config parameter is not supported in Gemini API.'
+        'model_armor_config parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['service_tier']) is not None:
+    setv(parent_object, ['serviceTier'], getv(from_object, ['service_tier']))
+
+  if getv(from_object, ['audio_transcription_config']) is not None:
+    setv(
+        to_object,
+        ['audioTranscriptionConfig'],
+        getv(from_object, ['audio_transcription_config']),
     )
 
   return to_object
@@ -1052,6 +1180,9 @@ def _GenerateContentResponse_from_mldev(
 
   if getv(from_object, ['usageMetadata']) is not None:
     setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
+  if getv(from_object, ['modelStatus']) is not None:
+    setv(to_object, ['model_status'], getv(from_object, ['modelStatus']))
 
   return to_object
 
@@ -1094,10 +1225,20 @@ def _GoogleMaps_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['auth_config']) is not None:
-    raise ValueError('auth_config parameter is not supported in Gemini API.')
+    setv(
+        to_object,
+        ['authConfig'],
+        _AuthConfig_to_mldev(getv(from_object, ['auth_config']), to_object),
+    )
 
   if getv(from_object, ['enable_widget']) is not None:
     setv(to_object, ['enableWidget'], getv(from_object, ['enable_widget']))
+
+  if getv(from_object, ['grounding_types']) is not None:
+    raise ValueError(
+        'grounding_types parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -1107,14 +1248,19 @@ def _GoogleSearch_to_mldev(
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['exclude_domains']) is not None:
-    raise ValueError(
-        'exclude_domains parameter is not supported in Gemini API.'
-    )
+  if getv(from_object, ['search_types']) is not None:
+    setv(to_object, ['searchTypes'], getv(from_object, ['search_types']))
 
   if getv(from_object, ['blocking_confidence']) is not None:
     raise ValueError(
-        'blocking_confidence parameter is not supported in Gemini API.'
+        'blocking_confidence parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['exclude_domains']) is not None:
+    raise ValueError(
+        'exclude_domains parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['time_range_filter']) is not None:
@@ -1138,17 +1284,32 @@ def _ImageConfig_to_mldev(
 
   if getv(from_object, ['person_generation']) is not None:
     raise ValueError(
-        'person_generation parameter is not supported in Gemini API.'
+        'person_generation parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['prominent_people']) is not None:
+    raise ValueError(
+        'prominent_people parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['output_mime_type']) is not None:
     raise ValueError(
-        'output_mime_type parameter is not supported in Gemini API.'
+        'output_mime_type parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['output_compression_quality']) is not None:
     raise ValueError(
-        'output_compression_quality parameter is not supported in Gemini API.'
+        'output_compression_quality parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['image_output_options']) is not None:
+    raise ValueError(
+        'image_output_options parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
     )
 
   return to_object
@@ -1236,7 +1397,10 @@ def _ListBatchJobsConfig_to_mldev(
     )
 
   if getv(from_object, ['filter']) is not None:
-    raise ValueError('filter parameter is not supported in Gemini API.')
+    raise ValueError(
+        'filter parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -1360,11 +1524,7 @@ def _Part_to_mldev(
     setv(to_object, ['executableCode'], getv(from_object, ['executable_code']))
 
   if getv(from_object, ['file_data']) is not None:
-    setv(
-        to_object,
-        ['fileData'],
-        _FileData_to_mldev(getv(from_object, ['file_data']), to_object),
-    )
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
 
   if getv(from_object, ['function_call']) is not None:
     setv(
@@ -1381,11 +1541,7 @@ def _Part_to_mldev(
     )
 
   if getv(from_object, ['inline_data']) is not None:
-    setv(
-        to_object,
-        ['inlineData'],
-        _Blob_to_mldev(getv(from_object, ['inline_data']), to_object),
-    )
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
 
   if getv(from_object, ['text']) is not None:
     setv(to_object, ['text'], getv(from_object, ['text']))
@@ -1403,6 +1559,30 @@ def _Part_to_mldev(
   if getv(from_object, ['video_metadata']) is not None:
     setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
 
+  if getv(from_object, ['tool_call']) is not None:
+    setv(to_object, ['toolCall'], getv(from_object, ['tool_call']))
+
+  if getv(from_object, ['tool_response']) is not None:
+    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
+  if getv(from_object, ['part_metadata']) is not None:
+    setv(to_object, ['partMetadata'], getv(from_object, ['part_metadata']))
+
+  if getv(from_object, ['audio_transcription']) is not None:
+    setv(
+        to_object,
+        ['audioTranscription'],
+        getv(from_object, ['audio_transcription']),
+    )
+
+  if getv(from_object, ['media_processing']) is not None:
+    setv(
+        to_object, ['mediaProcessing'], getv(from_object, ['media_processing'])
+    )
+
+  if getv(from_object, ['speech_metadata']) is not None:
+    setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
   return to_object
 
 
@@ -1415,7 +1595,10 @@ def _SafetySetting_to_mldev(
     setv(to_object, ['category'], getv(from_object, ['category']))
 
   if getv(from_object, ['method']) is not None:
-    raise ValueError('method parameter is not supported in Gemini API.')
+    raise ValueError(
+        'method parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['threshold']) is not None:
     setv(to_object, ['threshold'], getv(from_object, ['threshold']))
@@ -1442,6 +1625,13 @@ def _ToolConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['include_server_side_tool_invocations']) is not None:
+    setv(
+        to_object,
+        ['includeServerSideToolInvocations'],
+        getv(from_object, ['include_server_side_tool_invocations']),
+    )
+
   return to_object
 
 
@@ -1451,7 +1641,10 @@ def _Tool_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['retrieval']) is not None:
-    raise ValueError('retrieval parameter is not supported in Gemini API.')
+    raise ValueError(
+        'retrieval parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['computer_use']) is not None:
     setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
@@ -1459,19 +1652,11 @@ def _Tool_to_mldev(
   if getv(from_object, ['file_search']) is not None:
     setv(to_object, ['fileSearch'], getv(from_object, ['file_search']))
 
-  if getv(from_object, ['code_execution']) is not None:
-    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
-
-  if getv(from_object, ['enterprise_web_search']) is not None:
-    raise ValueError(
-        'enterprise_web_search parameter is not supported in Gemini API.'
-    )
-
-  if getv(from_object, ['function_declarations']) is not None:
+  if getv(from_object, ['google_search']) is not None:
     setv(
         to_object,
-        ['functionDeclarations'],
-        [item for item in getv(from_object, ['function_declarations'])],
+        ['googleSearch'],
+        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
     )
 
   if getv(from_object, ['google_maps']) is not None:
@@ -1481,11 +1666,20 @@ def _Tool_to_mldev(
         _GoogleMaps_to_mldev(getv(from_object, ['google_maps']), to_object),
     )
 
-  if getv(from_object, ['google_search']) is not None:
+  if getv(from_object, ['code_execution']) is not None:
+    setv(to_object, ['codeExecution'], getv(from_object, ['code_execution']))
+
+  if getv(from_object, ['enterprise_web_search']) is not None:
+    raise ValueError(
+        'enterprise_web_search parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['function_declarations']) is not None:
     setv(
         to_object,
-        ['googleSearch'],
-        _GoogleSearch_to_mldev(getv(from_object, ['google_search']), to_object),
+        ['functionDeclarations'],
+        [item for item in getv(from_object, ['function_declarations'])],
     )
 
   if getv(from_object, ['google_search_retrieval']) is not None:
@@ -1495,8 +1689,63 @@ def _Tool_to_mldev(
         getv(from_object, ['google_search_retrieval']),
     )
 
+  if getv(from_object, ['parallel_ai_search']) is not None:
+    raise ValueError(
+        'parallel_ai_search parameter is only supported in Gemini Enterprise'
+        ' Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
   if getv(from_object, ['url_context']) is not None:
     setv(to_object, ['urlContext'], getv(from_object, ['url_context']))
+
+  if getv(from_object, ['mcp_servers']) is not None:
+    setv(
+        to_object,
+        ['mcpServers'],
+        [item for item in getv(from_object, ['mcp_servers'])],
+    )
+
+  if getv(from_object, ['exa_ai_search']) is not None:
+    raise ValueError(
+        'exa_ai_search parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
+
+  return to_object
+
+
+def _VertexMultimodalDatasetDestination_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['bigqueryDestination', 'outputUri']) is not None:
+    setv(
+        to_object,
+        ['bigquery_destination'],
+        getv(from_object, ['bigqueryDestination', 'outputUri']),
+    )
+
+  if getv(from_object, ['displayName']) is not None:
+    setv(to_object, ['display_name'], getv(from_object, ['displayName']))
+
+  return to_object
+
+
+def _VertexMultimodalDatasetDestination_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['bigquery_destination']) is not None:
+    setv(
+        to_object,
+        ['bigqueryDestination', 'outputUri'],
+        getv(from_object, ['bigquery_destination']),
+    )
+
+  if getv(from_object, ['display_name']) is not None:
+    setv(to_object, ['displayName'], getv(from_object, ['display_name']))
 
   return to_object
 
@@ -1565,7 +1814,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1587,7 +1851,8 @@ class Batches(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateEmbeddingsBatchJobParameters_to_mldev(
@@ -1625,7 +1890,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1639,8 +1919,9 @@ class Batches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the Vertex AI client. Or
-          "batches/abc" using the Gemini Developer AI client.
+          when project and location are initialized in the Gemini Enterprise
+          Agent Platform client. Or "batches/abc" using the Gemini Developer AI
+          client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -1705,7 +1986,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -1775,9 +2071,7 @@ class Batches(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = self._api_client.request(
-        'post', path, request_dict, http_options
-    )
+    self._api_client.request('post', path, request_dict, http_options)
 
   def _list(
       self, *, config: Optional[types.ListBatchJobsConfigOrDict] = None
@@ -1829,7 +2123,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _ListBatchJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1914,7 +2223,22 @@ class Batches(_api_module.BaseModule):
       response_dict = _DeleteResourceJob_from_mldev(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -1933,10 +2257,11 @@ class Batches(_api_module.BaseModule):
 
     Args:
       model (str): The model to use for the batch job.
-      src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
-        or BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId". Gemini Developer API supports
-        List of inlined_request, or file name. Example: "files/file_name".
+      src: The source of the batch job. Currently Gemini Enterprise Agent
+        Platform supports GCS URI(-s) or BigQuery URI. Example:
+        "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
+        Gemini Developer API supports List of inlined_request, or file name.
+        Example: "files/file_name".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -2013,7 +2338,10 @@ class Batches(_api_module.BaseModule):
     )
 
     if self._api_client.vertexai:
-      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+      raise ValueError(
+          'Gemini Enterprise Agent Platform (previously known as Vertex AI)'
+          ' does not support batches.create_embeddings.'
+      )
     else:
       return self._create_embeddings(model=model, src=src, config=config)
 
@@ -2110,7 +2438,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -2132,7 +2475,8 @@ class AsyncBatches(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
     if self._api_client.vertexai:
       raise ValueError(
-          'This method is only supported in the Gemini Developer client.'
+          'This method is only supported in Gemini Developer API mode, not in'
+          ' Gemini Enterprise Agent Platform mode.'
       )
     else:
       request_dict = _CreateEmbeddingsBatchJobParameters_to_mldev(
@@ -2170,7 +2514,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -2184,8 +2543,9 @@ class AsyncBatches(_api_module.BaseModule):
     Args:
       name (str): A fully-qualified BatchJob resource name or ID.
         Example: "projects/.../locations/.../batchPredictionJobs/456" or "456"
-          when project and location are initialized in the Vertex AI client. Or
-          "batches/abc" using the Gemini Developer AI client.
+          when project and location are initialized in the Gemini Enterprise
+          Agent Platform client. Or "batches/abc" using the Gemini Developer AI
+          client.
 
     Returns:
       A BatchJob object that contains details about the batch job.
@@ -2252,7 +2612,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _BatchJob_from_mldev(response_dict)
 
     return_value = types.BatchJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
 
     self._api_client._verify_response(return_value)
@@ -2322,7 +2697,7 @@ class AsyncBatches(_api_module.BaseModule):
     request_dict = _common.convert_to_dict(request_dict)
     request_dict = _common.encode_unserializable_types(request_dict)
 
-    response = await self._api_client.async_request(
+    await self._api_client.async_request(
         'post', path, request_dict, http_options
     )
 
@@ -2378,7 +2753,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _ListBatchJobsResponse_from_mldev(response_dict)
 
     return_value = types.ListBatchJobsResponse._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2463,7 +2853,22 @@ class AsyncBatches(_api_module.BaseModule):
       response_dict = _DeleteResourceJob_from_mldev(response_dict)
 
     return_value = types.DeleteResourceJob._from_response(
-        response=response_dict, kwargs=parameter_model.model_dump()
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
     )
     return_value.sdk_http_response = types.HttpResponse(
         headers=response.headers
@@ -2482,10 +2887,11 @@ class AsyncBatches(_api_module.BaseModule):
 
     Args:
       model (str): The model to use for the batch job.
-      src: The source of the batch job. Currently Vertex AI supports GCS URI(-s)
-        or BigQuery URI. Example: "gs://path/to/input/data" or
-        "bq://projectId.bqDatasetId.bqTableId". Gemini Develop API supports List
-        of inlined_request, or file name. Example: "files/file_name".
+      src: The source of the batch job. Currently Gemini Enterprise Agent
+        Platform supports GCS URI(-s) or BigQuery URI. Example:
+        "gs://path/to/input/data" or "bq://projectId.bqDatasetId.bqTableId".
+        Gemini Develop API supports List of inlined_request, or file name.
+        Example: "files/file_name".
       config (CreateBatchJobConfig): Optional configuration for the batch job.
 
     Returns:
@@ -2568,7 +2974,10 @@ class AsyncBatches(_api_module.BaseModule):
       http_options = parameter_model.config.http_options
 
     if self._api_client.vertexai:
-      raise ValueError('Vertex AI does not support batches.create_embeddings.')
+      raise ValueError(
+          'Gemini Enterprise Agent Platform (previously known as Vertex AI)'
+          ' does not support batches.create_embeddings.'
+      )
     else:
       return await self._create_embeddings(model=model, src=src, config=config)
 

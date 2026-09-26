@@ -153,7 +153,7 @@ class Tokens(_api_module.BaseModule):
           uses=10,
           expire_time='2025-05-01T00:00:00Z',
       )
-      auth_token = client.tokens.create(config=config)
+      auth_token = client.auth_tokens.create(config=config)
 
     .. code-block:: python
 
@@ -162,7 +162,7 @@ class Tokens(_api_module.BaseModule):
       # example, changing `output_audio_transcription` in the Live API
       # connection will be ignored by the API.
 
-      auth_token = client.tokens.create(
+      auth_token = client.auth_tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
@@ -180,7 +180,7 @@ class Tokens(_api_module.BaseModule):
       # empty, lock LiveConnectConfig with set fields (e.g.
       # system_instruction in this example) when using the token in Live API
       # sessions.
-      auth_token = client.tokens.create(
+      auth_token = client.auth_tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(
@@ -198,7 +198,7 @@ class Tokens(_api_module.BaseModule):
       # set, lock LiveConnectConfig with set and additional fields (e.g.
       # system_instruction, temperature in this example) when using the token
       # in Live API sessions.
-      auth_token = client.tokens.create(
+      auth_token = client.auth_tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
               live_constrained_parameters=types.LiveEphemeralParameters(

@@ -45,6 +45,34 @@ def _httpx_response(code: int, headers: dict = None, content: bytes = b''):
 def client():
   return api_client.BaseApiClient(vertexai=False, api_key='test_api_key')
 
+
+def test_upload_url_rewrite(client: api_client.BaseApiClient):
+  mock_httpx_client = mock.MagicMock(spec=httpx.Client)
+  mock_httpx_client.request.side_effect = [
+      _httpx_response(
+          200, headers={"X-Goog-Upload-Status": "final"}
+      ),  # Upload request succeeding
+  ]
+  client._httpx_client = mock_httpx_client
+
+  http_options = types.HttpOptions(base_url="https://my-proxy.company.com")
+
+  with io.BytesIO(b"test") as f:
+    client._upload_fd(
+        f,
+        "https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable",
+        4,
+        http_options=http_options,
+    )
+
+  assert mock_httpx_client.request.call_count == 1
+  call_args = mock_httpx_client.request.call_args[1]
+  assert (
+      call_args["url"]
+      == "https://my-proxy.company.com/upload/v1beta/files?uploadType=resumable"
+  )
+
+
 def test_upload_fd_error(client: api_client.BaseApiClient):
   error_content = json.dumps({
       "error": {
@@ -70,6 +98,39 @@ def test_upload_fd_error(client: api_client.BaseApiClient):
     )
 
   assert mock_httpx_client.request.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_async_upload_url_rewrite_httpx(client: api_client.BaseApiClient):
+  mock_async_httpx_client = mock.MagicMock(spec=httpx.AsyncClient)
+  mock_async_httpx_client.request = mock.AsyncMock(
+      side_effect=[
+          _httpx_response(
+              200, headers={"X-Goog-Upload-Status": "final"}
+          ),  # Upload request
+      ]
+  )
+  client._async_httpx_client = mock_async_httpx_client
+
+  http_options = types.HttpOptions(base_url="https://my-proxy.company.com")
+
+  with mock.patch.object(
+      client, "_use_aiohttp", return_value=False
+  ), io.BytesIO(b"test") as f:
+    await client._async_upload_fd(
+        f,
+        "https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable",
+        4,
+        http_options=http_options,
+    )
+
+  assert mock_async_httpx_client.request.call_count == 1
+  call_args = mock_async_httpx_client.request.call_args[1]
+  assert (
+      call_args["url"]
+      == "https://my-proxy.company.com/upload/v1beta/files?uploadType=resumable"
+  )
+
 
 @pytest.mark.asyncio
 async def test_async_upload_fd_error_httpx(client: api_client.BaseApiClient):

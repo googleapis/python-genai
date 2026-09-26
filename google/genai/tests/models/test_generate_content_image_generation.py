@@ -39,7 +39,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_image_generation_config_output_mime_type',
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-image',
             contents=t.t_contents('A photorealistic red apple on a table.'),
@@ -54,7 +54,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_image_generation_config_output_compression_quality',
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-image',
             contents=t.t_contents('A photorealistic red apple on a table.'),

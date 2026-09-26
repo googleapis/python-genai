@@ -30,12 +30,12 @@ test_table: list[pytest_helper.TestTableItem] = [
                 display_name="My File Search Store"
             )
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
     pytest_helper.TestTableItem(
         name="test_basic",
         parameters=types._CreateFileSearchStoreParameters(),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
 ]
 

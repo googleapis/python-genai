@@ -16,6 +16,7 @@
 
 """Tests for batches.get()."""
 
+import re
 import pytest
 
 from ... import types
@@ -76,3 +77,15 @@ async def test_async_get(client):
   batch_job = await client.aio.batches.get(name=name)
 
   assert batch_job
+
+
+@pytest.mark.asyncio
+async def test_async_get_with_multimodal_dataset_output(client):
+  if client.vertexai:
+    name = _BATCH_JOB_NAME
+    batch_job = await client.aio.batches.get(name=name)
+
+    assert re.match(
+        r'^projects/[^/]+/locations/[^/]+/datasets/[^/]+$',
+        batch_job.output_info.vertex_multimodal_dataset_name,
+    )

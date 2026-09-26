@@ -24,8 +24,8 @@ from .. import pytest_helper
 
 _GEMINI_MODEL = 'gemini-2.5-flash'
 _GEMINI_MODEL_FULL_NAME = 'publishers/google/models/gemini-2.5-flash'
-_EMBEDDING_MODEL = 'text-embedding-004'
-_EMBEDDING_MODEL_FULL_NAME = 'publishers/google/models/text-embedding-004'
+_EMBEDDING_MODEL = 'gemini-embedding-001'
+_EMBEDDING_MODEL_FULL_NAME = 'publishers/google/models/gemini-embedding-001'
 _DISPLAY_NAME = 'test_batch'
 
 _GENERATE_CONTENT_GCS_INPUT_FILE = (
@@ -53,7 +53,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_union_embedding_with_gcs',
         parameters=types._CreateBatchJobParameters(
-            model=_EMBEDDING_MODEL,
+            model='text-embedding-004',
             src=_EMBEDDING_GCS_INPUT_FILE,
             config={
                 'display_name': _DISPLAY_NAME,

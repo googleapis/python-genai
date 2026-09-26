@@ -1,0 +1,29 @@
+# This workflow closes PRs that have had no activity for 14 days.
+name: Close inactive google-contributor PRs
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/stale@v10
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          any-of-labels: "google-contributor"
+          days-before-pr-stale: 14
+          days-before-pr-close: 0
+          operations-per-run: 100
+          stale-pr-label: "status:stale"
+          exempt-pr-labels: "override-stale"
+          close-pr-message: >
+            This google-contributor PR has been inactive for 14 days.
+          days-before-issue-stale: -1
+          days-before-issue-close: -1

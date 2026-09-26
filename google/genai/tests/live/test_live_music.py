@@ -133,6 +133,33 @@ async def get_connect_message(api_client, model):
   return await _test_connect()
 
 
+@pytest.mark.asyncio
+async def test_connect_uses_header_auth_without_query_key(mock_websocket):
+  api_client = mock_api_client(vertexai=False)
+  api_client._websocket_base_url = lambda: 'wss://generativelanguage.googleapis.com'
+  api_client._http_options.api_version = 'v1beta'
+  api_client._http_options.headers['x-goog-api-key'] = 'TEST_API_KEY'
+  captured = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None):
+    captured['uri'] = uri
+    captured['headers'] = additional_headers
+    yield mock_websocket
+
+  @patch.object(live_music, 'connect', new=mock_connect)
+  async def _test_connect():
+    live_module = live.AsyncLive(api_client)
+    async with live_module.music.connect(model='test_model'):
+      pass
+
+  await _test_connect()
+
+  assert 'TEST_API_KEY' not in captured['uri']
+  assert '?key=' not in captured['uri']
+  assert captured['headers']['x-goog-api-key'] == 'TEST_API_KEY'
+
+
 def test_mldev_from_env(monkeypatch):
   api_key = 'google_api_key'
   monkeypatch.setenv('GOOGLE_API_KEY', api_key)

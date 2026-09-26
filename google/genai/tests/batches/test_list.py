@@ -41,7 +41,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 page_size=5,
             ),
         ),
-        exception_if_mldev='filter parameter is not supported in Gemini API',
+        exception_if_mldev='filter parameter is only supported in Gemini Enterprise Agent Platform mode, not in Gemini Developer API mode.',
     ),
 ]
 

@@ -40,10 +40,12 @@ except ImportError as e:
     raise e
 
 
-pytestmark = pytest_helper.setup(
-    file=__file__,
-    globals_for_file=globals(),
-)
+pytestmark = [
+    pytest_helper.setup(
+        file=__file__,
+        globals_for_file=globals(),
+    ),
+]
 pytest_plugins = ('pytest_asyncio',)
 
 
@@ -333,7 +335,9 @@ def test_with_afc_multiple_remote_calls(client):
   chat.send_message('Turn this place into a party!')
   curated_history = chat.get_history()
 
-  assert len(curated_history) == 8
+  # A budget of 3 buys 3 requests. The third is spent being asked for functions
+  # that no request is left to answer, so the turn ends on that call.
+  assert len(curated_history) == 6
   assert curated_history[0].role == 'user'
   assert curated_history[0].parts[0].text == 'Turn this place into a party!'
   assert curated_history[1].role == 'model'
@@ -355,14 +359,6 @@ def test_with_afc_multiple_remote_calls(client):
   assert curated_history[5].role == 'model'
   assert len(curated_history[5].parts) == 3
   for part in curated_history[5].parts:
-    assert part.function_call
-  assert curated_history[6].role == 'user'
-  assert len(curated_history[6].parts) == 3
-  for part in curated_history[6].parts:
-    assert part.function_response
-  assert curated_history[7].role == 'model'
-  assert len(curated_history[7].parts) == 3
-  for part in curated_history[7].parts:
     assert part.function_call
 
 
@@ -392,7 +388,9 @@ def test_with_afc_multiple_remote_calls_async(client):
   chat.send_message('Turn this place into a party!')
   curated_history = chat.get_history()
 
-  assert len(curated_history) == 8
+  # A budget of 3 buys 3 requests. The third is spent being asked for functions
+  # that no request is left to answer, so the turn ends on that call.
+  assert len(curated_history) == 6
   assert curated_history[0].role == 'user'
   assert curated_history[0].parts[0].text == 'Turn this place into a party!'
   assert curated_history[1].role == 'model'
@@ -414,14 +412,6 @@ def test_with_afc_multiple_remote_calls_async(client):
   assert curated_history[5].role == 'model'
   assert len(curated_history[5].parts) == 3
   for part in curated_history[5].parts:
-    assert part.function_call
-  assert curated_history[6].role == 'user'
-  assert len(curated_history[6].parts) == 3
-  for part in curated_history[6].parts:
-    assert part.function_response
-  assert curated_history[7].role == 'model'
-  assert len(curated_history[7].parts) == 3
-  for part in curated_history[7].parts:
     assert part.function_call
 
 def test_with_afc_disabled(client):
@@ -768,9 +758,8 @@ def test_mcp_tools(client):
               )
           ],},
   )
-  response = chat.send_message('What is the weather in Boston?');
-  response = chat.send_message('What is the weather in San Francisco?');
-
+  response = chat.send_message('What is the weather in Boston?')
+  response = chat.send_message('What is the weather in San Francisco?')
 
 
 def test_mcp_tools_stream(client):
@@ -842,3 +831,101 @@ async def test_async_mcp_tools_stream(client):
     'What is the weather in San Francisco?'
   ):
     pass
+
+
+def test_server_side_mcp_tools(client):
+   with pytest_helper.exception_if_vertex(client, ValueError):
+    chat = client.chats.create(
+        model='gemini-2.5-flash',
+        config={
+            'tools': [
+                {
+                    'mcp_servers': [
+                        {
+                            'name': 'weather_server',
+                            'streamable_http_transport': {
+                                'url': (
+                                    'https://gemini-api-demos.uc.r.appspot.com/mcp'
+                                ),
+                                'headers': {
+                                    'AUTHORIZATION': 'Bearer github_pat_XXXX',
+                                },
+                                'timeout': '10s',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    response = chat.send_message('What is the weather in Boston on 02/02/2026?')
+    response = chat.send_message(
+        'What is the weather in San Francisco on 02/02/2026?'
+    )
+
+
+def test_server_side_mcp_tools_stream(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    chat = client.chats.create(
+        model='gemini-2.5-flash',
+        config={
+            'tools': [
+                {
+                    'mcp_servers': [
+                        {
+                            'name': 'weather_server',
+                            'streamable_http_transport': {
+                                'url': (
+                                    'https://gemini-api-demos.uc.r.appspot.com/mcp'
+                                ),
+                                'headers': {
+                                    'AUTHORIZATION': 'Bearer github_pat_XXXX',
+                                },
+                                'timeout': '10s',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    for chunk in chat.send_message_stream(
+        'What is the weather in Boston on 02/02/2026?'
+    ):
+      pass
+    for chunk in chat.send_message_stream(
+        'What is the weather in San Francisco on 02/02/2026?'
+    ):
+      pass
+
+
+@pytest.mark.asyncio
+async def test_async_server_side_mcp_tools(client):
+  with pytest_helper.exception_if_vertex(client, ValueError):
+    chat = client.aio.chats.create(
+        model='gemini-2.5-flash',
+        config={
+            'tools': [
+                {
+                    'mcp_servers': [
+                        {
+                            'name': 'weather_server',
+                            'streamable_http_transport': {
+                                'url': (
+                                    'https://gemini-api-demos.uc.r.appspot.com/mcp'
+                                ),
+                                'headers': {
+                                    'AUTHORIZATION': 'Bearer github_pat_XXXX',
+                                },
+                                'timeout': '10s',
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    await chat.send_message('What is the weather in Boston on 02/02/2026?')
+    await chat.send_message(
+        'What is the weather in San Francisco on 02/02/2026?'
+    )

@@ -27,7 +27,7 @@ test_table: list[pytest_helper.TestTableItem] = [
         parameters=types._DeleteFileSearchStoreParameters(
             name="fileSearchStores/acxjj7m366ln-aw6xyp94icll",
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
     pytest_helper.TestTableItem(
         name="test_delete_with_name_and_force",
@@ -35,7 +35,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             name="fileSearchStores/7igesc9r2zw9-0mpxpsqubv7s",
             config=types.DeleteFileSearchStoreConfig(force=True),
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
 ]
 

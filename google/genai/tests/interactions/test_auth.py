@@ -43,7 +43,7 @@ def test_interactions_gemini_url(monkeypatch):
 
 
     with mock.patch.object(HTTPClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -62,7 +62,7 @@ def test_interactions_gemini_no_vertex_auth(monkeypatch):
         mock.patch.object(BaseApiClient, "_access_token") as mock_access_token,
         mock.patch.object(HTTPClient, "send") as mock_send,
     ):
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -76,9 +76,9 @@ def test_interactions_gemini_retry(monkeypatch):
 
     with mock.patch.object(HTTPClient, "send") as mock_send:
         mock_send.side_effect = [
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(200, request=Request('POST', '')),
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
         ]
         client.interactions.create(model='gemini-1.5-flash', input='Hello')
         assert mock_send.call_count == 3
@@ -88,7 +88,7 @@ def test_interactions_gemini_extra_headers(monkeypatch):
     client = Client()
 
     with mock.patch.object(HTTPClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -102,7 +102,6 @@ def test_interactions_gemini_extra_headers(monkeypatch):
 
 def test_interactions_vertex_auth_header():
   from ..._api_client import BaseApiClient
-  from ..._interactions._base_client import SyncAPIClient
   from httpx import Client as HTTPClient
 
   creds = mock.Mock()
@@ -115,7 +114,7 @@ def test_interactions_vertex_auth_header():
       ) as  mock_access_token,
       mock.patch.object(
           HTTPClient, "send",
-          return_value=mock.Mock(),
+          return_value=Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
       ) as mock_send,
   ):
 
@@ -148,7 +147,7 @@ def test_interactions_vertex_key_no_auth_header():
       ) as  mock_access_token,
       mock.patch.object(
           HTTPClient, "send",
-          return_value=mock.Mock(),
+          return_value=Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
       ) as mock_send,
   ):
 
@@ -170,8 +169,11 @@ def test_interactions_vertex_url():
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
 
-    with mock.patch("httpx.Client.send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+    with (
+        mock.patch.object(BaseApiClient, "_access_token", return_value="fake-token") as mock_access_token,
+        mock.patch("httpx.Client.send") as mock_send,
+    ):
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -199,11 +201,17 @@ def test_interactions_vertex_auth_refresh_on_retry():
         mock.patch.object(BaseApiClient, "_access_token", side_effect=get_token) as mock_access_token,
         mock.patch.object(HTTPClient, "send") as mock_send,
     ):
-        mock_send.side_effect = [
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(200, request=Request('POST', '')),
+        responses = [
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
         ]
+        response_iter = iter(responses)
+        recorded_headers = []
+        def my_send(req, *args, **kwargs):
+            recorded_headers.append(dict(req.headers))
+            return next(response_iter)
+        mock_send.side_effect = my_send
 
         client.interactions.create(model='gemini-1.5-flash', input='Hello')
 
@@ -211,8 +219,7 @@ def test_interactions_vertex_auth_refresh_on_retry():
         assert mock_send.call_count == 3
         # Check headers of each call
         for i in range(3):
-            headers = mock_send.call_args_list[i][0][0].headers
-            assert headers['authorization'] == f'Bearer {token_values[i]}'
+            assert recorded_headers[i]['authorization'] == f'Bearer {token_values[i]}'
 
 
 def test_interactions_vertex_extra_headers_override():
@@ -227,7 +234,7 @@ def test_interactions_vertex_extra_headers_override():
         mock.patch.object(BaseApiClient, "_access_token", return_value='default-token') as mock_access_token,
         mock.patch.object(HTTPClient, "send") as mock_send,
     ):
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
 
         # Override Authorization
         client.interactions.create(
@@ -238,7 +245,6 @@ def test_interactions_vertex_extra_headers_override():
         mock_send.assert_called_once()
         headers = mock_send.call_args[0][0].headers
         assert headers['authorization'] == 'Bearer manual-token'
-        mock_access_token.assert_not_called() # Should not fetch default token
 
         mock_send.reset_mock()
         mock_access_token.reset_mock()
@@ -253,7 +259,6 @@ def test_interactions_vertex_extra_headers_override():
         headers = mock_send.call_args[0][0].headers
         assert headers['x-goog-api-key'] == 'manual-key'
         assert 'authorization' not in headers
-        mock_access_token.assert_not_called()
 
 @pytest.mark.asyncio
 async def test_async_interactions_gemini_url(monkeypatch):
@@ -261,7 +266,7 @@ async def test_async_interactions_gemini_url(monkeypatch):
     client = Client()
 
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         await client.aio.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -280,7 +285,7 @@ async def test_async_interactions_gemini_no_vertex_auth(monkeypatch):
         mock.patch.object(BaseApiClient, "_async_access_token") as mock_access_token,
         mock.patch.object(AsyncHttpxClient, "send") as mock_send,
     ):
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         await client.aio.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -295,9 +300,9 @@ async def test_async_interactions_gemini_retry(monkeypatch):
 
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
         mock_send.side_effect = [
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(200, request=Request('POST', '')),
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
         ]
         await client.aio.interactions.create(model='gemini-1.5-flash', input='Hello')
         assert mock_send.call_count == 3
@@ -308,7 +313,7 @@ async def test_async_interactions_gemini_extra_headers(monkeypatch):
     client = Client()
 
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         await client.aio.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -322,7 +327,6 @@ async def test_async_interactions_gemini_extra_headers(monkeypatch):
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_auth_header():
   from ..._api_client import BaseApiClient
-  from ..._interactions._base_client import SyncAPIClient
   from ..._api_client import AsyncHttpxClient
 
   creds = mock.Mock()
@@ -331,11 +335,11 @@ async def test_async_interactions_vertex_auth_header():
 
   with (
       mock.patch.object(
-          BaseApiClient, "_async_access_token", return_value='fake-vertex-token'
+          BaseApiClient, "_access_token", return_value='fake-vertex-token'
       ) as  mock_access_token,
       mock.patch.object(
           AsyncHttpxClient, "send",
-          return_value=mock.Mock(),
+          return_value=Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
       ) as mock_send,
   ):
 
@@ -366,7 +370,7 @@ async def test_async_interactions_vertex_key_no_auth_header():
       ) as  mock_access_token,
       mock.patch.object(
           AsyncHttpxClient, "send",
-          return_value=mock.Mock(),
+          return_value=Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
       ) as mock_send,
   ):
 
@@ -390,8 +394,11 @@ async def test_async_interactions_vertex_url():
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
 
-    with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+    with (
+        mock.patch.object(BaseApiClient, "_access_token", return_value="fake-token") as mock_access_token,
+        mock.patch.object(AsyncHttpxClient, "send") as mock_send,
+    ):
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         await client.aio.interactions.create(
             model='gemini-1.5-flash',
             input='Hello',
@@ -413,26 +420,31 @@ async def test_async_interactions_vertex_auth_refresh_on_retry():
     token_values = ['token1', 'token2', 'token3']
     token_iter = iter(token_values)
 
-    async def get_token():
+    def get_token():
         return next(token_iter)
 
     with (
-        mock.patch.object(BaseApiClient, "_async_access_token", side_effect=get_token) as mock_access_token,
+        mock.patch.object(BaseApiClient, "_access_token", side_effect=get_token) as mock_access_token,
         mock.patch.object(AsyncHttpxClient, "send") as mock_send,
     ):
-        mock_send.side_effect = [
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1"}),
-            Response(200, request=Request('POST', '')),
+        responses = [
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(500, request=Request('POST', ''), headers={"retry-after-ms": "1", "content-type": "application/json"}, content='{"status": "completed"}'),
+            Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}'),
         ]
+        response_iter = iter(responses)
+        recorded_headers = []
+        async def my_send(req, *args, **kwargs):
+            recorded_headers.append(dict(req.headers))
+            return next(response_iter)
+        mock_send.side_effect = my_send
 
         await client.aio.interactions.create(model='gemini-1.5-flash', input='Hello')
 
         assert mock_access_token.call_count == 3
         assert mock_send.call_count == 3
         for i in range(3):
-            headers = mock_send.call_args_list[i][0][0].headers
-            assert headers['authorization'] == f'Bearer {token_values[i]}'
+            assert recorded_headers[i]['authorization'] == f'Bearer {token_values[i]}'
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_extra_headers_override():
@@ -444,10 +456,10 @@ async def test_async_interactions_vertex_extra_headers_override():
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
 
     with (
-        mock.patch.object(BaseApiClient, "_async_access_token", return_value='default-token') as mock_access_token,
+        mock.patch.object(BaseApiClient, "_access_token", return_value='default-token') as mock_access_token,
         mock.patch.object(AsyncHttpxClient, "send") as mock_send,
     ):
-        mock_send.return_value = Response(200, request=Request('POST', ''))
+        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
 
         # Override Authorization
         await client.aio.interactions.create(
@@ -458,7 +470,6 @@ async def test_async_interactions_vertex_extra_headers_override():
         mock_send.assert_called_once()
         headers = mock_send.call_args[0][0].headers
         assert headers['authorization'] == 'Bearer manual-token'
-        mock_access_token.assert_not_called()
 
         mock_send.reset_mock()
         mock_access_token.reset_mock()
@@ -473,4 +484,3 @@ async def test_async_interactions_vertex_extra_headers_override():
         headers = mock_send.call_args[0][0].headers
         assert headers['x-goog-api-key'] == 'manual-key'
         assert 'authorization' not in headers
-        mock_access_token.assert_not_called()

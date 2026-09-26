@@ -175,7 +175,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported in Vertex',
+        exception_if_vertex='supported in',
         has_union=True,
     ),
     pytest_helper.TestTableItem(
@@ -187,7 +187,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_inlined_request_config',
@@ -198,7 +198,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_union_with_inlined_request_system_instruction',
@@ -210,7 +210,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             },
         ),
         has_union=True,
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_image_file',
@@ -221,7 +221,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_image_blob',
@@ -232,7 +232,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_video_file',
@@ -243,7 +243,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
 ]
 

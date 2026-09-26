@@ -559,7 +559,7 @@ def test_process_schema_order_properties_propagates_into_additional_properties(
       _transformers.process_schema(
           schema, client, order_properties=order_properties
       )
-    assert 'additionalProperties is not supported in the Gemini API.' in str(e)
+    assert 'additionalProperties is only supported in Gemini Enterprise Agent Platform mode' in str(e)
 
 
 @pytest.mark.parametrize(
@@ -605,6 +605,39 @@ def test_process_schema_order_properties_propagates_into_any_of(
     assert schema == schema_with_property_ordering
   else:
     assert schema == schema_without_property_ordering
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_with_cycle(client):
+  schema = {
+      'type': 'OBJECT',
+      'properties': {
+          'recursive': {'$ref': '#/$defs/RecursiveObject'},
+      },
+      '$defs': {
+          'RecursiveObject': {
+              'type': 'OBJECT',
+              'properties': {
+                  'self': {'$ref': '#/$defs/RecursiveObject'},
+              }
+          }
+      }
+  }
+
+  _transformers.process_schema(schema, client)
+
+  expected = {
+      'type': 'OBJECT',
+      'properties': {
+          'recursive': {
+              'type': 'OBJECT',
+              'properties': {
+                  'self': {}
+              }
+          }
+      }
+  }
+  assert schema == expected
 
 
 @pytest.mark.parametrize('use_vertex', [True, False])

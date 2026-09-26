@@ -22,6 +22,7 @@ import enum
 import functools
 import logging
 import re
+import sys
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -33,6 +34,17 @@ from typing_extensions import TypeAlias
 logger = logging.getLogger('google_genai._common')
 
 StringDict: TypeAlias = dict[str, Any]
+
+
+def loaded_requests() -> Optional[Any]:
+  """Returns the `requests` module, or None if nothing has imported it.
+
+  Only the synchronous google-auth path uses `requests`, and importing it
+  costs around 300 modules. An object can only be an instance of a `requests`
+  class once that module is loaded, so callers doing an isinstance check
+  against one can consult this instead of importing it themselves.
+  """
+  return sys.modules.get('requests')
 
 
 class ExperimentalWarning(Warning):
@@ -320,6 +332,14 @@ def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
   Mutates the response in place.
   """
 
+  # Models are built on first use (`defer_build`), and an unbuilt model's field
+  # annotations still hold the forward references they were declared with, e.g.
+  # the string 'Part' rather than the `Part` class. Building the model resolves
+  # them, and costs nothing extra here because the caller validates against
+  # this model immediately afterwards.
+  if isinstance(model, type) and issubclass(model, pydantic.BaseModel):
+    model.model_rebuild(raise_errors=False)
+
   key_values = list(response.items())
 
   for key, value in key_values:
@@ -559,6 +579,11 @@ class BaseModel(pydantic.BaseModel):
       ser_json_bytes='base64',
       val_json_bytes='base64',
       ignored_types=(typing.TypeVar,),
+      # Build each model's validator and serializer on first use rather than
+      # at import. `types` defines several hundred models and any one caller
+      # touches a small fraction of them, so building them all up front is
+      # most of what importing this package costs.
+      defer_build=True,
   )
 
   @pydantic.model_validator(mode='before')

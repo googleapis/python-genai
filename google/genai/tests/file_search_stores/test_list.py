@@ -25,7 +25,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_list_default",
         parameters=types._ListFileSearchStoresParameters(),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
     pytest_helper.TestTableItem(
         name="test_list_with_page_size",
@@ -34,7 +34,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 page_size=5,
             ),
         ),
-        exception_if_vertex="only supported in the Gemini Developer client",
+        exception_if_vertex="only supported in Gemini Developer API mode",
     ),
 ]
 
