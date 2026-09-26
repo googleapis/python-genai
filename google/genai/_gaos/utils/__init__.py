@@ -53,7 +53,6 @@ if TYPE_CHECKING:
     from .security import get_security, get_security_from_env
 
     from .serializers import (
-        ALLOW_UNKNOWN_UNION_VARIANTS,
         get_pydantic_model,
         marshal_json,
         unmarshal,
@@ -126,7 +125,6 @@ __all__ = [
     "stream_to_bytes",
     "stream_to_bytes_async",
     "template_url",
-    "ALLOW_UNKNOWN_UNION_VARIANTS",
     "unmarshal",
     "unmarshal_json",
     "validate_decimal",
@@ -149,7 +147,6 @@ _dynamic_imports: dict[str, str] = {
     "parse_duration": ".datetimes",
     "get_global_from_env": ".values",
     "get_headers": ".headers",
-    "ALLOW_UNKNOWN_UNION_VARIANTS": ".serializers",
     "get_pydantic_model": ".serializers",
     "get_query_params": ".queryparams",
     "get_response_headers": ".headers",
