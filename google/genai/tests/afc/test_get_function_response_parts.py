@@ -160,6 +160,125 @@ def test_string_value():
     ) == expected_part.model_dump_json(exclude_none=True)
 
 
+def test_none_args_invokes_with_no_arguments():
+  called_with = {}
+
+  def func_under_test(**kwargs) -> str:
+    called_with.update(kwargs)
+    return 'ok'
+
+  response = GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              name='func_under_test',
+                              args=None,
+                          )
+                      )
+                  ]
+              )
+          )
+      ]
+  )
+  function_map = {'func_under_test': func_under_test}
+  expected_parts = [
+      Part(
+          function_response=FunctionResponse(
+              name='func_under_test',
+              response={'result': 'ok'},
+          )
+      )
+  ]
+
+  actual_parts = get_function_response_parts(response, function_map)
+
+  assert len(actual_parts) == len(expected_parts)
+  assert called_with == {}
+  for actual_part, expected_part in zip(actual_parts, expected_parts):
+    assert actual_part.model_dump_json(
+        exclude_none=True
+    ) == expected_part.model_dump_json(exclude_none=True)
+
+
+@pytest.mark.asyncio
+async def test_none_args_invokes_with_no_arguments_async():
+  called_with = {}
+
+  def func_under_test(**kwargs) -> str:
+    called_with.update(kwargs)
+    return 'ok'
+
+  response = GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              name='func_under_test',
+                              args=None,
+                          )
+                      )
+                  ]
+              )
+          )
+      ]
+  )
+  function_map = {'func_under_test': func_under_test}
+  expected_parts = [
+      Part(
+          function_response=FunctionResponse(
+              name='func_under_test',
+              response={'result': 'ok'},
+          )
+      )
+  ]
+
+  actual_parts = await get_function_response_parts_async(response, function_map)
+
+  assert len(actual_parts) == len(expected_parts)
+  assert called_with == {}
+  for actual_part, expected_part in zip(actual_parts, expected_parts):
+    assert actual_part.model_dump_json(
+        exclude_none=True
+    ) == expected_part.model_dump_json(exclude_none=True)
+
+
+def test_empty_dict_args_invokes_with_no_arguments():
+  called_with = {'sentinel': True}
+
+  def func_under_test(**kwargs) -> str:
+    called_with.clear()
+    called_with.update(kwargs)
+    return 'ok'
+
+  response = GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              name='func_under_test',
+                              args={},
+                          )
+                      )
+                  ]
+              )
+          )
+      ]
+  )
+  function_map = {'func_under_test': func_under_test}
+
+  actual_parts = get_function_response_parts(response, function_map)
+
+  assert called_with == {}
+  assert actual_parts[0].function_response.response == {'result': 'ok'}
+
+
 @pytest.mark.asyncio
 async def test_mcp_tool():
   if not _is_mcp_imported:
