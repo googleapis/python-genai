@@ -16,6 +16,7 @@
 
 """Tests for should_disable_afc."""
 
+import logging
 import pytest
 from .. import pytest_helper
 from ... import types
@@ -213,3 +214,57 @@ def test_afc_enable_true_max_1():
       )
       is False
   )
+
+
+def test_afc_mode_any_warns(caplog):
+  with caplog.at_level(logging.WARNING, logger='google_genai.models'):
+    config = types.GenerateContentConfig(
+        tool_config=types.ToolConfig(
+            function_calling_config=types.FunctionCallingConfig(mode='ANY')
+        )
+    )
+    result = should_disable_afc(config)
+  assert result is False
+  assert len(caplog.records) == 1
+  assert '`tool_config.function_calling_config.mode` is set to `ANY`' in caplog.records[0].message
+
+
+def test_afc_mode_any_dict_warns(caplog):
+  with caplog.at_level(logging.WARNING, logger='google_genai.models'):
+    config = {
+        'tool_config': {
+            'function_calling_config': {'mode': 'ANY'}
+        }
+    }
+    result = should_disable_afc(config)
+  assert result is False
+  assert len(caplog.records) == 1
+  assert '`tool_config.function_calling_config.mode` is set to `ANY`' in caplog.records[0].message
+
+
+def test_afc_mode_any_disabled_no_warn(caplog):
+  with caplog.at_level(logging.WARNING, logger='google_genai.models'):
+    config = types.GenerateContentConfig(
+        tool_config=types.ToolConfig(
+            function_calling_config=types.FunctionCallingConfig(mode='ANY')
+        ),
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            disable=True
+        ),
+    )
+    result = should_disable_afc(config)
+  assert result is True
+  assert len(caplog.records) == 0
+
+
+def test_afc_mode_auto_no_warn(caplog):
+  with caplog.at_level(logging.WARNING, logger='google_genai.models'):
+    config = types.GenerateContentConfig(
+        tool_config=types.ToolConfig(
+            function_calling_config=types.FunctionCallingConfig(mode='AUTO')
+        )
+    )
+    result = should_disable_afc(config)
+  assert result is False
+  assert len(caplog.records) == 0
+
