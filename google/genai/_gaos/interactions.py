@@ -739,7 +739,40 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=["interactions"],
-            extensions=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "delete",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "java",
+                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Hello"))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nclient.interactions.delete(interactionId);\nSystem.out.println("Interaction deleted successfully.");\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "dotnet",
+                        "source": 'using Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Hello"),\n    })\n);\n// [/setup]\n\nawait client.Interactions.DeleteAsync(id: created.Interaction!.Id!);\nConsole.WriteLine("Interaction deleted successfully.");\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "go",
+                        "source": 'package main\n\nimport (\n    "context"\n    "fmt"\n    "log"\n\n    "google.golang.org/genai"\n    gaos_interactions "google.golang.org/genai/interactions/models/interactions"\n    "google.golang.org/genai/interactions/models/operations"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := genai.NewClient(ctx, nil)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    // [setup]\n    body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{\n        Model: gaos_interactions.Model("gemini-3.6-flash"),\n        Input: gaos_interactions.NewInteractionsInput("Hello"),\n    })\n    createReq := operations.CreateInteractionRequest{\n        Body: body,\n    }\n\n    created, err := client.Interactions.Create(ctx, createReq)\n    if err != nil {\n        log.Fatal(err)\n    }\n    if created.Interaction == nil || created.Interaction.ID == nil {\n        log.Fatal("failed to create interaction in setup")\n    }\n    interactionID := *created.Interaction.ID\n    // [/setup]\n\n    req := operations.DeleteInteractionRequest{\n        ID: interactionID,\n    }\n\n    _, err = client.Interactions.Delete(\n        ctx,\n        req,\n    )\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    fmt.Println("Interaction deleted successfully.")\n}\n',
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1024,7 +1057,50 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=["interactions"],
-            extensions=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "get",
+                        "lang": "java",
+                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdRequest;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Say hello."))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nGetInteractionByIdResponse getResponse =\n    client.interactions.get(new GetInteractionByIdRequest(interactionId));\nInteraction interaction =\n    getResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/interactions/v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.get(id="v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg")\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.get('v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg');\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "get",
+                        "lang": "go",
+                        "source": 'package main\n\nimport (\n    "context"\n    "fmt"\n    "log"\n\n    "google.golang.org/genai"\n    gaos_interactions "google.golang.org/genai/interactions/models/interactions"\n    "google.golang.org/genai/interactions/models/operations"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := genai.NewClient(ctx, nil)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    // [setup]\n    body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{\n        Model: gaos_interactions.Model("gemini-3.6-flash"),\n        Input: gaos_interactions.NewInteractionsInput("Hello"),\n    })\n    createReq := operations.CreateInteractionRequest{\n        Body: body,\n    }\n\n    created, err := client.Interactions.Create(ctx, createReq)\n    if err != nil {\n        log.Fatal(err)\n    }\n    if created.Interaction == nil || created.Interaction.ID == nil {\n        log.Fatal("failed to create interaction in setup")\n    }\n    interactionID := *created.Interaction.ID\n    // [/setup]\n\n    req := operations.GetInteractionByIDRequest{\n        ID: interactionID,\n    }\n    res, err := client.Interactions.Get(ctx, req)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    if res.Interaction != nil {\n        fmt.Println(res.Interaction.Status)\n    }\n}\n',
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1194,7 +1270,40 @@ class Interactions(BaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=["interactions"],
-            extensions=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "cancel",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "java",
+                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.ComputerUse;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CancelInteractionByIdResponse;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\n\n// Start a background interaction so it stays in-progress.\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Write a long essay about the history of computing."))\n        .tools(List.of(new ComputerUse()))\n        .background(true)\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n\n// Cancel the in-progress interaction.\nCancelInteractionByIdResponse cancelResponse = client.interactions.cancel(interactionId);\nInteraction interaction =\n    cancelResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "dotnet",
+                        "source": 'using System.Collections.Generic;\nusing Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Write a long essay about the history of computing."),\n        Tools = new List<Tool> { Tool.CreateComputerUse(new ComputerUse()) },\n        Background = true,\n    })\n);\n// [/setup]\n\nvar response = await client.Interactions.CancelAsync(id: created.Interaction!.Id!);\nConsole.WriteLine(response.Interaction!.Status);\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "go",
+                        "source": 'package main\n\nimport (\n    "context"\n    "fmt"\n    "log"\n\n    "google.golang.org/genai"\n    gaos_interactions "google.golang.org/genai/interactions/models/interactions"\n    "google.golang.org/genai/interactions/models/operations"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := genai.NewClient(ctx, nil)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    // [setup]\n    body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{\n        Model: gaos_interactions.Model("gemini-3.6-flash"),\n        Input: gaos_interactions.NewInteractionsInput("Write a long essay about the history of computing."),\n        Background: ptr(true),\n    })\n    createReq := operations.CreateInteractionRequest{\n        Body: body,\n    }\n\n    created, err := client.Interactions.Create(ctx, createReq)\n    if err != nil {\n        log.Fatal(err)\n    }\n    if created.Interaction == nil || created.Interaction.ID == nil {\n        log.Fatal("failed to create interaction in setup")\n    }\n    interactionID := *created.Interaction.ID\n    // [/setup]\n\n    req := operations.CancelInteractionByIDRequest{\n        ID: interactionID,\n    }\n\n    res, err := client.Interactions.Cancel(\n        ctx,\n        req,\n    )\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    if res.Interaction != nil {\n        fmt.Println(res.Interaction.Status)\n    }\n}\n\nfunc ptr[T any](v T) *T {\n    return &v\n}\n',
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="sync"),
         )
         http_res = self.do_request(
@@ -1989,7 +2098,40 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=["interactions"],
-            extensions=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "delete",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Hello"}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X DELETE "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Hello",\n)\n# [/setup]\n\nclient.interactions.delete(id=created.id)\nprint("Interaction deleted successfully.")\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Hello',\n});\n// [/setup]\n\nawait ai.interactions.delete(created.id);\nconsole.log('Interaction deleted successfully.');\n",
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "java",
+                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Hello"))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nclient.interactions.delete(interactionId);\nSystem.out.println("Interaction deleted successfully.");\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "dotnet",
+                        "source": 'using Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Hello"),\n    })\n);\n// [/setup]\n\nawait client.Interactions.DeleteAsync(id: created.Interaction!.Id!);\nConsole.WriteLine("Interaction deleted successfully.");\n',
+                    },
+                    {
+                        "label": "delete",
+                        "lang": "go",
+                        "source": 'package main\n\nimport (\n    "context"\n    "fmt"\n    "log"\n\n    "google.golang.org/genai"\n    gaos_interactions "google.golang.org/genai/interactions/models/interactions"\n    "google.golang.org/genai/interactions/models/operations"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := genai.NewClient(ctx, nil)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    // [setup]\n    body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{\n        Model: gaos_interactions.Model("gemini-3.6-flash"),\n        Input: gaos_interactions.NewInteractionsInput("Hello"),\n    })\n    createReq := operations.CreateInteractionRequest{\n        Body: body,\n    }\n\n    created, err := client.Interactions.Create(ctx, createReq)\n    if err != nil {\n        log.Fatal(err)\n    }\n    if created.Interaction == nil || created.Interaction.ID == nil {\n        log.Fatal("failed to create interaction in setup")\n    }\n    interactionID := *created.Interaction.ID\n    // [/setup]\n\n    req := operations.DeleteInteractionRequest{\n        ID: interactionID,\n    }\n\n    _, err = client.Interactions.Delete(\n        ctx,\n        req,\n    )\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    fmt.Println("Interaction deleted successfully.")\n}\n',
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2277,7 +2419,50 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=["interactions"],
-            extensions=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -H "Api-Revision: 2026-05-20" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Say hello."}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X GET "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# [setup]\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Say hello."\n)\n# [/setup]\n\ninteraction = client.interactions.get(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// [setup]\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Say hello.'\n});\n// [/setup]\n\nconst interaction = await ai.interactions.get(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "get",
+                        "lang": "java",
+                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdRequest;\nimport com.google.genai.gaos.models.operations.GetInteractionByIdResponse;\n\nClient client = new Client();\n\n// [setup]\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Say hello."))\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n// [/setup]\n\nGetInteractionByIdResponse getResponse =\n    client.interactions.get(new GetInteractionByIdRequest(interactionId));\nInteraction interaction =\n    getResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "sh",
+                        "source": 'curl -X GET https://generativelanguage.googleapis.com/v1beta/interactions/v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Api-Revision: 2026-05-20"\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\ninteraction = client.interactions.get(id="v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg")\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "get",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\nconst interaction = await ai.interactions.get('v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg');\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "get",
+                        "lang": "go",
+                        "source": 'package main\n\nimport (\n    "context"\n    "fmt"\n    "log"\n\n    "google.golang.org/genai"\n    gaos_interactions "google.golang.org/genai/interactions/models/interactions"\n    "google.golang.org/genai/interactions/models/operations"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := genai.NewClient(ctx, nil)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    // [setup]\n    body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{\n        Model: gaos_interactions.Model("gemini-3.6-flash"),\n        Input: gaos_interactions.NewInteractionsInput("Hello"),\n    })\n    createReq := operations.CreateInteractionRequest{\n        Body: body,\n    }\n\n    created, err := client.Interactions.Create(ctx, createReq)\n    if err != nil {\n        log.Fatal(err)\n    }\n    if created.Interaction == nil || created.Interaction.ID == nil {\n        log.Fatal("failed to create interaction in setup")\n    }\n    interactionID := *created.Interaction.ID\n    // [/setup]\n\n    req := operations.GetInteractionByIDRequest{\n        ID: interactionID,\n    }\n    res, err := client.Interactions.Get(ctx, req)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    if res.Interaction != nil {\n        fmt.Println(res.Interaction.Status)\n    }\n}\n',
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
@@ -2450,7 +2635,40 @@ class AsyncInteractions(AsyncBaseSDK):
                 self.sdk_configuration.security, types.Security
             ),
             tags=["interactions"],
-            extensions=None,
+            extensions={
+                "x-codeSamples": [
+                    {
+                        "label": "cancel",
+                        "lang": "sh",
+                        "source": '# [setup]\nINTERACTION_ID=$(curl -s -X POST https://generativelanguage.googleapis.com/v1beta/interactions \\\n  -H "x-goog-api-key: $GEMINI_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"model": "gemini-3.6-flash", "input": "Write a long essay about the history of computing.", "background": true}\' \\\n  | python3 -c "import sys,json; print(json.load(sys.stdin)[\'id\'])")\n# [/setup]\n\ncurl -X POST "https://generativelanguage.googleapis.com/v1beta/interactions/$INTERACTION_ID/cancel" \\\n  -H "x-goog-api-key: $GEMINI_API_KEY"\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "python",
+                        "source": 'from google import genai\n\nclient = genai.Client()\n\n# Start a background interaction so it stays in-progress.\ncreated = client.interactions.create(\n    model="gemini-3.6-flash",\n    input="Write a long essay about the history of computing.",\n    tools=[{"type": "computer_use"}],\n    background=True,\n)\n\n# Cancel the in-progress interaction.\ninteraction = client.interactions.cancel(id=created.id)\nprint(interaction.status)\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "javascript",
+                        "source": "import {GoogleGenAI} from '@google/genai';\n\nconst ai = new GoogleGenAI({});\n\n// Start a background interaction so it stays in-progress.\nconst created = await ai.interactions.create({\n    model: 'gemini-3.6-flash',\n    input: 'Write a long essay about the history of computing.',\n    tools: [{ type: 'computer_use' }],\n    background: true,\n});\n\n// Cancel the in-progress interaction.\nconst interaction = await ai.interactions.cancel(created.id);\nconsole.log(interaction.status);\n",
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "java",
+                        "source": 'import com.google.genai.Client;\nimport com.google.genai.gaos.models.interactions.ComputerUse;\nimport com.google.genai.gaos.models.interactions.CreateModelInteraction;\nimport com.google.genai.gaos.models.interactions.Interaction;\nimport com.google.genai.gaos.models.interactions.InteractionStatus;\nimport com.google.genai.gaos.models.interactions.InteractionsInput;\nimport com.google.genai.gaos.models.operations.CancelInteractionByIdResponse;\nimport com.google.genai.gaos.models.operations.CreateInteractionRequestBody;\nimport com.google.genai.gaos.models.operations.CreateInteractionResponse;\nimport java.util.List;\n\nClient client = new Client();\n\n// Start a background interaction so it stays in-progress.\nCreateModelInteraction params =\n    CreateModelInteraction.builder()\n        .model("gemini-3.6-flash")\n        .input(InteractionsInput.of("Write a long essay about the history of computing."))\n        .tools(List.of(new ComputerUse()))\n        .background(true)\n        .build();\nCreateInteractionResponse created =\n    client.interactions.create(CreateInteractionRequestBody.of(params));\nString interactionId = created.interaction().flatMap(Interaction::id).orElseThrow();\n\n// Cancel the in-progress interaction.\nCancelInteractionByIdResponse cancelResponse = client.interactions.cancel(interactionId);\nInteraction interaction =\n    cancelResponse.interaction().orElseThrow(() -> new RuntimeException("No interaction returned"));\nSystem.out.println(interaction.status().map(InteractionStatus::value).orElse(""));\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "dotnet",
+                        "source": 'using System.Collections.Generic;\nusing Google.GenAI;\nusing Google.GenAI.Gaos.Models.Interactions;\nusing Google.GenAI.Gaos.Models.Requests;\n\nvar client = new Client();\n\n// [setup]\nvar created = await client.Interactions.CreateAsync(\n    body: CreateInteractionRequestBody.CreateCreateModelInteraction(new CreateModelInteraction {\n        Model = "gemini-3.6-flash",\n        Input = InteractionsInput.CreateStr("Write a long essay about the history of computing."),\n        Tools = new List<Tool> { Tool.CreateComputerUse(new ComputerUse()) },\n        Background = true,\n    })\n);\n// [/setup]\n\nvar response = await client.Interactions.CancelAsync(id: created.Interaction!.Id!);\nConsole.WriteLine(response.Interaction!.Status);\n',
+                    },
+                    {
+                        "label": "cancel",
+                        "lang": "go",
+                        "source": 'package main\n\nimport (\n    "context"\n    "fmt"\n    "log"\n\n    "google.golang.org/genai"\n    gaos_interactions "google.golang.org/genai/interactions/models/interactions"\n    "google.golang.org/genai/interactions/models/operations"\n)\n\nfunc main() {\n    ctx := context.Background()\n    client, err := genai.NewClient(ctx, nil)\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    // [setup]\n    body := operations.NewCreateInteractionRequestBody(gaos_interactions.CreateModelInteraction{\n        Model: gaos_interactions.Model("gemini-3.6-flash"),\n        Input: gaos_interactions.NewInteractionsInput("Write a long essay about the history of computing."),\n        Background: ptr(true),\n    })\n    createReq := operations.CreateInteractionRequest{\n        Body: body,\n    }\n\n    created, err := client.Interactions.Create(ctx, createReq)\n    if err != nil {\n        log.Fatal(err)\n    }\n    if created.Interaction == nil || created.Interaction.ID == nil {\n        log.Fatal("failed to create interaction in setup")\n    }\n    interactionID := *created.Interaction.ID\n    // [/setup]\n\n    req := operations.CancelInteractionByIDRequest{\n        ID: interactionID,\n    }\n\n    res, err := client.Interactions.Cancel(\n        ctx,\n        req,\n    )\n    if err != nil {\n        log.Fatal(err)\n    }\n\n    if res.Interaction != nil {\n        fmt.Println(res.Interaction.Status)\n    }\n}\n\nfunc ptr[T any](v T) *T {\n    return &v\n}\n',
+                    },
+                ]
+            },
             response=ResponseContext(mode=_speakeasy_response_mode, execution="async"),
         )
         http_res = await self.do_request_async(
