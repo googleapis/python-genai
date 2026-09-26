@@ -35,7 +35,6 @@ InteractionParam = TypeAliasType(
         interactions_createmodelinteraction.CreateModelInteractionParam,
     ],
 )
-r"""Required. The interaction request template to be executed."""
 
 
 Interaction = TypeAliasType(
@@ -45,14 +44,12 @@ Interaction = TypeAliasType(
         interactions_createmodelinteraction.CreateModelInteraction,
     ],
 )
-r"""Required. The interaction request template to be executed."""
 
 
 class TriggerCreateParamsParam(TypedDict):
     r"""Parameters for creating a trigger."""
 
     interaction: InteractionParam
-    r"""Required. The interaction request template to be executed."""
     schedule: str
     r"""Required. The cron schedule on which the trigger should run.
     Standard cron format.
@@ -75,7 +72,6 @@ class TriggerCreateParams(BaseModel):
     r"""Parameters for creating a trigger."""
 
     interaction: Interaction
-    r"""Required. The interaction request template to be executed."""
 
     schedule: str
     r"""Required. The cron schedule on which the trigger should run.
