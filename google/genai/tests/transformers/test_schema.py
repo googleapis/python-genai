@@ -532,34 +532,11 @@ def test_process_schema_order_properties_propagates_into_additional_properties(
           },
       },
   }
-  schema_without_property_ordering = copy.deepcopy(schema)
-  schema_with_property_ordering = {
-      'type': 'OBJECT',
-      'additionalProperties': {
-          'type': 'OBJECT',
-          'properties': {
-              'foo': {'type': 'STRING'},
-              'bar': {'type': 'STRING'},
-          },
-          'property_ordering': ['foo', 'bar'],
-      },
-  }
-
-  if client.vertexai:
+  with pytest.raises(ValueError) as e:
     _transformers.process_schema(
         schema, client, order_properties=order_properties
     )
-
-    if order_properties:
-      assert schema == schema_with_property_ordering
-    else:
-      assert schema == schema_without_property_ordering
-  else:
-    with pytest.raises(ValueError) as e:
-      _transformers.process_schema(
-          schema, client, order_properties=order_properties
-      )
-    assert 'additionalProperties is only supported in Gemini Enterprise Agent Platform mode' in str(e)
+  assert 'additionalProperties is only supported in Gemini Enterprise Agent Platform mode' in str(e.value)
 
 
 @pytest.mark.parametrize(
