@@ -774,7 +774,7 @@ def process_schema(
   def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
-      ref_schema = defs[ref.split('defs/')[-1]]
+      ref_schema: _common.StringDict = defs[ref.split('defs/')[-1]]
       if id(ref_schema) in visited_dicts_path:
         return {}
       process_schema(

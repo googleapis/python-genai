@@ -34,7 +34,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Awaitable, Callable, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
+from typing import Any, AsyncIterator, Callable, Coroutine, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 import warnings
@@ -621,18 +621,18 @@ _background_close_tasks: set['asyncio.Task[Any]'] = set()
 
 
 def _spawn_close_task(
-    loop: asyncio.AbstractEventLoop, close: Callable[[], Awaitable[Any]]
+    loop: asyncio.AbstractEventLoop, close: Callable[[], Coroutine[Any, Any, Any]]
 ) -> None:
   """Runs `close()` as a task on `loop`. Must be called from `loop`'s thread."""
   if loop.is_closed():
     return
-  task = loop.create_task(close())
+  task: 'asyncio.Task[Any]' = loop.create_task(close())
   _background_close_tasks.add(task)
   task.add_done_callback(_background_close_tasks.discard)
 
 
 def _schedule_close_on_loop(
-    loop: asyncio.AbstractEventLoop, close: Callable[[], Awaitable[Any]]
+    loop: asyncio.AbstractEventLoop, close: Callable[[], Coroutine[Any, Any, Any]]
 ) -> None:
   """Schedules `close()` on `loop`, which may belong to another thread."""
   try:
