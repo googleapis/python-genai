@@ -23177,7 +23177,7 @@ class EvaluationParserConfigCustomCodeParserConfig(_common.BaseModel):
   )
   code_execution_region: Optional[str] = Field(
       default=None,
-      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used.""",
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used.""",
   )
 
 
@@ -23191,7 +23191,7 @@ class EvaluationParserConfigCustomCodeParserConfigDict(TypedDict, total=False):
   """Required. Python function for parsing results. The function should be defined within this string. The function takes a list of strings (LLM responses) and should return either a list of dictionaries (for rubrics) or a single dictionary (for a metric result). Example function signature: def parse(responses: list[str]) -> list[dict[str, Any]] | dict[str, Any]: When parsing rubrics, return a list of dictionaries, where each dictionary represents a Rubric. Example for rubrics: [ { "content": {"property": {"description": "The response is factual."}}, "type": "FACTUALITY", "importance": "HIGH" }, { "content": {"property": {"description": "The response is fluent."}}, "type": "FLUENCY", "importance": "MEDIUM" } ] When parsing critique results, return a dictionary representing a MetricResult. Example for a metric result: { "score": 0.8, "explanation": "The model followed most instructions.", "rubric_verdicts": [...] } ... code for result extraction and aggregation"""
 
   code_execution_region: Optional[str]
-  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used."""
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used."""
 
 
 EvaluationParserConfigCustomCodeParserConfigOrDict = Union[
@@ -23318,7 +23318,7 @@ class CustomCodeExecutionSpec(_common.BaseModel):
   )
   code_execution_region: Optional[str] = Field(
       default=None,
-      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED.""",
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED.""",
   )
 
 
@@ -23334,7 +23334,7 @@ class CustomCodeExecutionSpecDict(TypedDict, total=False):
   are available to the function as instance[field_name]."""
 
   code_execution_region: Optional[str]
-  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED."""
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED."""
 
 
 CustomCodeExecutionSpecOrDict = Union[
