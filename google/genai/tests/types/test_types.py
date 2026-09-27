@@ -2970,3 +2970,10 @@ def test_computer_use_types():
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
 
+
+
+def test_finish_reason_malformed_response():
+  candidate = types.Candidate.model_validate(
+      {'finishReason': 'MALFORMED_RESPONSE'}
+  )
+  assert candidate.finish_reason is types.FinishReason.MALFORMED_RESPONSE
