@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from .allowedtools import AllowedTools, AllowedToolsParam
     from .allowlistentry import (
         AllowlistEntry,
+        AllowlistEntryMode,
         AllowlistEntryParam,
         Transform,
         TransformParam,
@@ -451,6 +452,7 @@ __all__ = [
     "AllowedToolsParam",
     "Allowlist",
     "AllowlistEntry",
+    "AllowlistEntryMode",
     "AllowlistEntryParam",
     "AllowlistParam",
     "Annotation",
@@ -859,6 +861,7 @@ _dynamic_imports: dict[str, str] = {
     "AllowedTools": ".allowedtools",
     "AllowedToolsParam": ".allowedtools",
     "AllowlistEntry": ".allowlistentry",
+    "AllowlistEntryMode": ".allowlistentry",
     "AllowlistEntryParam": ".allowlistentry",
     "Transform": ".allowlistentry",
     "TransformParam": ".allowlistentry",

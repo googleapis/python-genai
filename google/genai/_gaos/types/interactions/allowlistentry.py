@@ -20,8 +20,15 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from pydantic import model_serializer
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypeAliasType, TypedDict
+
+
+AllowlistEntryMode = Literal["disabled",]
+r"""Network egress mode. Set via the `\"allowlist\": \"disabled\"` short form;
+must be the only rule in the allowlist and cannot be combined with
+`domain`, `transform` or `credential`.
+"""
 
 
 TransformParam = TypeAliasType(
@@ -43,6 +50,11 @@ class AllowlistEntryParam(TypedDict):
     """
     credential: NotRequired[str]
     r"""Optional. Reference to a server-managed Credential resource by ID."""
+    mode: NotRequired[AllowlistEntryMode]
+    r"""Network egress mode. Set via the `\"allowlist\": \"disabled\"` short form;
+    must be the only rule in the allowlist and cannot be combined with
+    `domain`, `transform` or `credential`.
+    """
     transform: NotRequired[TransformParam]
     r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
@@ -58,12 +70,18 @@ class AllowlistEntry(BaseModel):
     credential: Optional[str] = None
     r"""Optional. Reference to a server-managed Credential resource by ID."""
 
+    mode: Optional[AllowlistEntryMode] = None
+    r"""Network egress mode. Set via the `\"allowlist\": \"disabled\"` short form;
+    must be the only rule in the allowlist and cannot be combined with
+    `domain`, `transform` or `credential`.
+    """
+
     transform: Optional[Transform] = None
     r"""Headers to inject on all outbound requests matching this domain. Accepts a single dict or a list of dicts. The egress proxy injects these automatically."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["credential", "transform"])
+        optional_fields = set(["credential", "mode", "transform"])
         serialized = handler(self)
         m = {}
 
