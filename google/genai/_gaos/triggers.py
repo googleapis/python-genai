@@ -218,7 +218,7 @@ class Triggers(BaseSDK):
         r"""Creates a new trigger that will invoke the specified agent on the given
         cron schedule.
 
-        :param interaction: Required. The interaction request template to be executed.
+        :param interaction:
         :param schedule: Required. The cron schedule on which the trigger should run.
             Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
@@ -1393,7 +1393,7 @@ class AsyncTriggers(AsyncBaseSDK):
         r"""Creates a new trigger that will invoke the specified agent on the given
         cron schedule.
 
-        :param interaction: Required. The interaction request template to be executed.
+        :param interaction:
         :param schedule: Required. The cron schedule on which the trigger should run.
             Standard cron format.
         :param time_zone: Required. Time zone in which the schedule should be interpreted.
