@@ -19,9 +19,7 @@
 
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
-from ..types.credentials import (
-    credentialupdate as credentials_credentialupdate,
-)
+from ..types.credentials import credentialupdate as credentials_credentialupdate
 from ..utils import (
     FieldMetadata,
     PathParamMetadata,

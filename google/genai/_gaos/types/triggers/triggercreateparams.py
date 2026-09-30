@@ -19,9 +19,7 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from ..interactions import (
-    createagentinteraction as interactions_createagentinteraction,
-)
+from ..interactions import createagentinteraction as interactions_createagentinteraction
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import NotRequired, TypedDict
