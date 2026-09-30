@@ -66,6 +66,26 @@ def test_mcp_client_session():
       MockMcpClientSession(),
   ]
   assert _mcp_utils.has_mcp_tool_usage(mcp_tools)
+  assert _mcp_utils.has_mcp_session_usage(mcp_tools)
+
+
+def test_allowed_tools_mcp_session():
+  """Allowlist wrappers are detected as MCP session usage."""
+  if McpClientSession is None:
+    return
+
+  class MockMcpClientSession(McpClientSession):
+
+    def __init__(self):
+      self._read_stream = None
+      self._write_stream = None
+
+  wrapped = _mcp_utils.with_allowed_tools(
+      MockMcpClientSession(), ['tool_a']
+  )
+  assert _mcp_utils.is_mcp_client_session(wrapped)
+  assert _mcp_utils.has_mcp_tool_usage([wrapped])
+  assert _mcp_utils.has_mcp_session_usage([wrapped])
 
 
 def test_no_mcp_tools():

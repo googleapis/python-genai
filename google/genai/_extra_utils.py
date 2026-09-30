@@ -596,17 +596,15 @@ async def parse_config_for_mcp_sessions(
   parsed_config_copy = parsed_config.model_copy(update={'tools': None})
   if parsed_config.tools:
     parsed_config_copy.tools = []
-    if not _mcp_utils._is_mcp_loaded():
+    if not _mcp_utils._is_mcp_loaded() and not any(
+        isinstance(tool, _mcp_utils.AllowedToolsMcpSession)
+        for tool in parsed_config.tools
+    ):
       # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
       parsed_config_copy.tools.extend(parsed_config.tools)
     else:
-      try:
-        from mcp import ClientSession as _McpClientSession  # pylint: disable=g-import-not-at-top
-      except ImportError:
-        _McpClientSession = type('DummySession', (), {})  # type: ignore
-
       for tool in parsed_config.tools:
-        if isinstance(tool, _McpClientSession):
+        if _mcp_utils.is_mcp_client_session(tool):
           mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
               tool, await tool.list_tools(), is_agent_platform=is_agent_platform
           )
