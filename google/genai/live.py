@@ -431,14 +431,11 @@ class AsyncSession:
               print('_'*80)
     """
     tool_response = t.t_tool_response(function_responses)
-    if self._api_client.vertexai:
-      tool_response_dict = _common.convert_to_dict(
-          tool_response, convert_keys=True
-      )
-    else:
-      tool_response_dict = _common.convert_to_dict(
-          tool_response, convert_keys=True
-      )
+    tool_response_dict = _common.convert_to_dict(
+        tool_response.model_dump(mode='json', exclude_none=True),
+        convert_keys=True,
+    )
+    if not self._api_client.vertexai:
       for response in tool_response_dict.get('functionResponses', []):
         if response.get('id') is None:
           raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
