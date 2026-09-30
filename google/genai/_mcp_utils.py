@@ -15,7 +15,10 @@
 
 """Utils for working with MCP tools."""
 import contextlib
-import httpx
+try:
+  import httpx
+except ImportError:
+  httpx = None  # type: ignore[assignment]
 
 try:
   import httpx2
@@ -29,7 +32,7 @@ from typing import Any
 
 from . import _common
 from . import types
-from ._api_client import _MULTI_REGIONAL_LOCATIONS
+from ._api_client import _MULTI_REGIONAL_LOCATIONS, _get_http_client_backend
 
 def _is_mcp_loaded() -> bool:
   return "mcp" in sys.modules
@@ -210,10 +213,21 @@ async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typ
   set_mcp_usage_header(headers)
 
   http_client: Any
-  if httpx2 is not None:
+  backend = _get_http_client_backend()
+  async_client = getattr(api_client, "_async_httpx_client", None)
+  is_httpx2_client = (
+      httpx2 is not None
+      and isinstance(getattr(httpx2, "AsyncClient", None), type)
+      and isinstance(async_client, httpx2.AsyncClient)
+  )
+  if (backend == "httpx2" or is_httpx2_client) and httpx2 is not None:
+    http_client = httpx2.AsyncClient(headers=headers, timeout=None)
+  elif httpx is not None:
+    http_client = httpx.AsyncClient(headers=headers, timeout=None)
+  elif httpx2 is not None:
     http_client = httpx2.AsyncClient(headers=headers, timeout=None)
   else:
-    http_client = httpx.AsyncClient(headers=headers, timeout=None)
+    raise ImportError("Neither httpx nor httpx2 is installed.")
 
   try:
     async with http_client:

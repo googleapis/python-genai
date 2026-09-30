@@ -155,6 +155,69 @@ def test_httpx2_client_protocols():
 @pytest.mark.skipif(
     httpx2 is None, reason="httpx2 not installed in this environment"
 )
+def test_injected_httpx2_client_passed_to_gaos():
+  http_client = httpx2.Client()
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_client": http_client},
+    )
+
+    assert client._api_client._httpx_client is http_client
+    interactions_client = client.interactions
+    assert interactions_client.sdk_configuration.client is http_client
+    assert isinstance(interactions_client.sdk_configuration.client, httpx2.Client)
+  finally:
+    http_client.close()
+
+
+@pytest.mark.skipif(
+    httpx2 is None, reason="httpx2 not installed in this environment"
+)
+def test_env_var_httpx2_passed_to_gaos(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_HTTP_CLIENT", "httpx2")
+  client = client_lib.Client(api_key="fake-key")
+  assert isinstance(client._api_client._httpx_client, httpx2.Client)
+  interactions_client = client.interactions
+  assert interactions_client.sdk_configuration.client is client._api_client._httpx_client
+  assert isinstance(interactions_client.sdk_configuration.client, httpx2.Client)
+
+
+@pytest.mark.skipif(
+    httpx2 is None, reason="httpx2 not installed in this environment"
+)
+@pytest.mark.asyncio
+async def test_injected_httpx2_async_client_passed_to_gaos():
+  http_async_client = httpx2.AsyncClient()
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_async_client": http_async_client},
+    )
+
+    assert client._api_client._async_httpx_client is http_async_client
+    interactions_client = client.aio.interactions
+    assert interactions_client.sdk_configuration.async_client is http_async_client
+    assert isinstance(interactions_client.sdk_configuration.async_client, httpx2.AsyncClient)
+  finally:
+    await http_async_client.aclose()
+
+
+@pytest.mark.skipif(
+    httpx2 is None, reason="httpx2 not installed in this environment"
+)
+def test_env_var_httpx2_async_passed_to_gaos(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_HTTP_CLIENT", "httpx2")
+  client = client_lib.Client(api_key="fake-key")
+  assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
+  interactions_client = client.aio.interactions
+  assert interactions_client.sdk_configuration.async_client is client._api_client._async_httpx_client
+  assert isinstance(interactions_client.sdk_configuration.async_client, httpx2.AsyncClient)
+
+
+@pytest.mark.skipif(
+    httpx2 is None, reason="httpx2 not installed in this environment"
+)
 def test_httpx2_retries():
   attempts = 0
 

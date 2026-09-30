@@ -101,4 +101,3 @@ async def test_constructor_with_aiohttp_clients():
       http_options=vertexai_http_options,
   )
   assert not vertexai_client.models._api_client._aiohttp_session.trust_env
-

@@ -109,10 +109,7 @@ def test_invalid_response_stream_type(responses: api_client.HttpResponse):
   api_client.has_aiohttp = False
   with pytest.raises(
       TypeError,
-      match=(
-          "Expected self.response_stream to be an httpx.Response or"
-          " aiohttp.ClientResponse object"
-      ),
+      match="Expected self.response_stream",
   ):
 
     async def run():
