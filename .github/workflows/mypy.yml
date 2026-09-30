@@ -35,5 +35,35 @@ jobs:
           sudo apt-get update && sudo apt-get install -y libjpeg-dev zlib1g-dev
           pip install -r requirements.txt
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Cache Speakeasy Generator
+        id: cache-generator
+        uses: actions/cache@v4
+        with:
+          path: ~/go/bin/generate
+          key: speakeasy-generator-${{ env.SPEAKEASY_VERSION }}
+
+      - name: Install Speakeasy Generator
+        if: steps.cache-generator.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "${{ env.SPEAKEASY_VERSION }}" https://github.com/speakeasy-api/openapi-generation.git /tmp/openapi-generation
+          cd /tmp/openapi-generation
+          go install ./cmd/generate
+          rm -rf /tmp/openapi-generation
+
+      - name: Generate GAOS SDK
+        env:
+          SPEAKEASY_LICENSE_TOKEN: ${{ secrets.SPEAKEASY_LICENSE_TOKEN }}
+        run: |
+          ./scripts/generate_gaos.sh
+
+      - name: Assert no diff in GAOS SDK
+        run: |
+          git diff --exit-code google/genai/_gaos/
+
       - name: Run mypy  ${{ matrix.python-version }}
         run: mypy google/genai/
