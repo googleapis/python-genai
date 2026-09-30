@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.26.0](https://github.com/googleapis/python-genai/compare/v2.25.0...v2.26.0) (2026-09-30)
+
+
+### Features
+
+* Add gcs_metrics_uri for exporting tuning job metrics. ([b6535e8](https://github.com/googleapis/python-genai/commit/b6535e822a6a984bec43056551b2788cd61509f0))
+* Add Gemini 3.8 Flash TTS and Gemini 3.8 Flash Lite TTS models to SDKs ([0cad6ca](https://github.com/googleapis/python-genai/commit/0cad6ca7cfc4dce6f58784f546603d8cc8a5f921))
+* **genai-sdk:** Add environments dedicated module and from_environment support ([7672ff6](https://github.com/googleapis/python-genai/commit/7672ff6a08b92d45f6718e1195845b818705bad6))
+* Include labels for LiveClientSetup ([4742c9a](https://github.com/googleapis/python-genai/commit/4742c9a5c213a587add126a500a271824e2f0add))
+* Support labels for Gemini API GenerateContent ([81ffa26](https://github.com/googleapis/python-genai/commit/81ffa26e829eec4c440133d68062a1a3a572f82e))
+
+
+### Bug Fixes
+
+* Build a model before reading its field annotations when pruning extra fields ([7845acd](https://github.com/googleapis/python-genai/commit/7845acd5bbbaf36e20cc3687be621d402c06013b))
+* **cli:** Include auto-assigned flag shorthands in `--usage` schema ([2579b94](https://github.com/googleapis/python-genai/commit/2579b948bc9c5da28efe07aab0df89195a3590be))
+* Ensure Vertex AI interactions client uses default timeout=None instead of 5s. ([feef230](https://github.com/googleapis/python-genai/commit/feef230daf9a31fe9dec433483d8e3066b33fe4d))
+* Reap aiohttp sessions and auth locks belonging to closed event loops ([6d01288](https://github.com/googleapis/python-genai/commit/6d012889752f65c1a51d0ad6e5970fc97d19c4ca))
+* Use `CreateAgentInteraction` for `Trigger.interaction` and `TriggerCreateParams.interaction` ([046ccfb](https://github.com/googleapis/python-genai/commit/046ccfb1beba06f229cfde689ac43283853eb7f4))
+
+
+### Documentation
+
+* Clarify Voice expire_time and store TTL behavior in GAOS SDK ([94b371d](https://github.com/googleapis/python-genai/commit/94b371d7ee7b2241be32a1efb78e5fa8cfb791de))
+* **overlays:** Describe `environment` and `path` on GetEnvironmentFiles and pin environment ID in `environments` get/delete examples ([f15d148](https://github.com/googleapis/python-genai/commit/f15d1482d74746d2d7b7bff5696b896da264a89d))
+* Regenerate docs for 1.2.0 ([938dd73](https://github.com/googleapis/python-genai/commit/938dd7385caa68e1d9fff2ef2507fdbf1cd7eaab))
+
 ## [2.25.0](https://github.com/googleapis/python-genai/compare/v2.24.0...v2.25.0) (2026-09-22)
 
 
