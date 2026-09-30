@@ -860,19 +860,10 @@ class BaseApiClient:
     self._async_httpx_client_args = async_client_args
     self._authorized_session: Optional['AuthorizedSession'] = None
 
-    if self._use_google_auth_sync():
-      self._httpx_client = None
-    elif self._http_options.httpx_client:
+    if self._http_options.httpx_client:
       self._httpx_client = self._http_options.httpx_client
     else:
       self._httpx_client = SyncHttpxClient(**client_args)
-
-    if self._use_google_auth_async():
-      self._async_httpx_client = None
-    elif self._http_options.httpx_async_client:
-      self._async_httpx_client = self._http_options.httpx_async_client
-    else:
-      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
 
     if self._http_options.httpx_async_client:
       self._async_httpx_client = self._http_options.httpx_async_client
@@ -2120,7 +2111,7 @@ class BaseApiClient:
             timeout=http_request.timeout,
         )
         errors.APIError.raise_for_response(response)
-        return cast(bytes, response.read())
+        return response.read()
 
   async def async_upload_file(
       self,
@@ -2500,7 +2491,7 @@ class BaseApiClient:
             timeout=http_request.timeout,
         )
         await errors.APIError.raise_for_async_response(client_response)
-        return cast(bytes, client_response.read())
+        return client_response.read()
 
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the

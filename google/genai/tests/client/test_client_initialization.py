@@ -1189,6 +1189,45 @@ def test_client_ssl_context_explicit_initialization_async_args():
     assert isinstance(async_client_args["verify"], ssl.SSLContext)
 
 
+def test_client_initializes_httpx_clients_vertex_and_mldev():
+  """Verifies both Vertex and MLDev clients initialize non-null httpx clients with timeout=None."""
+  mldev_client = Client(api_key="fake-api-key")
+  assert mldev_client._api_client._httpx_client is not None
+  assert mldev_client._api_client._async_httpx_client is not None
+  assert mldev_client._api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert mldev_client._api_client._async_httpx_client.timeout == httpx.Timeout(None)
+
+  vertex_client = Client(
+      vertexai=True,
+      project="fake-proj",
+      location="us-central1",
+  )
+  assert vertex_client._api_client._httpx_client is not None
+  assert vertex_client._api_client._async_httpx_client is not None
+  assert vertex_client._api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert vertex_client._api_client._async_httpx_client.timeout == httpx.Timeout(None)
+
+
+def test_client_respects_custom_httpx_client():
+  """Verifies that user-provided httpx_client and httpx_async_client are preserved."""
+  custom_sync = httpx.Client(timeout=42.0)
+  custom_async = httpx.AsyncClient(timeout=84.0)
+
+  client = Client(
+      vertexai=True,
+      project="fake-proj",
+      location="us-central1",
+      http_options={
+          "httpx_client": custom_sync,
+          "httpx_async_client": custom_async,
+      },
+  )
+  assert client._api_client._httpx_client is custom_sync
+  assert client._api_client._async_httpx_client is custom_async
+  assert client._api_client._httpx_client.timeout == httpx.Timeout(42.0)
+  assert client._api_client._async_httpx_client.timeout == httpx.Timeout(84.0)
+
+
 def test_constructor_with_base_url_from_http_options():
   mldev_http_options = {
       "base_url": "https://placeholder-fake-url.com/",
