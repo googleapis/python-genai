@@ -1,0 +1,69 @@
+diff --git a/src/google/genai/basesdk.py b/src/google/genai/basesdk.py
+--- a/src/google/genai/basesdk.py
++++ b/src/google/genai/basesdk.py
+@@ -10,6 +10,25 @@
+ from .utils import RetryConfig, SerializedRequestBody, get_body_content
+ import httpx
+ from typing import Any, Callable, List, Mapping, Optional, Tuple
+ from urllib.parse import parse_qs, urlparse
++
++try:
++    import httpx2
++except ImportError:
++    httpx2 = None
++
++_HTTPX_TIMEOUT_TYPES = (
++    (httpx.Timeout,)
++    if httpx2 is None
++    else (httpx.Timeout, httpx2.Timeout)
++)
++
++
++def _use_client_default(client: Any) -> Any:
++    if httpx2 is not None and isinstance(
++        client, (httpx2.Client, httpx2.AsyncClient)
++    ):
++        return httpx2.USE_CLIENT_DEFAULT
++    return httpx.USE_CLIENT_DEFAULT
+ 
+@@ -46,7 +65,7 @@
+             return None
+         if isinstance(timeout, (int, float)):
+             return int(timeout * 1000)
+-        if isinstance(timeout, httpx.Timeout):
++        if isinstance(timeout, _HTTPX_TIMEOUT_TYPES):
+             values = [timeout.connect, timeout.read, timeout.write, timeout.pool]
+             finite_values = [value for value in values if value is not None]
+             if not finite_values:
+@@ -206,7 +225,9 @@
+             data=serialized_request_body.data,
+             files=serialized_request_body.files,
+             headers=headers,
+-            timeout=timeout if timeout is not None else httpx.USE_CLIENT_DEFAULT,
++            timeout=(
++                timeout if timeout is not None else _use_client_default(client)
++            ),
+         )
+ 
+     def do_request(
+@@ -313,7 +334,7 @@
+             return None
+         if isinstance(timeout, (int, float)):
+             return int(timeout * 1000)
+-        if isinstance(timeout, httpx.Timeout):
++        if isinstance(timeout, _HTTPX_TIMEOUT_TYPES):
+             values = [timeout.connect, timeout.read, timeout.write, timeout.pool]
+             finite_values = [value for value in values if value is not None]
+             if not finite_values:
+@@ -473,7 +494,9 @@
+             data=serialized_request_body.data,
+             files=serialized_request_body.files,
+             headers=headers,
+-            timeout=timeout if timeout is not None else httpx.USE_CLIENT_DEFAULT,
++            timeout=(
++                timeout if timeout is not None else _use_client_default(client)
++            ),
+         )
+ 
+     async def do_request_async(
+
