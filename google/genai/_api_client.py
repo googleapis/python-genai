@@ -1945,6 +1945,7 @@ class BaseApiClient:
       })
       populate_server_timeout_header(upload_headers, timeout_in_seconds)
       retry_count = 0
+      first_error_response = None
       while retry_count < MAX_RETRY_COUNT:
         response = self._httpx_client.request(  # type: ignore[union-attr]
             method='POST',
@@ -1955,9 +1956,14 @@ class BaseApiClient:
         )
         if response.headers.get('x-goog-upload-status'):
           break
+        if first_error_response is None and response.status_code >= 500:
+          first_error_response = response
         delay_seconds = INITIAL_RETRY_DELAY * (DELAY_MULTIPLIER**retry_count)
         retry_count += 1
         time.sleep(delay_seconds)
+
+      if first_error_response is not None and response.status_code == 400:
+        response = first_error_response
 
       offset += chunk_size
       if response.headers.get('x-goog-upload-status') != 'active':
@@ -2225,6 +2231,7 @@ class BaseApiClient:
 
         retry_count = 0
         response = None
+        first_error_response = None
         while retry_count < MAX_RETRY_COUNT:
           response = await session.request(  # type: ignore[union-attr]
               method='POST',
@@ -2236,9 +2243,14 @@ class BaseApiClient:
 
           if response.headers.get('X-Goog-Upload-Status'):
             break
+          if first_error_response is None and getattr(response, 'status', getattr(response, 'status_code', 0)) >= 500:
+            first_error_response = response
           delay_seconds = INITIAL_RETRY_DELAY * (DELAY_MULTIPLIER**retry_count)
           retry_count += 1
           await asyncio.sleep(delay_seconds)
+
+        if first_error_response is not None and getattr(response, 'status', getattr(response, 'status_code', 0)) == 400:
+          response = first_error_response
 
         offset += chunk_size
         if (
