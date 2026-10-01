@@ -549,6 +549,8 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Image generation stopped because the generated image may be a recitation from a source."""
   IMAGE_OTHER = 'IMAGE_OTHER'
   """Image generation stopped for a reason not otherwise specified."""
+  CONTINUATION = 'CONTINUATION'
+  """Token generation stopped because the response reached the per-request token limit, but generation is not yet complete. The response can be continued by passing the returned `continuation_token` in a subsequent request."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
@@ -6720,6 +6722,13 @@ class GenerateContentConfig(_common.BaseModel):
       description="""Optional. Configuration for audio transcription (speech recognition).
       """,
   )
+  continuation_token: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque continuation token used to resume generation from a
+      previous response that stopped with `finish_reason` set to
+      `CONTINUATION`.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6939,6 +6948,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   audio_transcription_config: Optional[AudioTranscriptionConfigDict]
   """Optional. Configuration for audio transcription (speech recognition).
+      """
+
+  continuation_token: Optional[bytes]
+  """An opaque continuation token used to resume generation from a
+      previous response that stopped with `finish_reason` set to
+      `CONTINUATION`.
       """
 
 
@@ -8355,6 +8370,12 @@ class Candidate(_common.BaseModel):
       default=None,
       description="""Output only. Metadata returned when the model uses the `url_context` tool to get information from a user-provided URL.""",
   )
+  continuation_token: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque continuation token returned when `finish_reason` is
+      `CONTINUATION`. Pass it in a subsequent request to continue generation.
+      """,
+  )
 
 
 class CandidateDict(TypedDict, total=False):
@@ -8400,6 +8421,11 @@ class CandidateDict(TypedDict, total=False):
 
   url_context_metadata: Optional[UrlContextMetadataDict]
   """Output only. Metadata returned when the model uses the `url_context` tool to get information from a user-provided URL."""
+
+  continuation_token: Optional[bytes]
+  """An opaque continuation token returned when `finish_reason` is
+      `CONTINUATION`. Pass it in a subsequent request to continue generation.
+      """
 
 
 CandidateOrDict = Union[Candidate, CandidateDict]
