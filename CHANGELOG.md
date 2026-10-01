@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.27.0](https://github.com/googleapis/python-genai/compare/v2.26.0...v2.27.0) (2026-10-01)
+
+
+### Features
+
+* Support continuation_token in GenerateContent ([3931b29](https://github.com/googleapis/python-genai/commit/3931b290901eb616d9c4098ed6ba57c9d40a8d23))
+
+
+### Documentation
+
+* Update docs ([c6212e9](https://github.com/googleapis/python-genai/commit/c6212e9670c731312002a78c89d2895235381b92))
+
 ## [2.26.0](https://github.com/googleapis/python-genai/compare/v2.25.0...v2.26.0) (2026-09-30)
 
 
