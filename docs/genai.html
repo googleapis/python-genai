@@ -6713,6 +6713,11 @@ validated to form a valid model.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.Candidate.continuation_token">
+<span class="sig-name descname"><span class="pre">continuation_token</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.Candidate.continuation_token" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.Candidate.finish_message">
 <span class="sig-name descname"><span class="pre">finish_message</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.Candidate.finish_message" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -6781,6 +6786,13 @@ validated to form a valid model.</p>
 <dt class="sig sig-object py" id="genai.types.CandidateDict.content">
 <span class="sig-name descname"><span class="pre">content</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#genai.types.ContentDict" title="genai.types.ContentDict"><span class="pre">ContentDict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.CandidateDict.content" title="Link to this definition">¶</a></dt>
 <dd><p>Contains the multi-part content of the response.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.CandidateDict.continuation_token">
+<span class="sig-name descname"><span class="pre">continuation_token</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.CandidateDict.continuation_token" title="Link to this definition">¶</a></dt>
+<dd><p>An opaque continuation token returned when <cite>finish_reason</cite> is
+<cite>CONTINUATION</cite>. Pass it in a subsequent request to continue generation.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -12983,6 +12995,12 @@ validated to form a valid model.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.FinishReason.CONTINUATION">
+<span class="sig-name descname"><span class="pre">CONTINUATION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CONTINUATION'</span></span><a class="headerlink" href="#genai.types.FinishReason.CONTINUATION" title="Link to this definition">¶</a></dt>
+<dd><p>Token generation stopped because the response reached the per-request token limit, but generation is not yet complete. The response can be continued by passing the returned <cite>continuation_token</cite> in a subsequent request.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.FinishReason.FINISH_REASON_UNSPECIFIED">
 <span class="sig-name descname"><span class="pre">FINISH_REASON_UNSPECIFIED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'FINISH_REASON_UNSPECIFIED'</span></span><a class="headerlink" href="#genai.types.FinishReason.FINISH_REASON_UNSPECIFIED" title="Link to this definition">¶</a></dt>
 <dd><p>The finish reason is unspecified.</p>
@@ -14031,6 +14049,11 @@ validated to form a valid model.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.GenerateContentConfig.continuation_token">
+<span class="sig-name descname"><span class="pre">continuation_token</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfig.continuation_token" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.GenerateContentConfig.enable_enhanced_civic_answers">
 <span class="sig-name descname"><span class="pre">enable_enhanced_civic_answers</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfig.enable_enhanced_civic_answers" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -14224,6 +14247,14 @@ requests.</p>
 <dt class="sig sig-object py" id="genai.types.GenerateContentConfigDict.candidate_count">
 <span class="sig-name descname"><span class="pre">candidate_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfigDict.candidate_count" title="Link to this definition">¶</a></dt>
 <dd><p>Number of response variations to return.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.GenerateContentConfigDict.continuation_token">
+<span class="sig-name descname"><span class="pre">continuation_token</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfigDict.continuation_token" title="Link to this definition">¶</a></dt>
+<dd><p>An opaque continuation token used to resume generation from a
+previous response that stopped with <cite>finish_reason</cite> set to
+<cite>CONTINUATION</cite>.</p>
 </dd></dl>
 
 <dl class="py attribute">
