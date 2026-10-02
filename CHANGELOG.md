@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.28.0](https://github.com/googleapis/python-genai/compare/v2.27.0...v2.28.0) (2026-10-02)
+
+
+### Features
+
+* Add `lyria-3.5`, `gemini-omni-1.1-flash`, and `gemini-omni-flash-preview` to Interactions `Model` enum ([1e8c0cc](https://github.com/googleapis/python-genai/commit/1e8c0cc7e3894d280194a94fc4b871650ca8446b))
+* Support continuation_token in Interactions ([d40ca70](https://github.com/googleapis/python-genai/commit/d40ca700c72da479f270170885b728b0d7171e06))
+
 ## [2.27.0](https://github.com/googleapis/python-genai/compare/v2.26.0...v2.27.0) (2026-10-01)
 
 
