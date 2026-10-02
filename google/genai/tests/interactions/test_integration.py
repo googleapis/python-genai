@@ -151,7 +151,6 @@ async def test_async_client_genai_default_timeout():
   assert async_sdk_client.timeout != httpx.Timeout(5.0)
 
 
-
 @pytest.mark.filterwarnings("error")
 def test_unrecognized_model_serialization():
   from ..._gaos.types.interactions.createmodelinteraction import CreateModelInteraction
@@ -199,3 +198,113 @@ def test_allowlist_entry_with_list_transform():
   # Serialization should preserve it as a list
   dumped = entry.model_dump()
   assert dumped["transform"] == [{"Authorization": "Bearer TOKEN"}]
+
+
+def test_output_text_concatenates_across_interleaved_thought_steps():
+  """Tests that output_text concatenates model_output text across thought steps."""
+  from ..._gaos.types.interactions.interaction import Interaction  # pylint: disable=g-import-not-at-top
+
+  raw_steps = [
+      {
+          "type": "thought",
+          "content": [{"type": "text", "text": "Thinking before hop 1..."}],
+      },
+      {
+          "type": "model_output",
+          "content": [{"type": "text", "text": "Hop 1 text. "}],
+      },
+      {
+          "type": "thought",
+          "content": [{"type": "text", "text": "Thinking before hop 2..."}],
+      },
+      {
+          "type": "model_output",
+          "content": [{"type": "text", "text": "Hop 2 text. "}],
+      },
+      {
+          "type": "thought",
+          "content": [{"type": "text", "text": "Thinking before hop 3..."}],
+      },
+      {
+          "type": "model_output",
+          "content": [{"type": "text", "text": "Hop 3 text."}],
+      },
+      {
+          "type": "thought",
+          "content": [{"type": "text", "text": "Trailing thought"}],
+      },
+  ]
+
+  interaction = Interaction.model_validate({
+      "id": "v1_multihop_123",
+      "status": "completed",
+      "steps": raw_steps,
+  })
+  assert interaction.output_text == "Hop 1 text. Hop 2 text. Hop 3 text."
+
+  wrapped = gaos_google_genai._add_output_properties_if_interaction({  # pylint: disable=protected-access
+      "id": "v1_multihop_123",
+      "status": "completed",
+      "steps": raw_steps,
+  })
+  assert wrapped["output_text"] == "Hop 1 text. Hop 2 text. Hop 3 text."
+
+
+def test_output_text_stops_at_tool_and_user_boundaries():
+  """Tests that output_text stops at tool call boundaries."""
+  from ..._gaos.types.interactions.interaction import Interaction  # pylint: disable=g-import-not-at-top
+
+  steps_with_tool = [
+      {
+          "type": "model_output",
+          "content": [{"type": "text", "text": "Before tool call. "}],
+      },
+      {
+          "type": "function_call",
+          "id": "call_1",
+          "name": "get_weather",
+          "arguments": {"city": "Mountain View"},
+      },
+      {
+          "type": "function_result",
+          "call_id": "call_1",
+          "name": "get_weather",
+          "result": "Sunny",
+      },
+      {
+          "type": "thought",
+          "content": [{"type": "text", "text": "Post-tool thought 1"}],
+      },
+      {
+          "type": "model_output",
+          "content": [{"type": "text", "text": "After tool hop 1. "}],
+      },
+      {
+          "type": "thought",
+          "content": [{"type": "text", "text": "Post-tool thought 2"}],
+      },
+      {
+          "type": "model_output",
+          "content": [{"type": "text", "text": "After tool hop 2."}],
+      },
+      {
+          "type": "function_call",
+          "id": "call_trailing",
+          "name": "noop",
+          "arguments": {},
+      },
+  ]
+
+  interaction = Interaction.model_validate({
+      "id": "v1_tool_boundary_123",
+      "status": "completed",
+      "steps": steps_with_tool,
+  })
+  assert interaction.output_text == "After tool hop 1. After tool hop 2."
+
+  wrapped = gaos_google_genai._add_output_properties_if_interaction({  # pylint: disable=protected-access
+      "id": "v1_tool_boundary_123",
+      "status": "completed",
+      "steps": steps_with_tool,
+  })
+  assert wrapped["output_text"] == "After tool hop 1. After tool hop 2."
