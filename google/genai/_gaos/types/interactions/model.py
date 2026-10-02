@@ -58,13 +58,13 @@ Model = Union[
         "gemini-nano-banana-2.1",
         # Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
         "gemini-3.1-flash-tts-preview",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.5 Flash - Our earlier Flash model, built for speed and foundational performance across routine, high-throughput workloads.
         "gemini-3.5-flash",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.6 Flash - Our previous generation Flash model, balancing speed and multimodal capabilities across general agentic and everyday tasks.
         "gemini-3.6-flash",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.7 Flash - Our high-speed, efficient Flash model built for everyday coding, agentic tool use, and reliable multi-step execution.
         "gemini-3.7-flash",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.8 Flash - Our most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.
         "gemini-3.8-flash",
         # Gemini 3.8 Flash TTS - Flagship TTS model for Voice Design and dual-speaker screenplay control. Prompt custom vocal personas, direct line-by-line delivery, and add vocal bursts.
         "gemini-3.8-flash-tts",
@@ -80,7 +80,7 @@ Model = Union[
         "lyria-3.5",
         # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
         "gemini-omni-1.1-flash",
-        # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+        # Preview release of our multimodal model for conversational video generation, editing, and cinematic control.
         "gemini-omni-flash-preview",
     ],
     UnrecognizedStr,
