@@ -6242,15 +6242,6 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
-    if not Models._logged_afc_warning:
-      logger.warning(
-          'Direct use of automatic function calling (AFC) in'
-          ' Models.generate_content is not recommended. Instead, we recommend'
-          ' to use AFC in Chat.send_message. Similarly, direct use of AFC in'
-          ' Models.generate_content_stream is not recommended. Instead, we'
-          ' recommend to use AFC in Chat.send_message_stream.'
-      )
-      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     response = types.GenerateContentResponse()
     i = 0
@@ -6260,6 +6251,16 @@ class Models(_api_module.BaseModule):
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
+        if not Models._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'Models.generate_content is not recommended. Instead, we '
+              'recommend to use AFC in Chat.send_message. Similarly, direct '
+              'use of AFC in Models.generate_content_stream is not '
+              'recommended. Instead, we recommend to use AFC in '
+              'Chat.send_message_stream.'
+          )
+          Models._logged_afc_warning = True
         parsed_config_to_call = _extra_utils.get_usage_header(
             parsed_config_to_call,
             types.GenerateContentConfig,
@@ -6419,15 +6420,6 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
-    if not Models._logged_afc_warning:
-      logger.warning(
-          'Direct use of automatic function calling (AFC) in '
-          'Models.generate_content_stream is not recommended. Instead, we '
-          'recommend to use AFC in Chat.send_message_stream. Similarly, direct '
-          'use of AFC in Models.generate_content is not recommended. Instead, '
-          'we recommend to use AFC in Chat.send_message.'
-      )
-      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     i = 0
     while remaining_remote_calls_afc > 0:
@@ -6436,6 +6428,16 @@ class Models(_api_module.BaseModule):
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
+        if not Models._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'Models.generate_content_stream is not recommended. Instead, we '
+              'recommend to use AFC in Chat.send_message_stream. Similarly, '
+              'direct use of AFC in Models.generate_content is not '
+              'recommended. Instead, we recommend to use AFC in '
+              'Chat.send_message.'
+          )
+          Models._logged_afc_warning = True
         parsed_config_to_call = _extra_utils.get_usage_header(
             parsed_config_to_call, types.GenerateContentConfig, 'afc'
         )
@@ -8428,16 +8430,6 @@ class AsyncModels(_api_module.BaseModule):
       logger.info(
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
       )
-      if not AsyncModels._logged_afc_warning:
-        logger.warning(
-            'Direct use of automatic function calling (AFC) in '
-            'AsyncModels.generate_content is not recommended. Instead, we '
-            'recommend to use AFC in AsyncChat.send_message. Similarly, direct '
-            'use of AFC in AsyncModels.generate_content_stream is not '
-            'recommended. Instead, we recommend to use AFC in '
-            'AsyncChat.send_message_stream.'
-        )
-        AsyncModels._logged_afc_warning = True
       automatic_function_calling_history: list[types.Content] = []
       response = types.GenerateContentResponse()
 
@@ -8453,6 +8445,16 @@ class AsyncModels(_api_module.BaseModule):
             else None
         )
         if function_map:
+          if not AsyncModels._logged_afc_warning:
+            logger.warning(
+                'Direct use of automatic function calling (AFC) in '
+                'AsyncModels.generate_content is not recommended. Instead, we '
+                'recommend to use AFC in AsyncChat.send_message. Similarly, '
+                'direct use of AFC in AsyncModels.generate_content_stream is '
+                'not recommended. Instead, we recommend to use AFC in '
+                'AsyncChat.send_message_stream.'
+            )
+            AsyncModels._logged_afc_warning = True
           final_parsed_config_to_call = _extra_utils.get_usage_header(
               final_parsed_config_to_call,
               types.GenerateContentConfig,
@@ -8678,16 +8680,6 @@ class AsyncModels(_api_module.BaseModule):
             'AFC is enabled with max remote calls:'
             f' {remaining_remote_calls_afc}.'
         )
-        if not AsyncModels._logged_afc_warning:
-          logger.warning(
-              'Direct use of automatic function calling (AFC) in '
-              'AsyncModels.generate_content_stream is not recommended. '
-              'Instead, we recommend to use AFC in '
-              'AsyncChat.send_message_stream. Similarly, direct use of AFC in '
-              'AsyncModels.generate_content is not recommended. '
-              'Instead, we recommend to use AFC in AsyncChat.send_message.'
-          )
-          AsyncModels._logged_afc_warning = True
         automatic_function_calling_history: list[types.Content] = []
         i = 0
         loop_contents = contents
@@ -8706,6 +8698,16 @@ class AsyncModels(_api_module.BaseModule):
               else None
           )
           if function_map:
+            if not AsyncModels._logged_afc_warning:
+              logger.warning(
+                  'Direct use of automatic function calling (AFC) in '
+                  'AsyncModels.generate_content_stream is not recommended. '
+                  'Instead, we recommend to use AFC in '
+                  'AsyncChat.send_message_stream. Similarly, direct use of AFC '
+                  'in AsyncModels.generate_content is not recommended. '
+                  'Instead, we recommend to use AFC in AsyncChat.send_message.'
+              )
+              AsyncModels._logged_afc_warning = True
             final_parsed_config_to_call = _extra_utils.get_usage_header(
                 final_parsed_config_to_call,
                 types.GenerateContentConfig,
