@@ -128,24 +128,24 @@ class Tokens(_api_module.BaseModule):
     Args:
       config (CreateAuthTokenConfig): Optional configuration for the request.
 
-    The CreateAuthTokenConfig's `live_constrained_parameters` attrubite
-    Can be used to lock the parameters of the live session so they
+    The CreateAuthTokenConfig's `live_connect_constraints` attribute
+    can be used to lock the parameters of the live session so they
     can't be changed client side. This behavior has two basic modes depending on
     whether `lock_additional_fields` is set:
 
     If you do not pass `lock_additional_fields` the entire
-    `live_constrained_parameters` is locked and can't be changed
+    `live_connect_constraints` is locked and can't be changed
     by the token's user.
 
     If you set `lock_additional_fields`, then the non-null fields of
-    `live_constrained_parameters` are locked, and any additional fields
+    `live_connect_constraints` are locked, and any additional fields
     specified in `lock_additional_fields`.
 
     Usage:
 
     .. code-block:: python
 
-      # Case 1: If LiveEphemeralParameters is unset, unlock LiveConnectConfig
+      # Case 1: If live_connect_constraints is unset, unlock LiveConnectConfig
       # when using the token in Live API sessions. Each session connection can
       # use a different configuration.
 
@@ -157,7 +157,7 @@ class Tokens(_api_module.BaseModule):
 
     .. code-block:: python
 
-      # Case 2: If LiveEphemeralParameters is set, lock all fields in
+      # Case 2: If live_connect_constraints is set, lock all fields in
       # LiveConnectConfig when using the token in Live API sessions. For
       # example, changing `output_audio_transcription` in the Live API
       # connection will be ignored by the API.
@@ -165,7 +165,7 @@ class Tokens(_api_module.BaseModule):
       auth_token = client.auth_tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
-              live_constrained_parameters=types.LiveEphemeralParameters(
+              live_connect_constraints=types.LiveConnectConstraints(
                   model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
@@ -176,14 +176,14 @@ class Tokens(_api_module.BaseModule):
 
     .. code-block:: python
 
-      # Case 3: If LiveEphemeralParameters is set and lockAdditionalFields is
+      # Case 3: If live_connect_constraints is set and lock_additional_fields is
       # empty, lock LiveConnectConfig with set fields (e.g.
       # system_instruction in this example) when using the token in Live API
       # sessions.
       auth_token = client.auth_tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
-              live_constrained_parameters=types.LiveEphemeralParameters(
+              live_connect_constraints=types.LiveConnectConstraints(
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
                   ),
@@ -194,14 +194,14 @@ class Tokens(_api_module.BaseModule):
 
     .. code-block:: python
 
-      # Case 4: If LiveEphemeralParameters is set and lockAdditionalFields is
+      # Case 4: If live_connect_constraints is set and lock_additional_fields is
       # set, lock LiveConnectConfig with set and additional fields (e.g.
       # system_instruction, temperature in this example) when using the token
       # in Live API sessions.
       auth_token = client.auth_tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
-              live_constrained_parameters=types.LiveEphemeralParameters(
+              live_connect_constraints=types.LiveConnectConstraints(
                   model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
@@ -296,7 +296,7 @@ class AsyncTokens(_api_module.BaseModule):
       auth_token = await client.aio.tokens.create(
           config=types.CreateAuthTokenConfig(
               uses=10,
-              live_constrained_parameters=types.LiveEphemeralParameters(
+              live_connect_constraints=types.LiveConnectConstraints(
                   model='gemini-live-2.5-flash-preview',
                   config=types.LiveConnectConfig(
                       system_instruction='You are an LLM called Gemini.'
