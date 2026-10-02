@@ -78,6 +78,12 @@ Model = Union[
         "gemini-robotics-er-1.6-preview",
         # Gemini Robotics Embodied Reasoning 2 Preview
         "gemini-robotics-er-2-preview",
+        # Our flagship music generation model, optimized for full-length songs with complex structural coherence.
+        "lyria-3.5",
+        # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+        "gemini-omni-1.1-flash",
+        # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+        "gemini-omni-flash-preview",
     ],
     UnrecognizedStr,
 ]
