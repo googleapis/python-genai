@@ -693,3 +693,38 @@ def test_t_schema_sets_property_ordering_for_schema_type(client):
 
   transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering == ['name', 'population']
+
+
+class _SharedScore(pydantic.BaseModel):
+  """A generic score container."""
+
+  point: int
+
+
+class _ReviewWithSharedScores(pydantic.BaseModel):
+  clarity: _SharedScore = pydantic.Field(description='Rate clarity only.')
+  accuracy: _SharedScore = pydantic.Field(
+      description='Rate factual accuracy only.'
+  )
+  optional_score: Union[_SharedScore, None] = pydantic.Field(
+      default=None, description='An optional score.'
+  )
+  scores: list[_SharedScore]
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_t_schema_keeps_field_descriptions_of_referenced_models(client):
+  transformed_schema = _transformers.t_schema(client, _ReviewWithSharedScores)
+
+  properties = transformed_schema.properties
+  assert properties['clarity'].description == 'Rate clarity only.'
+  assert properties['accuracy'].description == 'Rate factual accuracy only.'
+  assert properties['optional_score'].description == 'An optional score.'
+  assert properties['optional_score'].nullable
+  # Without a field-level description, the model's docstring is used.
+  assert (
+      properties['scores'].items.description == 'A generic score container.'
+  )
+  for name in ('clarity', 'accuracy', 'optional_score'):
+    assert properties[name].type == types.Type.OBJECT
+    assert properties[name].properties['point'].type == types.Type.INTEGER

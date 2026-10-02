@@ -34,7 +34,7 @@ import ssl
 import sys
 import threading
 import time
-from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
+from typing import Any, AsyncIterator, Callable, Coroutine, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 import warnings
@@ -615,6 +615,38 @@ class SyncHttpxClient(httpx.Client):
       pass
 
 
+# Strong references to close tasks scheduled from `__del__`, so they are not
+# garbage collected (and destroyed while pending) before they finish.
+_background_close_tasks: set['asyncio.Task[Any]'] = set()
+
+
+def _spawn_close_task(
+    loop: asyncio.AbstractEventLoop, close: Callable[[], Coroutine[Any, Any, Any]]
+) -> None:
+  """Runs `close()` as a task on `loop`. Must be called from `loop`'s thread."""
+  if loop.is_closed():
+    return
+  task: 'asyncio.Task[Any]' = loop.create_task(close())
+  _background_close_tasks.add(task)
+  task.add_done_callback(_background_close_tasks.discard)
+
+
+def _schedule_close_on_loop(
+    loop: asyncio.AbstractEventLoop, close: Callable[[], Coroutine[Any, Any, Any]]
+) -> None:
+  """Schedules `close()` on `loop`, which may belong to another thread."""
+  try:
+    current_loop: Optional[asyncio.AbstractEventLoop] = (
+        asyncio.get_running_loop()
+    )
+  except RuntimeError:
+    current_loop = None
+  if loop is current_loop:
+    _spawn_close_task(loop, close)
+  elif loop.is_running():
+    loop.call_soon_threadsafe(_spawn_close_task, loop, close)
+
+
 class AsyncHttpxClient(httpx.AsyncClient):
   """Async httpx client."""
 
@@ -630,7 +662,7 @@ class AsyncHttpxClient(httpx.AsyncClient):
     except Exception:
       pass
     try:
-      asyncio.get_running_loop().create_task(self.aclose())
+      _spawn_close_task(asyncio.get_running_loop(), self.aclose)
     except Exception:
       pass
 
@@ -2315,7 +2347,7 @@ class BaseApiClient:
             break
           delay_seconds = INITIAL_RETRY_DELAY * (DELAY_MULTIPLIER**retry_count)
           retry_count += 1
-          time.sleep(delay_seconds)
+          await asyncio.sleep(delay_seconds)
 
         offset += chunk_size
         if (
@@ -2535,8 +2567,25 @@ class BaseApiClient:
     except Exception:  # pylint: disable=broad-except
       pass
 
+    # Each aiohttp session must be closed on the event loop that created it,
+    # which is not necessarily the loop (if any) running in the thread that
+    # garbage collects this client.
     try:
-      asyncio.get_running_loop().create_task(self.aclose())
+      if (
+          not self._http_options.httpx_async_client
+          and self._async_httpx_client
+      ):
+        _spawn_close_task(
+            asyncio.get_running_loop(), self._async_httpx_client.aclose
+        )
+    except Exception:  # pylint: disable=broad-except
+      pass
+
+    try:
+      if self._aiohttp_sessions and not self._http_options.aiohttp_client:
+        for loop, session in list(self._aiohttp_sessions.items()):
+          if not self._is_session_closed(session):
+            _schedule_close_on_loop(loop, session.close)
     except Exception:  # pylint: disable=broad-except
       pass
 
