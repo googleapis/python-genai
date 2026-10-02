@@ -468,14 +468,14 @@ class Interaction(BaseModel):
             step_type = getattr(step, "type", None)
             if step_type == "user_input":
                 break
+            if step_type == "thought":
+                continue
             if step_type != "model_output":
                 if collecting:
                     break
                 continue
             content = getattr(step, "content", None)
             if not isinstance(content, list):
-                if collecting:
-                    break
                 continue
             should_stop = False
             for item in reversed(content):
