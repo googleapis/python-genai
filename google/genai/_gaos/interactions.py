@@ -66,6 +66,7 @@ class Interactions(BaseSDK):
         api_version: Optional[str] = None,
         background: bool = ...,
         cached_content: str = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
         input: interactions.InteractionsInputParam = ...,
@@ -92,6 +93,9 @@ class Interactions(BaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -129,6 +133,7 @@ class Interactions(BaseSDK):
         api_version: Optional[str] = None,
         background: bool = ...,
         cached_content: str = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
         input: interactions.InteractionsInputParam = ...,
@@ -155,6 +160,9 @@ class Interactions(BaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -193,6 +201,7 @@ class Interactions(BaseSDK):
         agent: interactions.AgentOption,
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
         input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
@@ -218,6 +227,9 @@ class Interactions(BaseSDK):
         :param agent: The agent to interact with.
         :param agent_config: Configuration parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -254,6 +266,7 @@ class Interactions(BaseSDK):
         agent: interactions.AgentOption,
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
         input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
@@ -279,6 +292,9 @@ class Interactions(BaseSDK):
         :param agent: The agent to interact with.
         :param agent_config: Configuration parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -326,6 +342,9 @@ class Interactions(BaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -376,6 +395,9 @@ class Interactions(BaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1313,6 +1335,7 @@ class AsyncInteractions(AsyncBaseSDK):
         api_version: Optional[str] = None,
         background: bool = ...,
         cached_content: str = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
         input: interactions.InteractionsInputParam = ...,
@@ -1339,6 +1362,9 @@ class AsyncInteractions(AsyncBaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1376,6 +1402,7 @@ class AsyncInteractions(AsyncBaseSDK):
         api_version: Optional[str] = None,
         background: bool = ...,
         cached_content: str = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateModelInteractionEnvironmentParam = ...,
         generation_config: interactions.GenerationConfigParam = ...,
         input: interactions.InteractionsInputParam = ...,
@@ -1402,6 +1429,9 @@ class AsyncInteractions(AsyncBaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1440,6 +1470,7 @@ class AsyncInteractions(AsyncBaseSDK):
         agent: interactions.AgentOption,
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
         input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
@@ -1465,6 +1496,9 @@ class AsyncInteractions(AsyncBaseSDK):
         :param agent: The agent to interact with.
         :param agent_config: Configuration parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1501,6 +1535,7 @@ class AsyncInteractions(AsyncBaseSDK):
         agent: interactions.AgentOption,
         agent_config: interactions.CreateAgentInteractionAgentConfigParam = ...,
         background: bool = ...,
+        continuation_token: str = ...,
         environment: interactions.CreateAgentInteractionEnvironmentParam = ...,
         input: interactions.InteractionsInputParam = ...,
         labels: Dict[str, str] = ...,
@@ -1526,6 +1561,9 @@ class AsyncInteractions(AsyncBaseSDK):
         :param agent: The agent to interact with.
         :param agent_config: Configuration parameters for the agent interaction.
         :param background: Input only. Whether to run the model interaction in the background.
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1573,6 +1611,9 @@ class AsyncInteractions(AsyncBaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1623,6 +1664,9 @@ class AsyncInteractions(AsyncBaseSDK):
         :param api_version: API version for request routing.
         :param background: Input only. Whether to run the model interaction in the background.
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
+        :param continuation_token: Opaque token to resume a long decode. Output: set when status is
+            INCOMPLETE and decoding can be resumed. Input: pass the latest token
+            back unchanged in CreateInteraction to continue decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.

@@ -109,6 +109,11 @@ class CreateAgentInteractionParam(TypedDict):
     r"""Configuration parameters for the agent interaction."""
     background: NotRequired[bool]
     r"""Input only. Whether to run the model interaction in the background."""
+    continuation_token: NotRequired[str]
+    r"""Opaque token to resume a long decode. Output: set when status is
+    INCOMPLETE and decoding can be resumed. Input: pass the latest token
+    back unchanged in CreateInteraction to continue decoding.
+    """
     environment: NotRequired[CreateAgentInteractionEnvironmentParam]
     r"""The environment configuration for the interaction. Can be an object
     specifying remote environment sources or a string referencing an existing
@@ -160,6 +165,12 @@ class CreateAgentInteraction(BaseModel):
 
     background: Optional[bool] = None
     r"""Input only. Whether to run the model interaction in the background."""
+
+    continuation_token: Optional[str] = None
+    r"""Opaque token to resume a long decode. Output: set when status is
+    INCOMPLETE and decoding can be resumed. Input: pass the latest token
+    back unchanged in CreateInteraction to continue decoding.
+    """
 
     environment: Optional[CreateAgentInteractionEnvironment] = None
     r"""The environment configuration for the interaction. Can be an object
@@ -229,6 +240,7 @@ class CreateAgentInteraction(BaseModel):
             [
                 "agent_config",
                 "background",
+                "continuation_token",
                 "environment",
                 "input",
                 "labels",

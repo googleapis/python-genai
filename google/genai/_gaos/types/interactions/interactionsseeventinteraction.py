@@ -54,6 +54,8 @@ class InteractionSseEventInteractionTypedDict(TypedDict):
     r"""Required. Output only. The status of the interaction."""
     agent: NotRequired[str]
     r"""The agent to interact with."""
+    continuation_token: NotRequired[str]
+    r"""Output only. Opaque token to resume a long decode when status is incomplete."""
     created: NotRequired[str]
     r"""Output only. The time at which the response was created in ISO 8601 format."""
     model: NotRequired[str]
@@ -85,6 +87,9 @@ class InteractionSseEventInteraction(BaseModel):
     agent: Optional[str] = None
     r"""The agent to interact with."""
 
+    continuation_token: Optional[str] = None
+    r"""Output only. Opaque token to resume a long decode when status is incomplete."""
+
     created: Optional[str] = None
     r"""Output only. The time at which the response was created in ISO 8601 format."""
 
@@ -110,6 +115,7 @@ class InteractionSseEventInteraction(BaseModel):
         optional_fields = set(
             [
                 "agent",
+                "continuation_token",
                 "created",
                 "model",
                 "object",

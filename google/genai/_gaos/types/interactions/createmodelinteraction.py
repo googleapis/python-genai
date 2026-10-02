@@ -79,6 +79,11 @@ class CreateModelInteractionParam(TypedDict):
     r"""Input only. Whether to run the model interaction in the background."""
     cached_content: NotRequired[str]
     r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
+    continuation_token: NotRequired[str]
+    r"""Opaque token to resume a long decode. Output: set when status is
+    INCOMPLETE and decoding can be resumed. Input: pass the latest token
+    back unchanged in CreateInteraction to continue decoding.
+    """
     environment: NotRequired[CreateModelInteractionEnvironmentParam]
     r"""The environment configuration for the interaction. Can be an object
     specifying remote environment sources or a string referencing an existing
@@ -137,6 +142,12 @@ class CreateModelInteraction(BaseModel):
         ),
     ] = None
     r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
+
+    continuation_token: Optional[str] = None
+    r"""Opaque token to resume a long decode. Output: set when status is
+    INCOMPLETE and decoding can be resumed. Input: pass the latest token
+    back unchanged in CreateInteraction to continue decoding.
+    """
 
     environment: Optional[CreateModelInteractionEnvironment] = None
     r"""The environment configuration for the interaction. Can be an object
@@ -209,6 +220,7 @@ class CreateModelInteraction(BaseModel):
             [
                 "background",
                 "cached_content",
+                "continuation_token",
                 "environment",
                 "generation_config",
                 "input",
