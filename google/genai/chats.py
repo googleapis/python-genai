@@ -342,15 +342,20 @@ class Chat(_BaseChat):
       ):
         break
 
+      logger.info(f"AFC remote call {i} is done.")
+      remaining_remote_calls_afc -= 1
+      if remaining_remote_calls_afc == 0:
+        # No request is left to send a result with, so the functions are not
+        # called at all. Breaking here leaves the turn to be recorded once,
+        # below, as the user's message followed by the model's function call.
+        logger.info("Reached max remote calls for automatic function calling.")
+        break
+
       func_response_parts = _extra_utils.get_function_response_parts(
           response, function_map
       )
       if not func_response_parts:
         break
-      logger.info(f"AFC remote call {i} is done.")
-      remaining_remote_calls_afc -= 1
-      if remaining_remote_calls_afc == 0:
-        logger.info("Reached max remote calls for automatic function calling.")
       func_call_content = response.candidates[0].content
       func_response_content = types.Content(
           role="user", parts=func_response_parts
@@ -376,7 +381,6 @@ class Chat(_BaseChat):
         is_valid=_validate_response(response),
     )
     return response
-
 
   def send_message_stream(
       self,
@@ -489,6 +493,15 @@ class Chat(_BaseChat):
             contents=contents_to_model,  # type: ignore[arg-type]
             config=parsed_config,
         )
+        remaining_remote_calls_afc -= 1
+        # No request is left to send a result with, so the functions are not
+        # called at all. The chunks are still yielded, and the turn is recorded
+        # once below, ending on the model's unanswered function call.
+        is_last_remote_call_afc = remaining_remote_calls_afc == 0
+        if is_last_remote_call_afc:
+          logger.info(
+              "Reached max remote calls for automatic function calling."
+          )
 
         model_output = []
         finish_reason = None
@@ -501,7 +514,8 @@ class Chat(_BaseChat):
             is_valid = False
 
           if (
-              function_map
+              not is_last_remote_call_afc
+              and function_map
               and chunk.candidates
               and chunk.candidates[0].content
               and chunk.candidates[0].content.parts
@@ -518,15 +532,12 @@ class Chat(_BaseChat):
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
 
+        if is_last_remote_call_afc:
+          break
         if not function_map or not func_response_parts:
           break
 
         logger.info(f"AFC remote call {i} is done.")
-        remaining_remote_calls_afc -= 1
-        if remaining_remote_calls_afc == 0:
-          logger.info(
-              "Reached max remote calls for automatic function calling."
-          )
 
         if chunk and chunk.candidates and chunk.candidates[0].content:
           func_response_content = types.Content(
@@ -802,6 +813,17 @@ class AsyncChat(_BaseChat):
         ):
           break
 
+        logger.info(f"AFC remote call {i} is done.")
+        remaining_remote_calls_afc -= 1
+        if remaining_remote_calls_afc == 0:
+          # No request is left to send a result with, so the functions are not
+          # called at all. Breaking here leaves the turn to be recorded once,
+          # below, as the user's message followed by the model's function call.
+          logger.info(
+              "Reached max remote calls for automatic function calling."
+          )
+          break
+
         func_response_parts = (
             await _extra_utils.get_function_response_parts_async(
                 response, function_map
@@ -809,13 +831,6 @@ class AsyncChat(_BaseChat):
         )
         if not func_response_parts:
           break
-
-        logger.info(f"AFC remote call {i} is done.")
-        remaining_remote_calls_afc -= 1
-        if remaining_remote_calls_afc == 0:
-          logger.info(
-              "Reached max remote calls for automatic function calling."
-          )
 
         func_call_content = response.candidates[0].content
         func_response_content = types.Content(
@@ -844,7 +859,6 @@ class AsyncChat(_BaseChat):
           is_valid=_validate_response(response),
       )
       return response
-
 
   async def send_message_stream(
       self,
@@ -1034,6 +1048,15 @@ class AsyncChat(_BaseChat):
               contents=contents_to_model,  # type: ignore[arg-type]
               config=final_parsed_config,
           )
+          remaining_remote_calls_afc -= 1
+          # No request is left to send a result with, so the functions are not
+          # called at all. The chunks are still yielded, and the turn is
+          # recorded once below, ending on the model's unanswered function call.
+          is_last_remote_call_afc = remaining_remote_calls_afc == 0
+          if is_last_remote_call_afc:
+            logger.info(
+                "Reached max remote calls for automatic function calling."
+            )
 
           model_output = []
           finish_reason = None
@@ -1046,7 +1069,8 @@ class AsyncChat(_BaseChat):
               is_valid = False
 
             if (
-                function_map
+                not is_last_remote_call_afc
+                and function_map
                 and chunk.candidates
                 and chunk.candidates[0].content
                 and chunk.candidates[0].content.parts
@@ -1065,15 +1089,12 @@ class AsyncChat(_BaseChat):
               finish_reason = chunk.candidates[0].finish_reason
             yield chunk
 
+          if is_last_remote_call_afc:
+            break
           if not function_map or not func_response_parts:
             break
 
           logger.info(f"AFC remote call {i} is done.")
-          remaining_remote_calls_afc -= 1
-          if remaining_remote_calls_afc == 0:
-            logger.info(
-                "Reached max remote calls for automatic function calling."
-            )
 
           func_response_content = types.Content(
               role="user", parts=func_response_parts

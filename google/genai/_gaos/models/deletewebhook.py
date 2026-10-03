@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class DeleteWebhookGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteWebhookGlobals(BaseModel):
@@ -35,7 +35,7 @@ class DeleteWebhookGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,26 +56,22 @@ class DeleteWebhookGlobals(BaseModel):
 
 class DeleteWebhookRequestParam(TypedDict):
     id: str
-    r"""Required. The ID of the webhook to delete.
-    Format: `{webhook_id}`
-    """
+    r"""Required. The ID of the webhook to delete."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteWebhookRequest(BaseModel):
     id: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
-    r"""Required. The ID of the webhook to delete.
-    Format: `{webhook_id}`
-    """
+    r"""Required. The ID of the webhook to delete."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

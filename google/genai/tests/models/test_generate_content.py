@@ -148,9 +148,6 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_labels',
-        exception_if_mldev=(
-            'only supported in Gemini Enterprise Agent Platform mode'
-        ),
         parameters=types._GenerateContentParameters(
             model=GEMINI_FLASH_LATEST,
             contents=t.t_contents('What is your name?'),

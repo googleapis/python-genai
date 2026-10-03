@@ -20,6 +20,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
+from .rankservice import RankService, RankServiceParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -28,18 +29,23 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class RankingParam(TypedDict):
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
 
     model_name: NotRequired[str]
     r"""Optional. The model name of the rank service."""
+    rank_service: NotRequired[RankServiceParam]
+    r"""Config for Rank Service."""
     ranking_config: Literal["rank_service"]
 
 
 class Ranking(BaseModel):
-    r"""Config for Rank Service."""
+    r"""Config for ranking and reranking."""
 
     model_name: Optional[str] = None
     r"""Optional. The model name of the rank service."""
+
+    rank_service: Optional[RankService] = None
+    r"""Config for Rank Service."""
 
     ranking_config: Annotated[
         Annotated[
@@ -50,7 +56,7 @@ class Ranking(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["model_name"])
+        optional_fields = set(["model_name", "rank_service"])
         serialized = handler(self)
         m = {}
 

@@ -19,42 +19,21 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from ..interactions import (
-    createagentinteraction as interactions_createagentinteraction,
-    createmodelinteraction as interactions_createmodelinteraction,
-)
+from ..interactions import createagentinteraction as interactions_createagentinteraction
 from pydantic import model_serializer
-from typing import Optional, Union
-from typing_extensions import NotRequired, TypeAliasType, TypedDict
-
-
-InteractionParam = TypeAliasType(
-    "InteractionParam",
-    Union[
-        interactions_createagentinteraction.CreateAgentInteractionParam,
-        interactions_createmodelinteraction.CreateModelInteractionParam,
-    ],
-)
-r"""Required. The interaction request template to be executed."""
-
-
-Interaction = TypeAliasType(
-    "Interaction",
-    Union[
-        interactions_createagentinteraction.CreateAgentInteraction,
-        interactions_createmodelinteraction.CreateModelInteraction,
-    ],
-)
-r"""Required. The interaction request template to be executed."""
+from typing import Optional
+from typing_extensions import NotRequired, TypedDict
 
 
 class TriggerCreateParamsParam(TypedDict):
     r"""Parameters for creating a trigger."""
 
-    interaction: InteractionParam
-    r"""Required. The interaction request template to be executed."""
+    interaction: interactions_createagentinteraction.CreateAgentInteractionParam
+    r"""Interaction for generating the completion using agents."""
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
+    r"""Required. The cron schedule on which the trigger should run.
+    Standard cron format.
+    """
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
     display_name: NotRequired[str]
@@ -64,17 +43,21 @@ class TriggerCreateParamsParam(TypedDict):
     execution_timeout_seconds: NotRequired[int]
     r"""Optional. The execution timeout for the triggered interaction."""
     max_consecutive_failures: NotRequired[int]
-    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
+    r"""Optional. The maximum number of consecutive failures allowed before
+    the trigger is automatically paused (status becomes ERROR).
+    """
 
 
 class TriggerCreateParams(BaseModel):
     r"""Parameters for creating a trigger."""
 
-    interaction: Interaction
-    r"""Required. The interaction request template to be executed."""
+    interaction: interactions_createagentinteraction.CreateAgentInteraction
+    r"""Interaction for generating the completion using agents."""
 
     schedule: str
-    r"""Required. The cron schedule on which the trigger should run. Standard cron format."""
+    r"""Required. The cron schedule on which the trigger should run.
+    Standard cron format.
+    """
 
     time_zone: str
     r"""Required. Time zone in which the schedule should be interpreted."""
@@ -89,7 +72,9 @@ class TriggerCreateParams(BaseModel):
     r"""Optional. The execution timeout for the triggered interaction."""
 
     max_consecutive_failures: Optional[int] = None
-    r"""Optional. The maximum number of consecutive failures allowed before the trigger is automatically paused (status becomes ERROR)."""
+    r"""Optional. The maximum number of consecutive failures allowed before
+    the trigger is automatically paused (status becomes ERROR).
+    """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

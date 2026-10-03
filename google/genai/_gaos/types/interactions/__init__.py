@@ -107,6 +107,8 @@ if TYPE_CHECKING:
     from .dynamicagentconfig import DynamicAgentConfig, DynamicAgentConfigParam
     from .empty import Empty, EmptyTypedDict
     from .environment import (
+        Env,
+        EnvParam,
         Environment,
         EnvironmentParam,
         Network,
@@ -120,6 +122,7 @@ if TYPE_CHECKING:
         EnvironmentNetworkEgressAllowlist,
         EnvironmentNetworkEgressAllowlistParam,
     )
+    from .envvar import EnvVar, EnvVarParam
     from .error import Error, ErrorTypedDict
     from .errorevent import ErrorEvent, ErrorEventTypedDict
     from .exaaisearchconfig import ExaAISearchConfig, ExaAISearchConfigParam
@@ -314,22 +317,29 @@ if TYPE_CHECKING:
     from .ragretrievalconfig import RagRetrievalConfig, RagRetrievalConfigParam
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
     from .ranking import Ranking, RankingParam
+    from .rankservice import RankService, RankServiceParam
     from .responseformat import ResponseFormat, ResponseFormatParam
     from .responsemodality import ResponseModality
     from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
     from .retrievalcallarguments import (
         RetrievalCallArguments,
-        RetrievalCallArgumentsTypedDict,
+        RetrievalCallArgumentsParam,
     )
     from .retrievalcalldelta import (
         RetrievalCallDelta,
         RetrievalCallDeltaRetrievalType,
         RetrievalCallDeltaTypedDict,
     )
+    from .retrievalcallstep import (
+        RetrievalCallStep,
+        RetrievalCallStepParam,
+        RetrievalCallStepRetrievalType,
+    )
     from .retrievalresultdelta import (
         RetrievalResultDelta,
         RetrievalResultDeltaTypedDict,
     )
+    from .retrievalresultstep import RetrievalResultStep, RetrievalResultStepParam
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
     from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
     from .servicetier import ServiceTier
@@ -340,6 +350,7 @@ if TYPE_CHECKING:
     )
     from .source import Source, SourceParam, SourceType
     from .speakerconfig import SpeakerConfig, SpeakerConfigParam
+    from .speechannotation import SpeechAnnotation, SpeechAnnotationParam
     from .speechconfig import SpeechConfig, SpeechConfigParam
     from .staticmediaprocessing import StaticMediaProcessing, StaticMediaProcessingParam
     from .status import Status, StatusParam
@@ -504,6 +515,10 @@ __all__ = [
     "DynamicAgentConfigParam",
     "Empty",
     "EmptyTypedDict",
+    "Env",
+    "EnvParam",
+    "EnvVar",
+    "EnvVarParam",
     "Environment",
     "EnvironmentEnum",
     "EnvironmentNetworkEgressAllowlist",
@@ -689,6 +704,8 @@ __all__ = [
     "RagRetrievalConfigParam",
     "RagStoreConfig",
     "RagStoreConfigParam",
+    "RankService",
+    "RankServiceParam",
     "Ranking",
     "RankingParam",
     "Resolution",
@@ -697,13 +714,18 @@ __all__ = [
     "ResponseModality",
     "Retrieval",
     "RetrievalCallArguments",
-    "RetrievalCallArgumentsTypedDict",
+    "RetrievalCallArgumentsParam",
     "RetrievalCallDelta",
     "RetrievalCallDeltaRetrievalType",
     "RetrievalCallDeltaTypedDict",
+    "RetrievalCallStep",
+    "RetrievalCallStepParam",
+    "RetrievalCallStepRetrievalType",
     "RetrievalParam",
     "RetrievalResultDelta",
     "RetrievalResultDeltaTypedDict",
+    "RetrievalResultStep",
+    "RetrievalResultStepParam",
     "RetrievalRetrievalType",
     "ReviewSnippet",
     "ReviewSnippetParam",
@@ -719,6 +741,8 @@ __all__ = [
     "SourceType",
     "SpeakerConfig",
     "SpeakerConfigParam",
+    "SpeechAnnotation",
+    "SpeechAnnotationParam",
     "SpeechConfig",
     "SpeechConfigParam",
     "SpeechConfigUnion",
@@ -904,6 +928,8 @@ _dynamic_imports: dict[str, str] = {
     "DynamicAgentConfigParam": ".dynamicagentconfig",
     "Empty": ".empty",
     "EmptyTypedDict": ".empty",
+    "Env": ".environment",
+    "EnvParam": ".environment",
     "Environment": ".environment",
     "EnvironmentParam": ".environment",
     "Network": ".environment",
@@ -914,6 +940,8 @@ _dynamic_imports: dict[str, str] = {
     "Disabled": ".environmentnetworkegressallowlist",
     "EnvironmentNetworkEgressAllowlist": ".environmentnetworkegressallowlist",
     "EnvironmentNetworkEgressAllowlistParam": ".environmentnetworkegressallowlist",
+    "EnvVar": ".envvar",
+    "EnvVarParam": ".envvar",
     "Error": ".error",
     "ErrorTypedDict": ".error",
     "ErrorEvent": ".errorevent",
@@ -1095,6 +1123,8 @@ _dynamic_imports: dict[str, str] = {
     "RagStoreConfigParam": ".ragstoreconfig",
     "Ranking": ".ranking",
     "RankingParam": ".ranking",
+    "RankService": ".rankservice",
+    "RankServiceParam": ".rankservice",
     "ResponseFormat": ".responseformat",
     "ResponseFormatParam": ".responseformat",
     "ResponseModality": ".responsemodality",
@@ -1102,12 +1132,17 @@ _dynamic_imports: dict[str, str] = {
     "RetrievalParam": ".retrieval",
     "RetrievalRetrievalType": ".retrieval",
     "RetrievalCallArguments": ".retrievalcallarguments",
-    "RetrievalCallArgumentsTypedDict": ".retrievalcallarguments",
+    "RetrievalCallArgumentsParam": ".retrievalcallarguments",
     "RetrievalCallDelta": ".retrievalcalldelta",
     "RetrievalCallDeltaRetrievalType": ".retrievalcalldelta",
     "RetrievalCallDeltaTypedDict": ".retrievalcalldelta",
+    "RetrievalCallStep": ".retrievalcallstep",
+    "RetrievalCallStepParam": ".retrievalcallstep",
+    "RetrievalCallStepRetrievalType": ".retrievalcallstep",
     "RetrievalResultDelta": ".retrievalresultdelta",
     "RetrievalResultDeltaTypedDict": ".retrievalresultdelta",
+    "RetrievalResultStep": ".retrievalresultstep",
+    "RetrievalResultStepParam": ".retrievalresultstep",
     "ReviewSnippet": ".reviewsnippet",
     "ReviewSnippetParam": ".reviewsnippet",
     "Method": ".safetysetting",
@@ -1124,6 +1159,8 @@ _dynamic_imports: dict[str, str] = {
     "SourceType": ".source",
     "SpeakerConfig": ".speakerconfig",
     "SpeakerConfigParam": ".speakerconfig",
+    "SpeechAnnotation": ".speechannotation",
+    "SpeechAnnotationParam": ".speechannotation",
     "SpeechConfig": ".speechconfig",
     "SpeechConfigParam": ".speechconfig",
     "StaticMediaProcessing": ".staticmediaprocessing",

@@ -13,4 +13,8 @@
 # limitations under the License.
 #
 
+<<<<<<< HEAD
 __version__ = '2.11.0' # x-release-please-version
+=======
+__version__ = '2.28.0' # x-release-please-version
+>>>>>>> upstream/main

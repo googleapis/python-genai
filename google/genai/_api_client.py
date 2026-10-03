@@ -892,19 +892,10 @@ class BaseApiClient:
     self._async_httpx_client_args = async_client_args
     self._authorized_session: Optional['AuthorizedSession'] = None
 
-    if self._use_google_auth_sync():
-      self._httpx_client = None
-    elif self._http_options.httpx_client:
+    if self._http_options.httpx_client:
       self._httpx_client = self._http_options.httpx_client
     else:
       self._httpx_client = SyncHttpxClient(**client_args)
-
-    if self._use_google_auth_async():
-      self._async_httpx_client = None
-    elif self._http_options.httpx_async_client:
-      self._async_httpx_client = self._http_options.httpx_async_client
-    else:
-      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
 
     if self._http_options.httpx_async_client:
       self._async_httpx_client = self._http_options.httpx_async_client
@@ -985,6 +976,20 @@ class BaseApiClient:
       return bool(session._auth_request._closed)
     return False
 
+  @staticmethod
+  def _discard_closed_loop_entries(entries: dict[Any, Any]) -> None:
+    """Drops entries of a loop-keyed cache whose event loop has been closed.
+
+    Servers that run every request on a fresh loop (ADK's sync `Runner.run()`,
+    used by Agent Engine, calls `asyncio.run()` per request) would otherwise
+    grow these caches without bound, pinning one aiohttp session, connector and
+    set of sockets per request served. A session on a closed loop cannot be
+    awaited shut, but dropping the last reference to it lets the garbage
+    collector release the connector and its sockets.
+    """
+    for loop in [loop for loop in entries if loop.is_closed()]:
+      del entries[loop]
+
   @property
   def _aiohttp_session(
       self,
@@ -1008,6 +1013,7 @@ class BaseApiClient:
     loop = asyncio.get_running_loop()
 
     with self._sync_auth_lock:
+      self._discard_closed_loop_entries(self._aiohttp_sessions)
       session = self._aiohttp_sessions.get(loop)
       if session is not None and self._is_session_closed(session):
         session = None
@@ -1351,6 +1357,7 @@ class BaseApiClient:
     """
     loop = asyncio.get_running_loop()
     with self._sync_auth_lock:
+      self._discard_closed_loop_entries(self._async_auth_locks)
       if loop not in self._async_auth_locks:
         self._async_auth_locks[loop] = asyncio.Lock()
       return self._async_auth_locks[loop]
@@ -2136,7 +2143,7 @@ class BaseApiClient:
             timeout=http_request.timeout,
         )
         errors.APIError.raise_for_response(response)
-        return cast(bytes, response.read())
+        return response.read()
 
   async def async_upload_file(
       self,
@@ -2516,7 +2523,7 @@ class BaseApiClient:
             timeout=http_request.timeout,
         )
         await errors.APIError.raise_for_async_response(client_response)
-        return cast(bytes, client_response.read())
+        return client_response.read()
 
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the
