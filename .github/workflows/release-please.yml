@@ -1,0 +1,46 @@
+name: Release Please (Automated Releases)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: python
+
+      # Solo se ejecuta cuando SE CREA una release real (al fusionar el PR de release-please)
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+        with:
+          python-version: "3.11"
+
+      - name: Build Wheel
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+        run: |
+          pip install --upgrade pip build wheel
+          python3 -m build
+
+      - name: Upload .whl to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ steps.release.outputs.releases_created == 'true' }}
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          files: dist/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

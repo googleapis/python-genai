@@ -23,6 +23,7 @@ import functools
 import logging
 import re
 import sys
+import threading
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -566,6 +567,12 @@ def _format_collection(
   return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
 
+# Pydantic's deferred model build (`defer_build=True` below) is not thread safe:
+# a thread that uses a model while another thread is building it can see a
+# half-built model. Builds are serialized through this lock.
+_MODEL_BUILD_LOCK = threading.RLock()
+
+
 class BaseModel(pydantic.BaseModel):
 
   model_config = pydantic.ConfigDict(
@@ -585,6 +592,38 @@ class BaseModel(pydantic.BaseModel):
       # most of what importing this package costs.
       defer_build=True,
   )
+
+  @classmethod
+  def _ensure_model_built(cls) -> None:
+    """Builds the deferred validator and serializer, once, under a lock."""
+    if cls.__pydantic_complete__:
+      return
+    with _MODEL_BUILD_LOCK:
+      if not cls.__pydantic_complete__:
+        cls.model_rebuild(raise_errors=False, _parent_namespace_depth=0)
+
+  if not typing.TYPE_CHECKING:
+    # Hidden from type checkers so that they keep using the `__init__` and
+    # `model_validate*` signatures that Pydantic synthesizes for each model.
+
+    def __init__(self, /, **data: Any) -> None:
+      type(self)._ensure_model_built()
+      super().__init__(**data)
+
+    @classmethod
+    def model_validate(cls, *args: Any, **kwargs: Any) -> Any:
+      cls._ensure_model_built()
+      return super().model_validate(*args, **kwargs)
+
+    @classmethod
+    def model_validate_json(cls, *args: Any, **kwargs: Any) -> Any:
+      cls._ensure_model_built()
+      return super().model_validate_json(*args, **kwargs)
+
+    @classmethod
+    def model_validate_strings(cls, *args: Any, **kwargs: Any) -> Any:
+      cls._ensure_model_built()
+      return super().model_validate_strings(*args, **kwargs)
 
   @pydantic.model_validator(mode='before')
   @classmethod

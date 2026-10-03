@@ -1,20 +1,9 @@
-# Build artifacts
-*.py[cod]
-google_genai.egg-info/
+venv/
+*.pyc
+__pycache__/
 build/
 dist/
-
-# Test files
-.nox/
-
-# Coverage files
-.coverage
-coverage.xml
-nosetests.xml
-
-# IDE files
-.idea
-.vscode
-
-# macOS
-.DS_Store
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
