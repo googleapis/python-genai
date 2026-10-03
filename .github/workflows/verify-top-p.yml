@@ -1,0 +1,44 @@
+name: Verify Top P & Model Types
+
+on:
+  push:
+    branches: [ main, fix/clean-top-p ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify-types-and-top-p:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies & build tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install pydantic mypy build wheel httpx
+
+    - name: Validate Default Top P is 0.95
+      run: |
+        python -c "
+        from google.genai import types
+        config = types.GenerateContentConfig()
+        assert config.top_p == 0.95, f'top_p is {config.top_p}, expected 0.95'
+        print('✅ Verified: top_p default is 0.95')
+        "
+
+    - name: Run Mypy Type Checking
+      run: |
+        mypy google/genai
+
+    - name: Build Package (.whl)
+      run: |
+        python -m build
