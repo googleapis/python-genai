@@ -151,13 +151,6 @@ def _Candidate_from_mldev(
         getv(from_object, ['urlContextMetadata']),
     )
 
-  if getv(from_object, ['continuationToken']) is not None:
-    setv(
-        to_object,
-        ['continuation_token'],
-        getv(from_object, ['continuationToken']),
-    )
-
   return to_object
 
 
@@ -1374,13 +1367,6 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['audio_transcription_config']),
     )
 
-  if getv(from_object, ['continuation_token']) is not None:
-    setv(
-        parent_object,
-        ['continuationToken'],
-        getv(from_object, ['continuation_token']),
-    )
-
   return to_object
 
 
@@ -1576,13 +1562,6 @@ def _GenerateContentConfig_to_vertex(
         to_object,
         ['audioTranscriptionConfig'],
         getv(from_object, ['audio_transcription_config']),
-    )
-
-  if getv(from_object, ['continuation_token']) is not None:
-    setv(
-        parent_object,
-        ['continuationToken'],
-        getv(from_object, ['continuation_token']),
     )
 
   return to_object
