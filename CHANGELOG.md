@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.28.1](https://github.com/googleapis/python-genai/compare/v2.28.0...v2.28.1) (2026-10-03)
+
+
+### Documentation
+
+* Refresh docs for 2.28.0 ([618f0aa](https://github.com/googleapis/python-genai/commit/618f0aa89c7fa61be973fabfa5747fb93a21b1bf))
+
 ## [2.28.0](https://github.com/googleapis/python-genai/compare/v2.27.0...v2.28.0) (2026-10-02)
 
 
