@@ -15,6 +15,7 @@
 
 """Tests for closing the clients and context managers."""
 import asyncio
+import threading
 from unittest import mock
 
 from google.oauth2 import credentials
@@ -220,3 +221,35 @@ def test_aiohttp_session_context_manager(mock_request):
           assert async_client._api_client._aiohttp_session._auth_request._closed
 
   asyncio.run(run())
+
+
+def test_del_closes_aiohttp_session_on_its_own_loop():
+  """Tests that `__del__` closes each aiohttp session on the loop that made it."""
+  owner_loop = asyncio.new_event_loop()
+  owner_thread = threading.Thread(target=owner_loop.run_forever, daemon=True)
+  owner_thread.start()
+  closed_on = []
+  closed = threading.Event()
+
+  class _Session:
+    closed = False
+
+    async def close(self):
+      closed_on.append(asyncio.get_running_loop())
+      closed.set()
+
+  client = api_client.BaseApiClient(api_key='test_api_key')
+  client._aiohttp_sessions[owner_loop] = _Session()
+
+  async def collect_on_another_loop():
+    client.__del__()
+    await asyncio.sleep(0)
+
+  try:
+    asyncio.run(collect_on_another_loop())
+    assert closed.wait(timeout=5)
+    assert closed_on == [owner_loop]
+  finally:
+    owner_loop.call_soon_threadsafe(owner_loop.stop)
+    owner_thread.join(timeout=5)
+    owner_loop.close()

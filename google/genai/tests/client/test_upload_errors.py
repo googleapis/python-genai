@@ -195,3 +195,33 @@ async def test_async_upload_fd_error_aiohttp(client: api_client.BaseApiClient):
     )
   assert mock_aiohttp_session.request.call_count == 2
 
+
+
+@pytest.mark.asyncio
+async def test_async_upload_retry_does_not_block_event_loop(
+    client: api_client.BaseApiClient,
+):
+  mock_async_httpx_client = mock.MagicMock(spec=httpx.AsyncClient)
+  mock_async_httpx_client.request = mock.AsyncMock(
+      side_effect=[
+          _httpx_response(200),  # Missing upload status, so it is retried.
+          _httpx_response(200, headers={"X-Goog-Upload-Status": "final"}),
+      ]
+  )
+  client._async_httpx_client = mock_async_httpx_client
+
+  with mock.patch.object(
+      client, "_use_aiohttp", return_value=False
+  ), mock.patch.object(
+      api_client.time, "sleep", side_effect=AssertionError("blocking sleep")
+  ), mock.patch.object(
+      api_client.asyncio, "sleep", new_callable=mock.AsyncMock
+  ) as mock_async_sleep, io.BytesIO(
+      b"test"
+  ) as f:
+    await client._async_upload_fd(
+        f, "http://fake/upload", 4, http_options=types.HttpOptions()
+    )
+
+  assert mock_async_httpx_client.request.call_count == 2
+  mock_async_sleep.assert_awaited_once()

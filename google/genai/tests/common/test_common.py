@@ -952,3 +952,38 @@ def test_check_field_type_mismatches_generic_type_no_error(caplog):
     TestModel.model_validate(data)
 
   assert len(caplog.records) == 0
+
+
+def test_deferred_model_build_is_thread_safe():
+  import concurrent.futures
+  import sys
+  import threading
+
+  class _Inner(_common.BaseModel):
+    value: Optional[int] = None
+
+  class _Outer(_common.BaseModel):
+    max_output_tokens: Optional[int] = None
+    seed: Optional[int] = None
+    inner: Optional[_Inner] = None
+
+  assert not _Outer.__pydantic_complete__
+  num_threads = 16
+  barrier = threading.Barrier(num_threads)
+
+  def build():
+    barrier.wait()
+    return _Outer(max_output_tokens=32768, seed=42, inner={'value': 1})
+
+  switch_interval = sys.getswitchinterval()
+  sys.setswitchinterval(1e-6)
+  try:
+    with concurrent.futures.ThreadPoolExecutor(num_threads) as executor:
+      results = list(executor.map(lambda _: build(), range(num_threads)))
+  finally:
+    sys.setswitchinterval(switch_interval)
+
+  assert _Outer.__pydantic_complete__
+  for result in results:
+    assert result.max_output_tokens == 32768
+    assert result.inner.value == 1

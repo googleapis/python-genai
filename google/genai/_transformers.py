@@ -765,15 +765,31 @@ def process_schema(
   # After removing null fields, Optional fields with only one possible type
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
+  # Annotations next to the '$ref' (e.g. a field-level 'description') take
+  # precedence over the ones on the referenced definition.
   if (ref := schema.pop('$ref', None)) is not None:
-    schema.update(defs[ref.split('defs/')[-1]])
+    for key, value in defs[ref.split('defs/')[-1]].items():
+      schema.setdefault(key, value)
 
   def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
-      sub_schema = defs[ref.split('defs/')[-1]]
-      if id(sub_schema) in visited_dicts_path:
+      ref_schema: _common.StringDict = defs[ref.split('defs/')[-1]]
+      if id(ref_schema) in visited_dicts_path:
         return {}
+      process_schema(
+          ref_schema,
+          client,
+          defs,
+          order_properties=order_properties,
+          visited_dicts_path=visited_dicts_path,
+      )
+      if not sub_schema:
+        return ref_schema
+      # Keep annotations next to the '$ref' (e.g. a field-level
+      # 'description'), which would otherwise be replaced by the ones on the
+      # shared definition.
+      return {**ref_schema, **sub_schema}
 
     process_schema(
         sub_schema,
