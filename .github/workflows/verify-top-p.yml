@@ -21,10 +21,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies & build tools
+    - name: Install SDK dependencies & build tools
       run: |
         python -m pip install --upgrade pip
-        pip install pydantic mypy build wheel httpx
+        pip install -e .
+        pip install mypy build wheel
 
     - name: Validate Default Top P is 0.95
       run: |
