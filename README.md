@@ -344,7 +344,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.1-flash-image',
+    model='gemini-3.1-flash-lite-image',
     contents='A cartoon infographic for flying sneakers',
     config=types.GenerateContentConfig(
         response_modalities=["IMAGE"],
@@ -358,6 +358,32 @@ for part in response.parts:
     if part.inline_data:
         generated_image = part.as_image()
         generated_image.show()
+```
+
+#### with text content input (audio / speech output)
+
+```python
+from google.genai import types
+
+response = client.models.generate_content(
+    model='gemini-3.8-flash-tts',
+    contents='Give me a cheerful greeting.',
+    config=types.GenerateContentConfig(
+        response_modalities=['AUDIO'],
+        speech_config=types.SpeechConfig(
+            voice_config=types.VoiceConfig(
+                prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                    voice_name='Aoede'
+                )
+            )
+        ),
+    ),
+)
+
+for part in response.parts:
+    if part.inline_data:
+        with open('greeting.wav', 'wb') as f:
+            f.write(part.inline_data.data)
 ```
 
 #### with uploaded file (Gemini Developer API only)
@@ -1566,7 +1592,7 @@ interaction = client.interactions.create(
     model='gemini-flash-latest',
     input='Tell me a short joke about programming.'
 )
-print(interaction.outputs[-1].text)
+print(interaction.output_text)
 
 ```
 
@@ -1580,7 +1606,7 @@ interaction1 = client.interactions.create(
     model='gemini-flash-latest',
     input='Hi, my name is Amir.'
 )
-print(f"Model: {interaction1.outputs[-1].text}")
+print(f"Model: {interaction1.output_text}")
 
 # 2. Second turn (passing previous_interaction_id)
 interaction2 = client.interactions.create(
@@ -1588,7 +1614,7 @@ interaction2 = client.interactions.create(
     input='What is my name?',
     previous_interaction_id=interaction1.id
 )
-print(f"Model: {interaction2.outputs[-1].text}")
+print(f"Model: {interaction2.output_text}")
 
 ```
 
@@ -1613,7 +1639,7 @@ while True:
     print(f"Status: {interaction.status}")
 
     if interaction.status == "completed":
-        print("\nFinal Report:\n", interaction.outputs[-1].text)
+        print("\nFinal Report:\n", interaction.output_text)
         break
     elif interaction.status in ["failed", "cancelled"]:
         print(f"Failed with status: {interaction.status}")
@@ -1640,7 +1666,7 @@ interaction = client.interactions.create(
         {'type': 'image', 'data': base64_image, 'mime_type': 'image/png'}
     ]
 )
-print(interaction.outputs[-1].text)
+print(interaction.output_text)
 
 ```
 
@@ -1675,12 +1701,12 @@ interaction = client.interactions.create(
 )
 
 # 3. Handle the tool call
-for output in interaction.outputs:
-    if output.type == 'function_call':
-        print(f"Tool Call: {output.name}({output.arguments})")
+for step in (interaction.steps or []):
+    if step.type == 'function_call':
+        print(f"Tool Call: {step.name}({step.arguments})")
 
         # Execute your actual function here
-        result = get_weather(**output.arguments)
+        result = get_weather(**step.arguments)
 
         # Send result back to the model
         interaction = client.interactions.create(
@@ -1688,12 +1714,12 @@ for output in interaction.outputs:
             previous_interaction_id=interaction.id,
             input=[{
                 'type': 'function_result',
-                'name': output.name,
-                'call_id': output.id,
+                'name': step.name,
+                'call_id': step.id,
                 'result': result
             }]
         )
-        print(f"Response: {interaction.outputs[-1].text}")
+        print(f"Response: {interaction.output_text}")
 
 ```
 
@@ -1708,11 +1734,7 @@ interaction = client.interactions.create(
     input='Who won the last Super Bowl?',
     tools=[{'type': 'google_search'}]
 )
-
-# Find the text output (not the GoogleSearchResultContent)
-text_output = next((o for o in interaction.outputs if o.type == 'text'), None)
-if text_output:
-    print(text_output.text)
+print(interaction.output_text)
 
 ```
 
@@ -1724,30 +1746,47 @@ interaction = client.interactions.create(
     input='Calculate the 50th Fibonacci number.',
     tools=[{'type': 'code_execution'}]
 )
-print(interaction.outputs[-1].text)
+print(interaction.output_text)
 
 ```
 
 ### Multimodal Output
 
-The Interactions API can generate multimodal outputs, such as images. You must specify the `response_modalities`.
+The Interactions API can generate multimodal outputs, such as images or audio. You must specify the `response_modalities`.
+
+#### Image Output
 
 ```python
 import base64
 
 interaction = client.interactions.create(
-    model='gemini-3-pro-image-preview',
+    model='gemini-3.1-flash-lite-image',
     input='Generate an image of a futuristic city.',
     response_modalities=['IMAGE']
 )
 
-for output in interaction.outputs:
-    if output.type == 'image':
-        print(f"Generated image with mime_type: {output.mime_type}")
-        # Save the image
-        with open("generated_city.png", "wb") as f:
-            f.write(base64.b64decode(output.data))
+if interaction.output_image:
+    print(f"Generated image with mime_type: {interaction.output_image.mime_type}")
+    with open("generated_city.png", "wb") as f:
+        f.write(base64.b64decode(interaction.output_image.data))
 
+```
+
+#### Audio Output
+
+```python
+import base64
+
+interaction = client.interactions.create(
+    model='gemini-3.8-flash-tts',
+    input='Say hello and give a one sentence motivational quote.',
+    response_modalities=['AUDIO']
+)
+
+if interaction.output_audio:
+    print(f"Generated audio with mime_type: {interaction.output_audio.mime_type}")
+    with open("greeting.wav", "wb") as f:
+        f.write(base64.b64decode(interaction.output_audio.data))
 ```
 
 ## Tunings
@@ -2066,7 +2105,7 @@ The structure of the dictionary must match the backend API's request structure.
 
 ```python
 response = client.models.generate_content(
-    model="gemini-2.5-pro",
+    model="gemini-flash-latest",
     contents="What is the weather in Boston? and how about Sunnyvale?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
