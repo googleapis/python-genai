@@ -14,9 +14,10 @@
 
 from unittest import mock
 
-from ..._gaos import google_genai as gaos_google_genai
+import httpx
 import pytest
 
+from ..._gaos import google_genai as gaos_google_genai
 from ... import client as client_lib
 
 
@@ -74,6 +75,81 @@ async def test_async_client_timeout():
         timeout_ms=5000,
         retry_config=mock.ANY,
     )
+
+
+def test_client_vertex_default_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha"},
+  )
+  sdk_client = client.interactions.sdk_configuration.client
+  assert sdk_client is not None
+  # Default on Vertex should match GenAI default (timeout=None, no 5s timeout)
+  assert sdk_client.timeout == httpx.Timeout(None)
+  assert sdk_client.timeout != httpx.Timeout(5.0)
+
+
+def test_client_vertex_explicit_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha", "timeout": 12000},
+  )
+  interactions_client = client.interactions
+  assert interactions_client.sdk_configuration.timeout_ms == 12000
+
+
+@pytest.mark.asyncio
+async def test_async_client_vertex_default_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha"},
+  )
+  async_sdk_client = client.aio.interactions.sdk_configuration.async_client
+  assert async_sdk_client is not None
+  assert async_sdk_client.timeout == httpx.Timeout(None)
+  assert async_sdk_client.timeout != httpx.Timeout(5.0)
+
+
+@pytest.mark.asyncio
+async def test_async_client_vertex_explicit_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha", "timeout": 15000},
+  )
+  async_interactions_client = client.aio.interactions
+  assert async_interactions_client.sdk_configuration.timeout_ms == 15000
+
+
+def test_client_genai_default_timeout():
+  client = client_lib.Client(
+      api_key="placeholder",
+      http_options={"api_version": "v1alpha"},
+  )
+  sdk_client = client.interactions.sdk_configuration.client
+  assert sdk_client is not None
+  assert sdk_client.timeout == httpx.Timeout(None)
+  assert sdk_client.timeout != httpx.Timeout(5.0)
+
+
+@pytest.mark.asyncio
+async def test_async_client_genai_default_timeout():
+  client = client_lib.Client(
+      api_key="placeholder",
+      http_options={"api_version": "v1alpha"},
+  )
+  async_sdk_client = client.aio.interactions.sdk_configuration.async_client
+  assert async_sdk_client is not None
+  assert async_sdk_client.timeout == httpx.Timeout(None)
+  assert async_sdk_client.timeout != httpx.Timeout(5.0)
+
 
 
 @pytest.mark.filterwarnings("error")

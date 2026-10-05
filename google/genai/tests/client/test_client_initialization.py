@@ -22,6 +22,7 @@ import logging
 import os
 import ssl
 import sys
+import threading
 from unittest import mock
 
 import certifi
@@ -1188,6 +1189,45 @@ def test_client_ssl_context_explicit_initialization_async_args():
     assert isinstance(async_client_args["verify"], ssl.SSLContext)
 
 
+def test_client_initializes_httpx_clients_vertex_and_mldev():
+  """Verifies both Vertex and MLDev clients initialize non-null httpx clients with timeout=None."""
+  mldev_client = Client(api_key="fake-api-key")
+  assert mldev_client._api_client._httpx_client is not None
+  assert mldev_client._api_client._async_httpx_client is not None
+  assert mldev_client._api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert mldev_client._api_client._async_httpx_client.timeout == httpx.Timeout(None)
+
+  vertex_client = Client(
+      vertexai=True,
+      project="fake-proj",
+      location="us-central1",
+  )
+  assert vertex_client._api_client._httpx_client is not None
+  assert vertex_client._api_client._async_httpx_client is not None
+  assert vertex_client._api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert vertex_client._api_client._async_httpx_client.timeout == httpx.Timeout(None)
+
+
+def test_client_respects_custom_httpx_client():
+  """Verifies that user-provided httpx_client and httpx_async_client are preserved."""
+  custom_sync = httpx.Client(timeout=42.0)
+  custom_async = httpx.AsyncClient(timeout=84.0)
+
+  client = Client(
+      vertexai=True,
+      project="fake-proj",
+      location="us-central1",
+      http_options={
+          "httpx_client": custom_sync,
+          "httpx_async_client": custom_async,
+      },
+  )
+  assert client._api_client._httpx_client is custom_sync
+  assert client._api_client._async_httpx_client is custom_async
+  assert client._api_client._httpx_client.timeout == httpx.Timeout(42.0)
+  assert client._api_client._async_httpx_client.timeout == httpx.Timeout(84.0)
+
+
 def test_constructor_with_base_url_from_http_options():
   mldev_http_options = {
       "base_url": "https://placeholder-fake-url.com/",
@@ -1676,8 +1716,6 @@ async def test_get_async_auth_lock_doesnt_block_other_operations():
 @pytest.mark.asyncio
 async def test_get_async_auth_lock_creation_lock_lifecycle():
   """Tests the creation lock lifecycle and cleanup."""
-  import threading
-
   client = Client(
       vertexai=True, project="fake_project_id", location="fake-location"
   )
@@ -1947,3 +1985,83 @@ async def test_async_mtls_uses_refreshable_credentials(monkeypatch):
     assert passed_creds.valid == True
     mock_creds.expired = True
     assert passed_creds.valid == False
+
+
+def _run_on_fresh_loops(coro_fn, count):
+  """Runs coro_fn() count times, each on its own thread and its own loop.
+
+  This is the shape ADK's sync `Runner.run()` gives Agent Engine: every request
+  gets a new thread and a new `asyncio.run()` loop that is closed on the way
+  out, while the genai client itself is a long-lived singleton.
+
+  Args:
+    coro_fn: Zero-argument callable returning the coroutine to run.
+    count: How many loops to run it on, one after another.
+  """
+  for _ in range(count):
+    thread = threading.Thread(target=lambda: asyncio.run(coro_fn()))
+    thread.start()
+    thread.join()
+
+
+@requires_aiohttp
+def test_aiohttp_sessions_not_retained_for_closed_event_loops():
+  """Sessions belonging to finished loops must not accumulate. b/496663148."""
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  api_client.has_aiohttp = True
+  base_client = client._api_client
+
+  _run_on_fresh_loops(base_client._get_aiohttp_session, 10)
+
+  # Reaping happens on access, so the newest loop's entry survives until the
+  # next call. What matters is that the cache stays bounded by the number of
+  # live loops rather than growing once per request served.
+  assert len(base_client._aiohttp_sessions) <= 1
+
+
+def test_async_auth_locks_not_retained_for_closed_event_loops():
+  """Auth locks belonging to finished loops must not accumulate. b/496663148."""
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  base_client = client._api_client
+
+  _run_on_fresh_loops(base_client._get_async_auth_lock, 10)
+
+  assert len(base_client._async_auth_locks) <= 1
+
+
+@requires_aiohttp
+def test_aiohttp_session_kept_per_live_event_loop():
+  """Each live loop keeps its own session; reaping must not steal it.
+
+  Reusing one loop's session on another is what raised `RuntimeError: ... got
+  Future ... attached to a different loop` in b/496663148.
+  """
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  api_client.has_aiohttp = True
+  base_client = client._api_client
+  sessions = []
+  barrier = threading.Barrier(3)
+
+  def hold_loop_open():
+    async def run():
+      session = await base_client._get_aiohttp_session()
+      sessions.append(session)
+      # Keep this loop alive until every thread has its own session.
+      await asyncio.get_running_loop().run_in_executor(None, barrier.wait)
+      assert await base_client._get_aiohttp_session() is session
+
+    asyncio.run(run())
+
+  threads = [threading.Thread(target=hold_loop_open) for _ in range(3)]
+  for thread in threads:
+    thread.start()
+  for thread in threads:
+    thread.join()
+
+  assert len({id(session) for session in sessions}) == 3

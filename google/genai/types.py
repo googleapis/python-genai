@@ -173,6 +173,17 @@ T = typing.TypeVar('T', bound='GenerateContentResponse')
 MetricSubclass = typing.TypeVar('MetricSubclass', bound='Metric')
 
 
+class MediaProcessing(_common.CaseInSensitiveEnum):
+  """How the model processes input media for understanding."""
+
+  MEDIA_PROCESSING_UNSPECIFIED = 'MEDIA_PROCESSING_UNSPECIFIED'
+  """Default. Uses model-specific processing"""
+  STATIC = 'STATIC'
+  """Fixed-rate frame extraction. All frames placed in context."""
+  AGENTIC = 'AGENTIC'
+  """Model-driven dynamic navigation. Recommended for most use cases."""
+
+
 class Outcome(_common.CaseInSensitiveEnum):
   """Outcome of the code execution."""
 
@@ -419,6 +430,8 @@ class HarmCategory(_common.CaseInSensitiveEnum):
   """Content that promotes, facilitates, or enables dangerous activities."""
   HARM_CATEGORY_CIVIC_INTEGRITY = 'HARM_CATEGORY_CIVIC_INTEGRITY'
   """Deprecated: Election filter is not longer supported. The harm category is civic integrity."""
+  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
+  """Prompts designed to bypass safety filters."""
   HARM_CATEGORY_IMAGE_HATE = 'HARM_CATEGORY_IMAGE_HATE'
   """Images that contain hate speech. This enum value is not supported in Gemini API."""
   HARM_CATEGORY_IMAGE_DANGEROUS_CONTENT = (
@@ -431,8 +444,6 @@ class HarmCategory(_common.CaseInSensitiveEnum):
       'HARM_CATEGORY_IMAGE_SEXUALLY_EXPLICIT'
   )
   """Images that contain sexually explicit content. This enum value is not supported in Gemini API."""
-  HARM_CATEGORY_JAILBREAK = 'HARM_CATEGORY_JAILBREAK'
-  """Prompts designed to bypass safety filters. This enum value is not supported in Gemini API."""
 
 
 class HarmBlockMethod(_common.CaseInSensitiveEnum):
@@ -485,6 +496,17 @@ class FunctionCallingConfigMode(_common.CaseInSensitiveEnum):
   """Model is constrained to predict either function calls or natural language response. If "allowed_function_names" are set, the predicted function calls will be limited to any one of "allowed_function_names", else the predicted function calls will be any one of the provided "function_declarations"."""
 
 
+class AudioTranscriptionConfigMode(_common.CaseInSensitiveEnum):
+  """Transcription mode."""
+
+  MODE_UNSPECIFIED = 'MODE_UNSPECIFIED'
+  """Unspecified transcription mode."""
+  VERBATIM = 'VERBATIM'
+  """Verbatim transcription mode."""
+  SMART = 'SMART'
+  """Smart transcription mode."""
+
+
 class FinishReason(_common.CaseInSensitiveEnum):
   """Output only. The reason why the model stopped generating tokens.
 
@@ -527,6 +549,8 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Image generation stopped because the generated image may be a recitation from a source."""
   IMAGE_OTHER = 'IMAGE_OTHER'
   """Image generation stopped for a reason not otherwise specified."""
+  CONTINUATION = 'CONTINUATION'
+  """Token generation stopped because the response reached the per-request token limit, but generation is not yet complete. The response can be continued by passing the returned `continuation_token` in a subsequent request."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
@@ -613,6 +637,8 @@ class TrafficType(_common.CaseInSensitiveEnum):
   """Type for Priority Pay-As-You-Go traffic."""
   ON_DEMAND_FLEX = 'ON_DEMAND_FLEX'
   """Type for Flex traffic."""
+  ON_DEMAND_OFFPEAK = 'ON_DEMAND_OFFPEAK'
+  """Type for Off-Peak Pay-As-You-Go traffic."""
   PROVISIONED_THROUGHPUT = 'PROVISIONED_THROUGHPUT'
   """Type for Provisioned Throughput traffic."""
 
@@ -1043,6 +1069,8 @@ class ToolType(_common.CaseInSensitiveEnum):
   """Google maps tool, maps to Tool.google_maps."""
   FILE_SEARCH = 'FILE_SEARCH'
   """File search tool, maps to Tool.file_search."""
+  MEDIA_PROCESSING = 'MEDIA_PROCESSING'
+  """Media processing tool."""
 
 
 class ResourceScope(_common.CaseInSensitiveEnum):
@@ -1333,6 +1361,8 @@ class InteractionStatus(_common.CaseInSensitiveEnum):
   IN_PROGRESS = 'IN_PROGRESS'
   """The server is still actively processing user input or running background reasoning. More model output may follow."""
   REQUIRES_ACTION = 'REQUIRES_ACTION'
+  """Deprecated: Use IDLE instead."""
+  IDLE = 'IDLE'
   """The server has completed all processing and background reasoning."""
 
 
@@ -1588,6 +1618,36 @@ class ToolResponseDict(TypedDict, total=False):
 ToolResponseOrDict = Union[ToolResponse, ToolResponseDict]
 
 
+class SpeechMetadata(_common.BaseModel):
+  """Extra metadata associated with the part for speech synthesis."""
+
+  speaker: Optional[str] = Field(
+      default=None,
+      description="""The speaker for this part, which must match a `speaker` name in
+      `MultiSpeakerVoiceConfig.speaker_voice_configs`.""",
+  )
+  style: Optional[str] = Field(
+      default=None,
+      description="""The style instruction for how the voice should be synthesized
+      (e.g. "excited, fast-paced").""",
+  )
+
+
+class SpeechMetadataDict(TypedDict, total=False):
+  """Extra metadata associated with the part for speech synthesis."""
+
+  speaker: Optional[str]
+  """The speaker for this part, which must match a `speaker` name in
+      `MultiSpeakerVoiceConfig.speaker_voice_configs`."""
+
+  style: Optional[str]
+  """The style instruction for how the voice should be synthesized
+      (e.g. "excited, fast-paced")."""
+
+
+SpeechMetadataOrDict = Union[SpeechMetadata, SpeechMetadataDict]
+
+
 class CodeExecutionResult(_common.BaseModel):
   """Result of executing the ExecutableCode.
 
@@ -1603,7 +1663,7 @@ class CodeExecutionResult(_common.BaseModel):
   )
   id: Optional[str] = Field(
       default=None,
-      description="""Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id. This field is not supported in Vertex AI.""",
+      description="""Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id.""",
   )
 
 
@@ -1620,7 +1680,7 @@ class CodeExecutionResultDict(TypedDict, total=False):
   """Optional. Contains stdout when code execution is successful, stderr or other description otherwise."""
 
   id: Optional[str]
-  """Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id. This field is not supported in Vertex AI."""
+  """Optional. The identifier of the `ExecutableCode` part this result is for. Only populated if the corresponding `ExecutableCode` has an id."""
 
 
 CodeExecutionResultOrDict = Union[CodeExecutionResult, CodeExecutionResultDict]
@@ -1643,7 +1703,7 @@ class ExecutableCode(_common.BaseModel):
   )
   id: Optional[str] = Field(
       default=None,
-      description="""Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`. This field is not supported in Vertex AI.""",
+      description="""Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`.""",
   )
 
 
@@ -1662,7 +1722,7 @@ class ExecutableCodeDict(TypedDict, total=False):
   """Required. Programming language of the `code`."""
 
   id: Optional[str]
-  """Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`. This field is not supported in Vertex AI."""
+  """Optional. Unique identifier of the `ExecutableCode` part. The server returns the `CodeExecutionResult` with the matching `id`."""
 
 
 ExecutableCodeOrDict = Union[ExecutableCode, ExecutableCodeDict]
@@ -1678,7 +1738,7 @@ class FileData(_common.BaseModel):
 
   display_name: Optional[str] = Field(
       default=None,
-      description="""Optional. The display name of the file. Used to provide a label or filename to distinguish files. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server side tools (`code_execution`, `google_search`, and `url_context`) are enabled. This field is not supported in Gemini API.""",
+      description="""Optional. The display name of the file. Used to provide a label or filename to distinguish files. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server side tools (`code_execution`, `google_search`, and `url_context`) are enabled.""",
   )
   file_uri: Optional[str] = Field(
       default=None,
@@ -1699,7 +1759,7 @@ class FileDataDict(TypedDict, total=False):
   """
 
   display_name: Optional[str]
-  """Optional. The display name of the file. Used to provide a label or filename to distinguish files. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server side tools (`code_execution`, `google_search`, and `url_context`) are enabled. This field is not supported in Gemini API."""
+  """Optional. The display name of the file. Used to provide a label or filename to distinguish files. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server side tools (`code_execution`, `google_search`, and `url_context`) are enabled."""
 
   file_uri: Optional[str]
   """Required. The URI of the file in Google Cloud Storage."""
@@ -2061,7 +2121,7 @@ class Blob(_common.BaseModel):
   )
   display_name: Optional[str] = Field(
       default=None,
-      description="""Optional. The display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server-side tools (`code_execution`, `google_search`, and `url_context`) are enabled. This field is not supported in Gemini API.""",
+      description="""Optional. The display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server-side tools (`code_execution`, `google_search`, and `url_context`) are enabled.""",
   )
   mime_type: Optional[str] = Field(
       default=None,
@@ -2093,7 +2153,7 @@ class BlobDict(TypedDict, total=False):
   """Required. The raw bytes of the data."""
 
   display_name: Optional[str]
-  """Optional. The display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server-side tools (`code_execution`, `google_search`, and `url_context`) are enabled. This field is not supported in Gemini API."""
+  """Optional. The display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in `PromptMessage` for prompt management. It is used in the Gemini calls only when server-side tools (`code_execution`, `google_search`, and `url_context`) are enabled."""
 
   mime_type: Optional[str]
   """Required. The IANA standard MIME type of the source data."""
@@ -2290,6 +2350,15 @@ class Part(_common.BaseModel):
   audio_transcription: Optional[Transcription] = Field(
       default=None,
       description="""Output only. The transcription of the audio part.""",
+  )
+  media_processing: Optional[MediaProcessing] = Field(
+      default=None,
+      description="""How the model processes this part's media for understanding.""",
+  )
+  speech_metadata: Optional[SpeechMetadata] = Field(
+      default=None,
+      description="""Extra metadata associated with the part for speech synthesis, such
+      as speaker and style. Only valid when `Part.data` is set to `text`.""",
   )
 
   def __init__(
@@ -2524,6 +2593,13 @@ class PartDict(TypedDict, total=False):
 
   audio_transcription: Optional[TranscriptionDict]
   """Output only. The transcription of the audio part."""
+
+  media_processing: Optional[MediaProcessing]
+  """How the model processes this part's media for understanding."""
+
+  speech_metadata: Optional[SpeechMetadataDict]
+  """Extra metadata associated with the part for speech synthesis, such
+      as speaker and style. Only valid when `Part.data` is set to `text`."""
 
 
 PartOrDict = Union[Part, PartDict]
@@ -3876,7 +3952,7 @@ class GoogleMaps(_common.BaseModel):
   )
   grounding_types: Optional[GoogleMapsGroundingTypes] = Field(
       default=None,
-      description="""Optional. Specifies the types of Google Maps grounding to enable. This field is not supported in Gemini API.""",
+      description="""Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset. This field is not supported in Gemini API.""",
   )
 
 
@@ -3890,7 +3966,7 @@ class GoogleMapsDict(TypedDict, total=False):
   """Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response."""
 
   grounding_types: Optional[GoogleMapsGroundingTypesDict]
-  """Optional. Specifies the types of Google Maps grounding to enable. This field is not supported in Gemini API."""
+  """Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset. This field is not supported in Gemini API."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
@@ -5102,6 +5178,14 @@ class ToolParallelAiSearch(_common.BaseModel):
       default=None,
       description="""Optional. Custom configs for ParallelAiSearch. This field can be used to pass any parameter from the Parallel.ai Search API. See the Parallel.ai documentation for the full list of available parameters and their usage: https://docs.parallel.ai/api-reference/search-beta/search Currently only `source_policy`, `excerpts`, `max_results`, `mode`, `fetch_policy` can be set via this field. For example: { "source_policy": { "include_domains": ["google.com", "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds": 3600 } }""",
   )
+  enable_data_retention: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used.""",
+  )
+  enable_zero_data_retention: Optional[bool] = Field(
+      default=None,
+      description="""Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used.""",
+  )
 
 
 class ToolParallelAiSearchDict(TypedDict, total=False):
@@ -5116,6 +5200,12 @@ class ToolParallelAiSearchDict(TypedDict, total=False):
 
   custom_configs: Optional[dict[str, Any]]
   """Optional. Custom configs for ParallelAiSearch. This field can be used to pass any parameter from the Parallel.ai Search API. See the Parallel.ai documentation for the full list of available parameters and their usage: https://docs.parallel.ai/api-reference/search-beta/search Currently only `source_policy`, `excerpts`, `max_results`, `mode`, `fetch_policy` can be set via this field. For example: { "source_policy": { "include_domains": ["google.com", "wikipedia.org"], "exclude_domains": ["example.com"] }, "fetch_policy": { "max_age_seconds": 3600 } }"""
+
+  enable_data_retention: Optional[bool]
+  """Optional. Deprecated: Use `enable_zero_data_retention` instead. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used."""
+
+  enable_zero_data_retention: Optional[bool]
+  """Optional. Instructs Vertex Grounding to use Parallel's Zero Data Retention Marketplace product. If this value is "false" or omitted, the Parallel Web Search for Grounding standard subscription will be used. If this value is "true", the Parallel Web Search for Grounding - ZDR subscription will be used."""
 
 
 ToolParallelAiSearchOrDict = Union[
@@ -5194,7 +5284,7 @@ StreamableHttpTransportOrDict = Union[
 class McpServer(_common.BaseModel):
   """A MCPServer is a server that can be called by the model to perform actions.
 
-  It is a server that implements the MCP protocol. Next ID: 6. This data type is
+  It is a server that implements the MCP protocol. Next ID: 7. This data type is
   not supported in Vertex AI.
   """
 
@@ -5210,7 +5300,7 @@ class McpServer(_common.BaseModel):
 class McpServerDict(TypedDict, total=False):
   """A MCPServer is a server that can be called by the model to perform actions.
 
-  It is a server that implements the MCP protocol. Next ID: 6. This data type is
+  It is a server that implements the MCP protocol. Next ID: 7. This data type is
   not supported in Vertex AI.
   """
 
@@ -5517,6 +5607,9 @@ class VoiceConfig(_common.BaseModel):
   prebuilt_voice_config: Optional[PrebuiltVoiceConfig] = Field(
       default=None, description="""The configuration for a prebuilt voice."""
   )
+  voice: Optional[str] = Field(
+      default=None, description="""The speaker identifier for synthesis."""
+  )
 
 
 class VoiceConfigDict(TypedDict, total=False):
@@ -5529,6 +5622,9 @@ class VoiceConfigDict(TypedDict, total=False):
 
   prebuilt_voice_config: Optional[PrebuiltVoiceConfigDict]
   """The configuration for a prebuilt voice."""
+
+  voice: Optional[str]
+  """The speaker identifier for synthesis."""
 
 
 VoiceConfigOrDict = Union[VoiceConfig, VoiceConfigDict]
@@ -6327,7 +6423,7 @@ class AudioTranscriptionConfig(_common.BaseModel):
 
   language_codes: Optional[list[str]] = Field(
       default=None,
-      description="""BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.""",
+      description="""Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection.""",
   )
   language_auto: Optional[LanguageAuto] = Field(
       default=None,
@@ -6355,13 +6451,17 @@ class AudioTranscriptionConfig(_common.BaseModel):
       description="""Configures speaker diarization.
       """,
   )
+  mode: Optional[AudioTranscriptionConfigMode] = Field(
+      default=None,
+      description="""Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`.""",
+  )
 
 
 class AudioTranscriptionConfigDict(TypedDict, total=False):
   """The audio transcription configuration in Setup."""
 
   language_codes: Optional[list[str]]
-  """BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection."""
+  """Optional. BCP-47 language codes providing hints about the languages present in the audio. If omitted or empty, defaults to automatic language detection."""
 
   language_auto: Optional[LanguageAutoDict]
   """Deprecated: Auto-detection is now the default when language_codes is omitted. This field will be removed in a future version."""
@@ -6382,6 +6482,9 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
   diarization: Optional[bool]
   """Configures speaker diarization.
       """
+
+  mode: Optional[AudioTranscriptionConfigMode]
+  """Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`."""
 
 
 AudioTranscriptionConfigOrDict = Union[
@@ -6553,7 +6656,7 @@ class GenerateContentConfig(_common.BaseModel):
   )
   labels: Optional[dict[str, str]] = Field(
       default=None,
-      description="""Labels with user-defined metadata to break down billed charges.""",
+      description="""Labels with user-defined metadata for the request.""",
   )
   cached_content: Optional[str] = Field(
       default=None,
@@ -6617,6 +6720,13 @@ class GenerateContentConfig(_common.BaseModel):
   audio_transcription_config: Optional[AudioTranscriptionConfig] = Field(
       default=None,
       description="""Optional. Configuration for audio transcription (speech recognition).
+      """,
+  )
+  continuation_token: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque continuation token used to resume generation from a
+      previous response that stopped with `finish_reason` set to
+      `CONTINUATION`.
       """,
   )
 
@@ -6786,7 +6896,7 @@ class GenerateContentConfigDict(TypedDict, total=False):
       """
 
   labels: Optional[dict[str, str]]
-  """Labels with user-defined metadata to break down billed charges."""
+  """Labels with user-defined metadata for the request."""
 
   cached_content: Optional[str]
   """Resource name of a context cache that can be used in subsequent
@@ -6838,6 +6948,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   audio_transcription_config: Optional[AudioTranscriptionConfigDict]
   """Optional. Configuration for audio transcription (speech recognition).
+      """
+
+  continuation_token: Optional[bytes]
+  """An opaque continuation token used to resume generation from a
+      previous response that stopped with `finish_reason` set to
+      `CONTINUATION`.
       """
 
 
@@ -8254,6 +8370,12 @@ class Candidate(_common.BaseModel):
       default=None,
       description="""Output only. Metadata returned when the model uses the `url_context` tool to get information from a user-provided URL.""",
   )
+  continuation_token: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque continuation token returned when `finish_reason` is
+      `CONTINUATION`. Pass it in a subsequent request to continue generation.
+      """,
+  )
 
 
 class CandidateDict(TypedDict, total=False):
@@ -8299,6 +8421,11 @@ class CandidateDict(TypedDict, total=False):
 
   url_context_metadata: Optional[UrlContextMetadataDict]
   """Output only. Metadata returned when the model uses the `url_context` tool to get information from a user-provided URL."""
+
+  continuation_token: Optional[bytes]
+  """An opaque continuation token returned when `finish_reason` is
+      `CONTINUATION`. Pass it in a subsequent request to continue generation.
+      """
 
 
 CandidateOrDict = Union[Candidate, CandidateDict]
@@ -11270,6 +11397,10 @@ class VideoResponseFormat(_common.BaseModel):
       default=None,
       description="""Optional. The Google Cloud Storage URI to store the video output. Required for Vertex if delivery is URI.""",
   )
+  resolution: Optional[str] = Field(
+      default=None,
+      description="""Optional. The video output resolution. Supported values: "360p", "720p", "1080p", "4k".""",
+  )
 
 
 class VideoResponseFormatDict(TypedDict, total=False):
@@ -11289,6 +11420,9 @@ class VideoResponseFormatDict(TypedDict, total=False):
 
   gcs_uri: Optional[str]
   """Optional. The Google Cloud Storage URI to store the video output. Required for Vertex if delivery is URI."""
+
+  resolution: Optional[str]
+  """Optional. The video output resolution. Supported values: "360p", "720p", "1080p", "4k"."""
 
 
 VideoResponseFormatOrDict = Union[VideoResponseFormat, VideoResponseFormatDict]
@@ -11341,11 +11475,11 @@ class TranslationConfig(_common.BaseModel):
 
   echo_target_language: Optional[bool] = Field(
       default=None,
-      description="""Optional. If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language.""",
+      description="""If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language.""",
   )
   target_language_code: Optional[str] = Field(
       default=None,
-      description="""Required. The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr").""",
+      description="""The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr").""",
   )
 
 
@@ -11353,10 +11487,10 @@ class TranslationConfigDict(TypedDict, total=False):
   """Config for stream translation."""
 
   echo_target_language: Optional[bool]
-  """Optional. If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language."""
+  """If true, the model will generate audio when the target language is spoken, essentially it will parrot the input. If false, we will not produce audio for the target language."""
 
   target_language_code: Optional[str]
-  """Required. The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr")."""
+  """The target language for translation. Supported values are BCP-47 language codes (e.g. "en", "es", "fr")."""
 
 
 TranslationConfigOrDict = Union[TranslationConfig, TranslationConfigDict]
@@ -11384,7 +11518,7 @@ class GenerationConfig(_common.BaseModel):
   )
   enable_affective_dialog: Optional[bool] = Field(
       default=None,
-      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response. This field is not supported in Gemini API.""",
+      description="""Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response.""",
   )
   frequency_penalty: Optional[float] = Field(
       default=None,
@@ -11462,8 +11596,7 @@ class GenerationConfig(_common.BaseModel):
       description="""Optional. New response format field for the model to configure output formatting and delivery.""",
   )
   translation_config: Optional[TranslationConfig] = Field(
-      default=None,
-      description="""Optional. Config for translation. This field is not supported in Vertex AI.""",
+      default=None, description="""Optional. Config for translation."""
   )
   audio_transcription_config: Optional[AudioTranscriptionConfig] = Field(
       default=None,
@@ -11490,7 +11623,7 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. The number of candidate responses to generate. A higher `candidate_count` can provide more options to choose from, but it also consumes more resources. This can be useful for generating a variety of responses and selecting the best one."""
 
   enable_affective_dialog: Optional[bool]
-  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response. This field is not supported in Gemini API."""
+  """Optional. If enabled, the model will detect emotions and adapt its responses accordingly. For example, if the model detects that the user is frustrated, it may provide a more empathetic response."""
 
   frequency_penalty: Optional[float]
   """Optional. Penalizes tokens based on their frequency in the generated text. A positive value helps to reduce the repetition of words and phrases. Valid values can range from [-2.0, 2.0]."""
@@ -11550,7 +11683,7 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. New response format field for the model to configure output formatting and delivery."""
 
   translation_config: Optional[TranslationConfigDict]
-  """Optional. Config for translation. This field is not supported in Vertex AI."""
+  """Optional. Config for translation."""
 
   audio_transcription_config: Optional[AudioTranscriptionConfigDict]
   """Optional. Configuration for audio transcription (speech recognition).
@@ -13609,6 +13742,10 @@ class ReinforcementTuningHyperParameters(_common.BaseModel):
       default=None,
       description="""Optional. The thinking budget for the tuning job to optimize for (Gemini 2.5 only). * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in tokens If not set, default to -1 (dynamic thinking).""",
   )
+  step_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of steps for the tuning job (mutually exclusive with epoch_count).""",
+  )
 
 
 class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
@@ -13643,6 +13780,9 @@ class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
 
   thinking_budget: Optional[int]
   """Optional. The thinking budget for the tuning job to optimize for (Gemini 2.5 only). * -1 means dynamic thinking * 0 means no thinking * > 0 means thinking budget in tokens If not set, default to -1 (dynamic thinking)."""
+
+  step_count: Optional[int]
+  """Optional. Number of steps for the tuning job (mutually exclusive with epoch_count)."""
 
 
 ReinforcementTuningHyperParametersOrDict = Union[
@@ -14001,6 +14141,10 @@ class ReinforcementTuningExample(_common.BaseModel):
       default=None,
       description="""Corresponds to system_instruction in user-facing GenerateContentRequest.""",
   )
+  tools: Optional[list[Tool]] = Field(
+      default=None,
+      description="""Optional. Corresponds to tools in user-facing GenerateContentRequest.""",
+  )
 
 
 class ReinforcementTuningExampleDict(TypedDict, total=False):
@@ -14014,6 +14158,9 @@ class ReinforcementTuningExampleDict(TypedDict, total=False):
 
   system_instruction: Optional[ContentDict]
   """Corresponds to system_instruction in user-facing GenerateContentRequest."""
+
+  tools: Optional[list[ToolDict]]
+  """Optional. Corresponds to tools in user-facing GenerateContentRequest."""
 
 
 ReinforcementTuningExampleOrDict = Union[
@@ -15535,6 +15682,10 @@ class TuningJob(_common.BaseModel):
   distillation_sampling_spec: Optional[DistillationSamplingSpec] = Field(
       default=None, description=""""""
   )
+  gcs_metrics_uri: Optional[str] = Field(
+      default=None,
+      description="""The Cloud Storage metrics URI associated with this tuning job.""",
+  )
 
   @property
   def has_ended(self) -> bool:
@@ -15651,6 +15802,9 @@ class TuningJobDict(TypedDict, total=False):
 
   distillation_sampling_spec: Optional[DistillationSamplingSpecDict]
   """"""
+
+  gcs_metrics_uri: Optional[str]
+  """The Cloud Storage metrics URI associated with this tuning job."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
@@ -16303,6 +16457,10 @@ class ReinforcementTuningRewardInfo(_common.BaseModel):
       default=None,
       description="""Output only. The user-requested auxiliary info for the reward function. This field is set only if the Cloud Run reward function configured by user returns a "user_requested_aux_info". Refer to ReinforcementTuningCloudRunRewardScorer for more details.""",
   )
+  error_status: Optional[GoogleRpcStatus] = Field(
+      default=None,
+      description="""Output only. In case of an error for this reward, this field will be populated with a detailed error status.""",
+  )
 
 
 class ReinforcementTuningRewardInfoDict(TypedDict, total=False):
@@ -16313,6 +16471,9 @@ class ReinforcementTuningRewardInfoDict(TypedDict, total=False):
 
   user_requested_aux_info: Optional[str]
   """Output only. The user-requested auxiliary info for the reward function. This field is set only if the Cloud Run reward function configured by user returns a "user_requested_aux_info". Refer to ReinforcementTuningCloudRunRewardScorer for more details."""
+
+  error_status: Optional[GoogleRpcStatusDict]
+  """Output only. In case of an error for this reward, this field will be populated with a detailed error status."""
 
 
 ReinforcementTuningRewardInfoOrDict = Union[
@@ -21060,6 +21221,10 @@ class LiveClientSetup(_common.BaseModel):
       response.
       """,
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Optional. Labels with user-defined metadata for the request. Optional. Labels must follow standard unified Cloud label requirements: - Label keys must start with a letter. - Label keys and values can be no longer than 63 characters (Unicode codepoints) and can only contain lowercase letters, numeric characters, underscores, and dashes. - International characters are allowed. Usage: - Safety identifiers from aggregators: Use the key `safety_identifier` (e.g. `{"safety_identifier": "user_session_123"}`)""",
+  )
 
 
 class LiveClientSetupDict(TypedDict, total=False):
@@ -21126,6 +21291,9 @@ class LiveClientSetupDict(TypedDict, total=False):
   """Safety settings in the request to block unsafe content in the
       response.
       """
+
+  labels: Optional[dict[str, str]]
+  """Optional. Labels with user-defined metadata for the request. Optional. Labels must follow standard unified Cloud label requirements: - Label keys must start with a letter. - Label keys and values can be no longer than 63 characters (Unicode codepoints) and can only contain lowercase letters, numeric characters, underscores, and dashes. - International characters are allowed. Usage: - Safety identifiers from aggregators: Use the key `safety_identifier` (e.g. `{"safety_identifier": "user_session_123"}`)"""
 
 
 LiveClientSetupOrDict = Union[LiveClientSetup, LiveClientSetupDict]
@@ -22338,6 +22506,18 @@ class AuthToken(_common.BaseModel):
   name: Optional[str] = Field(
       default=None, description="""The name of the auth token."""
   )
+  expire_time: Optional[str] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. An optional time after which, when using the resulting token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively close the session after this time.) If not set then this defaults to 30 minutes in the future. If set, this value must be less than 20 hours in the future.""",
+  )
+  new_session_expire_time: Optional[str] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The time after which new Live API sessions using the token resulting from this request will be rejected. If not set this defaults to 60 seconds in the future. If set, this value must be less than 20 hours in the future.""",
+  )
+  uses: Optional[int] = Field(
+      default=None,
+      description="""Optional. Input only. Immutable. The number of times the token can be used. If this value is zero then no limit is applied. Resuming a Live API session does not count as a use. If unspecified, the default is 1.""",
+  )
 
 
 class AuthTokenDict(TypedDict, total=False):
@@ -22345,6 +22525,15 @@ class AuthTokenDict(TypedDict, total=False):
 
   name: Optional[str]
   """The name of the auth token."""
+
+  expire_time: Optional[str]
+  """Optional. Input only. Immutable. An optional time after which, when using the resulting token, messages in BidiGenerateContent sessions will be rejected. (Gemini may preemptively close the session after this time.) If not set then this defaults to 30 minutes in the future. If set, this value must be less than 20 hours in the future."""
+
+  new_session_expire_time: Optional[str]
+  """Optional. Input only. Immutable. The time after which new Live API sessions using the token resulting from this request will be rejected. If not set this defaults to 60 seconds in the future. If set, this value must be less than 20 hours in the future."""
+
+  uses: Optional[int]
+  """Optional. Input only. Immutable. The number of times the token can be used. If this value is zero then no limit is applied. Resuming a Live API session does not count as a use. If unspecified, the default is 1."""
 
 
 AuthTokenOrDict = Union[AuthToken, AuthTokenDict]
@@ -23012,6 +23201,10 @@ class EvaluationParserConfigCustomCodeParserConfig(_common.BaseModel):
       default=None,
       description="""Required. Python function for parsing results. The function should be defined within this string. The function takes a list of strings (LLM responses) and should return either a list of dictionaries (for rubrics) or a single dictionary (for a metric result). Example function signature: def parse(responses: list[str]) -> list[dict[str, Any]] | dict[str, Any]: When parsing rubrics, return a list of dictionaries, where each dictionary represents a Rubric. Example for rubrics: [ { "content": {"property": {"description": "The response is factual."}}, "type": "FACTUALITY", "importance": "HIGH" }, { "content": {"property": {"description": "The response is fluent."}}, "type": "FLUENCY", "importance": "MEDIUM" } ] When parsing critique results, return a dictionary representing a MetricResult. Example for a metric result: { "score": 0.8, "explanation": "The model followed most instructions.", "rubric_verdicts": [...] } ... code for result extraction and aggregation""",
   )
+  code_execution_region: Optional[str] = Field(
+      default=None,
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used.""",
+  )
 
 
 class EvaluationParserConfigCustomCodeParserConfigDict(TypedDict, total=False):
@@ -23022,6 +23215,9 @@ class EvaluationParserConfigCustomCodeParserConfigDict(TypedDict, total=False):
 
   parsing_function: Optional[str]
   """Required. Python function for parsing results. The function should be defined within this string. The function takes a list of strings (LLM responses) and should return either a list of dictionaries (for rubrics) or a single dictionary (for a metric result). Example function signature: def parse(responses: list[str]) -> list[dict[str, Any]] | dict[str, Any]: When parsing rubrics, return a list of dictionaries, where each dictionary represents a Rubric. Example for rubrics: [ { "content": {"property": {"description": "The response is factual."}}, "type": "FACTUALITY", "importance": "HIGH" }, { "content": {"property": {"description": "The response is fluent."}}, "type": "FLUENCY", "importance": "MEDIUM" } ] When parsing critique results, return a dictionary representing a MetricResult. Example for a metric result: { "score": 0.8, "explanation": "The model followed most instructions.", "rubric_verdicts": [...] } ... code for result extraction and aggregation"""
+
+  code_execution_region: Optional[str]
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used."""
 
 
 EvaluationParserConfigCustomCodeParserConfigOrDict = Union[
@@ -23146,6 +23342,10 @@ class CustomCodeExecutionSpec(_common.BaseModel):
   Instance is the evaluation instance, any fields populated in the instance
   are available to the function as instance[field_name].""",
   )
+  code_execution_region: Optional[str] = Field(
+      default=None,
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED.""",
+  )
 
 
 class CustomCodeExecutionSpecDict(TypedDict, total=False):
@@ -23158,6 +23358,9 @@ class CustomCodeExecutionSpecDict(TypedDict, total=False):
   Please include this function signature in the code snippet.
   Instance is the evaluation instance, any fields populated in the instance
   are available to the function as instance[field_name]."""
+
+  code_execution_region: Optional[str]
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED."""
 
 
 CustomCodeExecutionSpecOrDict = Union[

@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # pyformat: disable
+# pylint: skip-file
 
 """Google GenAI authentication hooks for the embedded Speakeasy SDK."""
 
@@ -102,6 +103,7 @@ def _apply_default_headers(
     for key, value in (headers or {}).items():
         if request.headers.get(key) is None:
             request.headers[key] = value
+
 
 
 

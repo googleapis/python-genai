@@ -116,6 +116,13 @@ def replays_prefix():
   return 'test'
 
 
+# Overridden by test packages whose Vertex model is not served at the configured
+# location. Returning None leaves GOOGLE_CLOUD_LOCATION as-is.
+@pytest.fixture
+def location_override():
+  return None
+
+
 def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
   test_name_ending = os.environ.get('PYTEST_CURRENT_TEST').split('::')[-1]
   test_name = (
@@ -127,7 +134,7 @@ def _get_replay_id(use_vertex: bool, replays_prefix: str) -> str:
 
 
 @pytest.fixture
-def client(use_vertex, replays_prefix, http_options, request):
+def client(use_vertex, replays_prefix, http_options, request, location_override):
   mode = request.config.getoption('--mode')
   if mode not in ['auto', 'record', 'replay', 'api', 'tap']:
     raise ValueError('Invalid mode: ' + mode)
@@ -171,8 +178,10 @@ def client(use_vertex, replays_prefix, http_options, request):
   # Get private arg.
   private = request.config.getoption('--private')
 
-  location_override = None
-  if use_vertex and 'tunings' in replays_prefix:
+  if not use_vertex:
+    location_override = None
+  elif location_override is None and 'tunings' in replays_prefix:
+    # Tuning jobs are not supported on the global endpoint.
     if os.environ.get('GOOGLE_CLOUD_LOCATION') == 'global':
       location_override = 'us-central1'
 
