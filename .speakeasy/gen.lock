@@ -1,0 +1,2128 @@
+lockVersion: 2.0.0
+id: b4f735f7-d65d-4d59-96cd-4e460fe62e9c
+management:
+  docVersion: v1beta
+  speakeasyVersion: internal
+  generationVersion: internal
+  releaseVersion: 2.4.1-preview.5
+  repoURL: https://github.com/speakeasy-sdks/genai-next.git
+  repoSubDirectory: dist/sp_python
+  installationURL: https://github.com/speakeasy-sdks/genai-next.git#subdirectory=dist/sp_python
+features:
+  python:
+    acceptHeaders: 3.0.0
+    additionalDependencies: 1.1.0
+    additionalProperties: 1.0.2
+    configurableModuleName: 0.2.0
+    constsAndDefaults: 1.0.8
+    core: 6.1.13
+    customSecuritySchemes: 0.1.0
+    defaultEnabledRetries: 0.2.0
+    deprecations: 3.0.2
+    enumUnions: 0.1.1
+    envVarSecurityUsage: 0.3.4
+    flatRequests: 1.0.1
+    flattening: 3.1.1
+    globalSecurity: 3.0.8
+    globalSecurityCallbacks: 1.0.0
+    globalServerURLs: 3.2.1
+    globals: 3.0.0
+    groups: 3.0.1
+    inputOutputModels: 3.0.0
+    nameOverrides: 3.0.3
+    openEnums: 1.0.5
+    publicExports: 0.1.2
+    responseFormat: 1.1.0
+    retries: 3.1.2
+    sdkHooks: 1.3.0
+    serverEvents: 1.1.1
+    serverEventsSentinels: 0.1.0
+    stringNumberFormats: 1.0.0
+    unions: 3.1.15
+trackedFiles:
+  .gitattributes:
+    id: 24139dae6567
+    pristine_git_object: 4d75d59008e4d8609876d263419a9dc56c8d6f3a
+  USAGE.md:
+    id: 3aed33ce6e6f
+    pristine_git_object: fc73fd5b6500698a860885fc60f4a2ffe9d0ae52
+  _vscode/settings.json: {}
+  docs/errors/cancelinteractionbyidclienterror.md:
+    id: 0e1e25abb2d2
+    pristine_git_object: fee5d037968fba50f349b5e170b4981491fb9fc7
+  docs/errors/cancelinteractionbyidservererror.md:
+    id: 6d0e5f741758
+    pristine_git_object: 151fa38ca5ca332457187ccae3cbc3d3455cee1c
+  docs/errors/createinteractionclienterror.md:
+    id: 597e97da7300
+    pristine_git_object: d681a77fa163c1766498cdd1123c3b435c4a3b01
+  docs/errors/createinteractionservererror.md:
+    id: 6f2b3733ec9f
+    pristine_git_object: 193597883fd40bf3b75cda2de2456c096292398a
+  docs/errors/deleteinteractionclienterror.md:
+    id: 2a3987d5ea23
+    pristine_git_object: 287d8d46088d28e10d0a427ebb82a26594cf1761
+  docs/errors/deleteinteractionservererror.md:
+    id: 14aec3c3b5d2
+    pristine_git_object: 93eb737c9f0ace270d75605d5710d11a590b177c
+  docs/errors/getinteractionbyidclienterror.md:
+    id: 33e553489e4b
+    pristine_git_object: d7cd5018cda139c0feca8e800678cd66222758d3
+  docs/errors/getinteractionbyidservererror.md:
+    id: a58cc7188b54
+    pristine_git_object: db3b62d6781ceab999f4009e29feb0cc8697f58d
+  docs/models/cancelinteractionbyidglobals.md:
+    id: 570312fc2850
+    pristine_git_object: 272fbb6d32a785f6f03ec79d8df9e7216a188d4d
+  docs/models/cancelinteractionbyidrequest.md:
+    id: 31112dfc8caf
+    pristine_git_object: 2766366745784041e69ef8f24f755b922ebd737d
+  docs/models/createagentglobals.md:
+    id: 1e0d9cf642f5
+    pristine_git_object: 175f982c4135ea0bf8a9159d0b0b0ba6a0b5ac93
+  docs/models/createagentrequest.md: {}
+  docs/models/createcredentialglobals.md: {}
+  docs/models/createcredentialrequest.md: {}
+  docs/models/createenvironmentglobals.md: {}
+  docs/models/createenvironmentrequest.md: {}
+  docs/models/createinteractionglobals.md:
+    id: 6988b2ad66c6
+    pristine_git_object: a6737f74fa3e44c754134479415e663713d53c38
+  docs/models/createinteractionrequest.md:
+    id: f396cf368aa6
+    pristine_git_object: 21904c16d96fe4386d487205945117486719e85a
+  docs/models/createinteractionrequestbody.md: {}
+  docs/models/createinteractionresponse.md:
+    id: ea76e5c6b7b0
+    pristine_git_object: 9bd82e14a009ce4779da214133a899be6dd02355
+  docs/models/createtriggerglobals.md: {}
+  docs/models/createtriggerrequest.md: {}
+  docs/models/createvoiceglobals.md: {}
+  docs/models/createvoicerequest.md: {}
+  docs/models/createwebhookglobals.md:
+    id: 80ea8a260876
+    pristine_git_object: f156beba482cfffe5209f66563165a4abd241680
+  docs/models/createwebhookrequest.md: {}
+  docs/models/deleteagentglobals.md:
+    id: d6bc68d20595
+    pristine_git_object: 94344733e44de9411213585b88ea533bce57bce9
+  docs/models/deleteagentrequest.md:
+    id: 6411b6df1c85
+    pristine_git_object: ba9b718ef8017b35e49928b2ae4a4d1a5435c477
+  docs/models/deletecredentialglobals.md: {}
+  docs/models/deletecredentialrequest.md: {}
+  docs/models/deleteenvironmentglobals.md: {}
+  docs/models/deleteenvironmentrequest.md: {}
+  docs/models/deleteinteractionglobals.md:
+    id: 71adc119e543
+    pristine_git_object: cfa7ca1d7a80b5b181ecb7393dbbda9171bd1e43
+  docs/models/deleteinteractionrequest.md:
+    id: cf2f6e5a9616
+    pristine_git_object: d03d33c630991ccc50f0fe53dd5f8b504fa668ca
+  docs/models/deletetriggerglobals.md: {}
+  docs/models/deletetriggerrequest.md: {}
+  docs/models/deletevoiceglobals.md: {}
+  docs/models/deletevoicerequest.md: {}
+  docs/models/deletewebhookglobals.md:
+    id: cc5c8013e685
+    pristine_git_object: 89ff97e3b2dd72864ee0e84668de95a57c197b5b
+  docs/models/deletewebhookrequest.md:
+    id: 45e7311fd62f
+    pristine_git_object: 1e8a665c59196ddc9daa0fc5e14d4a73bcd8ddb9
+  docs/models/getagentglobals.md:
+    id: a6fd02dd709e
+    pristine_git_object: 6446986a651478222bc5466decc28ffc05a4060c
+  docs/models/getagentrequest.md:
+    id: 743f3a4630be
+    pristine_git_object: 18f9e6e5860e43e4ef4eab95e72efcbb4a4d376d
+  docs/models/getcredentialglobals.md: {}
+  docs/models/getcredentialrequest.md: {}
+  docs/models/getenvironmentfilesglobals.md: {}
+  docs/models/getenvironmentfilesrequest.md: {}
+  docs/models/getenvironmentglobals.md: {}
+  docs/models/getenvironmentrequest.md: {}
+  docs/models/getinteractionbyidglobals.md:
+    id: c396d78504db
+    pristine_git_object: 616622c47b9e0d4d1772f0ccfc4f957666026930
+  docs/models/getinteractionbyidrequest.md:
+    id: 57baabaca0a6
+    pristine_git_object: b7ded845d0904e2538b7aef5b9000ccd07b95d0f
+  docs/models/getinteractionbyidresponse.md:
+    id: ed7990538a97
+    pristine_git_object: 0fd8298c592e343e164660740e7329b9ad709a8e
+  docs/models/gettriggerglobals.md: {}
+  docs/models/gettriggerrequest.md: {}
+  docs/models/getvoiceglobals.md: {}
+  docs/models/getvoicerequest.md: {}
+  docs/models/getwebhookglobals.md:
+    id: f87722238f17
+    pristine_git_object: 3d4b40ac9348a88bcf214575170a93f5735e90f5
+  docs/models/getwebhookrequest.md:
+    id: efc5058ad05d
+    pristine_git_object: 57c215fdd83461ac8d355a87a73549e861a71210
+  docs/models/internal/globals.md:
+    id: 9c173b87f41f
+    pristine_git_object: 72ec11eab52ef08c5bfa3febc80abcd95ef3d5ed
+  docs/models/listagentsglobals.md:
+    id: f1590011d3a8
+    pristine_git_object: 66a3b24a16fcdb041f97a40d35d2536c8cab40bd
+  docs/models/listagentsrequest.md:
+    id: aeb9bbc163f5
+    pristine_git_object: 4d93a848e351ee1dfa140396df410cd659574a31
+  docs/models/listcredentialsglobals.md: {}
+  docs/models/listcredentialsrequest.md: {}
+  docs/models/listenvironmentsglobals.md: {}
+  docs/models/listenvironmentsrequest.md: {}
+  docs/models/listtriggerexecutionsglobals.md: {}
+  docs/models/listtriggerexecutionsrequest.md: {}
+  docs/models/listtriggersglobals.md: {}
+  docs/models/listtriggersrequest.md: {}
+  docs/models/listvoicesglobals.md: {}
+  docs/models/listvoicesrequest.md: {}
+  docs/models/listwebhooksglobals.md:
+    id: 824ce6085d8c
+    pristine_git_object: c4eb0b6060bd29c5b0a1087fb370989c415dcc6a
+  docs/models/listwebhooksrequest.md:
+    id: 7a76be221bc6
+    pristine_git_object: eadc8acb2cae4815c25866e1b1f3fb3d12774bad
+  docs/models/pingwebhookglobals.md:
+    id: 1879492d5992
+    pristine_git_object: 4414515721b6b19438fe951b9006170ac8cb21a5
+  docs/models/pingwebhookrequest.md:
+    id: 337688a80563
+    pristine_git_object: e952e791869d7b11a2c5c501902149d4d26e5db7
+  docs/models/rotatesigningsecretglobals.md:
+    id: df2cc79f9017
+    pristine_git_object: 5f181f005eeafe00342084d81db0b47d3923b3c2
+  docs/models/rotatesigningsecretrequest.md:
+    id: ef1d72c46a5e
+    pristine_git_object: 305b6a0a988c821b5c6bdc6cdc50e5892cde5f02
+  docs/models/runtriggerglobals.md: {}
+  docs/models/runtriggerrequest.md: {}
+  docs/models/startenvironmentfileuploadglobals.md: {}
+  docs/models/startenvironmentfileuploadrequest.md: {}
+  docs/models/startenvironmentfileuploadresponse.md: {}
+  docs/models/updatecredentialglobals.md: {}
+  docs/models/updatecredentialrequest.md: {}
+  docs/models/updatetriggerglobals.md: {}
+  docs/models/updatetriggerrequest.md: {}
+  docs/models/updatewebhookglobals.md:
+    id: b24ca29cbeb7
+    pristine_git_object: aac4576564cbc5ce786e70680cbeb030f080a4c0
+  docs/models/updatewebhookrequest.md:
+    id: bab30f53f529
+    pristine_git_object: 58b29dddb22d16ab3daee96a75eb2249fd9bb47d
+  docs/models/utils/retryconfig.md:
+    id: 4343ac43161c
+    pristine_git_object: 69dd549ec7f5f885101d08dd502e25748183aebf
+  docs/sdks/agents/README.md:
+    id: 5965d8232fd8
+    pristine_git_object: d729ba226924774625eaaca84abccfa9441da6a0
+  docs/sdks/credentials/README.md: {}
+  docs/sdks/environments/README.md: {}
+  docs/sdks/files/README.md: {}
+  docs/sdks/interactions/README.md:
+    id: 62bf658fbb6b
+    pristine_git_object: 6d8a0e87c9f09bebe1f5247140dbaae250f88a84
+  docs/sdks/internal/README.md: {}
+  docs/sdks/triggers/README.md: {}
+  docs/sdks/voices/README.md: {}
+  docs/sdks/webhooks/README.md:
+    id: e21b32d786a4
+    pristine_git_object: 63d741848336eb38acf6ea3a7c799cb46d611961
+  docs/types/agents/agent.md:
+    id: 8fc6e9c1a6f6
+    pristine_git_object: 3712f96a400f6edd405e9acf29a06dff174c5d5c
+  docs/types/agents/agentconfig.md: {}
+  docs/types/agents/agentlistresponse.md: {}
+  docs/types/agents/agenttool.md:
+    id: 8d642f16b35a
+    pristine_git_object: 738046311c15d6269ed468974495bcea122a1417
+  docs/types/agents/baseenvironment.md:
+    id: 88df329d1d45
+    pristine_git_object: ef6102e7ade1ee91305f53202552654903b621ed
+  docs/types/credentials/credential.md: {}
+  docs/types/credentials/credentialcreateparams.md: {}
+  docs/types/credentials/credentiallistresponse.md: {}
+  docs/types/credentials/credentialupdate.md: {}
+  docs/types/credentials/environmentvariableconfig.md: {}
+  docs/types/credentials/environmentvariableconfiginjectionlocation.md: {}
+  docs/types/credentials/environmentvariableupdateconfig.md: {}
+  docs/types/credentials/environmentvariableupdateconfiginjectionlocation.md: {}
+  docs/types/credentials/httpbearerconfig.md: {}
+  docs/types/credentials/httpbearerupdateconfig.md: {}
+  docs/types/credentials/injectionlocationenum.md: {}
+  docs/types/credentials/oauth2config.md: {}
+  docs/types/credentials/oauth2updateconfig.md: {}
+  docs/types/credentials/status.md: {}
+  docs/types/credentials/type.md: {}
+  docs/types/environments/createenvironmentrequest.md: {}
+  docs/types/environments/createenvironmentrequestnetworkenum.md: {}
+  docs/types/environments/createenvironmentrequestnetworkunion.md: {}
+  docs/types/environments/environment.md: {}
+  docs/types/environments/environmentfile.md: {}
+  docs/types/environments/environmentnetworkenum.md: {}
+  docs/types/environments/environmentnetworkunion.md: {}
+  docs/types/environments/getenvironmentfilesresponse.md: {}
+  docs/types/environments/listenvironmentsresponse.md: {}
+  docs/types/environments/status.md: {}
+  docs/types/environments/type.md: {}
+  docs/types/interactions/agentoption.md: {}
+  docs/types/interactions/allowedtools.md:
+    id: 72b35d228ca9
+    pristine_git_object: 62e073111ee6f67b73a56b97abd6fc2d8aa86a1b
+  docs/types/interactions/allowlist.md: {}
+  docs/types/interactions/allowlistentry.md:
+    id: ca294fa74a66
+    pristine_git_object: a4f17afa21f1be74314355184542c86fb880c870
+  docs/types/interactions/annotation.md:
+    id: ea93b78cef4c
+    pristine_git_object: d7ed1d63c1ac6ae16afe121572eb292825bf0fd4
+  docs/types/interactions/antigravityagentconfig.md: {}
+  docs/types/interactions/argumentsdelta.md:
+    id: 8ff62fb35594
+    pristine_git_object: 90e4378ae74b155bb4ab0ceacfb974cad35fd077
+  docs/types/interactions/audiocontent.md:
+    id: e3673bcf9db6
+    pristine_git_object: a3f3f0c50295367b134b5e5909101fe43e711e88
+  docs/types/interactions/audiocontentmimetype.md:
+    id: 45857695e40f
+    pristine_git_object: bbed6f364b16525949e5a01f12c050fb79eb4e4e
+  docs/types/interactions/audiodelta.md:
+    id: 5435a0ae27b3
+    pristine_git_object: e7d3f578ba419322e5f8c9345ad2cf74accd6218
+  docs/types/interactions/audiodeltamimetype.md:
+    id: a9cfabd2a7b1
+    pristine_git_object: eb586dc649edd9cc8aa4894b6478d40ba101211d
+  docs/types/interactions/audioresponseformat.md:
+    id: 140c7d262442
+    pristine_git_object: fae4a57ea4f7dd96695e4a73709811c4c19178f9
+  docs/types/interactions/audioresponseformatdelivery.md:
+    id: cf2d22653163
+    pristine_git_object: 5a8000ba9b4ae008e646f2b6ccc82f556c259946
+  docs/types/interactions/audioresponseformatmimetype.md:
+    id: ac6a27ebc4c3
+    pristine_git_object: d920e34770dd1f169d1177894201b513beb9abe5
+  docs/types/interactions/codeexecution.md:
+    id: 0e5f3b452206
+    pristine_git_object: 56276d58b795b3a1b7b4088bf0c6de43b0f08f37
+  docs/types/interactions/codeexecutioncallarguments.md:
+    id: 968df32b1ec4
+    pristine_git_object: b0b8d06504faced3dc8a660a969bbfea7ad12988
+  docs/types/interactions/codeexecutioncalldelta.md:
+    id: f81746cb20ef
+    pristine_git_object: 47c1ccb40407cdc83aff6ed0396ad485afa32ab8
+  docs/types/interactions/codeexecutioncallstep.md:
+    id: 78ff72884310
+    pristine_git_object: 3a3579e6211948e6a2531efbbe0874679fe1afa0
+  docs/types/interactions/codeexecutionresultdelta.md:
+    id: 2c137095f1ab
+    pristine_git_object: e50c629b78779c1dfa237d1dd70b64e76d0a9494
+  docs/types/interactions/codeexecutionresultstep.md:
+    id: b87d8d1b16eb
+    pristine_git_object: 6feaf93107d3e0646423a4f3cfea429376c87d02
+  docs/types/interactions/codeexecutionresultstepresult.md: {}
+  docs/types/interactions/codemenderagentconfig.md: {}
+  docs/types/interactions/computeruse.md:
+    id: c63ebf79bf76
+    pristine_git_object: a6393ec97e79810b45cd64241cf9d222019ecbb5
+  docs/types/interactions/content.md:
+    id: db9eb1cddd44
+    pristine_git_object: 7913e57e60062e9016951486bf09620e5a681642
+  docs/types/interactions/createagentinteraction.md: {}
+  docs/types/interactions/createagentinteractionagentconfig.md: {}
+  docs/types/interactions/createagentinteractionenvironment.md: {}
+  docs/types/interactions/createagentinteractionresponseformat.md: {}
+  docs/types/interactions/createmodelinteraction.md: {}
+  docs/types/interactions/createmodelinteractionenvironment.md: {}
+  docs/types/interactions/createmodelinteractionresponseformat.md: {}
+  docs/types/interactions/deepresearchagentconfig.md:
+    id: 480de32f9c36
+    pristine_git_object: ad0b48a6463dd4d58afeb9a378552d870bb6d953
+  docs/types/interactions/disabled.md: {}
+  docs/types/interactions/disabledsafetypolicy.md: {}
+  docs/types/interactions/documentcontent.md:
+    id: b6c9b0ded646
+    pristine_git_object: 7de3c994801b07de5f309fb3f2734d3d8ec43476
+  docs/types/interactions/documentcontentmimetype.md:
+    id: f64b9a8106f4
+    pristine_git_object: b1002a01c059b7a74d8961351044fee17e0f02c3
+  docs/types/interactions/documentdelta.md:
+    id: f1cda027f2b2
+    pristine_git_object: 0866f27ec62260546560d3f0c4b07c952af6b69e
+  docs/types/interactions/documentdeltamimetype.md:
+    id: 8fe7db9281da
+    pristine_git_object: 0f5fa381826a023edb1c8c63734ea5adecc1a2ac
+  docs/types/interactions/dynamicagentconfig.md:
+    id: 347229a7aee1
+    pristine_git_object: 96d9b9856141600c3c32f55e09675110b6784cc3
+  docs/types/interactions/empty.md:
+    id: 12222568d078
+    pristine_git_object: 9348b3163fd145eb47cf3465fcaf1d57bdd0680c
+  docs/types/interactions/env.md: {}
+  docs/types/interactions/environment.md:
+    id: c8996b89b0b5
+    pristine_git_object: b1d4ae06a9de62348ea2a11898948d8859efb1e4
+  docs/types/interactions/environmentenum.md:
+    id: 645d465c134d
+    pristine_git_object: 7cb2f62ed89c791dd1bf009fdd9a27b7fedc0ea4
+  docs/types/interactions/environmentnetworkegressallowlist.md:
+    id: bc44d8ff24fe
+    pristine_git_object: e8164f7b012e74c276c308502452a5e7356aadce
+  docs/types/interactions/envvar.md: {}
+  docs/types/interactions/error.md:
+    id: 199832accca7
+    pristine_git_object: fd78ef9f0a2e90e6d827c9859b5d79a9532b32b4
+  docs/types/interactions/errorevent.md:
+    id: c8e70864dcfb
+    pristine_git_object: afd110a439fe71028361ff60ecd2834362ba4930
+  docs/types/interactions/exaaisearchconfig.md: {}
+  docs/types/interactions/filecitation.md:
+    id: e87513bc05be
+    pristine_git_object: 0a4d46380ddbdfe6084594bc5cc823ae909aa7d8
+  docs/types/interactions/filecontent.md: {}
+  docs/types/interactions/filesearch.md:
+    id: ec5a95551525
+    pristine_git_object: 299b0baa5465f27c96ac561b5254830f4d8d2568
+  docs/types/interactions/filesearchcalldelta.md:
+    id: c7257456fdde
+    pristine_git_object: 58a41d0a1c4f02f076aa241a951c7c56adb26b5d
+  docs/types/interactions/filesearchcallstep.md:
+    id: f40b333dd4ad
+    pristine_git_object: ccb6f890f61f24328c8f6f2cdf4c7ab97345b9d4
+  docs/types/interactions/filesearchresult.md:
+    id: aa3c3a9b13df
+    pristine_git_object: 5b88ecd0edf846fff5ef2d765e83b3929da31341
+  docs/types/interactions/filesearchresultdelta.md:
+    id: f6aa2da15e5d
+    pristine_git_object: 7983dba47b8ca755066c36a4c32e6d4c4907dfb6
+  docs/types/interactions/filesearchresultstep.md:
+    id: 8b748454b845
+    pristine_git_object: df9498909197d23cb3bc08c754a29ba6e90cdda3
+  docs/types/interactions/filter_.md: {}
+  docs/types/interactions/findrequest.md: {}
+  docs/types/interactions/fixrequest.md: {}
+  docs/types/interactions/function.md:
+    id: 1e031e4e6477
+    pristine_git_object: d8ba51d11993040994955d840f301e82db58934c
+  docs/types/interactions/functioncallstep.md:
+    id: 852d217e6d1b
+    pristine_git_object: 77ef9f3a1c071814f3281d2f62e2e28b3130f008
+  docs/types/interactions/functionresultdelta.md:
+    id: c00fcd81a823
+    pristine_git_object: 4d2ef3bcf3b048180f75257f71f2416bbbe288bb
+  docs/types/interactions/functionresultdeltaresult.md:
+    id: a2634e36ae1a
+    pristine_git_object: d516a1a3cdcb6c7dfaed5f216f9055c6ba570646
+  docs/types/interactions/functionresultdeltaresultunion.md: {}
+  docs/types/interactions/functionresultstep.md:
+    id: 38e4a27c8d35
+    pristine_git_object: 4874739bee00c170bafb952b7ab0a585c584fd94
+  docs/types/interactions/functionresultstepresult.md:
+    id: 34cf6260fa1d
+    pristine_git_object: 4f51fc21c1ad370d5b3956dca161cdba10c83f86
+  docs/types/interactions/functionresultstepresultunion.md: {}
+  docs/types/interactions/functionresultsubcontent.md:
+    id: 16173dcfdd5e
+    pristine_git_object: 1c6f624e56790052d23ba01c7551629ea26fea59
+  docs/types/interactions/generationconfig.md:
+    id: 663493ea9754
+    pristine_git_object: 6ad73cb99eb4f64b48eb735b2abd8cfac2220a4e
+  docs/types/interactions/googlemaps.md:
+    id: 9e92f4424092
+    pristine_git_object: cb9b5ebf343f216f486ecee968cb26b9af09e3b0
+  docs/types/interactions/googlemapscallarguments.md:
+    id: 4c04ba61df23
+    pristine_git_object: fc630167e19a9c126d3cbf58e38b49c3d7810b18
+  docs/types/interactions/googlemapscalldelta.md:
+    id: 6b1294eb0be7
+    pristine_git_object: ca352097edd6dee166aa7f6dfca99c0c84624572
+  docs/types/interactions/googlemapscallstep.md:
+    id: 96f93bba7d4d
+    pristine_git_object: 88ddb74ad320d48466660eefe9e6cbd05bd3faaa
+  docs/types/interactions/googlemapsresult.md:
+    id: 15f45a36fc8d
+    pristine_git_object: ff74bc96dc6b252d0802c4b0229067d01847023d
+  docs/types/interactions/googlemapsresultdelta.md:
+    id: 184c1fa1fbbd
+    pristine_git_object: f85dda6820c35fb33fd9841201a76ff6c81c3ab6
+  docs/types/interactions/googlemapsresultplaces.md:
+    id: fc252bbb3bdc
+    pristine_git_object: 3d55fc761c1986eda84254223ddfa59f9c2273a5
+  docs/types/interactions/googlemapsresultstep.md:
+    id: e2ff010a9e05
+    pristine_git_object: 59c09e52fb7d189a1c7f6ec8e7d201f18cd0d9b0
+  docs/types/interactions/googlesearch.md:
+    id: c5a565923b6b
+    pristine_git_object: 3ed6fc62ecfd343ba744992f15636fba36e31dd9
+  docs/types/interactions/googlesearchcallarguments.md:
+    id: 532964698c94
+    pristine_git_object: 89e1a25845371e65f8ac8e190d39a6314ef9b2f6
+  docs/types/interactions/googlesearchcalldelta.md:
+    id: b23d71ddf309
+    pristine_git_object: 19005c102b18ddc94fcecf1325984dbeeffc761d
+  docs/types/interactions/googlesearchcallstep.md:
+    id: e1893b4b8d96
+    pristine_git_object: a142b70c016de8e779b45cc7ba13bf39a6869313
+  docs/types/interactions/googlesearchcallstepsearchtype.md:
+    id: 8105cb08d79f
+    pristine_git_object: 7d7e1d97da40a9acf15d204d5a46dff741706c27
+  docs/types/interactions/googlesearchresult.md:
+    id: 81b2fed13d1a
+    pristine_git_object: 1ab878744382fd59d69ce56560806c29606d18db
+  docs/types/interactions/googlesearchresultdelta.md:
+    id: fe1e15b9f257
+    pristine_git_object: de49ddf700a5f7e7b20f58f19576f1c1fc7b4057
+  docs/types/interactions/googlesearchresultstep.md:
+    id: c1d3aec69921
+    pristine_git_object: 025a7a3516221f735f62d68c9d1f9c9dd3772ec8
+  docs/types/interactions/googlesearchsearchtype.md:
+    id: f460387eeb28
+    pristine_git_object: b389f56d03d25a7d843d27992e3613a552afc798
+  docs/types/interactions/groundingtoolcount.md:
+    id: 4e5c41bb8ae9
+    pristine_git_object: ec1632b01ecee4b491b63edb05e7c79f451b616f
+  docs/types/interactions/groundingtoolcounttype.md:
+    id: 994a501ec937
+    pristine_git_object: 4541c704f56132409f4247232eb43527b7ba8f96
+  docs/types/interactions/harmcategory.md: {}
+  docs/types/interactions/hybridsearch.md: {}
+  docs/types/interactions/imageconfig.md:
+    id: 05e87e888ba2
+    pristine_git_object: 54c4f6c50a06ec010894ee49a62c913194b5be24
+  docs/types/interactions/imageconfigaspectratio.md:
+    id: 6d1a25aa782b
+    pristine_git_object: b15da26463dd482bff5caa74dc486ace232f787c
+  docs/types/interactions/imageconfigimagesize.md:
+    id: b83617f0dba8
+    pristine_git_object: bc04fc67fa1ea312e8dab44fa50fb52849c8a954
+  docs/types/interactions/imagecontent.md:
+    id: 2649dddbbb7b
+    pristine_git_object: 0a8b8d3ffe312a5ad2c423ab720080fe6f824790
+  docs/types/interactions/imagecontentmimetype.md:
+    id: 9fb4d71bdc6e
+    pristine_git_object: 926d60ce87fec74a1db695082ecc142c7cf13d8f
+  docs/types/interactions/imagedelta.md:
+    id: 745c15f36c46
+    pristine_git_object: b8f1881f98581de05c2a969587274a7de75cea67
+  docs/types/interactions/imagedeltamimetype.md:
+    id: 54d1da1f8cdc
+    pristine_git_object: 5b82c4e4d3da72e40532281c52cdeaf31578aee6
+  docs/types/interactions/imageresponseformat.md:
+    id: 7f3758af5bf5
+    pristine_git_object: a8bda76af60e74c60d4c04ca1cac6b61bc90257e
+  docs/types/interactions/imageresponseformataspectratio.md:
+    id: 6ce6c43bf397
+    pristine_git_object: d943c8cfbb21344b7180a2b6f5932cedc28dabd1
+  docs/types/interactions/imageresponseformatdelivery.md:
+    id: 7aec35b3fe4e
+    pristine_git_object: a086b5364a75b1787e8f454fce0d428c081f00f2
+  docs/types/interactions/imageresponseformatimagesize.md:
+    id: 7ff332d2f58b
+    pristine_git_object: 94c9a3785b06b354982ea23a4df4415ca3a1e8a4
+  docs/types/interactions/imageresponseformatmimetype.md:
+    id: a142f19b3473
+    pristine_git_object: cf0c45949d18c3ed3e4a8ac8fab63a05dfc8875c
+  docs/types/interactions/interaction.md:
+    id: 587633f2b2c1
+    pristine_git_object: 407a6e4857cc6dd98b4d1648388ce0b31aae45a5
+  docs/types/interactions/interactionagentconfig.md:
+    id: 42b66bb9dc5c
+    pristine_git_object: 2bca97d0077b25ccdbf122b89280f274c97e370e
+  docs/types/interactions/interactioncompletedevent.md:
+    id: 14532180a9f9
+    pristine_git_object: 8507b3573cbd8782c4ad5f602ba44d551ab326e2
+  docs/types/interactions/interactioncreatedevent.md:
+    id: 1db6b673d5a8
+    pristine_git_object: 0829b58e6c68aeb643b0a166919b3d4bf32689ce
+  docs/types/interactions/interactionenvironment.md:
+    id: e6a5d1b8c8b7
+    pristine_git_object: 2978be7655ec82042e93fae16b539aacf9e1bbee
+  docs/types/interactions/interactionresponseformat.md:
+    id: 58a7c281eafe
+    pristine_git_object: e6022ed7657abcfe194fc31c8b98193deadb9ebd
+  docs/types/interactions/interactionsinput.md:
+    id: a2b2cb5ee73a
+    pristine_git_object: dd0531b446c9f81b67ff763ee1da4acecb1b6256
+  docs/types/interactions/interactionsseevent.md:
+    id: d0d530f552f9
+    pristine_git_object: 79cc5e07bd51b3af3a9ec729db3e77216e39a16e
+  docs/types/interactions/interactionsseeventinteraction.md: {}
+  docs/types/interactions/interactionsseeventinteractionstatus.md: {}
+  docs/types/interactions/interactionssestreamevent.md:
+    id: 0dcbdc7c75de
+    pristine_git_object: 22b7342d617fff252e190326316b5e0c28154c0a
+  docs/types/interactions/interactionstatus.md:
+    id: 4f21235fe42c
+    pristine_git_object: 3ca5beff1a273d9819c7cfa5b82c23b11cc781b0
+  docs/types/interactions/interactionstatusupdate.md:
+    id: 078870990d87
+    pristine_git_object: 40fa18055c583b48520974e677c4279bb7d7980e
+  docs/types/interactions/interactionstatusupdatestatus.md:
+    id: f2f65f0f7ee3
+    pristine_git_object: 6a2737aed1c2806a0651638987f5d5efd6a6d85b
+  docs/types/interactions/language.md:
+    id: 0a4339b814d2
+    pristine_git_object: fe25d5fd3bf011e91eb0c0f22f333b4d096254d2
+  docs/types/interactions/mcpserver.md:
+    id: c09cde681305
+    pristine_git_object: e40a9ddc9a4b12e7d582d7e2a535a225a928e97b
+  docs/types/interactions/mcpservertoolcalldelta.md:
+    id: f61217c4d666
+    pristine_git_object: 5cf1e85b2de7dc06ea6f3fa7aaced9a318ae934e
+  docs/types/interactions/mcpservertoolcallstep.md:
+    id: 6b4e8b5d5964
+    pristine_git_object: b462191a8eac629c812bf88a2bafe3d581fa8243
+  docs/types/interactions/mcpservertoolresultdelta.md:
+    id: c2dee00e2ffb
+    pristine_git_object: e8bd5d6342166c2125d09af910b986f16e4cdf0d
+  docs/types/interactions/mcpservertoolresultdeltaresult.md:
+    id: b1563b4ccce5
+    pristine_git_object: 4a74231ecbd8526df6c2db018e2e832c7f9d513c
+  docs/types/interactions/mcpservertoolresultdeltaresultunion.md: {}
+  docs/types/interactions/mcpservertoolresultstep.md:
+    id: 91ff72285302
+    pristine_git_object: 4b92d38b48cfec27118e4fcdfe87d780a4cf99e6
+  docs/types/interactions/mcpservertoolresultstepresult.md:
+    id: e5b618acb624
+    pristine_git_object: 69d9840e4ca5e32d1dd61e9fba0fa545f5fcdd5d
+  docs/types/interactions/mcpservertoolresultstepresultunion.md:
+    id: c6f487e8a562
+    pristine_git_object: 6d5bd711744323104387532c3354062a60000eb9
+  docs/types/interactions/mediaprocessing.md: {}
+  docs/types/interactions/mediaresolution.md:
+    id: f2139f6d1122
+    pristine_git_object: c30b7ec68c5a15a4b83089d3d01487bb31bff837
+  docs/types/interactions/method.md: {}
+  docs/types/interactions/modalitytokens.md:
+    id: f254c0e430ec
+    pristine_git_object: 5daf77f250d714632742f14a4052f6ccd791a5f3
+  docs/types/interactions/mode.md: {}
+  docs/types/interactions/model.md: {}
+  docs/types/interactions/modeloutputstep.md:
+    id: 8c344fb767a2
+    pristine_git_object: ffec7f7a7b42ecdb1b4b87e8990dbbf2b9303d76
+  docs/types/interactions/network.md: {}
+  docs/types/interactions/networkenum.md: {}
+  docs/types/interactions/parallelaisearchconfig.md: {}
+  docs/types/interactions/placecitation.md:
+    id: 909cb78825e2
+    pristine_git_object: 563f91e2d2457088fe916ed2874822a1f079c3a6
+  docs/types/interactions/processing.md: {}
+  docs/types/interactions/processingcalldelta.md: {}
+  docs/types/interactions/processingcallstep.md: {}
+  docs/types/interactions/processingenum.md: {}
+  docs/types/interactions/processingresultdelta.md: {}
+  docs/types/interactions/processingresultstep.md: {}
+  docs/types/interactions/ragresource.md: {}
+  docs/types/interactions/ragretrievalconfig.md: {}
+  docs/types/interactions/ragstoreconfig.md: {}
+  docs/types/interactions/ranking.md: {}
+  docs/types/interactions/rankservice.md: {}
+  docs/types/interactions/resolution.md: {}
+  docs/types/interactions/responseformat.md:
+    id: 6b8587abf5d1
+    pristine_git_object: bd69a74c4d5b8253ed4377714576d0bebe685415
+  docs/types/interactions/responsemodality.md:
+    id: a190e1d5026e
+    pristine_git_object: 3ffd53bce0113ecca2a02716eae8b3dfcbff59f9
+  docs/types/interactions/retrieval.md:
+    id: 00c7dff70b9c
+    pristine_git_object: a7ebe13c776d50d70010db71c2a90ce330fb0943
+  docs/types/interactions/retrievalcallarguments.md: {}
+  docs/types/interactions/retrievalcalldelta.md: {}
+  docs/types/interactions/retrievalcalldeltaretrievaltype.md: {}
+  docs/types/interactions/retrievalcallstep.md: {}
+  docs/types/interactions/retrievalcallstepretrievaltype.md: {}
+  docs/types/interactions/retrievalresultdelta.md: {}
+  docs/types/interactions/retrievalresultstep.md: {}
+  docs/types/interactions/retrievalretrievaltype.md: {}
+  docs/types/interactions/reviewsnippet.md:
+    id: 8ca0e39c6ac4
+    pristine_git_object: 11175d42b48de36f99871be6258aaa3029d0d43b
+  docs/types/interactions/safetysetting.md: {}
+  docs/types/interactions/servicetier.md:
+    id: 2c9da80000f5
+    pristine_git_object: 3ad9700dc8d399df56335716704073e0aa9b3922
+  docs/types/interactions/sessionconfig.md: {}
+  docs/types/interactions/smarttranscriptionmode.md: {}
+  docs/types/interactions/source.md:
+    id: 8de8d1751af3
+    pristine_git_object: cfa1bd916de4d315535832d169ef4c73304fce38
+  docs/types/interactions/sourcetype.md:
+    id: 2cbb2b3377f7
+    pristine_git_object: ad32af2ebe93367209f7f7dce7c58bc07eb0723e
+  docs/types/interactions/speakerconfig.md: {}
+  docs/types/interactions/speechannotation.md: {}
+  docs/types/interactions/speechconfig.md: {}
+  docs/types/interactions/speechconfigunion.md: {}
+  docs/types/interactions/staticmediaprocessing.md: {}
+  docs/types/interactions/status.md: {}
+  docs/types/interactions/step.md:
+    id: bf3455595964
+    pristine_git_object: 47a21e94b38721c6f8bdd5ce98cfeeba41478545
+  docs/types/interactions/stepdelta.md:
+    id: ba9cd24d836c
+    pristine_git_object: 7fe1023f50ae82c3e28ded810e2a9ba6ec3ca578
+  docs/types/interactions/stepdeltadata.md:
+    id: 92a501f549f1
+    pristine_git_object: 654f737d575fa2fc91549523fc90b76044a6051f
+  docs/types/interactions/stepdeltametadata.md: {}
+  docs/types/interactions/stepstart.md:
+    id: 0c5228b391a7
+    pristine_git_object: 837c69d6c994614afe0dbc510356d33d9dd46446
+  docs/types/interactions/stepstop.md:
+    id: a907db45729f
+    pristine_git_object: 1ae78c7272caf4bc9a748e3319d3bcfab2f7c943
+  docs/types/interactions/task.md: {}
+  docs/types/interactions/textannotationdelta.md:
+    id: 3cab69e4331b
+    pristine_git_object: b3e7b0731f7f6bc5e07c1b6e695501bcd6a7600a
+  docs/types/interactions/textcontent.md:
+    id: 88006398f171
+    pristine_git_object: a3fcf775d51604a6b79ee3976fd9c501c32123b8
+  docs/types/interactions/textdelta.md:
+    id: f1bbc6493be8
+    pristine_git_object: b5c8d7f939ec800174557a8dc011ef297f7e7396
+  docs/types/interactions/textresponseformat.md:
+    id: 403fe9f36d2a
+    pristine_git_object: 693ff8712aa1f5b4e685d8818235f93a64a872f7
+  docs/types/interactions/textresponseformatmimetype.md:
+    id: f24c5f5dfdb7
+    pristine_git_object: 221a8d7f5300676b997f717fdec607c12a953a67
+  docs/types/interactions/thinkinglevel.md:
+    id: f2ab23f7fd38
+    pristine_git_object: 9b7d2440e7f83512766a81b9744bb6fd24ac61b5
+  docs/types/interactions/thinkingsummaries.md:
+    id: feb4a35be22d
+    pristine_git_object: efa4a5b67dc050c2425e56991ff8662b753c0016
+  docs/types/interactions/thoughtsignaturedelta.md:
+    id: 8acf9cc181b4
+    pristine_git_object: 4bba46dc2cab0ba69a6be92b6fe9e43a90b8bdc6
+  docs/types/interactions/thoughtstep.md:
+    id: 51589ba426bc
+    pristine_git_object: f51f8f72780f8d12b449b09f2af3e84120d65e6a
+  docs/types/interactions/thoughtsummarycontent.md:
+    id: d49398d69f2a
+    pristine_git_object: 2917d1b5b0a0755a64406407e7208afe6d84dfc2
+  docs/types/interactions/thoughtsummarydelta.md:
+    id: cc46a9483f15
+    pristine_git_object: 720dc67b71d7333ced62d3d76e5fe44c661e6fc2
+  docs/types/interactions/threshold.md: {}
+  docs/types/interactions/tool.md:
+    id: 4fb67806e9f2
+    pristine_git_object: 8a4a2d0242389aa2df32401c27c83af4d3dfd4d0
+  docs/types/interactions/toolchoice.md:
+    id: 5f5fa2731214
+    pristine_git_object: 0e390acf2a924d02ca9f984a7fef34103add1362
+  docs/types/interactions/toolchoiceconfig.md:
+    id: 1d7e638b5bf0
+    pristine_git_object: 2b7a73c932b9a61592e00017bf41b1d78d72585c
+  docs/types/interactions/toolchoicetype.md:
+    id: 128b841a7e5f
+    pristine_git_object: 3e6885a8584ead8f044192b4803279850a29a937
+  docs/types/interactions/transcriptionconfig.md: {}
+  docs/types/interactions/transcriptionconfigmode.md: {}
+  docs/types/interactions/transcriptionconfigmodeenum.md: {}
+  docs/types/interactions/transcriptionmode.md: {}
+  docs/types/interactions/transform.md: {}
+  docs/types/interactions/urlcitation.md:
+    id: 69dac7631280
+    pristine_git_object: 3ca2db49471b41ccd7cdb70ad6fd89321e61e30a
+  docs/types/interactions/urlcontext.md:
+    id: 8f93fa9153a7
+    pristine_git_object: e99c120eb306fcd7f661098c77fdeecc1e7f629b
+  docs/types/interactions/urlcontextcallarguments.md: {}
+  docs/types/interactions/urlcontextcalldelta.md:
+    id: 6d5697a8564b
+    pristine_git_object: 8d7582ebb7ec0f138da977e9a96486b2c912d404
+  docs/types/interactions/urlcontextcallstep.md:
+    id: 75da776caf2d
+    pristine_git_object: 45e68aa5a7f01dda6f6e40e81bb84cd61d004fd4
+  docs/types/interactions/urlcontextresult.md: {}
+  docs/types/interactions/urlcontextresultdelta.md:
+    id: 5267b2b97e0d
+    pristine_git_object: 9a0fdcfdf0fa57ce546a1ced88c8be405d4d8626
+  docs/types/interactions/urlcontextresultstatus.md: {}
+  docs/types/interactions/urlcontextresultstep.md:
+    id: 8f8ecf58219b
+    pristine_git_object: 5a10b8f1daa9f909a4817ba6b1970afe3d1593d6
+  docs/types/interactions/usage.md:
+    id: 88b4790287d3
+    pristine_git_object: afc7af4a2ff0e44079f6812c8a4d872cc80cc000
+  docs/types/interactions/userinputstep.md:
+    id: bd1c0082b3e6
+    pristine_git_object: f062332d2ef75f9ee0b43066668e0bbab0511faf
+  docs/types/interactions/verbatimtranscriptionmode.md: {}
+  docs/types/interactions/vertexaisearchconfig.md:
+    id: 4bab7b85857a
+    pristine_git_object: 5c03f4b2562ab8b7e216fcc1ede28979b844481f
+  docs/types/interactions/videoconfig.md: {}
+  docs/types/interactions/videocontent.md:
+    id: c635123bcaa6
+    pristine_git_object: 3350f463c36508994ea7230e972db08092cca9ef
+  docs/types/interactions/videocontentmimetype.md:
+    id: eb32208f9356
+    pristine_git_object: de05e1c3d0c85089602d96cfd653731ccecea7cc
+  docs/types/interactions/videodelta.md:
+    id: 4b8be535fa4c
+    pristine_git_object: 952828a272c25233213662bc25ccceafcc54be94
+  docs/types/interactions/videodeltamimetype.md:
+    id: 92ddc163dabb
+    pristine_git_object: e3e6e5593332c525f87bcb7692966599dabb71cb
+  docs/types/interactions/videoresponseformat.md: {}
+  docs/types/interactions/videoresponseformataspectratio.md: {}
+  docs/types/interactions/videoresponseformatdelivery.md: {}
+  docs/types/interactions/visualization.md:
+    id: 3fa1f78d2cbe
+    pristine_git_object: f8f5d4ef5cf7f45cd5fd52dd5a19a15c1a56a125
+  docs/types/interactions/webhookconfig.md:
+    id: 15a1286b90b3
+    pristine_git_object: ef64ce9ee0c1f4bfbe076afdd6f60dd2333185c7
+  docs/types/interactions/wordinfo.md: {}
+  docs/types/security.md: {}
+  docs/types/triggers/listtriggerexecutionsresponse.md: {}
+  docs/types/triggers/listtriggersresponse.md: {}
+  docs/types/triggers/trigger.md: {}
+  docs/types/triggers/triggercreateparams.md: {}
+  docs/types/triggers/triggerexecution.md: {}
+  docs/types/triggers/triggerexecutionstatus.md: {}
+  docs/types/triggers/triggerstatus.md: {}
+  docs/types/triggers/triggerupdate.md: {}
+  docs/types/triggers/triggerupdatestatus.md: {}
+  docs/types/voices/audiodata.md: {}
+  docs/types/voices/createvoicerequest.md: {}
+  docs/types/voices/deletevoiceresponse.md: {}
+  docs/types/voices/listvoicesresponse.md: {}
+  docs/types/voices/pitch.md: {}
+  docs/types/voices/promptedvoice.md: {}
+  docs/types/voices/replicatedvoice.md: {}
+  docs/types/voices/voiceinput.md: {}
+  docs/types/voices/voiceoutput.md: {}
+  docs/types/voices/voicetype.md: {}
+  docs/types/webhooks/pingwebhookrequest.md:
+    id: d12c08d78630
+    pristine_git_object: e862e47346ed8014ad3e8e2e50c42e6f6d049d2a
+  docs/types/webhooks/revocationbehavior.md:
+    id: 3b007047943a
+    pristine_git_object: e53b3030da765ff406b7d62b7483d17937176e31
+  docs/types/webhooks/rotatesigningsecretrequest.md:
+    id: 305ea0a51bc5
+    pristine_git_object: 3cb2fa386d564e51b1a6759aa4ccf6e6b64cff9a
+  docs/types/webhooks/signingsecret.md:
+    id: 79076e3ff4cb
+    pristine_git_object: 45c93f26c42104d2176bddf15d66f228facd3763
+  docs/types/webhooks/webhook.md:
+    id: a107b5c948c9
+    pristine_git_object: dda1663a2450feff852514c55e376efbd8de158c
+  docs/types/webhooks/webhookinput.md:
+    id: 4808f9b1e7bd
+    pristine_git_object: a365b3dd1365de955187201b61430ab5d44277ee
+  docs/types/webhooks/webhooklistresponse.md: {}
+  docs/types/webhooks/webhookpingresponse.md: {}
+  docs/types/webhooks/webhookrotatesigningsecretresponse.md: {}
+  docs/types/webhooks/webhookstate.md:
+    id: e6fe6d9e6511
+    pristine_git_object: 2ef6d470ee9e210d5d18c9b59f09bc8a0de8210f
+  docs/types/webhooks/webhooksubscribedevent.md: {}
+  docs/types/webhooks/webhookupdate.md:
+    id: 427f239fec24
+    pristine_git_object: b7c334baf2a4255b987af381b553aa704ffeb86d
+  docs/types/webhooks/webhookupdatestate.md:
+    id: 4b34ef39247f
+    pristine_git_object: df8309653a56064f70fba894aad135373c56450e
+  docs/types/webhooks/webhookupdatesubscribedevent.md: {}
+  py.typed:
+    id: 258c3ed47ae4
+    pristine_git_object: 3e38f1a929f7d6b1d6de74604aa87e3d8f010544
+  pylintrc:
+    id: 7ce8b9f946e6
+    pristine_git_object: c00200cfd072e9febac5d6be783da1925d11dac0
+  pyproject.toml:
+    id: 5d07e7d72637
+    pristine_git_object: 7c9917c5e03a8cff48cb59b44892ffac17c9f328
+  scripts/prepare_readme.py:
+    id: e0c5957a6035
+    pristine_git_object: 311df6ba3070477e8bcac34d864e3dedad7214ae
+  scripts/publish.sh:
+    id: fe273b08f514
+    pristine_git_object: c35748f360329c2bc370e9b189f49b1a360b2c48
+  src/google/genai/__init__.py:
+    id: 089de0a1030c
+    pristine_git_object: 833c68cd526fe34aab2b7e7c45f974f7f4b9e120
+  src/google/genai/_hooks/__init__.py:
+    id: d6c7744ede54
+    pristine_git_object: 2ee66cdd592fe41731c24ddd407c8ca31c50aec1
+  src/google/genai/_hooks/adapters.py: {}
+  src/google/genai/_hooks/asyncsdkhooks.py: {}
+  src/google/genai/_hooks/asynctypes.py: {}
+  src/google/genai/_hooks/google_genai_auth.py: {}
+  src/google/genai/_hooks/sdkhooks.py:
+    id: 978a45a77ce4
+    pristine_git_object: 372de795054efae09f2b91b6bcf6a190d1837d37
+  src/google/genai/_hooks/types.py:
+    id: b8c061506a26
+    pristine_git_object: c450e85c6c3c904cac165dbda4a7a729436867cf
+  src/google/genai/_internal.py: {}
+  src/google/genai/_version.py:
+    id: 17673cd82669
+    pristine_git_object: 58e25ba81d93d8bbe13614894ef482212446fc3d
+  src/google/genai/agents.py:
+    id: aff3c1fac716
+    pristine_git_object: 07e484a22dbe102c5aa7562d3384fabbe52085d8
+  src/google/genai/basesdk.py:
+    id: 0b4cad9f27d0
+    pristine_git_object: cf422ba738cdb23f6debb3a42c52b9346609c43c
+  src/google/genai/credentials.py: {}
+  src/google/genai/environments.py: {}
+  src/google/genai/errors/__init__.py:
+    id: 327ff203e9ac
+    pristine_git_object: 97562e8764aa431a8c82bd1fb41df0a4d28b016f
+  src/google/genai/errors/cancelinteractionbyid.py:
+    id: ba80bc9313b3
+    pristine_git_object: 76aea012a93f867adbfee319459776ff4448975b
+  src/google/genai/errors/createinteraction.py:
+    id: d1f1b97aed33
+    pristine_git_object: 6c7d1e4174970fc41d3719129be725ec08e3d0c6
+  src/google/genai/errors/deleteinteraction.py:
+    id: facdb6568751
+    pristine_git_object: 8804c40f2874466c863e4516a7902935eb382e5c
+  src/google/genai/errors/genaidefaulterror.py:
+    id: 60714ab608e7
+    pristine_git_object: df1ca0ec5bf9e29c89b86c8d440a9f3d64756238
+  src/google/genai/errors/genaierror.py:
+    id: c31cf809ab15
+    pristine_git_object: f5e67cb57d05583cae3812f8a73b7cfc04a6408f
+  src/google/genai/errors/getinteractionbyid.py:
+    id: f9a52c84dde1
+    pristine_git_object: f1dabc5e17a7bd25ee5a7eee84f364ad6b7ff3c2
+  src/google/genai/errors/no_response_error.py:
+    id: 87b0c1d7fd96
+    pristine_git_object: 1deab64bc43e1e65bf3c412d326a4032ce342366
+  src/google/genai/errors/responsevalidationerror.py:
+    id: 50a1668112c9
+    pristine_git_object: 5900059db6dee7b964ef68395c933ba82fcdde95
+  src/google/genai/files.py: {}
+  src/google/genai/httpclient.py:
+    id: 3f86ec472cd2
+    pristine_git_object: 89560b566073785535643e694c112bedbd3db13d
+  src/google/genai/interactions.py:
+    id: d002e74891d8
+    pristine_git_object: c000d6237e5c962783e30ddabbc5254ac5dbf7aa
+  src/google/genai/lib/compat_errors.py: {}
+  src/google/genai/models/__init__.py:
+    id: 33ec7ff23bc8
+    pristine_git_object: c12bdd7fdf11862c9741146a33efe35878d456f5
+  src/google/genai/models/cancelinteractionbyid.py:
+    id: 8f260344b79d
+    pristine_git_object: 66b1a0860046f7e9070502a3dd6edfec732bff16
+  src/google/genai/models/createagent.py:
+    id: d832bface8f3
+    pristine_git_object: da4481fe34e1e096c2609c30c6c3d1bcd2eaa6d6
+  src/google/genai/models/createcredential.py: {}
+  src/google/genai/models/createenvironment.py: {}
+  src/google/genai/models/createinteraction.py:
+    id: 644b4aa14a07
+    pristine_git_object: bc8763a638f962e1d623bb1214b8b06aa0afa29d
+  src/google/genai/models/createtrigger.py: {}
+  src/google/genai/models/createvoice.py: {}
+  src/google/genai/models/createwebhook.py:
+    id: 5534fe45d5b1
+    pristine_git_object: 10a2654751bcbe940d880b20d07c8cb9784795ae
+  src/google/genai/models/deleteagent.py:
+    id: 4dcc007a1b50
+    pristine_git_object: d2a693ca56464ffcabe771d98072548ac39b378c
+  src/google/genai/models/deletecredential.py: {}
+  src/google/genai/models/deleteenvironment.py: {}
+  src/google/genai/models/deleteinteraction.py:
+    id: 11c28932c77b
+    pristine_git_object: 4fba2061761b198805581b62d7e5cac5cb6621c1
+  src/google/genai/models/deletetrigger.py: {}
+  src/google/genai/models/deletevoice.py: {}
+  src/google/genai/models/deletewebhook.py:
+    id: 46271cb98ac9
+    pristine_git_object: 0470a295d49e1b82dc490701254b3f88b24b54ec
+  src/google/genai/models/getagent.py:
+    id: ac8838fa791b
+    pristine_git_object: 9ef12f7e347f5e7728eb386eac2f1add5eaf07dc
+  src/google/genai/models/getcredential.py: {}
+  src/google/genai/models/getenvironment.py: {}
+  src/google/genai/models/getenvironmentfiles.py: {}
+  src/google/genai/models/getinteractionbyid.py:
+    id: 2d379a5217df
+    pristine_git_object: 01977e9234f86ec06ceeb3a8ea9bfb2fba8bd2f3
+  src/google/genai/models/gettrigger.py: {}
+  src/google/genai/models/getvoice.py: {}
+  src/google/genai/models/getwebhook.py:
+    id: 7755ffe07ed4
+    pristine_git_object: 45fd6f99268c5855d3be861a098d07541a1b4011
+  src/google/genai/models/internal/__init__.py:
+    id: 34d01b7f63dd
+    pristine_git_object: 6cbedeef514ae3d53a83c6d9bb455e2bb2866e32
+  src/google/genai/models/internal/globals.py:
+    id: 5b0eaea39050
+    pristine_git_object: b6bc2b631c06bed26e04e29dda5027d8325c410b
+  src/google/genai/models/listagents.py:
+    id: 6f132d3a141a
+    pristine_git_object: 418d0d345d4086fc306b20e935eb33d1009b764b
+  src/google/genai/models/listcredentials.py: {}
+  src/google/genai/models/listenvironments.py: {}
+  src/google/genai/models/listtriggerexecutions.py: {}
+  src/google/genai/models/listtriggers.py: {}
+  src/google/genai/models/listvoices.py: {}
+  src/google/genai/models/listwebhooks.py:
+    id: d2e2ba73641b
+    pristine_git_object: 33ebde0b0cddba60decef2171f27498a858345b9
+  src/google/genai/models/pingwebhook.py:
+    id: 09667870d50f
+    pristine_git_object: a48832e2245e6b6dfcdc7d64bcfd4ccf19825c79
+  src/google/genai/models/rotatesigningsecret.py:
+    id: 7d52dbd2a563
+    pristine_git_object: c67e9e5ab6bc7e9cdc77f605b208ae577bd17aa9
+  src/google/genai/models/runtrigger.py: {}
+  src/google/genai/models/startenvironmentfileupload.py: {}
+  src/google/genai/models/updatecredential.py: {}
+  src/google/genai/models/updatetrigger.py: {}
+  src/google/genai/models/updatewebhook.py:
+    id: 0baf5e98eb23
+    pristine_git_object: 3c5e461d2528c02502ce47ade177bcbf6a15d776
+  src/google/genai/py.typed:
+    id: c95051ad4aa5
+    pristine_git_object: 3e38f1a929f7d6b1d6de74604aa87e3d8f010544
+  src/google/genai/resources/__init__.py: {}
+  src/google/genai/resources/agents/__init__.py: {}
+  src/google/genai/resources/credentials/__init__.py: {}
+  src/google/genai/resources/environments/__init__.py: {}
+  src/google/genai/resources/interactions/__init__.py: {}
+  src/google/genai/resources/interactions/annotation/__init__.py: {}
+  src/google/genai/resources/interactions/codeexecutioncallstep/__init__.py: {}
+  src/google/genai/resources/interactions/codemenderagentconfig/__init__.py: {}
+  src/google/genai/resources/interactions/codemenderagentconfig/findrequest/__init__.py: {}
+  src/google/genai/resources/interactions/codemenderagentconfig/fixrequest/__init__.py: {}
+  src/google/genai/resources/interactions/environment/__init__.py: {}
+  src/google/genai/resources/interactions/environment/environmentnetworkegressallowlist/__init__.py: {}
+  src/google/genai/resources/interactions/errorevent/__init__.py: {}
+  src/google/genai/resources/interactions/googlemapscallstep/__init__.py: {}
+  src/google/genai/resources/interactions/googlemapsresult/__init__.py: {}
+  src/google/genai/resources/interactions/googlemapsresult/place/__init__.py: {}
+  src/google/genai/resources/interactions/googlemapsresultstep/__init__.py: {}
+  src/google/genai/resources/interactions/googlemapsresultstep/result/__init__.py: {}
+  src/google/genai/resources/interactions/googlemapsresultstep/result/place/__init__.py: {}
+  src/google/genai/resources/interactions/googlesearchcallstep/__init__.py: {}
+  src/google/genai/resources/interactions/googlesearchresultstep/__init__.py: {}
+  src/google/genai/resources/interactions/placecitation/__init__.py: {}
+  src/google/genai/resources/interactions/retrievalcalldelta/__init__.py: {}
+  src/google/genai/resources/interactions/retrievalcallstep/__init__.py: {}
+  src/google/genai/resources/interactions/stepdelta/__init__.py: {}
+  src/google/genai/resources/interactions/tool/__init__.py: {}
+  src/google/genai/resources/interactions/tool/retrieval/__init__.py: {}
+  src/google/genai/resources/interactions/transcriptionmode/__init__.py: {}
+  src/google/genai/resources/interactions/urlcontextcallstep/__init__.py: {}
+  src/google/genai/resources/interactions/urlcontextresultstep/__init__.py: {}
+  src/google/genai/resources/interactions/usage/__init__.py: {}
+  src/google/genai/resources/interactions/videocontent/__init__.py: {}
+  src/google/genai/resources/triggers/__init__.py: {}
+  src/google/genai/resources/voices/__init__.py: {}
+  src/google/genai/resources/voices/createvoicerequest/__init__.py: {}
+  src/google/genai/resources/voices/voicelistresponse/__init__.py: {}
+  src/google/genai/resources/webhooks/__init__.py: {}
+  src/google/genai/sdk.py:
+    id: 0486b92806c7
+    pristine_git_object: f2e38527840e5ecf42645d984b6c5fe8eeca69aa
+  src/google/genai/sdkconfiguration.py:
+    id: 3214c6ca1591
+    pristine_git_object: 29fc92bdfc8dd9f4e040a307f50596d9a9eed421
+  src/google/genai/triggers.py: {}
+  src/google/genai/types/__init__.py:
+    id: 692c9839eec7
+    pristine_git_object: fc76fe0c5505e29859b5d2bb707d48fd27661b8c
+  src/google/genai/types/agents/__init__.py:
+    id: b98ce99d88bb
+    pristine_git_object: ad729354883618963778021de1c1017c5de512fe
+  src/google/genai/types/agents/agent.py:
+    id: 3251418439eb
+    pristine_git_object: c4c2ba86ce75177a2311297bea0369fecf521ffe
+  src/google/genai/types/agents/agentlistresponse.py: {}
+  src/google/genai/types/agents/agenttool.py:
+    id: b165822e6ea7
+    pristine_git_object: 8ca372aeb44d66fa2b006add89474831868547e1
+  src/google/genai/types/base64fileinput.py: {}
+  src/google/genai/types/basemodel.py:
+    id: df1f0b33222b
+    pristine_git_object: fc19a8666d23ddd7a9c3bb76349cc88be340cdb3
+  src/google/genai/types/credentials/__init__.py: {}
+  src/google/genai/types/credentials/credential.py: {}
+  src/google/genai/types/credentials/credentialcreateparams.py: {}
+  src/google/genai/types/credentials/credentiallistresponse.py: {}
+  src/google/genai/types/credentials/credentialupdate.py: {}
+  src/google/genai/types/credentials/environmentvariableconfig.py: {}
+  src/google/genai/types/credentials/environmentvariableupdateconfig.py: {}
+  src/google/genai/types/credentials/httpbearerconfig.py: {}
+  src/google/genai/types/credentials/httpbearerupdateconfig.py: {}
+  src/google/genai/types/credentials/injectionlocation_enum.py: {}
+  src/google/genai/types/credentials/oauth2config.py: {}
+  src/google/genai/types/credentials/oauth2updateconfig.py: {}
+  src/google/genai/types/environments/__init__.py: {}
+  src/google/genai/types/environments/createenvironmentrequest.py: {}
+  src/google/genai/types/environments/environment.py: {}
+  src/google/genai/types/environments/environmentfile.py: {}
+  src/google/genai/types/environments/getenvironmentfilesresponse.py: {}
+  src/google/genai/types/environments/listenvironmentsresponse.py: {}
+  src/google/genai/types/interactions/__init__.py:
+    id: 8509d6cedd3f
+    pristine_git_object: edd401ce7ae420bc1da677ef1e9443ad87e22319
+  src/google/genai/types/interactions/agentoption.py: {}
+  src/google/genai/types/interactions/allowedtools.py:
+    id: 8d9e059909e2
+    pristine_git_object: fbde526e6502861fdc60fdf28cb9799e118fa672
+  src/google/genai/types/interactions/allowlistentry.py:
+    id: 5caf8efaeea4
+    pristine_git_object: edacd19b9dbd28971f1bdb582b06db8a49e7e09f
+  src/google/genai/types/interactions/annotation.py:
+    id: 753a3854cd25
+    pristine_git_object: 5e20f9fcb5a030dec504f2698309509f7565208a
+  src/google/genai/types/interactions/antigravityagentconfig.py: {}
+  src/google/genai/types/interactions/argumentsdelta.py:
+    id: 86479a4c9c7d
+    pristine_git_object: 6f4b131420ed546d44d5f3fbc69a59b34b771da7
+  src/google/genai/types/interactions/audiocontent.py:
+    id: 75e3472fd777
+    pristine_git_object: 0e63f554ea425aaac819400da8ac3fae981b24be
+  src/google/genai/types/interactions/audiodelta.py:
+    id: e999aeff5e17
+    pristine_git_object: f43444ee67ccd151499bf31a6636b32f472a8487
+  src/google/genai/types/interactions/audioresponseformat.py:
+    id: d5343d033040
+    pristine_git_object: 69d92f2708a8d4e6599a8a7ea85abb2d51a7d395
+  src/google/genai/types/interactions/codeexecution.py:
+    id: 4252e1c1d14b
+    pristine_git_object: fe9ee3f88b90c319bccb564d9b6919596683a6bb
+  src/google/genai/types/interactions/codeexecutioncallarguments.py:
+    id: 97f9dbca736b
+    pristine_git_object: f768e10e78b47086590f58fede9dc966c3b4f394
+  src/google/genai/types/interactions/codeexecutioncalldelta.py:
+    id: 7db37af0e33b
+    pristine_git_object: b2e4124cc68b30ddff9673fc5f6a9f1b5342be4c
+  src/google/genai/types/interactions/codeexecutioncallstep.py:
+    id: cebae95ba877
+    pristine_git_object: a03fb92ae6f691d5915b398ed5865a9d9dfc6095
+  src/google/genai/types/interactions/codeexecutionresultdelta.py:
+    id: c569d8b59613
+    pristine_git_object: 7ed72b11c6cf9cd77f52d3127597df92203d13bf
+  src/google/genai/types/interactions/codeexecutionresultstep.py:
+    id: 0947d37198aa
+    pristine_git_object: 68e4bd8ed086bc417c6e75a8093df4ab1b7bc2fa
+  src/google/genai/types/interactions/codemenderagentconfig.py: {}
+  src/google/genai/types/interactions/computeruse.py:
+    id: 1b79f202d8a1
+    pristine_git_object: cddf963f69dd4ebc80d261d0a71e638088e42cd5
+  src/google/genai/types/interactions/content.py:
+    id: 48fbe0da6d76
+    pristine_git_object: e1a331d03812fc7325f348f609e84a257ee8ae5f
+  src/google/genai/types/interactions/createagentinteraction.py: {}
+  src/google/genai/types/interactions/createmodelinteraction.py: {}
+  src/google/genai/types/interactions/deepresearchagentconfig.py:
+    id: 3df6e4ff2b22
+    pristine_git_object: c0bfbba9bf90e9f172e030795ada600d60f0cf51
+  src/google/genai/types/interactions/documentcontent.py:
+    id: 76d1665127f3
+    pristine_git_object: 5888f98f22d53ba7bae475a773127feb38a9fe9f
+  src/google/genai/types/interactions/documentdelta.py:
+    id: 89180d8f225a
+    pristine_git_object: b558b59b8ed351b0e7647c9cdf7d10ca1b4703d1
+  src/google/genai/types/interactions/dynamicagentconfig.py:
+    id: c129b6c9db1b
+    pristine_git_object: dfcd5ec9fdb6da2f7737903d917742c49d069df2
+  src/google/genai/types/interactions/empty.py:
+    id: e16e3bb0b935
+    pristine_git_object: c51bc3b03414e4d2871283074d3a907fba69d602
+  src/google/genai/types/interactions/environment.py:
+    id: 970d30d0cda8
+    pristine_git_object: 10b3bfcc0bebf30567c15f8136afc4c9689fe078
+  src/google/genai/types/interactions/environmentnetworkegressallowlist.py: {}
+  src/google/genai/types/interactions/envvar.py: {}
+  src/google/genai/types/interactions/error.py:
+    id: 252487508ab7
+    pristine_git_object: 511683e19691a9c0f5d1e927d785242b37d88798
+  src/google/genai/types/interactions/errorevent.py:
+    id: 2fc45f77ffd9
+    pristine_git_object: 6e05d387e0be5ef0cb967ebea4173559b93bda84
+  src/google/genai/types/interactions/exaaisearchconfig.py: {}
+  src/google/genai/types/interactions/filecitation.py:
+    id: d2fbad87adb5
+    pristine_git_object: aa2b02832f6f99b76b11b2a9ac8a572d7e4ffddd
+  src/google/genai/types/interactions/filecontent.py: {}
+  src/google/genai/types/interactions/filesearch.py:
+    id: 2263b7327885
+    pristine_git_object: 343d15d800354c256d86d5ef42efcc40d43d432e
+  src/google/genai/types/interactions/filesearchcalldelta.py:
+    id: bf20f051d782
+    pristine_git_object: dd26258345c0bdc8b54c73df6bc669590fc7ae37
+  src/google/genai/types/interactions/filesearchcallstep.py:
+    id: d6cc3ae2de0b
+    pristine_git_object: cb664437b1dc33a3d1d1938074fb0f48be16f18f
+  src/google/genai/types/interactions/filesearchresult.py:
+    id: a47b25c1c4e4
+    pristine_git_object: ec1f4409478dcd53b47844906d4712505dcdf909
+  src/google/genai/types/interactions/filesearchresultdelta.py:
+    id: 345b8de86d25
+    pristine_git_object: 3c72fa8ae8a7bb1d9b45b5c4a1db319184635ab9
+  src/google/genai/types/interactions/filesearchresultstep.py:
+    id: fc56eae2e450
+    pristine_git_object: 461e983c606a04bda8be70647a57666a636643d9
+  src/google/genai/types/interactions/filter_.py: {}
+  src/google/genai/types/interactions/findrequest.py: {}
+  src/google/genai/types/interactions/fixrequest.py: {}
+  src/google/genai/types/interactions/function.py:
+    id: 6e35307d60e0
+    pristine_git_object: 0067050007581a265de4d773061d6e406fbbc61a
+  src/google/genai/types/interactions/functioncallstep.py:
+    id: 2c0285750233
+    pristine_git_object: d7be8f8391ed52ffbb9fcbcb9d77e6a6eeb3bc75
+  src/google/genai/types/interactions/functionresultdelta.py:
+    id: 0ac7f50e3e78
+    pristine_git_object: e62b0cc0e0a7da9870d9fa3466995359762a2f8c
+  src/google/genai/types/interactions/functionresultstep.py:
+    id: 2a857701aa9d
+    pristine_git_object: 2dea410af0034f1a8b02dfa011e4be974af0008b
+  src/google/genai/types/interactions/functionresultsubcontent.py:
+    id: 0a2c23491f2e
+    pristine_git_object: 93934e3d2c196266026c5243e8c2ed9e58f3a486
+  src/google/genai/types/interactions/generationconfig.py:
+    id: 5c1d3a7561ff
+    pristine_git_object: 807956015f64059c7adde78c18bd7e8673d0d327
+  src/google/genai/types/interactions/googlemaps.py:
+    id: 7089e408d4b3
+    pristine_git_object: 0863c4dbee12c86fe31281842f181f1897faf979
+  src/google/genai/types/interactions/googlemapscallarguments.py:
+    id: 34dbfdd7e095
+    pristine_git_object: 694586529ec1a060062eb6fbf7b9e0997b1a13d4
+  src/google/genai/types/interactions/googlemapscalldelta.py:
+    id: bfb1f3d91358
+    pristine_git_object: 65d30fa7c035a999cba89e15f0ce157042e9772e
+  src/google/genai/types/interactions/googlemapscallstep.py:
+    id: ac3e66173df4
+    pristine_git_object: 9f3e095c98330381b6d4b79a20667ba54eef3fdf
+  src/google/genai/types/interactions/googlemapsresult.py:
+    id: f7584307e05a
+    pristine_git_object: c7c88fa86017dc8a8933aaa34fdb1ef7ea13736e
+  src/google/genai/types/interactions/googlemapsresultdelta.py:
+    id: dc62c43f3923
+    pristine_git_object: e2f8f9e2cbd5bde6dad9630480d3465b446e0b11
+  src/google/genai/types/interactions/googlemapsresultplaces.py:
+    id: 487fb3776e04
+    pristine_git_object: 12075aa5d23c7b14fd2c02331417e4acf9c2b702
+  src/google/genai/types/interactions/googlemapsresultstep.py:
+    id: 82bcc76ed6d3
+    pristine_git_object: 66ba6a1adb61c2489c025b18ae67283ee95fb9d9
+  src/google/genai/types/interactions/googlesearch.py:
+    id: f47dffc53b85
+    pristine_git_object: b9738ec6b71c93379b03dca30a74a8b8fa343162
+  src/google/genai/types/interactions/googlesearchcallarguments.py:
+    id: 056784206fd3
+    pristine_git_object: 2768220e7c973ee66f7b60926a1532434e5a01f7
+  src/google/genai/types/interactions/googlesearchcalldelta.py:
+    id: 6c0ea4706871
+    pristine_git_object: e2f7140cc798aa9b608468fa2708912ff3351311
+  src/google/genai/types/interactions/googlesearchcallstep.py:
+    id: c8e14824f315
+    pristine_git_object: 2b64280c79b44f50ae91640be114a8aec818c169
+  src/google/genai/types/interactions/googlesearchresult.py:
+    id: c446b1b4a32d
+    pristine_git_object: cdbd4a72b2915bb9b03a106fdc70ed72bd7d956e
+  src/google/genai/types/interactions/googlesearchresultdelta.py:
+    id: a6b8e94860c1
+    pristine_git_object: d6556f49a9da9d1f0fe2acd40864121287091a70
+  src/google/genai/types/interactions/googlesearchresultstep.py:
+    id: 577d04051ad0
+    pristine_git_object: 8b0e556813d0d856ac2b949dbf527553e3dd2645
+  src/google/genai/types/interactions/groundingtoolcount.py:
+    id: f4fa205f3193
+    pristine_git_object: 8ff42d680a36bd2ec965af09b2637918672155e7
+  src/google/genai/types/interactions/harmcategory.py: {}
+  src/google/genai/types/interactions/hybridsearch.py: {}
+  src/google/genai/types/interactions/imageconfig.py:
+    id: fd0cfbc7ce59
+    pristine_git_object: 7e10ca0ca4abded755be7d8b255f13e27f967cc8
+  src/google/genai/types/interactions/imagecontent.py:
+    id: d0ad4bde2e16
+    pristine_git_object: 773093d47021304c4d6c66231aeb0b64246c2898
+  src/google/genai/types/interactions/imagedelta.py:
+    id: 12985fd0e55d
+    pristine_git_object: aae0e6ce83c23260e249086a14ff703c0d6627ff
+  src/google/genai/types/interactions/imageresponseformat.py:
+    id: d09c8087fe7a
+    pristine_git_object: 9640125c85723fbbf2e6b4f3498039d22b277180
+  src/google/genai/types/interactions/interaction.py: {}
+  src/google/genai/types/interactions/interactioncompletedevent.py:
+    id: 04d154de62b6
+    pristine_git_object: 21b1184d0f35fc7ea2ed963be00950177b7b2ebd
+  src/google/genai/types/interactions/interactioncreatedevent.py:
+    id: 1c9f71e14a75
+    pristine_git_object: 1f656c6ad4b060125d6a69077c5a4f636530f418
+  src/google/genai/types/interactions/interactionsinput.py:
+    id: 8ff0858f39bd
+    pristine_git_object: 0875bdcd88a9e67c9b28c33b7783484230fffb8f
+  src/google/genai/types/interactions/interactionsseevent.py:
+    id: b0c9511c7ec5
+    pristine_git_object: b7e7d3802770b6898e409bcb1767834e4e9c0a7f
+  src/google/genai/types/interactions/interactionsseeventinteraction.py: {}
+  src/google/genai/types/interactions/interactionssestreamevent.py:
+    id: e7827dc1cc08
+    pristine_git_object: 1ee97da9564bc22c02c7f781357382d8f21b4af1
+  src/google/genai/types/interactions/interactionstatusupdate.py:
+    id: f10050543f02
+    pristine_git_object: af2d42965202ef8e4b9ed5483aa7a95937046f07
+  src/google/genai/types/interactions/mcpserver.py:
+    id: 32e51baa4dd8
+    pristine_git_object: 7c4b9cd158e6d2e47027184cb3f14c0c84ab2611
+  src/google/genai/types/interactions/mcpservertoolcalldelta.py:
+    id: b20ef16c923c
+    pristine_git_object: e79205035809a2b5aa79a17d885e62f773b1bd72
+  src/google/genai/types/interactions/mcpservertoolcallstep.py:
+    id: 9a16dfbbfaf0
+    pristine_git_object: 38147cdbad3ccbad289ab0b4b0c3aa7ebcb42ed7
+  src/google/genai/types/interactions/mcpservertoolresultdelta.py:
+    id: b699fb2110d9
+    pristine_git_object: 38d60dc72d2804f8a3b29636471c43faf05c072a
+  src/google/genai/types/interactions/mcpservertoolresultstep.py:
+    id: 39ac8d488f2e
+    pristine_git_object: e5fe9b884faed4e1f3b35d3f1233500c23993e32
+  src/google/genai/types/interactions/mediaprocessing.py: {}
+  src/google/genai/types/interactions/mediaresolution.py:
+    id: d2b04114c9c9
+    pristine_git_object: 5990b9673cec5ba88769ca79918b2a41c9bd7ef9
+  src/google/genai/types/interactions/modalitytokens.py:
+    id: ae431a1f1e06
+    pristine_git_object: 5a8733586c2bdce35b5414928ea9d02b541d6335
+  src/google/genai/types/interactions/model.py: {}
+  src/google/genai/types/interactions/modeloutputstep.py:
+    id: 7f4945c17ebd
+    pristine_git_object: 45c48301ed5b5cffd252b39825b366efa80f8f75
+  src/google/genai/types/interactions/parallelaisearchconfig.py: {}
+  src/google/genai/types/interactions/placecitation.py:
+    id: 003be0518750
+    pristine_git_object: 01dea3877b78bf2db7dc61c03003d21311661a54
+  src/google/genai/types/interactions/processingcalldelta.py: {}
+  src/google/genai/types/interactions/processingcallstep.py: {}
+  src/google/genai/types/interactions/processingresultdelta.py: {}
+  src/google/genai/types/interactions/processingresultstep.py: {}
+  src/google/genai/types/interactions/ragresource.py: {}
+  src/google/genai/types/interactions/ragretrievalconfig.py: {}
+  src/google/genai/types/interactions/ragstoreconfig.py: {}
+  src/google/genai/types/interactions/ranking.py: {}
+  src/google/genai/types/interactions/rankservice.py: {}
+  src/google/genai/types/interactions/responseformat.py: {}
+  src/google/genai/types/interactions/responsemodality.py:
+    id: 9ce4d0b19a76
+    pristine_git_object: ed1f8d3cfee0ceb8fe8953e6223f59e08909d052
+  src/google/genai/types/interactions/retrieval.py:
+    id: b178831cd0d8
+    pristine_git_object: a89b8401dca0345368b761fecfd962f01a12413b
+  src/google/genai/types/interactions/retrievalcallarguments.py: {}
+  src/google/genai/types/interactions/retrievalcalldelta.py: {}
+  src/google/genai/types/interactions/retrievalcallstep.py: {}
+  src/google/genai/types/interactions/retrievalresultdelta.py: {}
+  src/google/genai/types/interactions/retrievalresultstep.py: {}
+  src/google/genai/types/interactions/reviewsnippet.py:
+    id: 0aaf1740c2a8
+    pristine_git_object: b8a68cd774f69187c67c3254651fdaf2d4b570d6
+  src/google/genai/types/interactions/safetysetting.py: {}
+  src/google/genai/types/interactions/servicetier.py:
+    id: 8173399c37bd
+    pristine_git_object: 78bd91073c09394a0b8ec0caeaf3fe8c3879bd39
+  src/google/genai/types/interactions/sessionconfig.py: {}
+  src/google/genai/types/interactions/smarttranscriptionmode.py: {}
+  src/google/genai/types/interactions/source.py:
+    id: 9d8befd24e7c
+    pristine_git_object: f70aaa687f56e39a2d2e2e1515bb13dcf1651d47
+  src/google/genai/types/interactions/speakerconfig.py: {}
+  src/google/genai/types/interactions/speechannotation.py: {}
+  src/google/genai/types/interactions/speechconfig.py: {}
+  src/google/genai/types/interactions/staticmediaprocessing.py: {}
+  src/google/genai/types/interactions/status.py: {}
+  src/google/genai/types/interactions/step.py:
+    id: 353c72c28288
+    pristine_git_object: 1374d7095937d4baa517c63be27b66adafaed885
+  src/google/genai/types/interactions/stepdelta.py:
+    id: 37936c05045e
+    pristine_git_object: 1ba1fb6e9c3fd9cada24ba70059c802b79ede04e
+  src/google/genai/types/interactions/stepdeltadata.py:
+    id: 95f635133ff1
+    pristine_git_object: feb2046e5950f695651d6193e3f4930eb061e549
+  src/google/genai/types/interactions/stepdeltametadata.py: {}
+  src/google/genai/types/interactions/stepstart.py:
+    id: 5e8a18f9cccc
+    pristine_git_object: 8710daa74d281a241a6861b7f166381f83e7e025
+  src/google/genai/types/interactions/stepstop.py:
+    id: 823f312edb6a
+    pristine_git_object: 7862e6f20f9096a987bb5fc15dcd9e2cb139652d
+  src/google/genai/types/interactions/textannotationdelta.py:
+    id: ef95a17c0be2
+    pristine_git_object: 3c4f9191bd446b0a2033e56a68831d1ad8045a90
+  src/google/genai/types/interactions/textcontent.py:
+    id: 752da7bf7e75
+    pristine_git_object: f271cca278f3cb154bb961d38e0b29401b6eea47
+  src/google/genai/types/interactions/textdelta.py:
+    id: 0934ba474f2a
+    pristine_git_object: dc36fc5ad8d66b7dece9be0708f81fdc1639a9fa
+  src/google/genai/types/interactions/textresponseformat.py:
+    id: 41db37b445a3
+    pristine_git_object: 9d24a99d7162fbaa3c5fdeebafc9b893e306f65b
+  src/google/genai/types/interactions/thinkinglevel.py:
+    id: c2b2dc120a23
+    pristine_git_object: 597b3e7c2517bd5f8df702506b9df4043737c8a5
+  src/google/genai/types/interactions/thinkingsummaries.py:
+    id: 87984b64598b
+    pristine_git_object: 38c62adf54a1043eae025a9beacda1ce21d31c68
+  src/google/genai/types/interactions/thoughtsignaturedelta.py:
+    id: 7f3b0164af15
+    pristine_git_object: ffbc1fa2d1f1542d992dd6a69db39afdc4fa88da
+  src/google/genai/types/interactions/thoughtstep.py:
+    id: d52302b3001f
+    pristine_git_object: ba477e0af4a8aa6200d9a61afe81e3aece3b70aa
+  src/google/genai/types/interactions/thoughtsummarycontent.py:
+    id: f0074ddd5684
+    pristine_git_object: 1e178a8581e8c12d33a0bee17cc6d88d7599266b
+  src/google/genai/types/interactions/thoughtsummarydelta.py:
+    id: d8a986ba0c24
+    pristine_git_object: c17f8a0f1005c325a9168e383d1d89ca46622184
+  src/google/genai/types/interactions/tool.py:
+    id: 7597aaaffc8f
+    pristine_git_object: 264fc4873797db2e071bf92b73cafad441f4c682
+  src/google/genai/types/interactions/toolchoiceconfig.py:
+    id: 9316cfba072f
+    pristine_git_object: 388c126fcaeb15dac253333f9aaad709b63f0129
+  src/google/genai/types/interactions/toolchoicetype.py:
+    id: ea55106c98ca
+    pristine_git_object: 18dd468fdfccf9faa5844127590bd48fc92e82c1
+  src/google/genai/types/interactions/transcriptionconfig.py: {}
+  src/google/genai/types/interactions/transcriptionmode.py: {}
+  src/google/genai/types/interactions/urlcitation.py:
+    id: 1181af58d28e
+    pristine_git_object: 1cbcf4171619e7426f3cf385650e2e83b3a83325
+  src/google/genai/types/interactions/urlcontext.py:
+    id: 3ff6abf51a1b
+    pristine_git_object: a8e1640cd5f1746c5cbea042780e355590a679f6
+  src/google/genai/types/interactions/urlcontextcallarguments.py: {}
+  src/google/genai/types/interactions/urlcontextcalldelta.py:
+    id: 6bddc49bfe6e
+    pristine_git_object: 913044318f0196f7256ca32413af4ffc01db4f06
+  src/google/genai/types/interactions/urlcontextcallstep.py:
+    id: 00d3abbfb062
+    pristine_git_object: 858eb4ffccf64613330fe621b3a246f3770023d2
+  src/google/genai/types/interactions/urlcontextresult.py: {}
+  src/google/genai/types/interactions/urlcontextresultdelta.py:
+    id: cfc75ad9cb12
+    pristine_git_object: bff99c896ff1aa06eda48596b976a918b9188ebb
+  src/google/genai/types/interactions/urlcontextresultstep.py:
+    id: "757351916922"
+    pristine_git_object: 4da7817c067ebd30eda7c2e2e045c964608c7ad5
+  src/google/genai/types/interactions/usage.py:
+    id: 99b77c8ad591
+    pristine_git_object: 848dba60378c0ccc5fa40a212dc2519ba070e689
+  src/google/genai/types/interactions/userinputstep.py:
+    id: e278dba7fe60
+    pristine_git_object: 022dd4bca4ebbf670fc794f6970c5dabd1a20248
+  src/google/genai/types/interactions/verbatimtranscriptionmode.py: {}
+  src/google/genai/types/interactions/vertexaisearchconfig.py:
+    id: 29c0efb23738
+    pristine_git_object: 9a7916c96bfa55119dde468b1b703ba3a100e936
+  src/google/genai/types/interactions/videoconfig.py: {}
+  src/google/genai/types/interactions/videocontent.py:
+    id: 35fdbc53ed43
+    pristine_git_object: 1fe2b66744688c76a330953aa7f0316c8948abde
+  src/google/genai/types/interactions/videodelta.py:
+    id: 9dce22b4fe37
+    pristine_git_object: 1169497d27731822531e639024a34fa02243903b
+  src/google/genai/types/interactions/videoresponseformat.py: {}
+  src/google/genai/types/interactions/webhookconfig.py:
+    id: 3c22574f3fee
+    pristine_git_object: acb7959d19f2d1dba945e05dcde4c12b8e0ffefe
+  src/google/genai/types/interactions/wordinfo.py: {}
+  src/google/genai/types/security.py: {}
+  src/google/genai/types/triggers/__init__.py: {}
+  src/google/genai/types/triggers/listtriggerexecutionsresponse.py: {}
+  src/google/genai/types/triggers/listtriggersresponse.py: {}
+  src/google/genai/types/triggers/trigger.py: {}
+  src/google/genai/types/triggers/triggercreateparams.py: {}
+  src/google/genai/types/triggers/triggerexecution.py: {}
+  src/google/genai/types/triggers/triggerupdate.py: {}
+  src/google/genai/types/voices/__init__.py: {}
+  src/google/genai/types/voices/audiodata.py: {}
+  src/google/genai/types/voices/createvoicerequest.py: {}
+  src/google/genai/types/voices/deletevoiceresponse.py: {}
+  src/google/genai/types/voices/listvoicesresponse.py: {}
+  src/google/genai/types/voices/pitch.py: {}
+  src/google/genai/types/voices/promptedvoice.py: {}
+  src/google/genai/types/voices/replicatedvoice.py: {}
+  src/google/genai/types/voices/voice_input.py: {}
+  src/google/genai/types/voices/voice_output.py: {}
+  src/google/genai/types/voices/voicetype.py: {}
+  src/google/genai/types/webhooks/__init__.py:
+    id: 29bc59f5caf9
+    pristine_git_object: 038dfef6ded41a2e724670afe7f57cec3606af00
+  src/google/genai/types/webhooks/pingwebhookrequest.py:
+    id: acd0330f26d1
+    pristine_git_object: 3e5ba55d4c7bd07f9e32d48467a2124003f5047c
+  src/google/genai/types/webhooks/rotatesigningsecretrequest.py:
+    id: 6ae40631b0b1
+    pristine_git_object: 723f0921275d4a8ce984f54aef3ed1fa6d896214
+  src/google/genai/types/webhooks/signingsecret.py:
+    id: 18554818f835
+    pristine_git_object: 7c991e3026943bb0490ccde6a0e9590afffd1826
+  src/google/genai/types/webhooks/webhook.py:
+    id: 429c931b8768
+    pristine_git_object: 3b09dce6f8d98a79a44f9bf5f20bceec83665fe4
+  src/google/genai/types/webhooks/webhooklistresponse.py: {}
+  src/google/genai/types/webhooks/webhookpingresponse.py: {}
+  src/google/genai/types/webhooks/webhookrotatesigningsecretresponse.py: {}
+  src/google/genai/types/webhooks/webhookupdate.py:
+    id: fafcd672c45b
+    pristine_git_object: f05a06d6c2892966a417629ee9ea7bbe9a0a34ca
+  src/google/genai/utils/__init__.py:
+    id: ea262ecd4661
+    pristine_git_object: b488c2df1390b22be3050eee72832a91c76d5385
+  src/google/genai/utils/annotations.py:
+    id: 68ddb9f419a4
+    pristine_git_object: 12e0aa4f1151bb52474cc02e88397329b90703f6
+  src/google/genai/utils/datetimes.py:
+    id: 54d560ad36de
+    pristine_git_object: a6c52cd61bbe2d459046c940ce5e8c469f2f0664
+  src/google/genai/utils/dynamic_imports.py:
+    id: cc8a354de87b
+    pristine_git_object: 673edf82a97d0fea7295625d3e092ea369a36b79
+  src/google/genai/utils/enums.py:
+    id: 1f4cc3ebafba
+    pristine_git_object: 3324e1bc2668c54c4d5f5a1a845675319757a828
+  src/google/genai/utils/eventstreaming.py:
+    id: 9a3733215ec3
+    pristine_git_object: 3bdcd6d3d4fc772cb7f5fca8685dcdc8c85e13e8
+  src/google/genai/utils/forms.py:
+    id: e53f73db84cd
+    pristine_git_object: 1e550bd5c2c35d977ddc10f49d77c23cb12c158d
+  src/google/genai/utils/headers.py:
+    id: 3f180d1ca184
+    pristine_git_object: 37864cbbbc40d1a47112bbfdd3ba79568fc8818a
+  src/google/genai/utils/logger.py:
+    id: 3df15d5df26a
+    pristine_git_object: 0f145007aeee4862a8886f5f528aab093cdc7c4f
+  src/google/genai/utils/metadata.py:
+    id: 109486ca145d
+    pristine_git_object: 5abddd588837ac297050ca3b543627faadb350a9
+  src/google/genai/utils/queryparams.py:
+    id: afc4638c7fbb
+    pristine_git_object: c04e0db82b68eca041f2cb2614d748fbac80fd41
+  src/google/genai/utils/requestbodies.py:
+    id: 84f4b6897374
+    pristine_git_object: 1de32b6d26f46590232f398fdba6ce0072f1659c
+  src/google/genai/utils/response_helpers.py: {}
+  src/google/genai/utils/retries.py:
+    id: 4cd098cc2f07
+    pristine_git_object: af07d4e941007af4213c5ec9047ef8a2fca04e5e
+  src/google/genai/utils/security.py:
+    id: da91977e36d1
+    pristine_git_object: 42d8d78e9981eed7507670014d99588e27ab325a
+  src/google/genai/utils/serializers.py:
+    id: "368116840e17"
+    pristine_git_object: d2149f8b909cb96628db140ac3cddb1b1e981367
+  src/google/genai/utils/unions.py:
+    id: 42901795870a
+    pristine_git_object: a227f4e87be22fce682fcae5813b71835199ec5e
+  src/google/genai/utils/unmarshal_json_response.py:
+    id: 602dda5ce2e2
+    pristine_git_object: 5e3012356bb21222ad8bfa4e32cc1e59f2727b3e
+  src/google/genai/utils/url.py:
+    id: 14ae77be2dec
+    pristine_git_object: c78ccbae426ce6d385709d97ce0b1c2813ea2418
+  src/google/genai/utils/values.py:
+    id: ce4422e999ec
+    pristine_git_object: dae01a44384ac3bc13ae07453a053bf6c898ebe3
+  src/google/genai/voices.py: {}
+  src/google/genai/webhooks.py:
+    id: ccea7f45ef7f
+    pristine_git_object: 9095e8d3d62e787bd55898c81f89a4d20f89889c
+examples:
+  CreateAgent:
+    speakeasy-default-create-agent:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}
+      responses:
+        default:
+          application/json: {"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}
+    create:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}
+      responses:
+        default:
+          application/json: {"base_agent": "antigravity-preview-09-2026", "base_environment": "remote", "description": "A helpful research assistant.", "id": "research-assistant-abc123", "system_instruction": "You are a helpful research assistant.", "tools": [{"type": "google_search"}]}
+    with_sources:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}
+      responses:
+        default:
+          application/json: {"base_agent": "antigravity-preview-09-2026", "base_environment": {"sources": [{"content": "Always use matplotlib for charts. Include a summary table in every report.", "target": ".agents/AGENTS.md", "type": "inline"}, {"source": "https://github.com/my-org/analysis-templates", "target": "/workspace/templates", "type": "repository"}], "type": "remote"}, "id": "data-analyst-abc123", "system_instruction": "You are a data analyst. Always include visualizations and export results as PDF."}
+    fork_from_env:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}
+      responses:
+        default:
+          application/json: {"base_agent": "antigravity-preview-09-2026", "base_environment": "env_abc123", "id": "my-data-analyst-abc123", "system_instruction": "You are a data analyst. Use the template at /workspace/template.py for all reports."}
+  CreateCredential:
+    speakeasy-default-create-credential:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"id": "<id>", "token": "<value>", "type": "bearer_token"}
+      responses:
+        "200":
+          application/json: {"id": "<id>"}
+        default:
+          application/json: {"id": "<id>"}
+  CreateEnvironment:
+    speakeasy-default-create-environment:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"network": {"allowlist": [{"domain": "github.com", "transform": [{"Authorization": "Bearer your-token"}]}, {"domain": "*.googleapis.com"}]}}
+      responses:
+        default:
+          application/json: {"id": "<id>", "network": {"allowlist": [{"domain": "github.com", "transform": [{"Authorization": "Bearer your-token"}]}, {"domain": "*.googleapis.com"}]}}
+    create:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"network": {"allowlist": [{"domain": "github.com", "transform": [{"Authorization": "Bearer your-token"}]}, {"domain": "*.googleapis.com"}]}}
+      responses:
+        default:
+          application/json: {"created": "2026-08-19T00:00:00Z", "id": "env_abc123", "last_accessed": "2026-08-19T00:00:00Z", "sources": [{"content": "print('Hello, World!')", "target": "main.py", "type": "inline"}], "status": "active", "updated": "2026-08-19T00:00:00Z"}
+  CreateInteraction:
+    simple:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "generation_config": {"tool_choice": {"allowed_tools": {"mode": "any", "tools": ["my_tool"]}}}, "input": "{\"type\":\"VideoContent\"}", "model": "lyria-3-clip-preview", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"created": "2025-11-26T12:25:15Z", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "Hello! I'm functioning perfectly and ready to assist you.\n\nHow are you doing today?", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:25:15Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 7}], "total_cached_tokens": 0, "total_input_tokens": 7, "total_output_tokens": 20, "total_thought_tokens": 22, "total_tokens": 49, "total_tool_use_tokens": 0}}
+    multi_turn:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "generation_config": {"tool_choice": {"allowed_tools": {"mode": "any", "tools": ["my_tool"]}}}, "input": "{\"type\":\"VideoContent\"}", "model": "lyria-3-clip-preview", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"created": "2025-11-26T12:22:47Z", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "The capital of France is Paris.", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:22:47Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 50}], "total_cached_tokens": 0, "total_input_tokens": 50, "total_output_tokens": 10, "total_thought_tokens": 0, "total_tokens": 60, "total_tool_use_tokens": 0}}
+    multimodal_image:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"environment": {"type": "remote"}, "generation_config": {"tool_choice": {"allowed_tools": {"mode": "any", "tools": ["my_tool"]}}}, "input": "<value>", "model": "lyria-3-clip-preview", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"created": "2025-11-26T12:22:47Z", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "A white humanoid robot with glowing blue eyes stands holding a red skateboard.", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:22:47Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 10}, {"modality": "image", "tokens": 258}], "total_cached_tokens": 0, "total_input_tokens": 268, "total_output_tokens": 20, "total_thought_tokens": 0, "total_tokens": 288, "total_tool_use_tokens": 0}}
+    function_calling:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"agent": "deep-research-max-preview-04-2026", "environment": "<value>", "input": "{\"type\":\"VideoContent\"}", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"created": "2025-11-26T12:22:47Z", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "model": "gemini-3.6-flash", "status": "requires_action", "steps": [{"arguments": {"location": "Boston, MA"}, "id": "gth23981", "name": "get_weather", "type": "function_call"}], "updated": "2025-11-26T12:22:47Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 100}], "total_cached_tokens": 0, "total_input_tokens": 100, "total_output_tokens": 25, "total_thought_tokens": 0, "total_tokens": 125, "total_tool_use_tokens": 50}}
+    deep_research:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"environment": {"type": "remote"}, "generation_config": {"tool_choice": {"allowed_tools": {"mode": "any", "tools": ["my_tool"]}}}, "input": "<value>", "model": "lyria-3-clip-preview", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"agent": "deep-research-preview-04-2026", "created": "2025-11-26T12:22:47Z", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "status": "completed", "steps": [{"content": [{"text": "Here is a comprehensive research report on the current state of cancer research...", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:22:47Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 20}], "total_cached_tokens": 0, "total_input_tokens": 20, "total_output_tokens": 1000, "total_thought_tokens": 500, "total_tokens": 1520, "total_tool_use_tokens": 0}}
+    antigravity:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"agent": "deep-research-max-preview-04-2026", "environment": "<value>", "input": "{\"type\":\"VideoContent\"}", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"agent": "antigravity-preview-09-2026", "created": "2025-11-26T12:22:47Z", "environment_id": "env_abc123", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "status": "completed", "steps": [{"content": [{"text": "I've summarized the top 5 Hacker News stories and saved the results to /workspace/summary.md.", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:22:47Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 50}], "total_cached_tokens": 0, "total_input_tokens": 50, "total_output_tokens": 500, "total_thought_tokens": 200, "total_tokens": 750, "total_tool_use_tokens": 0}}
+    reuse_env:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"agent": "deep-research-max-preview-04-2026", "environment": {"type": "remote"}, "input": "<value>", "response_format": {"0": {"type": "text", "mime_type": "application/json"}}}
+      responses:
+        "200":
+          application/json: {"agent": "antigravity-preview-09-2026", "created": "2025-11-26T12:23:00Z", "environment_id": "env_abc123", "id": "v1_Chd2ZTJhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODkwMTIzNDU2Nzg", "status": "completed", "steps": [{"content": [{"text": "I've updated /workspace/hello.py to accept a name argument and greet the user.", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:23:00Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 80}], "total_cached_tokens": 0, "total_input_tokens": 80, "total_output_tokens": 200, "total_thought_tokens": 100, "total_tokens": 380, "total_tool_use_tokens": 0}}
+  CreateTrigger:
+    speakeasy-default-create-trigger:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"interaction": {"agent": "deep-research-max-preview-04-2026", "environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "input": [{"data": "BASE64_ENCODED_AUDIO", "mime_type": "audio/wav", "type": "audio"}], "response_format": {}}, "schedule": "<value>", "time_zone": "Asia/Aqtau"}
+      responses:
+        "200":
+          application/json: {"id": "<id>", "interaction": {"created": "2025-12-04T15:01:45Z", "id": "v1_ChdXS0l4YWZXTk9xbk0xZThQczhEcmlROBIXV0tJeGFmV05PcW5NMWU4UHM4RHJpUTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "Hello! I'm doing well, functioning as expected. Thank you for asking! How are you doing today?", "type": "text"}], "type": "model_output"}], "updated": "2025-12-04T15:01:45Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 7}], "total_cached_tokens": 0, "total_input_tokens": 7, "total_output_tokens": 23, "total_thought_tokens": 49, "total_tokens": 79, "total_tool_use_tokens": 0}}, "schedule": "<value>", "time_zone": "Africa/Lubumbashi"}
+        default:
+          application/json: {"id": "<id>", "interaction": {"agent": "deep-research-max-preview-04-2026", "environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "input": [{"data": "BASE64_ENCODED_AUDIO", "mime_type": "audio/wav", "type": "audio"}], "response_format": {}}, "schedule": "<value>", "time_zone": "Asia/Aqtau"}
+  CreateVoice:
+    speakeasy-default-create-voice:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"voice": {"type": "prebuilt"}}
+      responses:
+        default:
+          application/json: {"type": "prompted"}
+  CreateWebhook:
+    speakeasy-default-create-webhook:
+      parameters:
+        path:
+          api_version: "<value>"
+      requestBody:
+        application/json: {"subscribed_events": ["interaction.completed", "batch.expired"], "uri": "https://insidious-farm.org/"}
+      responses:
+        default:
+          application/json: {"subscribed_events": ["batch.failed", "batch.failed"], "uri": "https://insidious-farm.org/"}
+  DeleteAgent:
+    speakeasy-default-delete-agent:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+          agentsId: "<id>"
+      responses:
+        default:
+          application/json: {}
+    delete:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+          agentsId: "<id>"
+      responses:
+        default:
+          application/json: {}
+  DeleteCredential:
+    speakeasy-default-delete-credential:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        "200":
+          application/json: {}
+        default:
+          application/json: {}
+  DeleteEnvironment:
+    speakeasy-default-delete-environment:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        default:
+          application/json: {}
+    delete:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        default:
+          application/json: {}
+  DeleteTrigger:
+    speakeasy-default-delete-trigger:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        "200":
+          application/json: {}
+        default:
+          application/json: {}
+  DeleteVoice:
+    speakeasy-default-delete-voice:
+      parameters:
+        path:
+          api_version: "<value>"
+          voicesId: "<id>"
+      responses:
+        default:
+          application/json: {}
+  DeleteWebhook:
+    speakeasy-default-delete-webhook:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        default:
+          application/json: {}
+  GetAgent:
+    speakeasy-default-get-agent:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+          agentsId: "<id>"
+      responses:
+        default:
+          application/json: {"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}
+    get:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+          agentsId: "<id>"
+      responses:
+        default:
+          application/json: {"id": "ag_abc123", "system_instruction": "You are a helpful research assistant.", "tools": [{"type": "google_search"}]}
+  GetCredential:
+    speakeasy-default-get-credential:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        "200":
+          application/json: {"id": "<id>"}
+        default:
+          application/json: {"id": "<id>"}
+  GetEnvironment:
+    speakeasy-default-get-environment:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        default:
+          application/json: {"id": "<id>", "network": {"allowlist": [{"domain": "github.com", "transform": [{"Authorization": "Bearer your-token"}]}, {"domain": "*.googleapis.com"}]}}
+    get:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        default:
+          application/json: {"created": "2026-08-19T00:00:00Z", "id": "env_abc123", "last_accessed": "2026-08-19T00:00:00Z", "sources": [{"content": "print('Hello, World!')", "target": "main.py", "type": "inline"}], "status": "active", "updated": "2026-08-19T00:00:00Z"}
+  GetEnvironmentFiles:
+    speakeasy-default-get-environment-files:
+      parameters:
+        path:
+          api_version: "<value>"
+          environment: "<value>"
+          path: "/var/mail"
+      responses:
+        "200":
+          application/json: {}
+    download_file:
+      parameters:
+        path:
+          api_version: "<value>"
+          environment: "<value>"
+          path: "/var/mail"
+      responses:
+        "200":
+          application/json: {"files": [{"mime_type": "text/x-python", "name": "main.py", "path": "main.py", "size_bytes": "22", "type": "file"}]}
+    get_file:
+      parameters:
+        path:
+          api_version: "<value>"
+          environment: "<value>"
+          path: "/boot"
+      responses:
+        "200":
+          application/json: {"files": [{"created": "2026-08-19T00:00:00Z", "mime_type": "text/x-python", "modified": "2026-08-19T00:00:00Z", "name": "main.py", "path": "main.py", "size_bytes": "22", "type": "file"}]}
+    list_files:
+      parameters:
+        path:
+          api_version: "<value>"
+          environment: "<value>"
+          path: "/Library"
+      responses:
+        "200":
+          application/json: {"files": [{"created": "2026-08-19T00:00:00Z", "modified": "2026-08-19T00:00:00Z", "name": "src", "path": "src", "type": "directory"}, {"created": "2026-08-19T00:00:00Z", "mime_type": "text/x-python", "modified": "2026-08-19T00:00:00Z", "name": "main.py", "path": "main.py", "size_bytes": "22", "type": "file"}]}
+  GetTrigger:
+    speakeasy-default-get-trigger:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        "200":
+          application/json: {"id": "<id>", "interaction": {"created": "2025-12-04T15:01:45Z", "id": "v1_ChdXS0l4YWZXTk9xbk0xZThQczhEcmlROBIXV0tJeGFmV05PcW5NMWU4UHM4RHJpUTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "Hello! I'm doing well, functioning as expected. Thank you for asking! How are you doing today?", "type": "text"}], "type": "model_output"}], "updated": "2025-12-04T15:01:45Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 7}], "total_cached_tokens": 0, "total_input_tokens": 7, "total_output_tokens": 23, "total_thought_tokens": 49, "total_tokens": 79, "total_tool_use_tokens": 0}}, "schedule": "<value>", "time_zone": "Indian/Christmas"}
+        default:
+          application/json: {"id": "<id>", "interaction": {"agent": "antigravity-preview-09-2026", "environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "input": "<value>", "response_format": {"type": "audio", "sample_rate": 24000}}, "schedule": "<value>", "time_zone": "Indian/Christmas"}
+  GetVoice:
+    speakeasy-default-get-voice:
+      parameters:
+        path:
+          api_version: "<value>"
+          voicesId: "<id>"
+      responses:
+        default:
+          application/json: {"type": "prebuilt"}
+  GetWebhook:
+    speakeasy-default-get-webhook:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      responses:
+        default:
+          application/json: {"subscribed_events": ["batch.failed"], "uri": "https://repentant-goodwill.net/"}
+  ListAgents:
+    speakeasy-default-list-agents:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        default:
+          application/json: {"agents": [{"base_environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}}]}
+    list:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        default:
+          application/json: {"agents": [{"base_agent": "antigravity-preview-09-2026", "description": "A helpful research assistant.", "id": "research-assistant-abc123", "system_instruction": "You are a helpful research assistant.", "tools": [{"type": "google_search"}]}]}
+  ListCredentials:
+    speakeasy-default-list-credentials:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        "200":
+          application/json: {}
+        default:
+          application/json: {}
+  ListEnvironments:
+    speakeasy-default-list-environments:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        default:
+          application/json: {"environments": [{"id": "<id>", "network": {"allowlist": [{"domain": "github.com", "transform": [{"Authorization": "Bearer your-token"}]}, {"domain": "*.googleapis.com"}]}}]}
+    list:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        default:
+          application/json: {"environments": [{"created": "2026-08-19T00:00:00Z", "id": "env_abc123", "last_accessed": "2026-08-19T00:00:00Z", "status": "active", "updated": "2026-08-19T00:00:00Z"}]}
+  ListTriggerExecutions:
+    speakeasy-default-list-trigger-executions:
+      parameters:
+        path:
+          api_version: "<value>"
+          trigger_id: "<id>"
+          triggerId: "<id>"
+      responses:
+        "200":
+          application/json: {}
+        default:
+          application/json: {}
+  ListTriggers:
+    speakeasy-default-list-triggers:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        "200":
+          application/json: {"triggers": [{"id": "<id>", "interaction": {"created": "2025-12-04T15:01:45Z", "id": "v1_ChdXS0l4YWZXTk9xbk0xZThQczhEcmlROBIXV0tJeGFmV05PcW5NMWU4UHM4RHJpUTg", "model": "gemini-3.5-flash", "status": "completed", "steps": [{"content": [{"text": "Hello! I'm doing well, functioning as expected. Thank you for asking! How are you doing today?", "type": "text"}], "type": "model_output"}], "updated": "2025-12-04T15:01:45Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 7}], "total_cached_tokens": 0, "total_input_tokens": 7, "total_output_tokens": 23, "total_thought_tokens": 49, "total_tokens": 79, "total_tool_use_tokens": 0}}, "schedule": "<value>", "time_zone": "America/Argentina/San_Luis"}]}
+        default:
+          application/json: {"triggers": [{"id": "<id>", "interaction": {"agent": "deep-research-pro-preview-12-2025", "environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "input": "<value>", "response_format": {"type": "audio", "sample_rate": 24000}}, "schedule": "<value>", "time_zone": "America/Miquelon"}]}
+  ListVoices:
+    speakeasy-default-list-voices:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        default:
+          application/json: {}
+  ListWebhooks:
+    speakeasy-default-list-webhooks:
+      parameters:
+        path:
+          api_version: "<value>"
+      responses:
+        default:
+          application/json: {}
+  PingWebhook:
+    speakeasy-default-ping-webhook:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      requestBody:
+        application/json: {}
+      responses:
+        default:
+          application/json: {}
+  RotateSigningSecret:
+    speakeasy-default-rotate-signing-secret:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      requestBody:
+        application/json: {}
+      responses:
+        default:
+          application/json: {}
+  RunTrigger:
+    speakeasy-default-run-trigger:
+      parameters:
+        path:
+          api_version: "<value>"
+          trigger_id: "<id>"
+          triggerId: "<id>"
+      responses:
+        "200":
+          application/json: {"id": "<id>", "trigger_id": "<id>"}
+        default:
+          application/json: {"id": "<id>", "trigger_id": "<id>"}
+  StartEnvironmentFileUpload:
+    speakeasy-default-start-environment-file-upload:
+      parameters:
+        path:
+          api_version: "<value>"
+          environment: "<value>"
+          path: "/lib"
+        header:
+          X-Goog-Upload-Command: "start"
+          X-Goog-Upload-Header-Content-Length: 668811
+          X-Goog-Upload-Header-Content-Type: "<value>"
+          X-Goog-Upload-Protocol: "resumable"
+  UpdateCredential:
+    speakeasy-default-update-credential:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      requestBody:
+        application/json: {"type": "environment_variable"}
+      responses:
+        "200":
+          application/json: {"id": "<id>"}
+        default:
+          application/json: {"id": "<id>"}
+  UpdateTrigger:
+    speakeasy-default-update-trigger:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      requestBody:
+        application/json: {}
+      responses:
+        "200":
+          application/json: {"id": "<id>", "interaction": {"created": "2025-12-04T15:01:45Z", "id": "v1_ChdXS0l4YWZXTk9xbk0xZThQczhEcmlROBIXV0tJeGFmV05PcW5NMWU4UHM4RHJpUTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "Hello! I'm doing well, functioning as expected. Thank you for asking! How are you doing today?", "type": "text"}], "type": "model_output"}], "updated": "2025-12-04T15:01:45Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 7}], "total_cached_tokens": 0, "total_input_tokens": 7, "total_output_tokens": 23, "total_thought_tokens": 49, "total_tokens": 79, "total_tool_use_tokens": 0}}, "schedule": "<value>", "time_zone": "Asia/Kabul"}
+        default:
+          application/json: {"id": "<id>", "interaction": {"agent": "deep-research-max-preview-04-2026", "environment": {"sources": [{"content": "You are a data analyst. Always include visualizations and export results as PDF.", "target": ".agents/AGENTS.md", "type": "inline"}, {"content": "---\nname: slide-maker\ndescription: Create HTML slide decks\n---\n# Slide Maker\n\nWhen asked to create a presentation:\n1. Analyze the input data\n2. Create an HTML slide deck with reveal.js\n3. Save to /workspace/output/slides.html", "target": ".agents/skills/slide-maker/SKILL.md", "type": "inline"}], "type": "remote"}, "input": [{"data": "BASE64_ENCODED_AUDIO", "mime_type": "audio/wav", "type": "audio"}], "response_format": {"type": "audio", "sample_rate": 24000}}, "schedule": "<value>", "time_zone": "Asia/Kabul"}
+  UpdateWebhook:
+    speakeasy-default-update-webhook:
+      parameters:
+        path:
+          api_version: "<value>"
+          id: "<id>"
+      requestBody:
+        application/json: {}
+      responses:
+        default:
+          application/json: {"subscribed_events": ["interaction.failed", "video.generated"], "uri": "https://thorny-forage.biz"}
+  cancelInteractionById:
+    cancel:
+      parameters:
+        path:
+          id: "<id>"
+          api_version: "<value>"
+          interactionsId: "<id>"
+      responses:
+        "200":
+          application/json: {"agent": "deep-research-preview-04-2026", "created": "2026-06-22T04:55:47Z", "id": "v1_ChdVc0E0YXJTYk1zYlV6N0lQcXRXVG1BYxIXVXNBNGFyU2JNc2JVejdJUHF0V1RtQWM", "status": "cancelled", "steps": [{"content": [{"text": "Research the history of the Google TPUs with a focus on 2025 specs.", "type": "text"}], "type": "user_input"}], "updated": "2026-06-22T04:55:47Z"}
+    speakeasy-default-cancel-interaction-by-id:
+      parameters:
+        path:
+          api_version: "<value>"
+          interactionsId: "<id>"
+      responses:
+        "200":
+          application/json: {"created": "2025-12-04T15:01:45Z", "id": "v1_ChdXS0l4YWZXTk9xbk0xZThQczhEcmlROBIXV0tJeGFmV05PcW5NMWU4UHM4RHJpUTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "Hello! I'm doing well, functioning as expected. Thank you for asking! How are you doing today?", "type": "text"}], "type": "model_output"}], "updated": "2025-12-04T15:01:45Z", "usage": {"input_tokens_by_modality": [{"modality": "text", "tokens": 7}], "total_cached_tokens": 0, "total_input_tokens": 7, "total_output_tokens": 23, "total_thought_tokens": 49, "total_tokens": 79, "total_tool_use_tokens": 0}}
+        4XX:
+          application/json: {"error": {}}
+        5XX:
+          application/json: {"error": {}}
+  deleteInteraction:
+    delete:
+      parameters:
+        path:
+          id: "<id>"
+          api_version: "<value>"
+      responses:
+        "200":
+          application/json: {}
+    speakeasy-default-delete-interaction:
+      parameters:
+        path:
+          id: "<id>"
+          api_version: "<value>"
+          interactionsId: "<id>"
+      responses:
+        4XX:
+          application/json: {"error": {}}
+        5XX:
+          application/json: {"error": {}}
+  getInteractionById:
+    get:
+      parameters:
+        path:
+          id: "<id>"
+          api_version: "<value>"
+          interactionsId: "<id>"
+        query:
+          stream: false
+          include_input: false
+      responses:
+        "200":
+          application/json: {"created": "2025-11-26T12:25:15Z", "id": "v1_ChdPU0F4YWFtNkFwS2kxZThQZ05lbXdROBIXT1NBeGFhbTZBcEtpMWU4UGdOZW13UTg", "model": "gemini-3.6-flash", "status": "completed", "steps": [{"content": [{"text": "I'm doing great, thank you for asking! How can I help you today?", "type": "text"}], "type": "model_output"}], "updated": "2025-11-26T12:25:15Z"}
+examplesVersion: 1.0.2
+generatedTests:
+  CreateInteraction-simple: "2026-05-19T12:44:20+01:00"
+  CreateInteraction-multi_turn: "2026-05-19T12:44:20+01:00"
+  CreateInteraction-multimodal_image: "2026-05-19T12:44:20+01:00"
+  CreateInteraction-function_calling: "2026-05-19T12:44:20+01:00"
+  CreateInteraction-deep_research: "2026-05-19T12:44:20+01:00"
+  getInteractionById-get: "2026-05-19T12:44:20+01:00"
+  deleteInteraction-delete: "2026-05-19T12:44:20+01:00"
+  cancelInteractionById-cancel: "2026-05-19T12:44:20+01:00"
+  CreateInteraction: "2026-05-19T13:03:48+01:00"
+  getInteractionById: "2026-05-19T13:03:48+01:00"
+  deleteInteraction: "2026-05-19T13:03:48+01:00"
+  cancelInteractionById: "2026-05-19T13:03:48+01:00"

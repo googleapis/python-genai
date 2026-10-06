@@ -1,0 +1,45 @@
+# Composite action that installs the Speakeasy generator (with caching) and
+# runs ./scripts/generate_gaos.sh to generate google/genai/_gaos/ from
+# .speakeasy/openapi.json.
+name: Generate GAOS SDK
+description: Install the Speakeasy generator and generate google/genai/_gaos/.
+
+inputs:
+  speakeasy-license-token:
+    description: Speakeasy license token or API key.
+    required: true
+  speakeasy-version:
+    description: Speakeasy generator git tag.
+    required: false
+    default: v2.959.1
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Cache Speakeasy Generator
+      id: cache-generator
+      uses: actions/cache@v4
+      with:
+        path: ~/go/bin/generate
+        key: speakeasy-generator-${{ inputs.speakeasy-version }}
+
+    - name: Install Speakeasy Generator
+      if: steps.cache-generator.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        git clone --depth 1 --branch "${{ inputs.speakeasy-version }}" https://github.com/speakeasy-api/openapi-generation.git /tmp/openapi-generation
+        cd /tmp/openapi-generation
+        go install ./cmd/generate
+        rm -rf /tmp/openapi-generation
+
+    - name: Generate GAOS SDK
+      shell: bash
+      env:
+        SPEAKEASY_LICENSE_TOKEN: ${{ inputs.speakeasy-license-token }}
+      run: |
+        ./scripts/generate_gaos.sh
