@@ -5748,7 +5748,7 @@ class Models(_api_module.BaseModule):
     .. code-block:: python
 
       response = client.models.count_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -5859,7 +5859,7 @@ class Models(_api_module.BaseModule):
     .. code-block:: python
 
       response = client.models.compute_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -6119,18 +6119,18 @@ class Models(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-flash-latest'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-flash-latest' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-flash-latest'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-flash-latest'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
@@ -6151,7 +6151,7 @@ class Models(_api_module.BaseModule):
       )
 
       response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       )
@@ -6162,7 +6162,7 @@ class Models(_api_module.BaseModule):
       # * Timeless Petals
 
       response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents=[
           types.Part.from_text(text='What is shown in this image?'),
           types.Part.from_uri(file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -6290,18 +6290,18 @@ class Models(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-flash-latest'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-flash-latest' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-flash-latest'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-flash-latest'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
@@ -6322,7 +6322,7 @@ class Models(_api_module.BaseModule):
       )
 
       for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       ):
@@ -6333,7 +6333,7 @@ class Models(_api_module.BaseModule):
       # * Timeless Petals
 
       for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents=[
           types.Part.from_text('What is shown in this image?'),
           types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
@@ -6798,7 +6798,7 @@ class Models(_api_module.BaseModule):
 
       response=client.models.list(config={'page_size': 5, 'query_base': True})
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-flash-latest' ...
     """
 
     config = (
@@ -7971,7 +7971,7 @@ class AsyncModels(_api_module.BaseModule):
     .. code-block:: python
 
       response = await client.aio.models.count_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -8081,7 +8081,7 @@ class AsyncModels(_api_module.BaseModule):
     .. code-block:: python
 
       response = await client.aio.models.compute_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -8285,7 +8285,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       response = await client.aio.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='User input: I like bagels. Answer:',
           config=types.GenerateContentConfig(
               system_instruction=
@@ -8487,18 +8487,18 @@ class AsyncModels(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-flash-latest'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-flash-latest' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-flash-latest'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-flash-latest'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
@@ -8519,7 +8519,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       ):
@@ -8530,7 +8530,7 @@ class AsyncModels(_api_module.BaseModule):
       # * Timeless Petals
 
       async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents=[
           types.Part.from_text('What is shown in this image?'),
           types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
@@ -8837,7 +8837,7 @@ class AsyncModels(_api_module.BaseModule):
           config={'page_size': 5, 'query_base': True}
         )
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-flash-latest' ...
     """
 
     config = (

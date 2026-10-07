@@ -16278,7 +16278,7 @@ class _CreateTuningJobParametersPrivate(_common.BaseModel):
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
+      description="""The base model that is being tuned, e.g., "gemini-flash-latest".""",
   )
   pre_tuned_model: Optional[PreTunedModel] = Field(
       default=None, description="""The PreTunedModel that is being tuned."""
@@ -16296,7 +16296,7 @@ class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
   """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+  """The base model that is being tuned, e.g., "gemini-flash-latest"."""
 
   pre_tuned_model: Optional[PreTunedModelDict]
   """The PreTunedModel that is being tuned."""
@@ -16638,7 +16638,7 @@ class _CreateCachedContentParameters(_common.BaseModel):
 
   model: Optional[str] = Field(
       default=None,
-      description="""ID of the model to use. Example: gemini-2.0-flash""",
+      description="""ID of the model to use. Example: gemini-flash-latest""",
   )
   config: Optional[CreateCachedContentConfig] = Field(
       default=None,
@@ -16651,7 +16651,7 @@ class _CreateCachedContentParametersDict(TypedDict, total=False):
   """Parameters for caches.create method."""
 
   model: Optional[str]
-  """ID of the model to use. Example: gemini-2.0-flash"""
+  """ID of the model to use. Example: gemini-flash-latest"""
 
   config: Optional[CreateCachedContentConfigDict]
   """Configuration that contains optional parameters.
@@ -22709,7 +22709,7 @@ class CreateTuningJobParameters(_common.BaseModel):
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
+      description="""The base model that is being tuned, e.g., "gemini-flash-latest".""",
   )
   training_dataset: Optional[TuningDataset] = Field(
       default=None,
@@ -22724,7 +22724,7 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
   """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+  """The base model that is being tuned, e.g., "gemini-flash-latest"."""
 
   training_dataset: Optional[TuningDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
