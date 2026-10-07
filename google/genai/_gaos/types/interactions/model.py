@@ -50,12 +50,16 @@ Model = Union[
         "gemini-3.1-pro-preview-customtools",
         # Our most cost-efficient model, optimized for high-volume agentic tasks, translation, and simple data processing.
         "gemini-3.1-flash-lite",
+        # Gemini 3.1 Flash Lite Image.
+        "gemini-3.1-flash-lite-image",
         # Gemini 3 Pro Image
         "gemini-3-pro-image",
         # Gemini 3 Pro Image Preview
         "nano-banana-pro-preview",
         # Gemini 3.1 Flash Image.
         "gemini-3.1-flash-image",
+        # Gemini Nano Banana 2.1.
+        "gemini-nano-banana-2.1",
         # Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
         "gemini-3.1-flash-tts-preview",
         # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
