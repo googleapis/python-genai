@@ -24,10 +24,6 @@ from typing import Literal, Union
 
 Model = Union[
     Literal[
-        # Our first hybrid reasoning model which supports a 1M token context window and has thinking budgets.
-        "gemini-2.5-flash",
-        # Our state-of-the-art multipurpose model, which excels at coding and complex reasoning tasks.
-        "gemini-2.5-pro",
         # Gemma 4 26B A4B IT
         "gemma-4-26b-a4b-it",
         # Gemma 4 31B IT
@@ -39,7 +35,7 @@ Model = Union[
         # Latest release of Gemini Pro
         "gemini-pro-latest",
         # Our smallest and most cost effective model, built for at scale usage.
-        "gemini-2.5-flash-lite",
+        "gemini-3.5-flash-lite",
         # Our native image generation model, optimized for speed, flexibility, and contextual understanding. Text input and output is priced the same as 2.5 Flash.
         "gemini-2.5-flash-image",
         # Our most intelligent model built for speed, combining frontier intelligence with superior search and grounding.
@@ -78,8 +74,6 @@ Model = Union[
         "lyria-3-clip-preview",
         # Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.
         "lyria-3-pro-preview",
-        # Gemini Robotics-ER 1.6 Preview
-        "gemini-robotics-er-1.6-preview",
         # Gemini Robotics Embodied Reasoning 2 Preview
         "gemini-robotics-er-2-preview",
         # Our flagship music generation model, optimized for full-length songs with complex structural coherence.
