@@ -26,21 +26,38 @@ from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
 Disabled = Literal["disabled",]
-r"""Turns all network off."""
 
 
-class AllowlistParam(TypedDict):
-    r"""Outbound networking configuration for the sandbox. When specified, restricts which external domains the sandbox can reach. Omit entirely to allow all outbound traffic with no header injection."""
+AllowlistParam = TypeAliasType(
+    "AllowlistParam", Union[List[AllowlistEntryParam], Disabled]
+)
+r"""List of allowed domains and their configurations. Set to `\"disabled\"`
+to block all network egress.
+"""
 
-    allowlist: NotRequired[List[AllowlistEntryParam]]
-    r"""List of allowed outbound domains. Only requests to listed domains are permitted. Use [{'domain': '*'}] to allow all domains while still injecting headers on specific ones."""
+
+Allowlist = TypeAliasType("Allowlist", Union[List[AllowlistEntry], Disabled])
+r"""List of allowed domains and their configurations. Set to `\"disabled\"`
+to block all network egress.
+"""
 
 
-class Allowlist(BaseModel):
-    r"""Outbound networking configuration for the sandbox. When specified, restricts which external domains the sandbox can reach. Omit entirely to allow all outbound traffic with no header injection."""
+class EnvironmentNetworkEgressAllowlistParam(TypedDict):
+    r"""Network egress configuration for the environment."""
 
-    allowlist: Optional[List[AllowlistEntry]] = None
-    r"""List of allowed outbound domains. Only requests to listed domains are permitted. Use [{'domain': '*'}] to allow all domains while still injecting headers on specific ones."""
+    allowlist: NotRequired[AllowlistParam]
+    r"""List of allowed domains and their configurations. Set to `\"disabled\"`
+    to block all network egress.
+    """
+
+
+class EnvironmentNetworkEgressAllowlist(BaseModel):
+    r"""Network egress configuration for the environment."""
+
+    allowlist: Optional[Allowlist] = None
+    r"""List of allowed domains and their configurations. Set to `\"disabled\"`
+    to block all network egress.
+    """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -57,15 +74,3 @@ class Allowlist(BaseModel):
                     m[k] = val
 
         return m
-
-
-EnvironmentNetworkEgressAllowlistParam = TypeAliasType(
-    "EnvironmentNetworkEgressAllowlistParam", Union[AllowlistParam, Disabled]
-)
-r"""Outbound networking configuration for the sandbox. Accepts an object with an 'allowlist' array to restrict traffic, or the string 'disabled' to turn off all network access. Omit entirely to allow all outbound traffic with no header injection."""
-
-
-EnvironmentNetworkEgressAllowlist = TypeAliasType(
-    "EnvironmentNetworkEgressAllowlist", Union[Allowlist, Disabled]
-)
-r"""Outbound networking configuration for the sandbox. Accepts an object with an 'allowlist' array to restrict traffic, or the string 'disabled' to turn off all network access. Omit entirely to allow all outbound traffic with no header injection."""
