@@ -530,9 +530,22 @@ def raise_error_for_afc_incompatible_config(config: Optional[types.GenerateConte
     return
   afc_config = config.automatic_function_calling
   disable_afc_config = afc_config.disable if afc_config else False
+  function_calling_config = config.tool_config.function_calling_config
   stream_function_call = (
-      config.tool_config.function_calling_config.stream_function_call_arguments
+      function_calling_config.stream_function_call_arguments
   )
+
+  if (
+      function_calling_config.mode == types.FunctionCallingConfigMode.ANY
+      and not disable_afc_config
+  ):
+    logger.warning(
+        'tool_config.function_calling_config.mode is set to ANY while'
+        ' automatic function calling (AFC) is enabled. AFC will continue'
+        ' calling functions until max_remote_calls is reached, so the model'
+        ' may not return a natural language response. Set mode to AUTO or'
+        ' disable automatic function calling if this is intentional.'
+    )
 
   if stream_function_call and not disable_afc_config:
     raise ValueError(
