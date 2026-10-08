@@ -6453,7 +6453,7 @@ class Models(_api_module.BaseModule):
 
       model_output = []
       func_response_parts = []
-      chunk = None
+      chunk = None  # type: ignore[assignment]
 
       for chunk in response:
         if (
@@ -8731,7 +8731,7 @@ class AsyncModels(_api_module.BaseModule):
 
           model_output = []
           func_response_parts = []
-          chunk = None
+          chunk = None  # type: ignore[assignment]
 
           async for chunk in response:  # type: ignore[attr-defined]
             if (
