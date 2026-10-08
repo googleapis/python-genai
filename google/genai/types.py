@@ -2256,6 +2256,16 @@ class Transcription(_common.BaseModel):
       description="""Detailed word-level transcriptions and timing details.
       """,
   )
+  start_offset: Optional[str] = Field(
+      default=None,
+      description="""Start offset in time of the transcription relative to the start of the audio.
+      """,
+  )
+  end_offset: Optional[str] = Field(
+      default=None,
+      description="""End offset in time of the transcription relative to the start of the audio.
+      """,
+  )
 
 
 class TranscriptionDict(TypedDict, total=False):
@@ -2276,6 +2286,14 @@ class TranscriptionDict(TypedDict, total=False):
 
   words: Optional[list[WordInfoDict]]
   """Detailed word-level transcriptions and timing details.
+      """
+
+  start_offset: Optional[str]
+  """Start offset in time of the transcription relative to the start of the audio.
+      """
+
+  end_offset: Optional[str]
+  """End offset in time of the transcription relative to the start of the audio.
       """
 
 
@@ -21642,6 +21660,10 @@ class RealtimeInputConfig(_common.BaseModel):
       default=None,
       description="""Defines which input is included in the user's turn.""",
   )
+  interim_transcript_timestamp_enabled: Optional[bool] = Field(
+      default=None,
+      description="""If true, enables interim transcript timestamps.""",
+  )
 
 
 class RealtimeInputConfigDict(TypedDict, total=False):
@@ -21659,6 +21681,9 @@ class RealtimeInputConfigDict(TypedDict, total=False):
 
   turn_coverage: Optional[TurnCoverage]
   """Defines which input is included in the user's turn."""
+
+  interim_transcript_timestamp_enabled: Optional[bool]
+  """If true, enables interim transcript timestamps."""
 
 
 RealtimeInputConfigOrDict = Union[RealtimeInputConfig, RealtimeInputConfigDict]
