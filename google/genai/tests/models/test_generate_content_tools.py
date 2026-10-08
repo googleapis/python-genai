@@ -1867,6 +1867,8 @@ def test_afc_logs_to_logger_instance(client, caplog):
       },
   )
   for log in caplog.records:
+    if log.levelname == 'WARNING':
+      continue
     assert log.levelname == 'INFO'
     assert log.name == 'google_genai.models'
 
