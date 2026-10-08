@@ -529,11 +529,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 }]
             },
         ),
-        exception_if_vertex='only supported in Gemini Developer API mode',
-        skip_in_private=(
-            'disabled_safety_policies parameter is supported on Vertex AI in'
-            ' Private SDK'
-        ),
     ),
     pytest_helper.TestTableItem(
         name='test_computer_use_multi_turn',

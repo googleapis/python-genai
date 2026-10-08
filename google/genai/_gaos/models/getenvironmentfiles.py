@@ -56,7 +56,9 @@ class GetEnvironmentFilesGlobals(BaseModel):
 
 class GetEnvironmentFilesRequestParam(TypedDict):
     environment: str
+    r"""The ID of the environment whose snapshot to read."""
     path: str
+    r"""Path of the file or directory inside the environment workspace, relative to its root (e.g. src)."""
     api_version: NotRequired[str]
     r"""API version for request routing."""
     page_size: NotRequired[int]
@@ -71,10 +73,12 @@ class GetEnvironmentFilesRequest(BaseModel):
     environment: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
+    r"""The ID of the environment whose snapshot to read."""
 
     path: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
+    r"""Path of the file or directory inside the environment workspace, relative to its root (e.g. src)."""
 
     api_version: Annotated[
         Optional[str],

@@ -292,6 +292,27 @@ class ApiSpec(_common.CaseInSensitiveEnum):
   """Elastic search API spec."""
 
 
+class SafetyPolicy(_common.CaseInSensitiveEnum):
+  """SafetyPolicy"""
+
+  SAFETY_POLICY_UNSPECIFIED = 'SAFETY_POLICY_UNSPECIFIED'
+  """Unspecified safety policy. This value should not be used."""
+  FINANCIAL_TRANSACTIONS = 'FINANCIAL_TRANSACTIONS'
+  """Financial transactions safety policy."""
+  SENSITIVE_DATA_MODIFICATION = 'SENSITIVE_DATA_MODIFICATION'
+  """Sensitive data modification safety policy."""
+  COMMUNICATION_TOOL = 'COMMUNICATION_TOOL'
+  """Communication tool safety policy."""
+  ACCOUNT_CREATION = 'ACCOUNT_CREATION'
+  """Account creation safety policy."""
+  DATA_MODIFICATION = 'DATA_MODIFICATION'
+  """Data modification safety policy."""
+  USER_CONSENT_MANAGEMENT = 'USER_CONSENT_MANAGEMENT'
+  """User consent management safety policy."""
+  LEGAL_TERMS_AND_AGREEMENTS = 'LEGAL_TERMS_AND_AGREEMENTS'
+  """Legal terms and agreements safety policy."""
+
+
 class Environment(_common.CaseInSensitiveEnum):
   """The environment being operated."""
 
@@ -303,27 +324,6 @@ class Environment(_common.CaseInSensitiveEnum):
   """Operates in a mobile environment."""
   ENVIRONMENT_DESKTOP = 'ENVIRONMENT_DESKTOP'
   """Operates in a desktop environment."""
-
-
-class SafetyPolicy(_common.CaseInSensitiveEnum):
-  """SafetyPolicy"""
-
-  SAFETY_POLICY_UNSPECIFIED = 'SAFETY_POLICY_UNSPECIFIED'
-  """Unspecified safety policy."""
-  FINANCIAL_TRANSACTIONS = 'FINANCIAL_TRANSACTIONS'
-  """Safety policy for financial transactions."""
-  SENSITIVE_DATA_MODIFICATION = 'SENSITIVE_DATA_MODIFICATION'
-  """Safety policy for sensitive data modification."""
-  COMMUNICATION_TOOL = 'COMMUNICATION_TOOL'
-  """Safety policy for communication tools (e.g. Gmail, Chat, Meet)."""
-  ACCOUNT_CREATION = 'ACCOUNT_CREATION'
-  """Safety policy for account creation."""
-  DATA_MODIFICATION = 'DATA_MODIFICATION'
-  """Safety policy for data modification."""
-  USER_CONSENT_MANAGEMENT = 'USER_CONSENT_MANAGEMENT'
-  """Safety policy for user consent management."""
-  LEGAL_TERMS_AND_AGREEMENTS = 'LEGAL_TERMS_AND_AGREEMENTS'
-  """Safety policy for legal terms and agreements."""
 
 
 class PhishBlockThreshold(_common.CaseInSensitiveEnum):
@@ -549,6 +549,8 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Image generation stopped because the generated image may be a recitation from a source."""
   IMAGE_OTHER = 'IMAGE_OTHER'
   """Image generation stopped for a reason not otherwise specified."""
+  CONTINUATION = 'CONTINUATION'
+  """Token generation stopped because the response reached the per-request token limit, but generation is not yet complete. The response can be continued by passing the returned `continuation_token` in a subsequent request."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
@@ -4569,7 +4571,7 @@ class ComputerUse(_common.BaseModel):
   )
   disabled_safety_policies: Optional[list[SafetyPolicy]] = Field(
       default=None,
-      description="""Optional. Disabled safety policies for computer use. This field is not supported in Vertex AI.""",
+      description="""Optional. Disabled safety policies for computer use.""",
   )
 
 
@@ -4586,7 +4588,7 @@ class ComputerUseDict(TypedDict, total=False):
   """Optional. Enables the prompt injection detection check on computer-use request."""
 
   disabled_safety_policies: Optional[list[SafetyPolicy]]
-  """Optional. Disabled safety policies for computer use. This field is not supported in Vertex AI."""
+  """Optional. Disabled safety policies for computer use."""
 
 
 ComputerUseOrDict = Union[ComputerUse, ComputerUseDict]
@@ -6720,6 +6722,13 @@ class GenerateContentConfig(_common.BaseModel):
       description="""Optional. Configuration for audio transcription (speech recognition).
       """,
   )
+  continuation_token: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque continuation token used to resume generation from a
+      previous response that stopped with `finish_reason` set to
+      `CONTINUATION`.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6939,6 +6948,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
 
   audio_transcription_config: Optional[AudioTranscriptionConfigDict]
   """Optional. Configuration for audio transcription (speech recognition).
+      """
+
+  continuation_token: Optional[bytes]
+  """An opaque continuation token used to resume generation from a
+      previous response that stopped with `finish_reason` set to
+      `CONTINUATION`.
       """
 
 
@@ -8355,6 +8370,12 @@ class Candidate(_common.BaseModel):
       default=None,
       description="""Output only. Metadata returned when the model uses the `url_context` tool to get information from a user-provided URL.""",
   )
+  continuation_token: Optional[bytes] = Field(
+      default=None,
+      description="""An opaque continuation token returned when `finish_reason` is
+      `CONTINUATION`. Pass it in a subsequent request to continue generation.
+      """,
+  )
 
 
 class CandidateDict(TypedDict, total=False):
@@ -8400,6 +8421,11 @@ class CandidateDict(TypedDict, total=False):
 
   url_context_metadata: Optional[UrlContextMetadataDict]
   """Output only. Metadata returned when the model uses the `url_context` tool to get information from a user-provided URL."""
+
+  continuation_token: Optional[bytes]
+  """An opaque continuation token returned when `finish_reason` is
+      `CONTINUATION`. Pass it in a subsequent request to continue generation.
+      """
 
 
 CandidateOrDict = Union[Candidate, CandidateDict]
@@ -15656,6 +15682,10 @@ class TuningJob(_common.BaseModel):
   distillation_sampling_spec: Optional[DistillationSamplingSpec] = Field(
       default=None, description=""""""
   )
+  gcs_metrics_uri: Optional[str] = Field(
+      default=None,
+      description="""Output only. The Cloud Storage metrics URI associated with this TuningJob.""",
+  )
 
   @property
   def has_ended(self) -> bool:
@@ -15772,6 +15802,9 @@ class TuningJobDict(TypedDict, total=False):
 
   distillation_sampling_spec: Optional[DistillationSamplingSpecDict]
   """"""
+
+  gcs_metrics_uri: Optional[str]
+  """Output only. The Cloud Storage metrics URI associated with this TuningJob."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
@@ -16245,7 +16278,7 @@ class _CreateTuningJobParametersPrivate(_common.BaseModel):
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
+      description="""The base model that is being tuned, e.g., "gemini-flash-latest".""",
   )
   pre_tuned_model: Optional[PreTunedModel] = Field(
       default=None, description="""The PreTunedModel that is being tuned."""
@@ -16263,7 +16296,7 @@ class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
   """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+  """The base model that is being tuned, e.g., "gemini-flash-latest"."""
 
   pre_tuned_model: Optional[PreTunedModelDict]
   """The PreTunedModel that is being tuned."""
@@ -16605,7 +16638,7 @@ class _CreateCachedContentParameters(_common.BaseModel):
 
   model: Optional[str] = Field(
       default=None,
-      description="""ID of the model to use. Example: gemini-2.0-flash""",
+      description="""ID of the model to use. Example: gemini-flash-latest""",
   )
   config: Optional[CreateCachedContentConfig] = Field(
       default=None,
@@ -16618,7 +16651,7 @@ class _CreateCachedContentParametersDict(TypedDict, total=False):
   """Parameters for caches.create method."""
 
   model: Optional[str]
-  """ID of the model to use. Example: gemini-2.0-flash"""
+  """ID of the model to use. Example: gemini-flash-latest"""
 
   config: Optional[CreateCachedContentConfigDict]
   """Configuration that contains optional parameters.
@@ -22676,7 +22709,7 @@ class CreateTuningJobParameters(_common.BaseModel):
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-2.5-flash".""",
+      description="""The base model that is being tuned, e.g., "gemini-flash-latest".""",
   )
   training_dataset: Optional[TuningDataset] = Field(
       default=None,
@@ -22691,7 +22724,7 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
   """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-2.5-flash"."""
+  """The base model that is being tuned, e.g., "gemini-flash-latest"."""
 
   training_dataset: Optional[TuningDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""
@@ -23170,7 +23203,7 @@ class EvaluationParserConfigCustomCodeParserConfig(_common.BaseModel):
   )
   code_execution_region: Optional[str] = Field(
       default=None,
-      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used.""",
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used.""",
   )
 
 
@@ -23184,7 +23217,7 @@ class EvaluationParserConfigCustomCodeParserConfigDict(TypedDict, total=False):
   """Required. Python function for parsing results. The function should be defined within this string. The function takes a list of strings (LLM responses) and should return either a list of dictionaries (for rubrics) or a single dictionary (for a metric result). Example function signature: def parse(responses: list[str]) -> list[dict[str, Any]] | dict[str, Any]: When parsing rubrics, return a list of dictionaries, where each dictionary represents a Rubric. Example for rubrics: [ { "content": {"property": {"description": "The response is factual."}}, "type": "FACTUALITY", "importance": "HIGH" }, { "content": {"property": {"description": "The response is fluent."}}, "type": "FLUENCY", "importance": "MEDIUM" } ] When parsing critique results, return a dictionary representing a MetricResult. Example for a metric result: { "score": 0.8, "explanation": "The model followed most instructions.", "rubric_verdicts": [...] } ... code for result extraction and aggregation"""
 
   code_execution_region: Optional[str]
-  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used."""
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used."""
 
 
 EvaluationParserConfigCustomCodeParserConfigOrDict = Union[
@@ -23311,7 +23344,7 @@ class CustomCodeExecutionSpec(_common.BaseModel):
   )
   code_execution_region: Optional[str] = Field(
       default=None,
-      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED.""",
+      description="""Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED.""",
   )
 
 
@@ -23327,7 +23360,7 @@ class CustomCodeExecutionSpecDict(TypedDict, total=False):
   are available to the function as instance[field_name]."""
 
   code_execution_region: Optional[str]
-  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. Supported regions: northamerica-northeast1, southamerica-east1, us-central1, us-east1, us-east4, us-west1, us-west4, europe-central2, europe-north1, europe-southwest1, europe-west1, europe-west2, europe-west3, europe-west4, europe-west6, europe-west8, europe-west9, me-west1, asia-east1, asia-east2, asia-northeast1, asia-northeast3, asia-south1, asia-south2, asia-southeast1, australia-southeast2. If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED."""
+  """Optional. The region to use for code execution. If set, the Code Execution Sandbox will be invoked in the specified region regardless of the request's originating region. Must be a region where the Code Execution Sandbox is available. For the current list of [supported regions](https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/locations). If unset, the request's originating region is used; requests from regions where the sandbox is unavailable will fail with UNIMPLEMENTED."""
 
 
 CustomCodeExecutionSpecOrDict = Union[

@@ -222,6 +222,25 @@ def join_url_path(base_url: str, path: str) -> str:
   return urlunparse(parsed_base._replace(path=base_path + '/' + path))
 
 
+def to_mtls_url(url: str) -> str:
+  """Rewrites a googleapis.com URL to its mTLS endpoint.
+
+  For example, `aiplatform.googleapis.com` becomes
+  `aiplatform.mtls.googleapis.com` and `foo.sandbox.googleapis.com` becomes
+  `foo.mtls.sandbox.googleapis.com`. URLs on other hosts, and URLs that already
+  point at an mTLS endpoint, are returned unchanged.
+  """
+  parsed = urlparse(url)
+  netloc = parsed.netloc
+  if netloc.endswith(('.mtls.googleapis.com', '.mtls.sandbox.googleapis.com')):
+    return url
+  for domain in ('sandbox.googleapis.com', 'googleapis.com'):
+    if netloc.endswith('.' + domain):
+      netloc = netloc[: -len(domain)] + 'mtls.' + domain
+      return urlunparse(parsed._replace(netloc=netloc))
+  return url
+
+
 def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
   """Loads google auth credentials and project id."""
   credentials, loaded_project_id = google.auth.default(  # type: ignore[no-untyped-call]
@@ -860,19 +879,10 @@ class BaseApiClient:
     self._async_httpx_client_args = async_client_args
     self._authorized_session: Optional['AuthorizedSession'] = None
 
-    if self._use_google_auth_sync():
-      self._httpx_client = None
-    elif self._http_options.httpx_client:
+    if self._http_options.httpx_client:
       self._httpx_client = self._http_options.httpx_client
     else:
       self._httpx_client = SyncHttpxClient(**client_args)
-
-    if self._use_google_auth_async():
-      self._async_httpx_client = None
-    elif self._http_options.httpx_async_client:
-      self._async_httpx_client = self._http_options.httpx_async_client
-    else:
-      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
 
     if self._http_options.httpx_async_client:
       self._async_httpx_client = self._http_options.httpx_async_client
@@ -907,6 +917,26 @@ class BaseApiClient:
         self._http_options,
         vertexai=bool(self.vertexai),
     )
+    # The httpx and websocket transports present the default client certificate
+    # only through the SSL context the SDK creates, so when the caller supplies
+    # their own client or SSL context, only GOOGLE_API_USE_MTLS_ENDPOINT=always
+    # switches them to the mTLS endpoint.
+    client_args = self._http_options.client_args or {}
+    async_client_args = self._http_options.async_client_args or {}
+    custom_httpx_verify = bool(
+        client_args.get('verify') or async_client_args.get('verify')
+    )
+    self._httpx_use_mtls_endpoint = self._use_mtls_endpoint(
+        sdk_ssl_ctx=not (self._http_options.httpx_client or custom_httpx_verify)
+    )
+    self._async_httpx_use_mtls_endpoint = self._use_mtls_endpoint(
+        sdk_ssl_ctx=not (
+            self._http_options.httpx_async_client or custom_httpx_verify
+        )
+    )
+    self._websocket_use_mtls_endpoint = self._use_mtls_endpoint(
+        sdk_ssl_ctx=not async_client_args.get('ssl')
+    )
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
 
@@ -921,6 +951,37 @@ class BaseApiClient:
             self._http_options.httpx_client or self._http_options.client_args
         )
     )
+
+  def _use_mtls_endpoint(self, sdk_ssl_ctx: bool) -> bool:
+    """Returns whether a transport should send requests to the mTLS endpoint.
+
+    Certificate-bound access tokens are only accepted on `mtls.googleapis.com`,
+    so a transport that presents the client certificate must also switch to
+    the mTLS endpoint.
+
+    Args:
+      sdk_ssl_ctx: Whether the transport uses the SSL context created by the
+        SDK, which carries the default client certificate when one is
+        configured.
+    """
+    if not self.vertexai:
+      return False
+    client_cert_available = bool(
+        sdk_ssl_ctx
+        and hasattr(mtls, 'should_use_client_cert')
+        and mtls.should_use_client_cert()  # type: ignore[no-untyped-call]
+        and mtls.has_default_client_cert_source()  # type: ignore[no-untyped-call]
+    )
+    should_use_mtls_endpoint = getattr(mtls, 'should_use_mtls_endpoint', None)
+    if should_use_mtls_endpoint is None:
+      return client_cert_available
+    try:
+      return bool(
+          should_use_mtls_endpoint(client_cert_available=client_cert_available)
+      )
+    except auth_exceptions.MutualTLSChannelError as e:
+      logger.warning('Failed to determine whether to use mTLS endpoint: %s', e)
+      return client_cert_available
 
   def _use_google_auth_async(self) -> bool:
     try:
@@ -1303,6 +1364,15 @@ class BaseApiClient:
         and (self._http_options.httpx_async_client is None)
     )
 
+  def _httpx_url(self, url: str, *, is_async: bool) -> str:
+    """Returns the URL to send a request to with the httpx client."""
+    use_mtls_endpoint = (
+        self._async_httpx_use_mtls_endpoint
+        if is_async
+        else self._httpx_use_mtls_endpoint
+    )
+    return to_mtls_url(url) if use_mtls_endpoint else url
+
   def _websocket_base_url(self) -> str:
     has_sufficient_auth = (self.project and self.location) or self.api_key
     if self.custom_base_url and not has_sufficient_auth:
@@ -1310,7 +1380,10 @@ class BaseApiClient:
       # Enable custom url if auth is not sufficient.
       return self.custom_base_url
     url_parts = urlparse(self._http_options.base_url)
-    return url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type, return-value]
+    url = url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type]
+    if self._websocket_use_mtls_endpoint:
+      url = to_mtls_url(url)  # type: ignore[arg-type]
+    return url  # type: ignore[return-value]
 
   def _access_token(self) -> str:
     """Retrieves the access token for the credentials."""
@@ -1503,13 +1576,8 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls and 'googleapis.com' in url:
-        if 'sandbox' in url:
-          url = url.replace(
-              'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
-          )
-        else:
-          url = url.replace('googleapis.com', 'mtls.googleapis.com')
+      if self._authorized_session._is_mtls:
+        url = to_mtls_url(url)
       response = self._authorized_session.request(  # type: ignore[no-untyped-call]
           method=http_request.method.upper(),
           url=url,
@@ -1521,7 +1589,7 @@ class BaseApiClient:
     else:
       httpx_request = self._httpx_client.build_request(  # type: ignore[union-attr]
           method=http_request.method,
-          url=http_request.url,
+          url=self._httpx_url(http_request.url, is_async=False),
           content=data,
           headers=http_request.headers,
           timeout=http_request.timeout,
@@ -1581,13 +1649,8 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
-            if 'sandbox' in url:
-              url = url.replace(
-                  'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
-              )
-            else:
-              url = url.replace('googleapis.com', 'mtls.googleapis.com')
+          if session._is_mtls:  # type: ignore[union-attr]
+            url = to_mtls_url(url)
         try:
           response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
@@ -1634,7 +1697,7 @@ class BaseApiClient:
         # aiohttp is not available. Fall back to httpx.
         httpx_request = self._async_httpx_client.build_request(  # type: ignore[union-attr]
             method=http_request.method,
-            url=http_request.url,
+            url=self._httpx_url(http_request.url, is_async=True),
             content=data,
             headers=http_request.headers,
             timeout=http_request.timeout,
@@ -1654,13 +1717,8 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
-            if 'sandbox' in url:
-              url = url.replace(
-                  'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
-              )
-            else:
-              url = url.replace('googleapis.com', 'mtls.googleapis.com')
+          if session._is_mtls:  # type: ignore[union-attr]
+            url = to_mtls_url(url)
         try:
           response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
@@ -1717,7 +1775,7 @@ class BaseApiClient:
         # aiohttp is not available. Fall back to httpx.
         client_response = await self._async_httpx_client.request(  # type: ignore[union-attr]
             method=http_request.method,
-            url=http_request.url,
+            url=self._httpx_url(http_request.url, is_async=True),
             headers=http_request.headers,
             content=data,
             timeout=http_request.timeout,
@@ -2063,13 +2121,8 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls and 'googleapis.com' in url:
-        if 'sandbox' in url:
-          url = url.replace(
-              'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
-          )
-        else:
-          url = url.replace('googleapis.com', 'mtls.googleapis.com')
+      if self._authorized_session._is_mtls:
+        url = to_mtls_url(url)
       if destination is not None:
         response = self._authorized_session.request(  # type: ignore[no-untyped-call]
             method=http_request.method.upper(),
@@ -2099,7 +2152,7 @@ class BaseApiClient:
       if destination is not None:
         httpx_request = self._httpx_client.build_request(  # type: ignore[union-attr]
             method=http_request.method,
-            url=http_request.url,
+            url=self._httpx_url(http_request.url, is_async=False),
             content=data,
             headers=http_request.headers,
             timeout=http_request.timeout,
@@ -2114,13 +2167,13 @@ class BaseApiClient:
       else:
         response = self._httpx_client.request(  # type: ignore[union-attr]
             method=http_request.method,
-            url=http_request.url,
+            url=self._httpx_url(http_request.url, is_async=False),
             content=data,
             headers=http_request.headers,
             timeout=http_request.timeout,
         )
         errors.APIError.raise_for_response(response)
-        return cast(bytes, response.read())
+        return response.read()
 
   async def async_upload_file(
       self,
@@ -2437,13 +2490,8 @@ class BaseApiClient:
         await session.configure_mtls_channel(  # type: ignore[union-attr]
             client_cert_source
         )
-        if session._is_mtls and 'googleapis.com' in url:  # type: ignore[union-attr]
-          if 'sandbox' in url:
-            url = url.replace(
-                'sandbox.googleapis.com', 'mtls.sandbox.googleapis.com'
-            )
-          else:
-            url = url.replace('googleapis.com', 'mtls.googleapis.com')
+        if session._is_mtls:  # type: ignore[union-attr]
+          url = to_mtls_url(url)
       response = await session.request(  # type: ignore[union-attr]
           method=http_request.method,
           url=url,
@@ -2474,7 +2522,7 @@ class BaseApiClient:
       if destination is not None:
         httpx_request = self._async_httpx_client.build_request(  # type: ignore[union-attr]
             method=http_request.method,
-            url=http_request.url,
+            url=self._httpx_url(http_request.url, is_async=True),
             content=data,
             headers=http_request.headers,
             timeout=http_request.timeout,
@@ -2494,13 +2542,13 @@ class BaseApiClient:
       else:
         client_response = await self._async_httpx_client.request(  # type: ignore[union-attr]
             method=http_request.method,
-            url=http_request.url,
+            url=self._httpx_url(http_request.url, is_async=True),
             headers=http_request.headers,
             content=data,
             timeout=http_request.timeout,
         )
         await errors.APIError.raise_for_async_response(client_response)
-        return cast(bytes, client_response.read())
+        return client_response.read()
 
   # This method does nothing in the real api client. It is used in the
   # replay_api_client to verify the response from the SDK method matches the

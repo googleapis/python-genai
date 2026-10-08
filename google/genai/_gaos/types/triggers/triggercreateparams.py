@@ -19,40 +19,17 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from ..interactions import (
-    createagentinteraction as interactions_createagentinteraction,
-    createmodelinteraction as interactions_createmodelinteraction,
-)
+from ..interactions import createagentinteraction as interactions_createagentinteraction
 from pydantic import model_serializer
-from typing import Optional, Union
-from typing_extensions import NotRequired, TypeAliasType, TypedDict
-
-
-InteractionParam = TypeAliasType(
-    "InteractionParam",
-    Union[
-        interactions_createagentinteraction.CreateAgentInteractionParam,
-        interactions_createmodelinteraction.CreateModelInteractionParam,
-    ],
-)
-r"""Required. The interaction request template to be executed."""
-
-
-Interaction = TypeAliasType(
-    "Interaction",
-    Union[
-        interactions_createagentinteraction.CreateAgentInteraction,
-        interactions_createmodelinteraction.CreateModelInteraction,
-    ],
-)
-r"""Required. The interaction request template to be executed."""
+from typing import Optional
+from typing_extensions import NotRequired, TypedDict
 
 
 class TriggerCreateParamsParam(TypedDict):
     r"""Parameters for creating a trigger."""
 
-    interaction: InteractionParam
-    r"""Required. The interaction request template to be executed."""
+    interaction: interactions_createagentinteraction.CreateAgentInteractionParam
+    r"""Interaction for generating the completion using agents."""
     schedule: str
     r"""Required. The cron schedule on which the trigger should run.
     Standard cron format.
@@ -74,8 +51,8 @@ class TriggerCreateParamsParam(TypedDict):
 class TriggerCreateParams(BaseModel):
     r"""Parameters for creating a trigger."""
 
-    interaction: Interaction
-    r"""Required. The interaction request template to be executed."""
+    interaction: interactions_createagentinteraction.CreateAgentInteraction
+    r"""Interaction for generating the completion using agents."""
 
     schedule: str
     r"""Required. The cron schedule on which the trigger should run.
