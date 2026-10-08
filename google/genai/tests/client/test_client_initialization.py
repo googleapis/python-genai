@@ -2110,7 +2110,9 @@ def mock_client_cert(monkeypatch):
       mtls, "should_use_client_cert", lambda: True, raising=False
   )
   monkeypatch.setattr(mtls, "has_default_client_cert_source", lambda: True)
-  monkeypatch.setattr(mtls, "get_default_ssl_context", lambda: None)
+  monkeypatch.setattr(
+      mtls, "get_default_ssl_context", lambda: ssl.create_default_context()
+  )
   monkeypatch.setattr(
       api_client.BaseApiClient, "_access_token", lambda self: "token"
   )
@@ -2214,6 +2216,7 @@ def test_mtls_endpoint_not_used_with_custom_transport(mock_client_cert):
   )
   url = "https://us-central1-aiplatform.googleapis.com/v1"
   assert client._api_client._httpx_url(url, is_async=True) == url
+  assert not client._api_client._aiohttp_use_mtls_endpoint
   assert client._api_client._websocket_base_url() == (
       "wss://us-central1-aiplatform.googleapis.com/"
   )
@@ -2244,3 +2247,111 @@ def test_mtls_endpoint_not_used_for_gemini_api(mock_client_cert):
   assert client._api_client._websocket_base_url() == (
       "wss://generativelanguage.googleapis.com/"
   )
+
+
+@pytest.mark.parametrize(
+    "get_default_ssl_context",
+    [
+        lambda: None,
+        mock.Mock(side_effect=ValueError("malformed client certificate")),
+    ],
+)
+def test_mtls_endpoint_not_used_when_client_cert_fails_to_load(
+    mock_client_cert, monkeypatch, get_default_ssl_context
+):
+  from google.auth.transport import mtls
+
+  # The SDK falls back to a one-way SSL context, so the transports must not
+  # switch to the mTLS endpoint.
+  monkeypatch.setattr(mtls, "get_default_ssl_context", get_default_ssl_context)
+  client = _mtls_test_client()
+  url = "https://us-central1-aiplatform.googleapis.com/v1"
+  assert client._api_client._httpx_url(url, is_async=False) == url
+  assert client._api_client._httpx_url(url, is_async=True) == url
+  assert client._api_client._websocket_base_url() == (
+      "wss://us-central1-aiplatform.googleapis.com/"
+  )
+
+
+@pytest.mark.parametrize(
+    "client_args, async_client_args, sync_mtls, async_mtls",
+    [
+        # client_args without `verify` gets the SDK's SSL context even when
+        # async_client_args has a custom one.
+        ({"follow_redirects": True}, {"verify": "custom"}, True, False),
+        # With no client_args, the custom async `verify` is used for both.
+        (None, {"verify": "custom"}, False, False),
+        ({"verify": "custom"}, None, False, False),
+    ],
+)
+def test_httpx_mtls_endpoint_tracks_each_client_ssl_ctx(
+    mock_client_cert, client_args, async_client_args, sync_mtls, async_mtls
+):
+  custom_ctx = ssl.create_default_context()
+  for args in (client_args, async_client_args):
+    if args and args.get("verify") == "custom":
+      args["verify"] = custom_ctx
+  client = _mtls_test_client(
+      client_args=client_args, async_client_args=async_client_args
+  )
+  url = "https://us-central1-aiplatform.googleapis.com/v1"
+  mtls_url = "https://us-central1-aiplatform.mtls.googleapis.com/v1"
+  assert client._api_client._httpx_url(url, is_async=False) == (
+      mtls_url if sync_mtls else url
+  )
+  assert client._api_client._httpx_url(url, is_async=True) == (
+      mtls_url if async_mtls else url
+  )
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@pytest.mark.parametrize("call", ["request", "stream", "download"])
+async def test_aiohttp_uses_mtls_endpoint_without_google_auth_aio(
+    mock_client_cert, call
+):
+  # Without google.auth.aio, requests go through a plain aiohttp session that
+  # presents the client certificate via the per-request `ssl` argument.
+  api_client.has_aiohttp = True
+  client = _mtls_test_client()
+  base_client = client._api_client
+
+  mock_response = mock.create_autospec(aiohttp.ClientResponse, instance=True)
+  mock_response.status = 200
+  mock_response.headers = {}
+  mock_response.text.return_value = "{}"
+  mock_response.read.return_value = b""
+  mock_session = mock.create_autospec(aiohttp.ClientSession, instance=True)
+  mock_session.request = mock.AsyncMock(return_value=mock_response)
+
+  with mock.patch.object(
+      base_client, "_use_google_auth_async", return_value=False
+  ), mock.patch.object(
+      base_client, "_get_aiohttp_session", return_value=mock_session
+  ):
+    if call == "download":
+      await base_client.async_download_file("files/abc:download")
+    else:
+      http_request = base_client._build_request(
+          "post", "models/gemini:generateContent", {}, None
+      )
+      await base_client._async_request_once(
+          http_request, stream=call == "stream"
+      )
+
+  assert mock_session.request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.mtls.googleapis.com/"
+  )
+
+
+@requires_aiohttp
+def test_aiohttp_mtls_endpoint_kept_with_custom_aiohttp_client(
+    mock_client_cert,
+):
+  # A custom aiohttp_client still receives the SDK's SSL context through the
+  # per-request `ssl` argument.
+  api_client.has_aiohttp = True
+  client = _mtls_test_client(
+      aiohttp_client=mock.create_autospec(aiohttp.ClientSession, instance=True)
+  )
+  assert client._api_client._aiohttp_use_mtls_endpoint
