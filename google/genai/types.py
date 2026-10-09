@@ -6747,6 +6747,14 @@ class GenerateContentConfig(_common.BaseModel):
       `CONTINUATION`.
       """,
   )
+  automatic_continuation: Optional[bool] = Field(
+      default=None,
+      description="""Defaults to true. When a response ends with finish reason
+      `CONTINUATION`, the SDK sends the same request again with the response's
+      continuation token until the model finishes. Timeouts, retries and
+      billing apply to each request. Set to false to turn this off.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6972,6 +6980,13 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """An opaque continuation token used to resume generation from a
       previous response that stopped with `finish_reason` set to
       `CONTINUATION`.
+      """
+
+  automatic_continuation: Optional[bool]
+  """Defaults to true. When a response ends with finish reason
+      `CONTINUATION`, the SDK sends the same request again with the response's
+      continuation token until the model finishes. Timeouts, retries and
+      billing apply to each request. Set to false to turn this off.
       """
 
 

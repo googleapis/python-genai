@@ -35,25 +35,18 @@ def mock_api_client():
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}
   api_client.vertexai = False
+  api_client._ws_connection = None
+  setattr(api_client, '_async_ws_connection', None)
+  api_client.tls_connection = None
   return api_client
 
 
 def test_continuation_helpers_edge_cases():
   """Tests helper edge cases for config preparation and response merging."""
-  assert not chats._has_explicit_max_output_tokens(None)
-  assert not chats._has_explicit_max_output_tokens({})
-  assert chats._has_explicit_max_output_tokens({'max_output_tokens': 100})
-  assert not chats._has_explicit_max_output_tokens(
-      types.GenerateContentConfig()
-  )
-  assert chats._has_explicit_max_output_tokens(
-      types.GenerateContentConfig(max_output_tokens=100)
-  )
-
-  assert chats._should_continue_generation(None, False) is None
+  assert chats._should_continue_generation(None) is None
   assert (
       chats._should_continue_generation(
-          types.GenerateContentResponse(candidates=[]), False
+          types.GenerateContentResponse(candidates=[])
       )
       is None
   )
@@ -104,7 +97,7 @@ def test_continuation_helpers_edge_cases():
 
 
 def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
-  """Default Chat config (max_output_tokens=None) auto-resumes across 4 hops on MAX_TOKENS + continuation_token."""
+  """Default Chat config auto-resumes across 4 hops on CONTINUATION + continuation_token."""
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
   chat = chats_module.create(model='gemini-2.5-pro')
@@ -116,7 +109,7 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
                   role='model',
                   parts=[types.Part(text='Hop 1 part. ')],
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'token_hop_1',
           )
       ],
@@ -134,7 +127,7 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
                   role='model',
                   parts=[types.Part(text='Hop 2 part. ')],
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'token_hop_2',
           )
       ],
@@ -152,7 +145,7 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
                   role='model',
                   parts=[types.Part(text='Hop 3 part. ')],
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'token_hop_3',
           )
       ],
@@ -356,20 +349,19 @@ def test_chat_send_message_explicit_max_output_tokens_stops_on_max_tokens(
     )
 
 
-def test_chat_send_message_explicit_large_max_output_tokens_resumes_continuation_stops_on_max_tokens(
+def test_chat_automatic_continuation_config_rules(
     mock_api_client,
 ):
-  """When max_output_tokens > 32k, CONTINUATION resumes and MAX_TOKENS stops."""
+  """Verifies rules for automatic_continuation and max_output_tokens pass-through in Chat."""
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-pro')
 
   hop1_response = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
                   role='model',
-                  parts=[types.Part(text='Hop 1 (32k). ')],
+                  parts=[types.Part(text='Hop 1. ')],
               ),
               finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'tok_1',
@@ -381,30 +373,126 @@ def test_chat_send_message_explicit_large_max_output_tokens_resumes_continuation
           types.Candidate(
               content=types.Content(
                   role='model',
-                  parts=[types.Part(text='Hop 2 (18k, reached 50k cap).')],
+                  parts=[types.Part(text='Hop 2.')],
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
-              continuation_token=b'tok_2',
+              finish_reason=types.FinishReason.STOP,
+              continuation_token=None,
           )
       ]
   )
 
+  # Rule 1: automatic_continuation unset, max_output_tokens unset -> enabled
+  chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.Models,
       'generate_content',
-      side_effect=[hop1_response, hop2_response],
+      side_effect=[
+          hop1_response.model_copy(deep=True),
+          hop2_response.model_copy(deep=True),
+      ],
+  ) as mock_gc:
+    response = chat.send_message('Rule 1')
+    assert mock_gc.call_count == 2
+    assert response.text == 'Hop 1. Hop 2.'
+
+  # Rule 2: max_output_tokens is set -> forwarded as-is; enabled when automatic_continuation is None or True
+  for auto_cont in (None, True):
+    chat = chats_module.create(model='gemini-2.5-pro')
+    with mock.patch.object(
+        models.Models,
+        'generate_content',
+        side_effect=[
+            hop1_response.model_copy(deep=True),
+            hop2_response.model_copy(deep=True),
+        ],
+    ) as mock_gc:
+      response = chat.send_message(
+          'Rule 2 enabled',
+          config={
+              'max_output_tokens': 50000,
+              'automatic_continuation': auto_cont,
+              'automatic_function_calling': {'disable': True},
+          },
+      )
+      assert mock_gc.call_count == 2
+      assert response.text == 'Hop 1. Hop 2.'
+      assert mock_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
+      assert mock_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      return_value=hop1_response.model_copy(deep=True),
   ) as mock_gc:
     response = chat.send_message(
-        'Generate up to 50k',
+        'Rule 2 disabled',
         config={
             'max_output_tokens': 50000,
+            'automatic_continuation': False,
             'automatic_function_calling': {'disable': True},
         },
     )
+    assert mock_gc.call_count == 1
+    assert response.text == 'Hop 1. '
+    assert (
+        response.candidates[0].finish_reason
+        == types.FinishReason.CONTINUATION
+    )
+    assert response.candidates[0].continuation_token == b'tok_1'
+
+  # Rule 3: automatic_continuation=True, max_output_tokens unset -> enabled
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      side_effect=[
+          hop1_response.model_copy(deep=True),
+          hop2_response.model_copy(deep=True),
+      ],
+  ) as mock_gc:
+    response = chat.send_message(
+        'Rule 3',
+        config=types.GenerateContentConfig(automatic_continuation=True),
+    )
     assert mock_gc.call_count == 2
-    assert response.text == 'Hop 1 (32k). Hop 2 (18k, reached 50k cap).'
-    assert response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    assert response.candidates[0].continuation_token == b'tok_2'
+    assert response.text == 'Hop 1. Hop 2.'
+    # Per-hop config passed to Models.generate_content has automatic_continuation cleared
+    assert (
+        mock_gc.call_args_list[0].kwargs['config'].automatic_continuation
+        is None
+    )
+
+  # Rule 4: automatic_continuation=False, max_output_tokens unset -> disabled
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      return_value=hop1_response.model_copy(deep=True),
+  ) as mock_gc:
+    response = chat.send_message(
+        'Rule 4',
+        config=types.GenerateContentConfig(automatic_continuation=False),
+    )
+    assert mock_gc.call_count == 1
+    assert response.text == 'Hop 1. '
+    assert response.candidates[0].continuation_token == b'tok_1'
+
+  # Rule 4 in streaming: automatic_continuation=False, max_output_tokens unset -> disabled
+  stream_chunks = [hop1_response.model_copy(deep=True)]
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      return_value=iter(stream_chunks),
+  ) as mock_stream:
+    chunks = list(
+        chat.send_message_stream(
+            'Rule 4 stream',
+            config=types.GenerateContentConfig(automatic_continuation=False),
+        )
+    )
+    assert mock_stream.call_count == 1
+    assert [c.text for c in chunks] == ['Hop 1. ']
 
 
 def test_chat_send_message_incompatible_tools_with_continuation(
@@ -468,7 +556,7 @@ def test_chat_send_message_preserves_empty_text_thought_part(mock_api_client):
                       types.Part(text='', thought_signature=b'sig_hop_1'),
                   ],
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'tok_after_thought',
           )
       ]
@@ -691,7 +779,7 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
                           )
                       ],
                   ),
-                  finish_reason=types.FinishReason.MAX_TOKENS,
+                  finish_reason=types.FinishReason.CONTINUATION,
               )
           ],
           model_version='gemini-2.5-pro',
@@ -737,7 +825,7 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
                           )
                       ],
                   ),
-                  finish_reason=types.FinishReason.MAX_TOKENS,
+                  finish_reason=types.FinishReason.CONTINUATION,
               )
           ],
           model_version='gemini-2.5-pro',
@@ -781,7 +869,7 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
                           )
                       ],
                   ),
-                  finish_reason=types.FinishReason.MAX_TOKENS,
+                  finish_reason=types.FinishReason.CONTINUATION,
               )
           ],
           model_version='gemini-2.5-pro',
@@ -962,7 +1050,7 @@ def test_chat_afc_decoupled_from_continuation_token(mock_api_client):
                   role='model',
                   parts=[types.Part(text='', thought_signature=b'thought_sig')],
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'afc_tok_1',
           )
       ]
@@ -1026,7 +1114,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
               content=types.Content(
                   role='model', parts=[types.Part(text='Async 1. ')]
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'async_tok_1',
           )
       ]
@@ -1037,7 +1125,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
               content=types.Content(
                   role='model', parts=[types.Part(text='Async 2. ')]
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'async_tok_2',
           )
       ]
@@ -1048,7 +1136,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
               content=types.Content(
                   role='model', parts=[types.Part(text='Async 3. ')]
               ),
-              finish_reason=types.FinishReason.MAX_TOKENS,
+              finish_reason=types.FinishReason.CONTINUATION,
               continuation_token=b'async_tok_3',
           )
       ]
@@ -1173,7 +1261,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
                           )
                       ],
                   ),
-                  finish_reason=types.FinishReason.MAX_TOKENS,
+                  finish_reason=types.FinishReason.CONTINUATION,
               )
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
@@ -1192,7 +1280,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
                       role='model', parts=[types.Part(text='Async chunk 3. ')]
                   ),
                   continuation_token=b'async_stream_tok_2',
-                  finish_reason=types.FinishReason.MAX_TOKENS,
+                  finish_reason=types.FinishReason.CONTINUATION,
               )
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
@@ -1211,7 +1299,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
                       role='model', parts=[types.Part(text='Async chunk 4. ')]
                   ),
                   continuation_token=b'async_stream_tok_3',
-                  finish_reason=types.FinishReason.MAX_TOKENS,
+                  finish_reason=types.FinishReason.CONTINUATION,
               )
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
@@ -1323,7 +1411,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
 async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
     mock_api_client,
 ):
-  """When max_output_tokens is explicitly set, AsyncChat (unary and stream) does NOT auto-resume."""
+  """When max_output_tokens is explicitly set, AsyncChat (unary and stream) does NOT auto-resume on MAX_TOKENS."""
   models_module = models.AsyncModels(mock_api_client)
   chats_module = chats.AsyncChats(modules=models_module)
   chat = chats_module.create(
@@ -1451,3 +1539,82 @@ async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
     assert (
         chunks[-1].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
     )
+
+
+@pytest.mark.asyncio
+async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
+  """Verifies Rules 1-4 for automatic_continuation and max_output_tokens pass-through in AsyncChat."""
+  models_module = models.AsyncModels(mock_api_client)
+  chats_module = chats.AsyncChats(modules=models_module)
+
+  hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Hop 1. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'async_tok_1',
+          )
+      ]
+  )
+  hop2 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Hop 2.')]
+              ),
+              finish_reason=types.FinishReason.STOP,
+              continuation_token=None,
+          )
+      ]
+  )
+
+  # Rule 2: automatic_continuation=True + max_output_tokens set -> enabled and max_output_tokens forwarded as-is
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content',
+      new_callable=mock.AsyncMock,
+      side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
+  ) as mock_gc:
+    resp = await chat.send_message(
+        'Rule 2 async',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True, max_output_tokens=1000
+        ),
+    )
+    assert mock_gc.call_count == 2
+    assert resp.text == 'Async Hop 1. Async Hop 2.'
+    assert mock_gc.call_args_list[0].kwargs['config'].max_output_tokens == 1000
+    assert mock_gc.call_args_list[1].kwargs['config'].max_output_tokens == 1000
+
+  # Rule 3: automatic_continuation=True + max_output_tokens unset -> enabled
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content',
+      new_callable=mock.AsyncMock,
+      side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
+  ) as mock_gc:
+    resp = await chat.send_message(
+        'Rule 3 async',
+        config=types.GenerateContentConfig(automatic_continuation=True),
+    )
+    assert mock_gc.call_count == 2
+    assert resp.text == 'Async Hop 1. Async Hop 2.'
+
+  # Rule 4: automatic_continuation=False + max_output_tokens unset -> disabled
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content',
+      new_callable=mock.AsyncMock,
+      return_value=hop1.model_copy(deep=True),
+  ) as mock_gc:
+    resp = await chat.send_message(
+        'Rule 4 async',
+        config=types.GenerateContentConfig(automatic_continuation=False),
+    )
+    assert mock_gc.call_count == 1
+    assert resp.text == 'Async Hop 1. '

@@ -36,214 +36,17 @@ else:
 
 logger = logging.getLogger("google_genai.chats")
 
-_T = TypeVar("_T", bound=_common.BaseModel)
-
-
-def _has_explicit_max_output_tokens(
-    config: Optional[GenerateContentConfigOrDict],
-) -> bool:
-  """Returns True if the user explicitly configured max_output_tokens."""
-  if not config:
-    return False
-  if isinstance(config, dict):
-    return config.get("max_output_tokens") is not None
-  return getattr(config, "max_output_tokens", None) is not None
-
-
-def _is_resumable_finish_reason(
-    finish_reason: Optional[types.FinishReason],
-    user_set_max_output_tokens: bool,
-) -> bool:
-  """Returns True if finish_reason is eligible for automatic continuation."""
-  if finish_reason == types.FinishReason.CONTINUATION:
-    return True
-  if (
-      finish_reason == types.FinishReason.MAX_TOKENS
-      and not user_set_max_output_tokens
-  ):
-    return True
-  return False
-
-
-def _should_continue_generation(
-    response: Optional[GenerateContentResponse],
-    user_set_max_output_tokens: bool,
-) -> Optional[bytes]:
-  """Returns continuation_token if generation should auto-resume, else None."""
-  if not response or not response.candidates:
-    return None
-  candidate = response.candidates[0]
-  if not candidate.continuation_token:
-    return None
-  if _is_resumable_finish_reason(
-      candidate.finish_reason, user_set_max_output_tokens
-  ):
-    return candidate.continuation_token
-  return None
-
-
-def _prepare_continuation_config(
-    base_config: Optional[types.GenerateContentConfig],
-    continuation_token: Optional[bytes],
-) -> Optional[types.GenerateContentConfig]:
-  """Returns a shallow copy of base_config with continuation_token set."""
-  if not continuation_token:
-    return base_config
-  if base_config is None:
-    return types.GenerateContentConfig(continuation_token=continuation_token)
-  if isinstance(base_config, dict):
-    copied_dict = dict(base_config)
-    copied_dict["continuation_token"] = continuation_token
-    return types.GenerateContentConfig(**copied_dict)
-  return base_config.model_copy(
-      update={"continuation_token": continuation_token}
-  )
-
-
-def _merge_modality_token_counts(
-    prev_list: list[types.ModalityTokenCount],
-    curr_list: list[types.ModalityTokenCount],
-) -> list[types.ModalityTokenCount]:
-  """Sums token_count per modality across two lists of ModalityTokenCount."""
-  counts_by_modality: dict[Any, int] = {}
-  order: list[Any] = []
-  for item in prev_list + curr_list:
-    if item.modality not in counts_by_modality:
-      counts_by_modality[item.modality] = 0
-      order.append(item.modality)
-    counts_by_modality[item.modality] += item.token_count or 0
-  return [
-      types.ModalityTokenCount(
-          modality=mod, token_count=counts_by_modality[mod]
-      )
-      for mod in order
-  ]
-
-
-def _merge_safety_ratings(
-    prev_list: list[types.SafetyRating],
-    curr_list: list[types.SafetyRating],
-) -> list[types.SafetyRating]:
-  """Deduplicates safety ratings by category, keeping the latest hop's rating."""
-  by_category: dict[Any, types.SafetyRating] = {}
-  order: list[Any] = []
-  for rating in prev_list + curr_list:
-    if rating.category not in by_category:
-      order.append(rating.category)
-    by_category[rating.category] = rating
-  return [by_category[cat] for cat in order]
-
-
-def _merge_candidates(
-    prev_candidates: list[types.Candidate],
-    curr_candidates: list[types.Candidate],
-) -> list[types.Candidate]:
-  """Merges the primary candidate across continuation hops."""
-  if not prev_candidates:
-    return curr_candidates
-  if not curr_candidates:
-    return prev_candidates
-  merged_first = _merge_pydantic_models(prev_candidates[0], curr_candidates[0])
-  return [merged_first] + curr_candidates[1:]
-
-
-def _merge_pydantic_models(prev: _T, curr: _T) -> _T:
-  """Recursively merges two Pydantic BaseModel instances across continuation hops."""
-  merged_data: dict[str, Any] = {}
-  for field_name in type(curr).model_fields:
-    prev_val = getattr(prev, field_name, None)
-    curr_val = getattr(curr, field_name, None)
-
-    # Terminal hop state on Candidate must reflect the final hop even if None
-    # e.g., continuation_token is None when the final hop finishes with STOP
-    if isinstance(curr, types.Candidate) and field_name in (
-        "continuation_token",
-        "finish_reason",
-        "finish_message",
-    ):
-      merged_data[field_name] = curr_val
-      continue
-
-    if curr_val is None:
-      merged_data[field_name] = prev_val
-    elif prev_val is None:
-      merged_data[field_name] = curr_val
-    elif isinstance(prev_val, _common.BaseModel) and isinstance(
-        curr_val, _common.BaseModel
-    ):
-      merged_data[field_name] = _merge_pydantic_models(prev_val, curr_val)
-    elif (
-        isinstance(prev_val, (int, float))
-        and not isinstance(prev_val, bool)
-        and isinstance(curr_val, (int, float))
-        and not isinstance(curr_val, bool)
-        and (
-            isinstance(curr, types.GenerateContentResponseUsageMetadata)
-            or field_name == "token_count"
-            or field_name.endswith("_count")
-            or field_name.endswith("_sum")
-        )
-    ):
-      merged_data[field_name] = prev_val + curr_val
-    elif isinstance(prev_val, list) and isinstance(curr_val, list):
-      if field_name == "candidates":
-        merged_data[field_name] = _merge_candidates(prev_val, curr_val)
-      elif prev_val and isinstance(prev_val[0], types.ModalityTokenCount):
-        merged_data[field_name] = _merge_modality_token_counts(
-            prev_val, curr_val
-        )
-      elif curr_val and isinstance(curr_val[0], types.ModalityTokenCount):
-        merged_data[field_name] = _merge_modality_token_counts(
-            prev_val, curr_val
-        )
-      elif field_name == "safety_ratings":
-        merged_data[field_name] = _merge_safety_ratings(prev_val, curr_val)
-      else:
-        # Concatenates Content.parts (keeping each hop's Part distinct and
-        # preserving empty placeholder Parts), GroundingChunks, Citations, etc.
-        merged_data[field_name] = prev_val + curr_val
-    else:
-      merged_data[field_name] = curr_val
-
-  return curr.model_copy(update=merged_data)
-
-
-def _merge_continuation_responses(
-    responses: list[GenerateContentResponse],
-    config: Optional[GenerateContentConfigOrDict] = None,
-) -> GenerateContentResponse:
-  """Merges a sequence of continuation hop responses into a single response."""
-  if not responses:
-    return GenerateContentResponse()
-  if len(responses) == 1:
-    return responses[0]
-  merged = responses[0]
-  for resp in responses[1:]:
-    merged = _merge_pydantic_models(merged, resp)
-
-  if config is not None:
-    response_schema = (
-        config.get("response_schema")
-        if isinstance(config, dict)
-        else getattr(config, "response_schema", None)
-    )
-    response_json_schema = (
-        config.get("response_json_schema")
-        if isinstance(config, dict)
-        else getattr(config, "response_json_schema", None)
-    )
-    if response_schema is not None or response_json_schema is not None:
-      config_dict = {
-          "response_schema": response_schema,
-          "response_json_schema": response_json_schema,
-      }
-      reparsed = types.GenerateContentResponse._from_response(
-          response=merged.model_dump(exclude_none=True),
-          kwargs={"config": config_dict},
-      )
-      merged.parsed = reparsed.parsed
-
-  return merged
+_should_enable_automatic_continuation = (
+    _extra_utils.should_enable_automatic_continuation
+)
+_is_resumable_finish_reason = _extra_utils.is_resumable_finish_reason
+_should_continue_generation = _extra_utils.should_continue_generation
+_prepare_continuation_config = _extra_utils.prepare_continuation_config
+_merge_modality_token_counts = _extra_utils.merge_modality_token_counts
+_merge_safety_ratings = _extra_utils.merge_safety_ratings
+_merge_candidates = _extra_utils.merge_candidates
+_merge_pydantic_models = _extra_utils.merge_pydantic_models
+_merge_continuation_responses = _extra_utils.merge_continuation_responses
 
 
 def _validate_content(content: Content) -> bool:
@@ -433,27 +236,27 @@ class Chat(_BaseChat):
       *,
       contents: list[Content],
       config: Optional[types.GenerateContentConfig],
-      user_set_max_output_tokens: bool,
   ) -> GenerateContentResponse:
+    """Generates content and automatically follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
     continuation_token: Optional[bytes] = None
     responses: list[GenerateContentResponse] = []
 
-    while True:
-      call_config = _prepare_continuation_config(config, continuation_token)
+    while not responses or (enable_continuation and continuation_token):
+      call_config = _prepare_continuation_config(
+          config,
+          continuation_token,
+          clear_automatic_continuation=True,
+      )
       response = self._modules.generate_content(
           model=self._model,
           contents=contents,  # type: ignore[arg-type]
           config=call_config,
       )
       responses.append(response)
-
-      next_token = _should_continue_generation(
-          response, user_set_max_output_tokens
-      )
-      if not next_token:
-        break
-
-      continuation_token = next_token
+      continuation_token = _should_continue_generation(response)
 
     return _merge_continuation_responses(responses, config=config)
 
@@ -462,14 +265,28 @@ class Chat(_BaseChat):
       *,
       contents: list[Content],
       config: Optional[types.GenerateContentConfig],
-      user_set_max_output_tokens: bool,
   ) -> Iterator[GenerateContentResponse]:
+    """Streams content and automatically follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    enable_continuation = _should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
     continuation_token: Optional[bytes] = None
+    hop_finish_reason: Optional[types.FinishReason] = None
+    is_first_hop = True
 
-    while True:
-      call_config = _prepare_continuation_config(config, continuation_token)
-      hop_finish_reason: Optional[types.FinishReason] = None
-      hop_continuation_token: Optional[bytes] = None
+    while is_first_hop or (
+        enable_continuation
+        and continuation_token
+        and _is_resumable_finish_reason(hop_finish_reason)
+    ):
+      is_first_hop = False
+      call_config = _prepare_continuation_config(
+          config,
+          continuation_token,
+          clear_automatic_continuation=True,
+      )
+      hop_finish_reason = None
+      continuation_token = None
 
       for chunk in self._modules.generate_content_stream(
           model=self._model,
@@ -481,18 +298,8 @@ class Chat(_BaseChat):
           if candidate.finish_reason:
             hop_finish_reason = candidate.finish_reason
           if candidate.continuation_token:
-            hop_continuation_token = candidate.continuation_token
+            continuation_token = candidate.continuation_token
         yield chunk
-
-      if not (
-          hop_continuation_token
-          and _is_resumable_finish_reason(
-              hop_finish_reason, user_set_max_output_tokens
-          )
-      ):
-        break
-
-      continuation_token = hop_continuation_token
 
   def send_message(
       self,
@@ -500,6 +307,14 @@ class Chat(_BaseChat):
       config: Optional[GenerateContentConfigOrDict] = None,
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns the model's response.
+
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Args:
       message: The message to send to the model.
@@ -523,7 +338,6 @@ class Chat(_BaseChat):
           f" {types.PartUnionDict}, got {type(message)}"
       )
     method_config = config if config else self._config
-    user_set_max_output_tokens = _has_explicit_max_output_tokens(method_config)
     method_config = _extra_utils.get_usage_header(
         method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
@@ -545,7 +359,6 @@ class Chat(_BaseChat):
       response = self._generate_content_with_continuation(
           contents=contents_to_model,  # type: ignore[arg-type]
           config=parsed_config,
-          user_set_max_output_tokens=user_set_max_output_tokens,
       )
       model_output = (
           [response.candidates[0].content]
@@ -571,7 +384,6 @@ class Chat(_BaseChat):
       response = self._generate_content_with_continuation(
           contents=contents_to_model,  # type: ignore[arg-type]
           config=parsed_config,
-          user_set_max_output_tokens=user_set_max_output_tokens,
       )
       model_output = (
           [response.candidates[0].content]
@@ -608,7 +420,6 @@ class Chat(_BaseChat):
       response = self._generate_content_with_continuation(
           contents=contents_to_model,  # type: ignore[arg-type]
           config=parsed_config,
-          user_set_max_output_tokens=user_set_max_output_tokens,
       )
       if (
           not function_map
@@ -666,6 +477,14 @@ class Chat(_BaseChat):
   ) -> Iterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically starts
+    follow-up stream requests with the `continuation_token` and yields chunks
+    until `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
+
     Args:
       message: The message to send to the model.
       config: Optional config to override the default Chat config for this
@@ -684,7 +503,6 @@ class Chat(_BaseChat):
     """
 
     method_config = config if config else self._config
-    user_set_max_output_tokens = _has_explicit_max_output_tokens(method_config)
     method_config = _extra_utils.get_usage_header(
         method_config, types.GenerateContentConfig, usage="chat"  # type: ignore[arg-type]
     )
@@ -727,7 +545,6 @@ class Chat(_BaseChat):
         for chunk in self._generate_content_stream_with_continuation(
             contents=contents_to_model,  # type: ignore[arg-type]
             config=parsed_config,
-            user_set_max_output_tokens=user_set_max_output_tokens,
         ):
           if not _validate_response(chunk):
             is_valid = False
@@ -769,7 +586,6 @@ class Chat(_BaseChat):
         response_stream = self._generate_content_stream_with_continuation(
             contents=contents_to_model,  # type: ignore[arg-type]
             config=parsed_config,
-            user_set_max_output_tokens=user_set_max_output_tokens,
         )
         remaining_remote_calls_afc -= 1
         # No request is left to send a result with, so the functions are not
@@ -896,27 +712,27 @@ class AsyncChat(_BaseChat):
       *,
       contents: list[Content],
       config: Optional[types.GenerateContentConfig],
-      user_set_max_output_tokens: bool,
   ) -> GenerateContentResponse:
+    """Generates content and automatically follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
     continuation_token: Optional[bytes] = None
     responses: list[GenerateContentResponse] = []
 
-    while True:
-      call_config = _prepare_continuation_config(config, continuation_token)
+    while not responses or (enable_continuation and continuation_token):
+      call_config = _prepare_continuation_config(
+          config,
+          continuation_token,
+          clear_automatic_continuation=True,
+      )
       response = await self._modules.generate_content(
           model=self._model,
           contents=contents,  # type: ignore[arg-type]
           config=call_config,
       )
       responses.append(response)
-
-      next_token = _should_continue_generation(
-          response, user_set_max_output_tokens
-      )
-      if not next_token:
-        break
-
-      continuation_token = next_token
+      continuation_token = _should_continue_generation(response)
 
     return _merge_continuation_responses(responses, config=config)
 
@@ -925,14 +741,28 @@ class AsyncChat(_BaseChat):
       *,
       contents: list[Content],
       config: Optional[types.GenerateContentConfig],
-      user_set_max_output_tokens: bool,
   ) -> AsyncIterator[GenerateContentResponse]:
+    """Streams content and automatically follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    enable_continuation = _should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
     continuation_token: Optional[bytes] = None
+    hop_finish_reason: Optional[types.FinishReason] = None
+    is_first_hop = True
 
-    while True:
-      call_config = _prepare_continuation_config(config, continuation_token)
-      hop_finish_reason: Optional[types.FinishReason] = None
-      hop_continuation_token: Optional[bytes] = None
+    while is_first_hop or (
+        enable_continuation
+        and continuation_token
+        and _is_resumable_finish_reason(hop_finish_reason)
+    ):
+      is_first_hop = False
+      call_config = _prepare_continuation_config(
+          config,
+          continuation_token,
+          clear_automatic_continuation=True,
+      )
+      hop_finish_reason = None
+      continuation_token = None
 
       response_stream = await self._modules.generate_content_stream(
           model=self._model,
@@ -945,18 +775,8 @@ class AsyncChat(_BaseChat):
           if candidate.finish_reason:
             hop_finish_reason = candidate.finish_reason
           if candidate.continuation_token:
-            hop_continuation_token = candidate.continuation_token
+            continuation_token = candidate.continuation_token
         yield chunk
-
-      if not (
-          hop_continuation_token
-          and _is_resumable_finish_reason(
-              hop_finish_reason, user_set_max_output_tokens
-          )
-      ):
-        break
-
-      continuation_token = hop_continuation_token
 
   async def send_message(
       self,
@@ -964,6 +784,14 @@ class AsyncChat(_BaseChat):
       config: Optional[GenerateContentConfigOrDict] = None,
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns model's response.
+
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Args:
       message: The message to send to the model.
@@ -981,7 +809,6 @@ class AsyncChat(_BaseChat):
       response = await chat.send_message('tell me a story')
     """
     method_config = config if config else self._config
-    user_set_max_output_tokens = _has_explicit_max_output_tokens(method_config)
     method_config = _extra_utils.get_usage_header(
         method_config,  # type: ignore[arg-type]
         types.GenerateContentConfig,
@@ -1000,7 +827,6 @@ class AsyncChat(_BaseChat):
       response = await self._generate_content_with_continuation(
           contents=contents_to_model,  # type: ignore[arg-type]
           config=method_config,
-          user_set_max_output_tokens=user_set_max_output_tokens,
       )
       model_output = (
           [response.candidates[0].content]
@@ -1042,7 +868,6 @@ class AsyncChat(_BaseChat):
       response = await self._generate_content_with_continuation(
           contents=contents_to_model,  # type: ignore[arg-type]
           config=parsed_config,
-          user_set_max_output_tokens=user_set_max_output_tokens,
       )
       model_output = (
           [response.candidates[0].content]
@@ -1148,7 +973,6 @@ class AsyncChat(_BaseChat):
         response = await self._generate_content_with_continuation(
             contents=contents_to_model,  # type: ignore[arg-type]
             config=final_parsed_config,
-            user_set_max_output_tokens=user_set_max_output_tokens,
         )
         if (
             not function_map
@@ -1213,6 +1037,14 @@ class AsyncChat(_BaseChat):
   ) -> AsyncIterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically starts
+    follow-up stream requests with the `continuation_token` and yields chunks
+    until `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
+
     Args:
       message: The message to send to the model.
       config: Optional config to override the default Chat config for this
@@ -1239,9 +1071,6 @@ class AsyncChat(_BaseChat):
 
     async def async_generator():  # type: ignore[no-untyped-def]
       method_config = config if config else self._config
-      user_set_max_output_tokens = _has_explicit_max_output_tokens(
-          method_config
-      )
       method_config = _extra_utils.get_usage_header(
           method_config,  # type: ignore[arg-type]
           types.GenerateContentConfig,
@@ -1279,7 +1108,6 @@ class AsyncChat(_BaseChat):
         async for chunk in self._generate_content_stream_with_continuation(
             contents=contents_to_model,  # type: ignore[arg-type]
             config=parsed_config,
-            user_set_max_output_tokens=user_set_max_output_tokens,
         ):
           if not _validate_response(chunk):
             is_valid = False
@@ -1395,7 +1223,6 @@ class AsyncChat(_BaseChat):
           response_stream = self._generate_content_stream_with_continuation(
               contents=contents_to_model,  # type: ignore[arg-type]
               config=final_parsed_config,
-              user_set_max_output_tokens=user_set_max_output_tokens,
           )
           remaining_remote_calls_afc -= 1
           # No request is left to send a result with, so the functions are not
