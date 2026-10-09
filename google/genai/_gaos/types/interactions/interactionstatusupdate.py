@@ -45,6 +45,10 @@ InteractionStatusUpdateStatus = Union[
 class InteractionStatusUpdateTypedDict(TypedDict):
     interaction_id: str
     status: InteractionStatusUpdateStatus
+    continuation_token: NotRequired[str]
+    r"""An optional opaque continuation token used to resume decoding from the
+    latest checkpoint after a disconnected stream.
+    """
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
@@ -56,6 +60,11 @@ class InteractionStatusUpdate(BaseModel):
     interaction_id: str
 
     status: InteractionStatusUpdateStatus
+
+    continuation_token: Optional[str] = None
+    r"""An optional opaque continuation token used to resume decoding from the
+    latest checkpoint after a disconnected stream.
+    """
 
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
@@ -72,7 +81,7 @@ class InteractionStatusUpdate(BaseModel):
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id"])
+        optional_fields = set(["continuation_token", "event_id"])
         serialized = handler(self)
         m = {}
 
