@@ -6747,6 +6747,16 @@ class GenerateContentConfig(_common.BaseModel):
       `CONTINUATION`.
       """,
   )
+  automatic_continuation: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, the continuation token will be consumed from the
+      request and not returned in the response. This allows the SDK to send
+      multiple requests to continue generation until `finish_reason` is no
+      longer `CONTINUATION`. Timeouts, retries, and billing are applied per
+      request. The most efficient way to do long decoding is with
+      `client.interactions.create(background=True)`.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6972,6 +6982,15 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """An opaque continuation token used to resume generation from a
       previous response that stopped with `finish_reason` set to
       `CONTINUATION`.
+      """
+
+  automatic_continuation: Optional[bool]
+  """If enabled, the continuation token will be consumed from the
+      request and not returned in the response. This allows the SDK to send
+      multiple requests to continue generation until `finish_reason` is no
+      longer `CONTINUATION`. Timeouts, retries, and billing are applied per
+      request. The most efficient way to do long decoding is with
+      `client.interactions.create(background=True)`.
       """
 
 

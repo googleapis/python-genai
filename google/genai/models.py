@@ -6108,6 +6108,80 @@ class Models(_api_module.BaseModule):
           config=config,
       )
 
+  def _generate_content_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: types.ContentListUnionDict,
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> types.GenerateContentResponse:
+    """Generates content and, when automatic_continuation is enabled, follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=False
+    )
+    continuation_token: Optional[bytes] = None
+    responses: list[types.GenerateContentResponse] = []
+
+    while True:
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      response = self._generate_content(
+          model=model, contents=contents, config=call_config
+      )
+      responses.append(response)
+
+      if not enable_continuation:
+        break
+
+      next_token = _extra_utils.should_continue_generation(response)
+      if not next_token:
+        break
+
+      continuation_token = next_token
+
+    return _extra_utils.merge_continuation_responses(responses, config=config)
+
+  def _generate_content_stream_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: types.ContentListUnionDict,
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> Iterator[types.GenerateContentResponse]:
+    """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=False
+    )
+    continuation_token: Optional[bytes] = None
+
+    while True:
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      hop_finish_reason: Optional[types.FinishReason] = None
+      hop_continuation_token: Optional[bytes] = None
+
+      for chunk in self._generate_content_stream(
+          model=model, contents=contents, config=call_config
+      ):
+        if chunk.candidates:
+          candidate = chunk.candidates[0]
+          if candidate.finish_reason:
+            hop_finish_reason = candidate.finish_reason
+          if candidate.continuation_token:
+            hop_continuation_token = candidate.continuation_token
+        yield chunk
+
+      if not (
+          enable_continuation
+          and hop_continuation_token
+          and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+      ):
+        break
+
+      continuation_token = hop_continuation_token
+
   def generate_content(
       self,
       *,
@@ -6136,6 +6210,13 @@ class Models(_api_module.BaseModule):
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is disabled by default. When
+    `config.automatic_continuation=True` is set and the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response.
 
     Built-in MCP support is an experimental feature.
 
@@ -6187,14 +6268,14 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
-      return self._generate_content(
+      return self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
     if incompatible_tools_indexes:
       _extra_utils.log_afc_incompatible_tools_warning(
           config, incompatible_tools_indexes
       )
-      return self._generate_content(
+      return self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
 
@@ -6229,7 +6310,7 @@ class Models(_api_module.BaseModule):
             'afc',
         )
       i += 1
-      response = self._generate_content(
+      response = self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config_to_call
       )
 
@@ -6308,6 +6389,13 @@ class Models(_api_module.BaseModule):
 
     Some models support multimodal input and output.
 
+    Automatic continuation is disabled by default. When
+    `config.automatic_continuation=True` is set and a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically starts
+    follow-up stream requests with the `continuation_token` and yields chunks
+    until `finish_reason` is no longer `CONTINUATION`.
+
     Built-in MCP support is an experimental feature.
 
     Usage:
@@ -6358,7 +6446,7 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
-      yield from self._generate_content_stream(
+      yield from self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -6367,7 +6455,7 @@ class Models(_api_module.BaseModule):
       _extra_utils.log_afc_incompatible_tools_warning(
           config, incompatible_tools_indexes
       )
-      yield from self._generate_content_stream(
+      yield from self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -6404,7 +6492,7 @@ class Models(_api_module.BaseModule):
             parsed_config_to_call, types.GenerateContentConfig, 'afc'
         )
       i += 1
-      response = self._generate_content_stream(
+      response = self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config_to_call
       )
       remaining_remote_calls_afc -= 1
@@ -6417,7 +6505,7 @@ class Models(_api_module.BaseModule):
 
       model_output = []
       func_response_parts = []
-      chunk = None
+      chunk: Optional[types.GenerateContentResponse] = None
 
       for chunk in response:
         if (
@@ -8260,6 +8348,81 @@ class AsyncModels(_api_module.BaseModule):
   _logged_generate_videos_deprecation_warning = False
   _logged_afc_warning = False
 
+  async def _generate_content_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> types.GenerateContentResponse:
+    """Generates content and, when automatic_continuation is enabled, follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=False
+    )
+    continuation_token: Optional[bytes] = None
+    responses: list[types.GenerateContentResponse] = []
+
+    while True:
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      response = await self._generate_content(
+          model=model, contents=contents, config=call_config
+      )
+      responses.append(response)
+
+      if not enable_continuation:
+        break
+
+      next_token = _extra_utils.should_continue_generation(response)
+      if not next_token:
+        break
+
+      continuation_token = next_token
+
+    return _extra_utils.merge_continuation_responses(responses, config=config)
+
+  async def _generate_content_stream_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> AsyncIterator[types.GenerateContentResponse]:
+    """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=False
+    )
+    continuation_token: Optional[bytes] = None
+
+    while True:
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      hop_finish_reason: Optional[types.FinishReason] = None
+      hop_continuation_token: Optional[bytes] = None
+
+      response_stream = await self._generate_content_stream(
+          model=model, contents=contents, config=call_config
+      )
+      async for chunk in response_stream:  # type: ignore[attr-defined]
+        if chunk.candidates:
+          candidate = chunk.candidates[0]
+          if candidate.finish_reason:
+            hop_finish_reason = candidate.finish_reason
+          if candidate.continuation_token:
+            hop_continuation_token = candidate.continuation_token
+        yield chunk
+
+      if not (
+          enable_continuation
+          and hop_continuation_token
+          and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+      ):
+        break
+
+      continuation_token = hop_continuation_token
+
   async def generate_content(
       self,
       *,
@@ -8270,6 +8433,13 @@ class AsyncModels(_api_module.BaseModule):
     """Makes an API request to generate content using a model.
 
     Some models support multimodal input and output.
+
+    Automatic continuation is disabled by default. When
+    `config.automatic_continuation=True` is set and the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response.
 
     Built-in MCP support is an experimental feature.
 
@@ -8374,7 +8544,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       if _extra_utils.should_disable_afc(final_parsed_config):
-        return await self._generate_content(
+        return await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config
         )
 
@@ -8382,7 +8552,7 @@ class AsyncModels(_api_module.BaseModule):
         _extra_utils.log_afc_incompatible_tools_warning(
             config, incompatible_tools_indexes
         )
-        return await self._generate_content(
+        return await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config
         )
 
@@ -8422,7 +8592,7 @@ class AsyncModels(_api_module.BaseModule):
               types.GenerateContentConfig,
               usage='afc',
           )
-        response = await self._generate_content(
+        response = await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config_to_call
         )
         remaining_remote_calls_afc -= 1
@@ -8504,6 +8674,13 @@ class AsyncModels(_api_module.BaseModule):
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is disabled by default. When
+    `config.automatic_continuation=True` is set and a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically starts
+    follow-up stream requests with the `continuation_token` and yields chunks
+    until `finish_reason` is no longer `CONTINUATION`.
 
     Built-in MCP support is an experimental feature.
 
@@ -8613,7 +8790,7 @@ class AsyncModels(_api_module.BaseModule):
         )
 
         if _extra_utils.should_disable_afc(final_parsed_config):
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
@@ -8624,7 +8801,7 @@ class AsyncModels(_api_module.BaseModule):
           _extra_utils.log_afc_incompatible_tools_warning(
               config, incompatible_tools_indexes
           )
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
@@ -8678,7 +8855,7 @@ class AsyncModels(_api_module.BaseModule):
 
           i += 1
 
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model,
               contents=loop_contents,
               config=final_parsed_config_to_call,
@@ -8695,7 +8872,6 @@ class AsyncModels(_api_module.BaseModule):
 
           model_output = []
           func_response_parts = []
-          chunk = None
 
           async for chunk in response:  # type: ignore[attr-defined]
             if (
