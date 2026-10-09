@@ -13,14 +13,14 @@
 # limitations under the License.
 #
 
-"""Unit tests for continuation_token and CONTINUATION finish_reason."""
+"""Unit tests for automatic continuation_token resumption in Models and AsyncModels."""
 
 from unittest import mock
 
 import pydantic
 import pytest
 
-from ... import chats
+from ... import _extra_utils
 from ... import client
 from ... import models
 from ... import types
@@ -42,35 +42,122 @@ def mock_api_client():
 
 
 def test_continuation_helpers_edge_cases():
-  """Tests helper edge cases for config preparation and response merging."""
-  assert chats._should_continue_generation(None) is None
+  """Tests shared _extra_utils helper edge cases for config preparation and response merging."""
+  # Default disabled for Models, default enabled for Chat
+  assert not _extra_utils.should_enable_automatic_continuation(
+      None, default_enabled=False
+  )
+  assert _extra_utils.should_enable_automatic_continuation(
+      None, default_enabled=True
+  )
+  assert _extra_utils.should_enable_automatic_continuation(
+      {'automatic_continuation': True}, default_enabled=False
+  )
+  assert not _extra_utils.should_enable_automatic_continuation(
+      {'automatic_continuation': False}, default_enabled=True
+  )
+  assert _extra_utils.should_enable_automatic_continuation(
+      {'automatic_continuation': True, 'max_output_tokens': 1000},
+      default_enabled=False,
+  )
+
+  assert _extra_utils.is_resumable_finish_reason(
+      types.FinishReason.CONTINUATION
+  )
+  assert not _extra_utils.is_resumable_finish_reason(
+      types.FinishReason.MAX_TOKENS
+  )
+  assert not _extra_utils.is_resumable_finish_reason(types.FinishReason.STOP)
+
+  assert _extra_utils.should_continue_generation(None) is None
   assert (
-      chats._should_continue_generation(
+      _extra_utils.should_continue_generation(
           types.GenerateContentResponse(candidates=[])
       )
       is None
   )
+  assert (
+      _extra_utils.should_continue_generation(
+          types.GenerateContentResponse(
+              candidates=[
+                  types.Candidate(
+                      finish_reason=types.FinishReason.MAX_TOKENS,
+                      continuation_token=b'tok',
+                  )
+              ]
+          )
+      )
+      is None
+  )
 
-  cfg_from_none = chats._prepare_continuation_config(None, b'tok')
+  cfg_from_none = _extra_utils.prepare_continuation_config(None, b'tok')
   assert cfg_from_none is not None
   assert cfg_from_none.continuation_token == b'tok'
 
-  cfg_from_dict = chats._prepare_continuation_config(
-      {'temperature': 0.5}, b'tok'  # type: ignore[arg-type]
+  cfg_from_dict = _extra_utils.prepare_continuation_config(
+      {'temperature': 0.5, 'automatic_continuation': True},
+      b'tok',
+      clear_automatic_continuation=True,
   )
   assert cfg_from_dict is not None
   assert cfg_from_dict.continuation_token == b'tok'
   assert cfg_from_dict.temperature == 0.5
+  assert cfg_from_dict.automatic_continuation is None
 
   assert (
-      chats._merge_continuation_responses([]) == types.GenerateContentResponse()
+      _extra_utils.merge_continuation_responses([])
+      == types.GenerateContentResponse()
   )
 
   cand = types.Candidate(
       content=types.Content(role='model', parts=[types.Part(text='hi')])
   )
-  assert chats._merge_candidates([], [cand]) == [cand]
-  assert chats._merge_candidates([cand], []) == [cand]
+  assert _extra_utils.merge_candidates([], [cand]) == [cand]
+  assert _extra_utils.merge_candidates([cand], []) == [cand]
+
+  cand0_hop1 = types.Candidate(
+      index=0,
+      content=types.Content(role='model', parts=[types.Part(text='c0_1 ')]),
+      finish_reason=types.FinishReason.CONTINUATION,
+      continuation_token=b'tok0',
+  )
+  cand1_hop1 = types.Candidate(
+      index=1,
+      content=types.Content(role='model', parts=[types.Part(text='c1_1 ')]),
+      finish_reason=types.FinishReason.CONTINUATION,
+  )
+  cand0_hop2 = types.Candidate(
+      index=0,
+      content=types.Content(role='model', parts=[types.Part(text='c0_2')]),
+      finish_reason=types.FinishReason.STOP,
+      continuation_token=None,
+  )
+  cand1_hop2 = types.Candidate(
+      index=1,
+      content=types.Content(role='model', parts=[types.Part(text='c1_2')]),
+      finish_reason=types.FinishReason.STOP,
+  )
+  cand2_hop2 = types.Candidate(
+      index=2,
+      content=types.Content(role='model', parts=[types.Part(text='c2_2')]),
+      finish_reason=types.FinishReason.STOP,
+  )
+  merged_cands = _extra_utils.merge_candidates(
+      [cand0_hop1, cand1_hop1], [cand0_hop2, cand1_hop2, cand2_hop2]
+  )
+  assert len(merged_cands) == 3
+  assert merged_cands[0].content.parts == [
+      types.Part(text='c0_1 '),
+      types.Part(text='c0_2'),
+  ]
+  assert merged_cands[0].finish_reason == types.FinishReason.STOP
+  assert merged_cands[0].continuation_token is None
+  assert merged_cands[1].content.parts == [
+      types.Part(text='c1_1 '),
+      types.Part(text='c1_2'),
+  ]
+  assert merged_cands[1].finish_reason == types.FinishReason.STOP
+  assert merged_cands[2] == cand2_hop2
 
   # ModalityTokenCount when prev_val is empty list and curr_val is non-empty list
   r1 = types.GenerateContentResponse(
@@ -87,7 +174,7 @@ def test_continuation_helpers_edge_cases():
           ]
       )
   )
-  merged = chats._merge_continuation_responses([r1, r2])
+  merged = _extra_utils.merge_continuation_responses([r1, r2])
   assert merged.usage_metadata is not None
   assert merged.usage_metadata.prompt_tokens_details == [
       types.ModalityTokenCount(
@@ -96,11 +183,9 @@ def test_continuation_helpers_edge_cases():
   ]
 
 
-def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
-  """Default Chat config auto-resumes across 4 hops on CONTINUATION + continuation_token."""
+def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
+  """Models.generate_content with automatic_continuation=True auto-resumes across 4 hops."""
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-pro')
 
   hop1_response = types.GenerateContentResponse(
       candidates=[
@@ -175,205 +260,103 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
       ),
   )
 
-  with mock.patch.object(
-      models.Models,
-      'generate_content',
-      side_effect=[hop1_response, hop2_response, hop3_response, hop4_response],
-  ) as mock_gc:
-    response = chat.send_message('Write a very long story')
-
-    assert mock_gc.call_count == 4
-    expected_tokens = [None, b'token_hop_1', b'token_hop_2', b'token_hop_3']
-    first_contents = mock_gc.call_args_list[0].kwargs['contents']
-    assert len(first_contents) == 1
-    for idx, expected_tok in enumerate(expected_tokens):
-      call_kwargs = mock_gc.call_args_list[idx].kwargs
-      assert call_kwargs['config'].continuation_token == expected_tok
-      assert call_kwargs['contents'] == first_contents
-
-    assert (
-        response.text == 'Hop 1 part. Hop 2 part. Hop 3 part. Hop 4 final part.'
+  for disable_afc in (False, True):
+    user_config = types.GenerateContentConfig(
+        automatic_continuation=True,
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            disable=disable_afc
+        ),
     )
-    assert response.candidates is not None
-    cand = response.candidates[0]
-    assert cand.finish_reason == types.FinishReason.STOP
-    assert cand.continuation_token is None
-    assert cand.content is not None
-    assert cand.content.parts == [
-        types.Part(text='Hop 1 part. '),
-        types.Part(text='Hop 2 part. '),
-        types.Part(text='Hop 3 part. '),
-        types.Part(text='Hop 4 final part.'),
-    ]
-    assert response.usage_metadata is not None
-    assert (
-        response.usage_metadata.prompt_token_count == 10 + 32778 + 65546 + 98314
-    )
-    assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
-    assert response.usage_metadata.thoughts_token_count == 500 + 300 + 200 + 100
-    assert (
-        response.usage_metadata.total_token_count
-        == 33278 + 65846 + 98514 + 99438
-    )
+    with mock.patch.object(
+        models.Models,
+        '_generate_content',
+        side_effect=[
+            hop1_response.model_copy(deep=True),
+            hop2_response.model_copy(deep=True),
+            hop3_response.model_copy(deep=True),
+            hop4_response.model_copy(deep=True),
+        ],
+    ) as mock_raw_gc:
+      response = models_module.generate_content(
+          model='gemini-2.5-pro',
+          contents='Write a very long story',
+          config=user_config,
+      )
 
-    assert chat._config.continuation_token is None
-    history = chat.get_history(curated=True)
-    assert len(history) == 2
-    assert history[0].role == 'user'
-    assert history[1].role == 'model'
-    assert history[1].parts == [
-        types.Part(text='Hop 1 part. '),
-        types.Part(text='Hop 2 part. '),
-        types.Part(text='Hop 3 part. '),
-        types.Part(text='Hop 4 final part.'),
-    ]
+      assert mock_raw_gc.call_count == 4
+      expected_tokens = [None, b'token_hop_1', b'token_hop_2', b'token_hop_3']
+      first_contents = mock_raw_gc.call_args_list[0].kwargs['contents']
+      for idx, expected_tok in enumerate(expected_tokens):
+        call_kwargs = mock_raw_gc.call_args_list[idx].kwargs
+        assert call_kwargs['config'].continuation_token == expected_tok
+        assert call_kwargs['contents'] == first_contents
+
+      assert (
+          response.text
+          == 'Hop 1 part. Hop 2 part. Hop 3 part. Hop 4 final part.'
+      )
+      assert response.candidates is not None
+      cand = response.candidates[0]
+      assert cand.finish_reason == types.FinishReason.STOP
+      assert cand.continuation_token is None
+      assert cand.content is not None
+      assert cand.content.parts == [
+          types.Part(text='Hop 1 part. '),
+          types.Part(text='Hop 2 part. '),
+          types.Part(text='Hop 3 part. '),
+          types.Part(text='Hop 4 final part.'),
+      ]
+      assert response.usage_metadata is not None
+      assert (
+          response.usage_metadata.prompt_token_count
+          == 10 + 32778 + 65546 + 98314
+      )
+      assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
+      assert (
+          response.usage_metadata.thoughts_token_count == 500 + 300 + 200 + 100
+      )
+      assert (
+          response.usage_metadata.total_token_count
+          == 33278 + 65846 + 98514 + 99438
+      )
+      # Caller's config is not mutated
+      assert user_config.continuation_token is None
 
 
-def test_chat_send_message_explicit_max_output_tokens_stops_on_max_tokens(
-    mock_api_client,
-):
-  """When user explicitly sets max_output_tokens, sync unary and stream do not auto-resume on MAX_TOKENS."""
+def test_models_automatic_continuation_config_rules(mock_api_client):
+  """Verifies default-disabled, automatic_continuation, and finish_reason rules in Models."""
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(
-      model='gemini-2.5-pro',
-      config=types.GenerateContentConfig(max_output_tokens=1000),
-  )
 
-  hop1_response = types.GenerateContentResponse(
+  hop1_max_tokens_response = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
                   role='model',
-                  parts=[types.Part(text='Stopped at 1000 tokens.')],
+                  parts=[types.Part(text='Stopped at hop 1.')],
               ),
               finish_reason=types.FinishReason.MAX_TOKENS,
               continuation_token=b'token_unused',
           )
       ]
   )
-
-  # 1. Sync unary (AFC enabled by default, max_output_tokens on chat config)
-  with mock.patch.object(
-      models.Models, 'generate_content', return_value=hop1_response
-  ) as mock_gc:
-    response = chat.send_message('Short response please')
-    assert mock_gc.call_count == 1
-    assert response.text == 'Stopped at 1000 tokens.'
-    assert response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    assert response.candidates[0].continuation_token == b'token_unused'
-
-  # 2. Sync unary (AFC disabled, max_output_tokens on method config)
-  chat_no_cfg = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.Models, 'generate_content', return_value=hop1_response
-  ) as mock_gc:
-    response = chat_no_cfg.send_message(
-        'Short response please',
-        config=types.GenerateContentConfig(
-            max_output_tokens=1000,
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=True
-            ),
-        ),
-    )
-    assert mock_gc.call_count == 1
-    assert response.text == 'Stopped at 1000 tokens.'
-    assert response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    assert response.candidates[0].continuation_token == b'token_unused'
-
-  # 3. Sync stream (AFC enabled by default, max_output_tokens on chat config)
-  stream_chunks = [
-      types.GenerateContentResponse(
-          candidates=[
-              types.Candidate(
-                  content=types.Content(
-                      role='model',
-                      parts=[types.Part(text='Stream chunk 1. ')],
-                  ),
-                  continuation_token=b'stream_token_unused',
-              )
-          ]
-      ),
-      types.GenerateContentResponse(
-          candidates=[
-              types.Candidate(
-                  content=types.Content(
-                      role='model',
-                      parts=[types.Part(text='Stopped stream at 1000 tokens.')],
-                  ),
-                  finish_reason=types.FinishReason.MAX_TOKENS,
-              )
-          ]
-      ),
-  ]
-  with mock.patch.object(
-      models.Models,
-      'generate_content_stream',
-      return_value=iter(stream_chunks),
-  ) as mock_stream:
-    chunks = list(chat.send_message_stream('Short stream please'))
-    assert mock_stream.call_count == 1
-    assert [c.text for c in chunks] == [
-        'Stream chunk 1. ',
-        'Stopped stream at 1000 tokens.',
-    ]
-    assert (
-        chunks[-1].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    )
-
-  # 4. Sync stream (AFC disabled, max_output_tokens on method config)
-  with mock.patch.object(
-      models.Models,
-      'generate_content_stream',
-      return_value=iter(stream_chunks),
-  ) as mock_stream:
-    chunks = list(
-        chat_no_cfg.send_message_stream(
-            'Short stream please',
-            config=types.GenerateContentConfig(
-                max_output_tokens=1000,
-                automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                    disable=True
-                ),
-            ),
-        )
-    )
-    assert mock_stream.call_count == 1
-    assert [c.text for c in chunks] == [
-        'Stream chunk 1. ',
-        'Stopped stream at 1000 tokens.',
-    ]
-    assert (
-        chunks[-1].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    )
-
-
-def test_chat_automatic_continuation_config_rules(
-    mock_api_client,
-):
-  """Verifies rules for automatic_continuation and max_output_tokens pass-through in Chat."""
-  models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-
-  hop1_response = types.GenerateContentResponse(
+  hop1_cont_response = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
                   role='model',
-                  parts=[types.Part(text='Hop 1. ')],
+                  parts=[types.Part(text='Hop 1 continuation. ')],
               ),
               finish_reason=types.FinishReason.CONTINUATION,
-              continuation_token=b'tok_1',
+              continuation_token=b'tok_cont_1',
           )
       ]
   )
-  hop2_response = types.GenerateContentResponse(
+  hop2_stop_response = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
                   role='model',
-                  parts=[types.Part(text='Hop 2.')],
+                  parts=[types.Part(text='Hop 2 stop.')],
               ),
               finish_reason=types.FinishReason.STOP,
               continuation_token=None,
@@ -381,127 +364,156 @@ def test_chat_automatic_continuation_config_rules(
       ]
   )
 
-  # Rule 1: automatic_continuation unset, max_output_tokens unset -> enabled
-  chat = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.Models,
-      'generate_content',
-      side_effect=[
-          hop1_response.model_copy(deep=True),
-          hop2_response.model_copy(deep=True),
-      ],
-  ) as mock_gc:
-    response = chat.send_message('Rule 1')
-    assert mock_gc.call_count == 2
-    assert response.text == 'Hop 1. Hop 2.'
-
-  # Rule 2: max_output_tokens is set -> forwarded as-is; enabled when automatic_continuation is None or True
-  for auto_cont in (None, True):
-    chat = chats_module.create(model='gemini-2.5-pro')
+  # 1. Default (config=None or automatic_continuation=None) -> disabled in unary & stream
+  for cfg in (
+      None,
+      types.GenerateContentConfig(),
+      types.GenerateContentConfig(
+          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+              disable=True
+          )
+      ),
+  ):
     with mock.patch.object(
         models.Models,
-        'generate_content',
-        side_effect=[
-            hop1_response.model_copy(deep=True),
-            hop2_response.model_copy(deep=True),
-        ],
-    ) as mock_gc:
-      response = chat.send_message(
-          'Rule 2 enabled',
-          config={
-              'max_output_tokens': 50000,
-              'automatic_continuation': auto_cont,
-              'automatic_function_calling': {'disable': True},
-          },
+        '_generate_content',
+        return_value=hop1_cont_response.model_copy(deep=True),
+    ) as mock_raw_gc:
+      response = models_module.generate_content(
+          model='gemini-2.5-pro',
+          contents='Default config',
+          config=cfg,
       )
-      assert mock_gc.call_count == 2
-      assert response.text == 'Hop 1. Hop 2.'
-      assert mock_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
-      assert mock_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+      assert mock_raw_gc.call_count == 1
+      assert response.text == 'Hop 1 continuation. '
+      assert (
+          response.candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
+      assert response.candidates[0].continuation_token == b'tok_cont_1'
 
-  chat = chats_module.create(model='gemini-2.5-pro')
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        return_value=iter([hop1_cont_response.model_copy(deep=True)]),
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents='Default stream config',
+              config=cfg,
+          )
+      )
+      assert mock_raw_stream.call_count == 1
+      assert [c.text for c in chunks] == ['Hop 1 continuation. ']
+
+  # 2. Explicit automatic_continuation=False -> disabled in unary & stream
+  for disable_afc in (False, True):
+    cfg = types.GenerateContentConfig(
+        automatic_continuation=False,
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            disable=disable_afc
+        ),
+    )
+    with mock.patch.object(
+        models.Models,
+        '_generate_content',
+        return_value=hop1_cont_response.model_copy(deep=True),
+    ) as mock_raw_gc:
+      response = models_module.generate_content(
+          model='gemini-2.5-pro',
+          contents='Explicit False',
+          config=cfg,
+      )
+      assert mock_raw_gc.call_count == 1
+      assert response.text == 'Hop 1 continuation. '
+
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        return_value=iter([hop1_cont_response.model_copy(deep=True)]),
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents='Explicit False stream',
+              config=cfg,
+          )
+      )
+      assert mock_raw_stream.call_count == 1
+      assert [c.text for c in chunks] == ['Hop 1 continuation. ']
+
+  # 3. finish_reason != CONTINUATION (e.g. MAX_TOKENS) -> stops loop even when automatic_continuation=True
+  for disable_afc in (False, True):
+    cfg = types.GenerateContentConfig(
+        max_output_tokens=50000,
+        automatic_continuation=True,
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(
+            disable=disable_afc
+        ),
+    )
+    with mock.patch.object(
+        models.Models,
+        '_generate_content',
+        return_value=hop1_max_tokens_response.model_copy(deep=True),
+    ) as mock_raw_gc:
+      response = models_module.generate_content(
+          model='gemini-2.5-pro',
+          contents='Stops on MAX_TOKENS',
+          config=cfg,
+      )
+      assert mock_raw_gc.call_count == 1
+      assert mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
+      assert response.text == 'Stopped at hop 1.'
+      assert (
+          response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
+      )
+      assert response.candidates[0].continuation_token == b'token_unused'
+
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        return_value=iter([hop1_max_tokens_response.model_copy(deep=True)]),
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents='Stops on MAX_TOKENS stream',
+              config=cfg,
+          )
+      )
+      assert mock_raw_stream.call_count == 1
+      assert (
+          mock_raw_stream.call_args_list[0].kwargs['config'].max_output_tokens
+          == 50000
+      )
+      assert [c.text for c in chunks] == ['Stopped at hop 1.']
+
+  # 4. Explicit automatic_continuation=True -> continues on CONTINUATION and forwards max_output_tokens as-is
   with mock.patch.object(
       models.Models,
-      'generate_content',
-      return_value=hop1_response.model_copy(deep=True),
-  ) as mock_gc:
-    response = chat.send_message(
-        'Rule 2 disabled',
-        config={
-            'max_output_tokens': 50000,
-            'automatic_continuation': False,
-            'automatic_function_calling': {'disable': True},
-        },
-    )
-    assert mock_gc.call_count == 1
-    assert response.text == 'Hop 1. '
-    assert (
-        response.candidates[0].finish_reason
-        == types.FinishReason.CONTINUATION
-    )
-    assert response.candidates[0].continuation_token == b'tok_1'
-
-  # Rule 3: automatic_continuation=True, max_output_tokens unset -> enabled
-  chat = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[
-          hop1_response.model_copy(deep=True),
-          hop2_response.model_copy(deep=True),
+          hop1_cont_response.model_copy(deep=True),
+          hop2_stop_response.model_copy(deep=True),
       ],
-  ) as mock_gc:
-    response = chat.send_message(
-        'Rule 3',
-        config=types.GenerateContentConfig(automatic_continuation=True),
+  ) as mock_raw_gc:
+    response = models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Explicit True',
+        config={'automatic_continuation': True, 'max_output_tokens': 50000},
     )
-    assert mock_gc.call_count == 2
-    assert response.text == 'Hop 1. Hop 2.'
-    # Per-hop config passed to Models.generate_content has automatic_continuation cleared
-    assert (
-        mock_gc.call_args_list[0].kwargs['config'].automatic_continuation
-        is None
-    )
-
-  # Rule 4: automatic_continuation=False, max_output_tokens unset -> disabled
-  chat = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.Models,
-      'generate_content',
-      return_value=hop1_response.model_copy(deep=True),
-  ) as mock_gc:
-    response = chat.send_message(
-        'Rule 4',
-        config=types.GenerateContentConfig(automatic_continuation=False),
-    )
-    assert mock_gc.call_count == 1
-    assert response.text == 'Hop 1. '
-    assert response.candidates[0].continuation_token == b'tok_1'
-
-  # Rule 4 in streaming: automatic_continuation=False, max_output_tokens unset -> disabled
-  stream_chunks = [hop1_response.model_copy(deep=True)]
-  with mock.patch.object(
-      models.Models,
-      'generate_content_stream',
-      return_value=iter(stream_chunks),
-  ) as mock_stream:
-    chunks = list(
-        chat.send_message_stream(
-            'Rule 4 stream',
-            config=types.GenerateContentConfig(automatic_continuation=False),
-        )
-    )
-    assert mock_stream.call_count == 1
-    assert [c.text for c in chunks] == ['Hop 1. ']
+    assert mock_raw_gc.call_count == 2
+    assert mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
+    assert mock_raw_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+    assert response.text == 'Hop 1 continuation. Hop 2 stop.'
 
 
-def test_chat_send_message_incompatible_tools_with_continuation(
+def test_models_generate_content_and_stream_incompatible_tools_with_continuation(
     mock_api_client,
 ):
-  """Incompatible AFC tools path also supports continuation token resumption."""
+  """Incompatible AFC tools path in Models also supports continuation token resumption."""
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-pro')
 
   hop1 = types.GenerateContentResponse(
       candidates=[
@@ -531,21 +543,46 @@ def test_chat_send_message_incompatible_tools_with_continuation(
       ]
   )
   with mock.patch.object(
-      models.Models, 'generate_content', side_effect=[hop1, hop2]
-  ) as mock_gc:
-    resp = chat.send_message(
-        'Test incompatible tools',
-        config=types.GenerateContentConfig(tools=[tool_decl]),
+      models.Models,
+      '_generate_content',
+      side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
+  ) as mock_raw_gc:
+    resp = models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Test incompatible tools unary',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True, tools=[tool_decl]
+        ),
     )
-    assert mock_gc.call_count == 2
+    assert mock_raw_gc.call_count == 2
     assert resp.text == 'Part 1. Part 2.'
 
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          iter([hop1.model_copy(deep=True)]),
+          iter([hop2.model_copy(deep=True)]),
+      ],
+  ) as mock_raw_stream:
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Test incompatible tools stream',
+            config=types.GenerateContentConfig(
+                automatic_continuation=True, tools=[tool_decl]
+            ),
+        )
+    )
+    assert mock_raw_stream.call_count == 2
+    assert [c.text for c in chunks] == ['Part 1. ', 'Part 2.']
 
-def test_chat_send_message_preserves_empty_text_thought_part(mock_api_client):
-  """Empty placeholder Part(text='') from a thought-only hop is never dropped."""
+
+def test_models_generate_content_preserves_empty_text_thought_part(
+    mock_api_client,
+):
+  """Empty placeholder Part(text='') from a thought-only hop is never dropped in Models.generate_content."""
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-pro')
 
   hop1_response = types.GenerateContentResponse(
       candidates=[
@@ -576,32 +613,33 @@ def test_chat_send_message_preserves_empty_text_thought_part(mock_api_client):
 
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[hop1_response, hop2_response],
-  ) as mock_gc:
-    response = chat.send_message('Solve hard math problem')
-    assert mock_gc.call_count == 2
+  ) as mock_raw_gc:
+    response = models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Solve hard math problem',
+        config=types.GenerateContentConfig(automatic_continuation=True),
+    )
+    assert mock_raw_gc.call_count == 2
     assert response.text == 'Final answer after deep thinking.'
     parts = response.candidates[0].content.parts
     assert len(parts) == 2
     assert parts[0].text == ''  # pylint: disable=g-explicit-bool-comparison
     assert parts[0].thought_signature == b'sig_hop_1'
     assert parts[1].text == 'Final answer after deep thinking.'
-    assert len(chat.get_history(curated=True)) == 2
 
 
-def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
+def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
     mock_api_client,
 ):
-  """Verifies recursive Pydantic merging for all metadata fields and response_schema."""
+  """Verifies recursive Pydantic merging for all metadata fields and response_schema in Models.generate_content."""
 
   class StorySummary(pydantic.BaseModel):
     title: str
     pages: int
 
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-pro')
 
   hop1_response = types.GenerateContentResponse(
       candidates=[
@@ -695,12 +733,16 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
 
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[hop1_response, hop2_response],
   ):
-    response = chat.send_message(
-        'Give me JSON',
-        config=types.GenerateContentConfig(response_schema=StorySummary),
+    response = models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Give me JSON',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True,
+            response_schema=StorySummary,
+        ),
     )
 
     assert response.text == '{"title": "Long Odyssey", "pages": 42}'
@@ -719,11 +761,11 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
     ]
 
 
-def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
-  """Streaming send_message_stream yields chunks seamlessly across 4 continuation hops."""
+def test_models_generate_content_stream_auto_resumes_across_hops(
+    mock_api_client,
+):
+  """Streaming Models.generate_content_stream yields chunks seamlessly across 4 continuation hops."""
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
-  chat = chats_module.create(model='gemini-2.5-pro')
 
   hop1_chunks = [
       types.GenerateContentResponse(
@@ -926,122 +968,77 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
       ),
   ]
 
-  # Test without AFC (disable=True)
-  with mock.patch.object(
-      models.Models,
-      'generate_content_stream',
-      side_effect=[
-          iter(hop1_chunks),
-          iter(hop2_chunks),
-          iter(hop3_chunks),
-          iter(hop4_chunks),
-      ],
-  ) as mock_stream:
-    chunks = list(
-        chat.send_message_stream(
-            'Write an exhaustive, multi-chapter textbook on compiler design '
-            'that is around 100,000 tokens long.',
-            config=types.GenerateContentConfig(
-                automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                    disable=True
-                )
-            ),
-        )
-    )
-    assert mock_stream.call_count == 4
-    assert [c.text for c in chunks] == [
-        '# ENGINEERING A MODERN PRODUCTION COMPILER\n',
-        '## CHAPTER 1: Lexical Analysis\n',
-        '',
-        '## CHAPTER 2: SSA Optimization Pipeline\n',
-        '',
-        '## CHAPTER 3: Register Allocation\n',
-        '',
-        '## CHAPTER 4: Code Generation\n',
-        'End of compiler textbook.',
-    ]
-    assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
-    assert chunks[-1].candidates[0].continuation_token is None
+  for disable_afc in (True, False):
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        side_effect=[
+            iter(hop1_chunks),
+            iter(hop2_chunks),
+            iter(hop3_chunks),
+            iter(hop4_chunks),
+        ],
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents=(
+                  'Write an exhaustive, multi-chapter textbook on compiler'
+                  ' design that is around 100,000 tokens long.'
+              ),
+              config=types.GenerateContentConfig(
+                  automatic_continuation=True,
+                  automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                      disable=disable_afc
+                  ),
+              ),
+          )
+      )
+      assert mock_raw_stream.call_count == 4
+      assert [c.text for c in chunks] == [
+          '# ENGINEERING A MODERN PRODUCTION COMPILER\n',
+          '## CHAPTER 1: Lexical Analysis\n',
+          '',
+          '## CHAPTER 2: SSA Optimization Pipeline\n',
+          '',
+          '## CHAPTER 3: Register Allocation\n',
+          '',
+          '## CHAPTER 4: Code Generation\n',
+          'End of compiler textbook.',
+      ]
+      assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+      assert chunks[-1].candidates[0].continuation_token is None
 
-    first_call_kwargs = mock_stream.call_args_list[0].kwargs
-    second_call_kwargs = mock_stream.call_args_list[1].kwargs
-    third_call_kwargs = mock_stream.call_args_list[2].kwargs
-    fourth_call_kwargs = mock_stream.call_args_list[3].kwargs
-    assert first_call_kwargs['config'].continuation_token is None
-    assert (
-        second_call_kwargs['config'].continuation_token
-        == b'AY89a181L6ffhy7s5hBG6S1Zea0DmuUzVC4ByCWe'
-    )
-    assert third_call_kwargs['config'].continuation_token == b'stream_tok_hop_2'
-    assert (
-        fourth_call_kwargs['config'].continuation_token == b'stream_tok_hop_3'
-    )
-    for call_kwargs in (
-        second_call_kwargs,
-        third_call_kwargs,
-        fourth_call_kwargs,
-    ):
-      assert len(call_kwargs['contents']) == 1
-      assert call_kwargs['contents'] == first_call_kwargs['contents']
-
-    curated = chat.get_history(curated=True)
-    assert len(curated) == 10  # 1 user + 9 model chunks
-
-  # Test default AFC-enabled path in Chat.send_message_stream
-  chat_default = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.Models,
-      'generate_content_stream',
-      side_effect=[
-          iter(hop1_chunks),
-          iter(hop2_chunks),
-          iter(hop3_chunks),
-          iter(hop4_chunks),
-      ],
-  ) as mock_stream:
-    chunks = list(
-        chat_default.send_message_stream(
-            'Write an exhaustive, multi-chapter textbook on compiler design '
-            'that is around 100,000 tokens long.'
-        )
-    )
-    assert mock_stream.call_count == 4
-    assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
-    first_call_kwargs = mock_stream.call_args_list[0].kwargs
-    second_call_kwargs = mock_stream.call_args_list[1].kwargs
-    third_call_kwargs = mock_stream.call_args_list[2].kwargs
-    fourth_call_kwargs = mock_stream.call_args_list[3].kwargs
-    assert first_call_kwargs['config'].continuation_token is None
-    assert (
-        second_call_kwargs['config'].continuation_token
-        == b'AY89a181L6ffhy7s5hBG6S1Zea0DmuUzVC4ByCWe'
-    )
-    assert third_call_kwargs['config'].continuation_token == b'stream_tok_hop_2'
-    assert (
-        fourth_call_kwargs['config'].continuation_token == b'stream_tok_hop_3'
-    )
-    for call_kwargs in (
-        second_call_kwargs,
-        third_call_kwargs,
-        fourth_call_kwargs,
-    ):
-      assert len(call_kwargs['contents']) == 1
-      assert call_kwargs['contents'] == first_call_kwargs['contents']
+      first_call_kwargs = mock_raw_stream.call_args_list[0].kwargs
+      second_call_kwargs = mock_raw_stream.call_args_list[1].kwargs
+      third_call_kwargs = mock_raw_stream.call_args_list[2].kwargs
+      fourth_call_kwargs = mock_raw_stream.call_args_list[3].kwargs
+      assert first_call_kwargs['config'].continuation_token is None
+      assert (
+          second_call_kwargs['config'].continuation_token
+          == b'AY89a181L6ffhy7s5hBG6S1Zea0DmuUzVC4ByCWe'
+      )
+      assert (
+          third_call_kwargs['config'].continuation_token == b'stream_tok_hop_2'
+      )
+      assert (
+          fourth_call_kwargs['config'].continuation_token == b'stream_tok_hop_3'
+      )
+      for call_kwargs in (
+          second_call_kwargs,
+          third_call_kwargs,
+          fourth_call_kwargs,
+      ):
+        assert call_kwargs['contents'] == first_call_kwargs['contents']
 
 
-def test_chat_afc_decoupled_from_continuation_token(mock_api_client):
-  """AFC resumes continuation during thinking, then clears continuation_token on function_response."""
+def test_models_afc_decoupled_from_continuation_token(mock_api_client):
+  """AFC in Models.generate_content and generate_content_stream resumes continuation during thinking, then clears continuation_token on function_response."""
   models_module = models.Models(mock_api_client)
-  chats_module = chats.Chats(modules=models_module)
 
   def get_weather(city: str) -> str:
     """Gets weather for a city."""
     return f'Sunny in {city}'
-
-  chat = chats_module.create(
-      model='gemini-2.5-pro',
-      config=types.GenerateContentConfig(tools=[get_weather]),
-  )
 
   turn1_hop1 = types.GenerateContentResponse(
       candidates=[
@@ -1085,28 +1082,75 @@ def test_chat_afc_decoupled_from_continuation_token(mock_api_client):
       ]
   )
 
+  # 1. Unary Models.generate_content with AFC + continuation
   with mock.patch.object(
       models.Models,
-      'generate_content',
-      side_effect=[turn1_hop1, turn1_hop2, turn2_final],
-  ) as mock_gc:
-    response = chat.send_message('What is the weather in Mountain View?')
-    assert mock_gc.call_count == 3
-
-    assert mock_gc.call_args_list[0].kwargs['config'].continuation_token is None
+      '_generate_content',
+      side_effect=[
+          turn1_hop1.model_copy(deep=True),
+          turn1_hop2.model_copy(deep=True),
+          turn2_final.model_copy(deep=True),
+      ],
+  ) as mock_raw_gc:
+    response = models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='What is the weather in Mountain View?',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True,
+            tools=[get_weather],
+        ),
+    )
+    assert mock_raw_gc.call_count == 3
+    assert mock_raw_gc.call_args_list[0].kwargs['config'].continuation_token is None
     assert (
-        mock_gc.call_args_list[1].kwargs['config'].continuation_token
+        mock_raw_gc.call_args_list[1].kwargs['config'].continuation_token
         == b'afc_tok_1'
     )
-    assert mock_gc.call_args_list[2].kwargs['config'].continuation_token is None
+    assert mock_raw_gc.call_args_list[2].kwargs['config'].continuation_token is None
     assert response.text == 'It is Sunny in Mountain View!'
+
+  # 2. Streaming Models.generate_content_stream with AFC + continuation
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          iter([turn1_hop1.model_copy(deep=True)]),
+          iter([turn1_hop2.model_copy(deep=True)]),
+          iter([turn2_final.model_copy(deep=True)]),
+      ],
+  ) as mock_raw_stream:
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='What is the weather in Mountain View?',
+            config=types.GenerateContentConfig(
+                automatic_continuation=True,
+                tools=[get_weather],
+            ),
+        )
+    )
+    assert mock_raw_stream.call_count == 3
+    assert (
+        mock_raw_stream.call_args_list[0].kwargs['config'].continuation_token
+        is None
+    )
+    assert (
+        mock_raw_stream.call_args_list[1].kwargs['config'].continuation_token
+        == b'afc_tok_1'
+    )
+    assert (
+        mock_raw_stream.call_args_list[2].kwargs['config'].continuation_token
+        is None
+    )
+    assert chunks[-1].text == 'It is Sunny in Mountain View!'
 
 
 @pytest.mark.asyncio
-async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
-  """AsyncChat auto-resumes on continuation_token across 4 hops in unary, AFC, and streaming modes."""
+async def test_async_models_generate_content_and_stream_auto_resume(
+    mock_api_client,
+):
+  """AsyncModels auto-resumes on continuation_token across 4 hops in unary, AFC, incompatible-tools, and streaming modes when automatic_continuation=True."""
   models_module = models.AsyncModels(mock_api_client)
-  chats_module = chats.AsyncChats(modules=models_module)
 
   hop1 = types.GenerateContentResponse(
       candidates=[
@@ -1166,11 +1210,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
     for call_kwargs in (c2, c3, c4):
       assert call_kwargs['contents'] == c1['contents']
 
-  # Test AFC disabled path in AsyncChat.send_message
-  chat_no_afc = chats_module.create(model='gemini-2.5-pro')
+  # 1. Test AFC disabled path in AsyncModels.generate_content
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[
           hop1.model_copy(deep=True),
@@ -1179,28 +1222,29 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           hop4.model_copy(deep=True),
       ],
   ) as mock_async_gc:
-    resp = await chat_no_afc.send_message(
-        'Hello async no afc',
+    resp = await models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello async no afc',
         config=types.GenerateContentConfig(
+            automatic_continuation=True,
             automatic_function_calling=types.AutomaticFunctionCallingConfig(
                 disable=True
-            )
+            ),
         ),
     )
     assert resp.text == 'Async 1. Async 2. Async 3. Async 4.'
     assert resp.candidates[0].finish_reason == types.FinishReason.STOP
     _assert_async_unary_4_hops(mock_async_gc)
 
-  # Test incompatible tools path in AsyncChat.send_message
+  # 2. Test incompatible tools path in AsyncModels.generate_content
   tool_decl = types.Tool(
       function_declarations=[
           types.FunctionDeclaration(name='manual_fn', description='manual')
       ]
   )
-  chat_incompat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[
           hop1.model_copy(deep=True),
@@ -1209,19 +1253,21 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           hop4.model_copy(deep=True),
       ],
   ) as mock_async_gc:
-    resp = await chat_incompat.send_message(
-        'Hello async incompat',
-        config=types.GenerateContentConfig(tools=[tool_decl]),
+    resp = await models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello async incompat',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True, tools=[tool_decl]
+        ),
     )
     assert resp.text == 'Async 1. Async 2. Async 3. Async 4.'
     assert resp.candidates[0].finish_reason == types.FinishReason.STOP
     _assert_async_unary_4_hops(mock_async_gc)
 
-  # Test default AFC path in AsyncChat.send_message
-  chat_default_unary = chats_module.create(model='gemini-2.5-pro')
+  # 3. Test default AFC path in AsyncModels.generate_content
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[
           hop1.model_copy(deep=True),
@@ -1230,7 +1276,11 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           hop4.model_copy(deep=True),
       ],
   ) as mock_async_gc:
-    resp = await chat_default_unary.send_message('Hello async default')
+    resp = await models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello async default',
+        config=types.GenerateContentConfig(automatic_continuation=True),
+    )
     assert resp.text == 'Async 1. Async 2. Async 3. Async 4.'
     assert resp.candidates[0].finish_reason == types.FinishReason.STOP
     _assert_async_unary_4_hops(mock_async_gc)
@@ -1344,225 +1394,86 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
     assert c3['config'].continuation_token == b'async_stream_tok_2'
     assert c4['config'].continuation_token == b'async_stream_tok_3'
     for call_kwargs in (c2, c3, c4):
-      assert len(call_kwargs['contents']) == 1
       assert call_kwargs['contents'] == c1['contents']
 
-  # Test AFC disabled path in AsyncChat.send_message_stream
-  async_chat_no_afc = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.AsyncModels,
-      'generate_content_stream',
-      new_callable=mock.AsyncMock,
-      side_effect=[
-          _make_async_stream(stream_hop1_chunks),
-          _make_async_stream(stream_hop2_chunks),
-          _make_async_stream(stream_hop3_chunks),
-          _make_async_stream(stream_hop4_chunks),
-      ],
-  ) as mock_async_stream:
-    chunks = []
-    async for chunk in await async_chat_no_afc.send_message_stream(
-        'Hello async stream no afc',
-        config=types.GenerateContentConfig(
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=True
-            )
-        ),
-    ):
-      chunks.append(chunk.text)
-    assert chunks == [
-        'Async chunk 1. ',
-        'Async chunk 2. ',
-        'Async chunk 3. ',
-        'Async chunk 4. ',
-        'Async chunk 5.',
-    ]
-    _assert_async_stream_4_hops(mock_async_stream)
-
-  # Test default AFC path in AsyncChat.send_message_stream
-  async_chat_default = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.AsyncModels,
-      'generate_content_stream',
-      new_callable=mock.AsyncMock,
-      side_effect=[
-          _make_async_stream(stream_hop1_chunks),
-          _make_async_stream(stream_hop2_chunks),
-          _make_async_stream(stream_hop3_chunks),
-          _make_async_stream(stream_hop4_chunks),
-      ],
-  ) as mock_async_stream:
-    chunks = []
-    async for chunk in await async_chat_default.send_message_stream(
-        'Hello async stream'
-    ):
-      chunks.append(chunk.text)
-    assert chunks == [
-        'Async chunk 1. ',
-        'Async chunk 2. ',
-        'Async chunk 3. ',
-        'Async chunk 4. ',
-        'Async chunk 5.',
-    ]
-    _assert_async_stream_4_hops(mock_async_stream)
+  # 4. Test AFC disabled, incompatible tools, and default AFC paths in AsyncModels.generate_content_stream
+  for stream_cfg in (
+      types.GenerateContentConfig(
+          automatic_continuation=True,
+          automatic_function_calling=types.AutomaticFunctionCallingConfig(
+              disable=True
+          ),
+      ),
+      types.GenerateContentConfig(
+          automatic_continuation=True, tools=[tool_decl]
+      ),
+      types.GenerateContentConfig(automatic_continuation=True),
+  ):
+    with mock.patch.object(
+        models.AsyncModels,
+        '_generate_content_stream',
+        new_callable=mock.AsyncMock,
+        side_effect=[
+            _make_async_stream(stream_hop1_chunks),
+            _make_async_stream(stream_hop2_chunks),
+            _make_async_stream(stream_hop3_chunks),
+            _make_async_stream(stream_hop4_chunks),
+        ],
+    ) as mock_async_stream:
+      chunks = []
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Hello async stream',
+          config=stream_cfg,
+      ):
+        chunks.append(chunk.text)
+      assert chunks == [
+          'Async chunk 1. ',
+          'Async chunk 2. ',
+          'Async chunk 3. ',
+          'Async chunk 4. ',
+          'Async chunk 5.',
+      ]
+      _assert_async_stream_4_hops(mock_async_stream)
 
 
 @pytest.mark.asyncio
-async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
+async def test_async_models_automatic_continuation_config_rules(
     mock_api_client,
 ):
-  """When max_output_tokens is explicitly set, AsyncChat (unary and stream) does NOT auto-resume on MAX_TOKENS."""
+  """Verifies default-disabled, automatic_continuation=False, and max_output_tokens pass-through in AsyncModels."""
   models_module = models.AsyncModels(mock_api_client)
-  chats_module = chats.AsyncChats(modules=models_module)
-  chat = chats_module.create(
-      model='gemini-2.5-pro',
-      config=types.GenerateContentConfig(max_output_tokens=1000),
-  )
 
-  hop1_response = types.GenerateContentResponse(
+  hop1_max_tokens = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
                   role='model',
-                  parts=[types.Part(text='Stopped at async budget.')],
+                  parts=[types.Part(text='Stopped at async hop 1.')],
               ),
               finish_reason=types.FinishReason.MAX_TOKENS,
               continuation_token=b'token_unused_async',
           )
       ]
   )
-
-  # Async unary with chat-level max_output_tokens (default AFC)
-  with mock.patch.object(
-      models.AsyncModels,
-      'generate_content',
-      new_callable=mock.AsyncMock,
-      return_value=hop1_response,
-  ) as mock_async_gc:
-    response = await chat.send_message('Write a long essay')
-    assert mock_async_gc.call_count == 1
-    assert response.text == 'Stopped at async budget.'
-    assert response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    assert response.candidates[0].continuation_token == b'token_unused_async'
-
-  # Async unary with method-level max_output_tokens (AFC disabled)
-  chat_no_default = chats_module.create(model='gemini-2.5-pro')
-  with mock.patch.object(
-      models.AsyncModels,
-      'generate_content',
-      new_callable=mock.AsyncMock,
-      return_value=hop1_response,
-  ) as mock_async_gc:
-    response = await chat_no_default.send_message(
-        'Write a long essay',
-        config=types.GenerateContentConfig(
-            max_output_tokens=500,
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=True
-            ),
-        ),
-    )
-    assert mock_async_gc.call_count == 1
-    assert response.text == 'Stopped at async budget.'
-
-  stream_hop1_chunks = [
-      types.GenerateContentResponse(
-          candidates=[
-              types.Candidate(
-                  content=types.Content(
-                      role='model',
-                      parts=[types.Part(text='Async stream stopped ')],
-                  ),
-                  continuation_token=b'async_stream_token_unused',
-              )
-          ]
-      ),
-      types.GenerateContentResponse(
-          candidates=[
-              types.Candidate(
-                  content=types.Content(
-                      role='model',
-                      parts=[types.Part(text='at budget.')],
-                  ),
-                  finish_reason=types.FinishReason.MAX_TOKENS,
-              )
-          ]
-      ),
-  ]
-
-  async def _make_async_stream(chunk_list):
-    for c in chunk_list:
-      yield c
-
-  # Async stream with chat-level max_output_tokens (default AFC)
-  chat_stream_budget = chats_module.create(
-      model='gemini-2.5-pro',
-      config=types.GenerateContentConfig(max_output_tokens=1000),
-  )
-  with mock.patch.object(
-      models.AsyncModels,
-      'generate_content_stream',
-      new_callable=mock.AsyncMock,
-      side_effect=[_make_async_stream(stream_hop1_chunks)],
-  ) as mock_async_stream:
-    chunks = []
-    async for chunk in await chat_stream_budget.send_message_stream(
-        'Write a long essay'
-    ):
-      chunks.append(chunk)
-    assert mock_async_stream.call_count == 1
-    assert [c.text for c in chunks] == ['Async stream stopped ', 'at budget.']
-    assert (
-        chunks[-1].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    )
-
-  # Async stream with method-level max_output_tokens (AFC disabled)
-  with mock.patch.object(
-      models.AsyncModels,
-      'generate_content_stream',
-      new_callable=mock.AsyncMock,
-      side_effect=[_make_async_stream(stream_hop1_chunks)],
-  ) as mock_async_stream:
-    chunks = []
-    async for chunk in await chat_no_default.send_message_stream(
-        'Write a long essay',
-        config=types.GenerateContentConfig(
-            max_output_tokens=500,
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=True
-            ),
-        ),
-    ):
-      chunks.append(chunk)
-    assert mock_async_stream.call_count == 1
-    assert [c.text for c in chunks] == ['Async stream stopped ', 'at budget.']
-    assert (
-        chunks[-1].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
-    )
-
-
-@pytest.mark.asyncio
-async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
-  """Verifies Rules 1-4 for automatic_continuation and max_output_tokens pass-through in AsyncChat."""
-  models_module = models.AsyncModels(mock_api_client)
-  chats_module = chats.AsyncChats(modules=models_module)
-
-  hop1 = types.GenerateContentResponse(
+  hop1_continuation = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
-                  role='model', parts=[types.Part(text='Async Hop 1. ')]
+                  role='model',
+                  parts=[types.Part(text='Async Hop 1. ')],
               ),
               finish_reason=types.FinishReason.CONTINUATION,
-              continuation_token=b'async_tok_1',
+              continuation_token=b'token_async_1',
           )
       ]
   )
-  hop2 = types.GenerateContentResponse(
+  hop2_stop = types.GenerateContentResponse(
       candidates=[
           types.Candidate(
               content=types.Content(
-                  role='model', parts=[types.Part(text='Async Hop 2.')]
+                  role='model',
+                  parts=[types.Part(text='Async Hop 2.')],
               ),
               finish_reason=types.FinishReason.STOP,
               continuation_token=None,
@@ -1570,51 +1481,218 @@ async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
       ]
   )
 
-  # Rule 2: automatic_continuation=True + max_output_tokens set -> enabled and max_output_tokens forwarded as-is
-  chat = chats_module.create(model='gemini-2.5-pro')
+  async def _make_async_stream(chunk_list):
+    for c in chunk_list:
+      yield c
+
+  # 1. automatic_continuation unset/False, or finish_reason == MAX_TOKENS -> stops after 1 hop
+  for cfg, hop1_resp in (
+      (None, hop1_continuation),
+      (
+          types.GenerateContentConfig(automatic_continuation=False),
+          hop1_continuation,
+      ),
+      (
+          types.GenerateContentConfig(
+              automatic_continuation=True, max_output_tokens=1000
+          ),
+          hop1_max_tokens,
+      ),
+      (
+          types.GenerateContentConfig(
+              automatic_continuation=True,
+              max_output_tokens=50000,
+              automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                  disable=True
+              ),
+          ),
+          hop1_max_tokens,
+      ),
+  ):
+    with mock.patch.object(
+        models.AsyncModels,
+        '_generate_content',
+        new_callable=mock.AsyncMock,
+        return_value=hop1_resp.model_copy(deep=True),
+    ) as mock_async_gc:
+      response = await models_module.generate_content(
+          model='gemini-2.5-pro',
+          contents='Write a long essay',
+          config=cfg,
+      )
+      assert mock_async_gc.call_count == 1
+      assert response.text == hop1_resp.text
+      assert (
+          response.candidates[0].finish_reason
+          == hop1_resp.candidates[0].finish_reason
+      )
+      assert (
+          response.candidates[0].continuation_token
+          == hop1_resp.candidates[0].continuation_token
+      )
+
+    with mock.patch.object(
+        models.AsyncModels,
+        '_generate_content_stream',
+        new_callable=mock.AsyncMock,
+        side_effect=[_make_async_stream([hop1_resp.model_copy(deep=True)])],
+    ) as mock_async_stream:
+      chunks = []
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long essay stream',
+          config=cfg,
+      ):
+        chunks.append(chunk)
+      assert mock_async_stream.call_count == 1
+      assert [c.text for c in chunks] == [hop1_resp.text]
+
+  # 2. automatic_continuation=True with max_output_tokens set and finish_reason == CONTINUATION -> continues and forwards max_output_tokens as-is
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
-      side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
-  ) as mock_gc:
-    resp = await chat.send_message(
-        'Rule 2 async',
+      side_effect=[
+          hop1_continuation.model_copy(deep=True),
+          hop2_stop.model_copy(deep=True),
+      ],
+  ) as mock_async_gc:
+    response = await models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Write a long essay',
         config=types.GenerateContentConfig(
-            automatic_continuation=True, max_output_tokens=1000
+            automatic_continuation=True, max_output_tokens=50000
         ),
     )
-    assert mock_gc.call_count == 2
-    assert resp.text == 'Async Hop 1. Async Hop 2.'
-    assert mock_gc.call_args_list[0].kwargs['config'].max_output_tokens == 1000
-    assert mock_gc.call_args_list[1].kwargs['config'].max_output_tokens == 1000
+    assert mock_async_gc.call_count == 2
+    assert response.text == 'Async Hop 1. Async Hop 2.'
+    assert mock_async_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
+    assert mock_async_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
 
-  # Rule 3: automatic_continuation=True + max_output_tokens unset -> enabled
-  chat = chats_module.create(model='gemini-2.5-pro')
+
+@pytest.mark.asyncio
+async def test_async_models_afc_decoupled_from_continuation_token(
+    mock_api_client,
+):
+  """AFC in AsyncModels.generate_content and generate_content_stream resumes continuation during thinking, then clears continuation_token on function_response."""
+  models_module = models.AsyncModels(mock_api_client)
+
+  def get_weather(city: str) -> str:
+    """Gets weather for a city."""
+    return f'Sunny in {city}'
+
+  turn1_hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='', thought_signature=b'thought_sig')],
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'async_afc_tok_1',
+          )
+      ]
+  )
+  turn1_hop2 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[
+                      types.Part(
+                          function_call=types.FunctionCall(
+                              name='get_weather', args={'city': 'Mountain View'}
+                          )
+                      )
+                  ],
+              ),
+              finish_reason=types.FinishReason.STOP,
+              continuation_token=None,
+          )
+      ]
+  )
+  turn2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='It is Sunny in Mountain View!')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  # 1. AsyncModels.generate_content with AFC + continuation
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
-      side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
-  ) as mock_gc:
-    resp = await chat.send_message(
-        'Rule 3 async',
-        config=types.GenerateContentConfig(automatic_continuation=True),
+      side_effect=[
+          turn1_hop1.model_copy(deep=True),
+          turn1_hop2.model_copy(deep=True),
+          turn2_final.model_copy(deep=True),
+      ],
+  ) as mock_async_gc:
+    response = await models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='What is the weather in Mountain View?',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True,
+            tools=[get_weather],
+        ),
     )
-    assert mock_gc.call_count == 2
-    assert resp.text == 'Async Hop 1. Async Hop 2.'
+    assert mock_async_gc.call_count == 3
+    assert (
+        mock_async_gc.call_args_list[0].kwargs['config'].continuation_token
+        is None
+    )
+    assert (
+        mock_async_gc.call_args_list[1].kwargs['config'].continuation_token
+        == b'async_afc_tok_1'
+    )
+    assert (
+        mock_async_gc.call_args_list[2].kwargs['config'].continuation_token
+        is None
+    )
+    assert response.text == 'It is Sunny in Mountain View!'
 
-  # Rule 4: automatic_continuation=False + max_output_tokens unset -> disabled
-  chat = chats_module.create(model='gemini-2.5-pro')
+  async def _make_async_stream(chunk_list):
+    for c in chunk_list:
+      yield c
+
+  # 2. AsyncModels.generate_content_stream with AFC + continuation
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content_stream',
       new_callable=mock.AsyncMock,
-      return_value=hop1.model_copy(deep=True),
-  ) as mock_gc:
-    resp = await chat.send_message(
-        'Rule 4 async',
-        config=types.GenerateContentConfig(automatic_continuation=False),
+      side_effect=[
+          _make_async_stream([turn1_hop1.model_copy(deep=True)]),
+          _make_async_stream([turn1_hop2.model_copy(deep=True)]),
+          _make_async_stream([turn2_final.model_copy(deep=True)]),
+      ],
+  ) as mock_async_stream:
+    chunks = []
+    async for chunk in await models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='What is the weather in Mountain View?',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True,
+            tools=[get_weather],
+        ),
+    ):
+      chunks.append(chunk)
+    assert mock_async_stream.call_count == 3
+    assert (
+        mock_async_stream.call_args_list[0].kwargs['config'].continuation_token
+        is None
     )
-    assert mock_gc.call_count == 1
-    assert resp.text == 'Async Hop 1. '
+    assert (
+        mock_async_stream.call_args_list[1].kwargs['config'].continuation_token
+        == b'async_afc_tok_1'
+    )
+    assert (
+        mock_async_stream.call_args_list[2].kwargs['config'].continuation_token
+        is None
+    )
+    assert chunks[-1].text == 'It is Sunny in Mountain View!'
