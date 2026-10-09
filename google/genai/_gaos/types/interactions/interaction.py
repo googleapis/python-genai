@@ -448,13 +448,14 @@ class Interaction(BaseModel):
     def _coerce_outputs_to_steps(cls, data: Any) -> Any:
         return cls._maybe_coerce_outputs(data)
 
+    # Applied to `Interaction(BaseModel)`: use `super().model_construct(...)`
+    # rather than `pydantic.BaseModel.model_construct(...)` so `cls` stays bound to
+    # `Interaction` through its MRO.
     @classmethod
     def model_construct(cls, _fields_set=None, **values):
-        # Coerce legacy lyria ``outputs`` -> ``steps`` here as well: validators
+        # Coerce legacy lyria `outputs` -> `steps` here as well: validators
         # do not run on model_construct (used by deferred SSE parsing).
-        return pydantic.BaseModel.model_construct(
-            _fields_set, **cls._maybe_coerce_outputs(values)
-        )
+        return super().model_construct(_fields_set, **cls._maybe_coerce_outputs(values))
 
     @pydantic.model_validator(mode="after")
     def _populate_output_helpers(self):
