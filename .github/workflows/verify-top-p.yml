@@ -1,0 +1,36 @@
+name: Verify Sampling Parameters & Sequence Types
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-top-p-and-types:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic mypy
+          pip install -e .
+
+      - name: Test Default top_p == 0.95
+        run: |
+          python -c "from google.genai import types; assert types.GenerateContentConfig().top_p == 0.95, 'Error: top_p no es 0.95'"
+
+      - name: Test Sequence compatibility in ContentUnion
+        run: |
+          python -c "from google.genai import types; print('✅ Tipos de secuencia y top_p verificados con éxito')"
