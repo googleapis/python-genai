@@ -1160,6 +1160,15 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['continuation_token']),
     )
 
+  if getv(from_object, ['response_format']) is not None:
+    setv(
+        to_object,
+        ['responseFormat'],
+        _ResponseFormat_to_mldev(
+            getv(from_object, ['response_format']), to_object
+        ),
+    )
+
   return to_object
 
 
@@ -1596,6 +1605,29 @@ def _Part_to_mldev(
 
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
+  return to_object
+
+
+def _ResponseFormat_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['audio']) is not None:
+    setv(to_object, ['audio'], getv(from_object, ['audio']))
+
+  if getv(from_object, ['image']) is not None:
+    setv(to_object, ['image'], getv(from_object, ['image']))
+
+  if getv(from_object, ['text']) is not None:
+    setv(to_object, ['text'], getv(from_object, ['text']))
+
+  if getv(from_object, ['video']) is not None:
+    raise ValueError(
+        'video parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
