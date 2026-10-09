@@ -259,17 +259,23 @@ def convert_if_exist_pydantic_model(
           f' {annotation}, due to error {e}'
       )
   if isinstance(value, list) and get_origin(annotation) == list:
-    item_type = get_args(annotation)[0]
-    return [
-        convert_if_exist_pydantic_model(item, item_type, param_name, func_name)
-        for item in value
-    ]
+    args = get_args(annotation)
+    if args:
+      item_type = args[0]
+      return [
+          convert_if_exist_pydantic_model(item, item_type, param_name, func_name)
+          for item in value
+      ]
+    return value
   if isinstance(value, dict) and get_origin(annotation) == dict:
-    _, value_type = get_args(annotation)
-    return {
-        k: convert_if_exist_pydantic_model(v, value_type, param_name, func_name)
-        for k, v in value.items()
-    }
+    args = get_args(annotation)
+    if len(args) == 2:
+      _, value_type = args
+      return {
+          k: convert_if_exist_pydantic_model(v, value_type, param_name, func_name)
+          for k, v in value.items()
+      }
+    return value
   # example 1: typing.Union[int, float]
   # example 2: int | float equivalent to UnionType[int, float]
   if get_origin(annotation) in (Union, UnionType):
