@@ -124,6 +124,7 @@ class AsyncSession:
               types.LiveClientContentOrDict,
               types.LiveClientRealtimeInputOrDict,
               types.LiveClientToolResponseOrDict,
+              types.LiveClientContextUpdateOrDict,
               types.FunctionResponseOrDict,
               Sequence[types.FunctionResponseOrDict],
           ]
@@ -445,6 +446,89 @@ class AsyncSession:
 
     await self._ws.send(json.dumps({'tool_response': tool_response_dict}))
 
+  async def send_context_update(
+      self,
+      *,
+      system_instruction: Optional[types.ContentUnion] = None,
+      tools: Optional[types.ToolListUnion] = None,
+      context_update: Optional[types.LiveClientContextUpdateOrDict] = None,
+  ) -> None:
+    """Send in-session context updates to the model.
+
+    Updates to the context of the current session. Only fields that are set will
+    be updated. Updates are guaranteed to be processed *in order* with the rest of
+    the inputs.
+
+    Note:
+      `system_instruction` and `tools` are part of the model preamble, so updating
+      them invalidates the prefix cache. Update them only when strictly necessary
+      as it might have a performance impact on model generation.
+
+    Args:
+      system_instruction: Updated system instruction for the model.
+      tools: An updated list of tools the model may use to generate subsequent
+        responses. Pass an empty list `[]` to clear all tools.
+      context_update: A `LiveClientContextUpdate` object or dict. Cannot be
+        combined with `system_instruction` or `tools`.
+
+    Example:
+
+    .. code-block:: python
+
+      # Update instructions:
+      await session.send_context_update(
+          system_instruction="You are now a technical expert. Be concise."
+      )
+
+      # Update tools:
+      await session.send_context_update(tools=[my_func])
+
+      # Clear tools:
+      await session.send_context_update(tools=[])
+    """
+    update: types.LiveClientContextUpdate
+    if context_update is not None:
+      if system_instruction is not None or tools is not None:
+        raise ValueError(
+            'Cannot set both `context_update` and `system_instruction` or'
+            ' `tools`.'
+        )
+      if isinstance(context_update, types.LiveClientContextUpdate):
+        update = context_update
+      elif isinstance(context_update, dict):
+        update = types.LiveClientContextUpdate.model_validate(context_update)
+      else:
+        raise ValueError(
+            f'Unsupported context_update type "{type(context_update)}"'
+        )
+    else:
+      if system_instruction is None and tools is None:
+        raise ValueError(
+            'At least one of `system_instruction`, `tools`, or `context_update`'
+            ' must be set.'
+        )
+      tools_wrapper: Optional[types.LiveClientContextUpdateTools] = None
+      if tools is not None:
+        tools_wrapper = types.LiveClientContextUpdateTools(tools=tools)
+
+      update = types.LiveClientContextUpdate(
+          system_instruction=system_instruction,
+          tools=tools_wrapper,
+      )
+
+    client_message = types.LiveClientMessage(context_update=update)
+    if self._api_client.vertexai:
+      message_dict = live_converters._LiveClientMessage_to_vertex(
+          self._api_client, client_message
+      )
+    else:
+      message_dict = live_converters._LiveClientMessage_to_mldev(
+          self._api_client, client_message
+      )
+    message_dict = _common.convert_to_dict(message_dict)
+    message_dict = _common.encode_unserializable_types(message_dict)
+    await self._ws.send(json.dumps(message_dict))
+
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
 
@@ -605,6 +689,7 @@ class AsyncSession:
               types.LiveClientContentOrDict,
               types.LiveClientRealtimeInputOrDict,
               types.LiveClientToolResponseOrDict,
+              types.LiveClientContextUpdateOrDict,
               types.FunctionResponseOrDict,
               Sequence[types.FunctionResponseOrDict],
           ]
@@ -888,6 +973,41 @@ class AsyncSession:
       client_message = types.LiveClientMessageDict(
           tool_response=types.LiveClientToolResponseDict(
               function_responses=function_response_list
+          )
+      )
+
+    elif isinstance(formatted_input, types.LiveClientContextUpdate):
+      context_update_dict = formatted_input.model_dump(
+          exclude_none=True, mode='json'
+      )
+      client_message = types.LiveClientMessageDict(
+          context_update=types.LiveClientContextUpdateDict(
+              system_instruction=context_update_dict.get('system_instruction'),
+              tools=context_update_dict.get('tools'),
+          )
+      )
+    elif isinstance(formatted_input, dict) and (
+        'context_update' in formatted_input
+        or 'system_instruction' in formatted_input
+        or 'tools' in formatted_input
+    ):
+      update_val = (
+          formatted_input['context_update']
+          if 'context_update' in formatted_input
+          else formatted_input
+      )
+      if isinstance(update_val, types.LiveClientContextUpdate):
+        update_dict = update_val.model_dump(exclude_none=True, mode='json')
+      elif isinstance(update_val, dict):
+        update_dict = update_val
+      else:
+        raise ValueError(
+            f'Unsupported context_update type "{type(update_val)}"'
+        )
+      client_message = types.LiveClientMessageDict(
+          context_update=types.LiveClientContextUpdateDict(
+              system_instruction=update_dict.get('system_instruction'),
+              tools=update_dict.get('tools'),
           )
       )
 

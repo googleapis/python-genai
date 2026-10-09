@@ -21554,6 +21554,81 @@ LiveClientToolResponseOrDict = Union[
 ]
 
 
+class LiveClientContextUpdateTools(_common.BaseModel):
+  """A wrapper around the list of tools.
+
+  This wrapper exists because a bare `repeated Tool` field cannot tell apart
+  "not sending a tools update" from "clearing all tools": an unset repeated
+  field and an empty repeated field look identical on the wire. Wrapping the
+  list in a message adds a presence bit, so the two cases become: - `tools`
+  field unset: no update; keep the previously provided tools. - `tools` field
+  set (even with an empty list): replace the current tools with the provided
+  list, which may be empty to clear all tools.
+  """
+
+  tools: Optional[ToolListUnion] = Field(
+      default=None,
+      description="""The list of tools the model may use to generate the next response.""",
+  )
+
+
+class LiveClientContextUpdateToolsDict(TypedDict, total=False):
+  """A wrapper around the list of tools.
+
+  This wrapper exists because a bare `repeated Tool` field cannot tell apart
+  "not sending a tools update" from "clearing all tools": an unset repeated
+  field and an empty repeated field look identical on the wire. Wrapping the
+  list in a message adds a presence bit, so the two cases become: - `tools`
+  field unset: no update; keep the previously provided tools. - `tools` field
+  set (even with an empty list): replace the current tools with the provided
+  list, which may be empty to clear all tools.
+  """
+
+  tools: Optional[ToolListUnionDict]
+  """The list of tools the model may use to generate the next response."""
+
+
+LiveClientContextUpdateToolsOrDict = Union[
+    LiveClientContextUpdateTools, LiveClientContextUpdateToolsDict
+]
+
+
+class LiveClientContextUpdate(_common.BaseModel):
+  """Updates to the context of the current session.
+
+  Only fields that are set will be updated. Updates are guaranteed to be
+  processed *in order* with the rest of the inputs.
+  """
+
+  system_instruction: Optional[ContentUnion] = Field(
+      default=None,
+      description="""Updated system instruction for the model. If set, overrides `BidiGenerateContentSetup.system_instruction`. The system instructions are part of the model preamble, so updating them invalidates the prefix cache. Clients should only update this field when strictly necessary as it might have a performance impact on the model generation.""",
+  )
+  tools: Optional[LiveClientContextUpdateTools] = Field(
+      default=None,
+      description="""An updated list of tools the model may use to generate the subsequent responses. If set, this list replaces the previously provided tools. The tools are part of the model preamble, so updating them invalidates the prefix cache. Clients should only update this field when strictly necessary as it might have a performance impact on the model generation.""",
+  )
+
+
+class LiveClientContextUpdateDict(TypedDict, total=False):
+  """Updates to the context of the current session.
+
+  Only fields that are set will be updated. Updates are guaranteed to be
+  processed *in order* with the rest of the inputs.
+  """
+
+  system_instruction: Optional[ContentUnionDict]
+  """Updated system instruction for the model. If set, overrides `BidiGenerateContentSetup.system_instruction`. The system instructions are part of the model preamble, so updating them invalidates the prefix cache. Clients should only update this field when strictly necessary as it might have a performance impact on the model generation."""
+
+  tools: Optional[LiveClientContextUpdateToolsDict]
+  """An updated list of tools the model may use to generate the subsequent responses. If set, this list replaces the previously provided tools. The tools are part of the model preamble, so updating them invalidates the prefix cache. Clients should only update this field when strictly necessary as it might have a performance impact on the model generation."""
+
+
+LiveClientContextUpdateOrDict = Union[
+    LiveClientContextUpdate, LiveClientContextUpdateDict
+]
+
+
 class LiveClientMessage(_common.BaseModel):
   """Messages sent by the client in the API call."""
 
@@ -21572,6 +21647,10 @@ class LiveClientMessage(_common.BaseModel):
       default=None,
       description="""Response to a `ToolCallMessage` received from the server.""",
   )
+  context_update: Optional[LiveClientContextUpdate] = Field(
+      default=None,
+      description="""Updates to the context of the current session.""",
+  )
 
 
 class LiveClientMessageDict(TypedDict, total=False):
@@ -21588,6 +21667,9 @@ class LiveClientMessageDict(TypedDict, total=False):
 
   tool_response: Optional[LiveClientToolResponseDict]
   """Response to a `ToolCallMessage` received from the server."""
+
+  context_update: Optional[LiveClientContextUpdateDict]
+  """Updates to the context of the current session."""
 
 
 LiveClientMessageOrDict = Union[LiveClientMessage, LiveClientMessageDict]
