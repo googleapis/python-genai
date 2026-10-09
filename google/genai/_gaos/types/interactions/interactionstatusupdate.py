@@ -20,6 +20,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils import validate_const
+from .usage import Usage, UsageTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -54,6 +55,8 @@ class InteractionStatusUpdateTypedDict(TypedDict):
     this event.
     """
     event_type: Literal["interaction.status_update"]
+    usage: NotRequired[UsageTypedDict]
+    r"""Statistics on the interaction request's token usage."""
 
 
 class InteractionStatusUpdate(BaseModel):
@@ -79,9 +82,12 @@ class InteractionStatusUpdate(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "interaction.status_update"
 
+    usage: Optional[Usage] = None
+    r"""Statistics on the interaction request's token usage."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["continuation_token", "event_id"])
+        optional_fields = set(["continuation_token", "event_id", "usage"])
         serialized = handler(self)
         m = {}
 
