@@ -367,11 +367,15 @@ def get_function_response_parts(
       if not part.function_call:
         continue
       func_name = part.function_call.name
-      if func_name is not None and part.function_call.args is not None:
+      if func_name is not None:
         func = function_map[func_name]
-        args = convert_number_values_for_dict_function_call_args(
+        # Treat None as an empty dictionary for execution
+        raw_args = (
             part.function_call.args
+            if part.function_call.args is not None
+            else {}
         )
+        args = convert_number_values_for_dict_function_call_args(raw_args)
         func_response: _common.StringDict
         try:
           if not isinstance(func, McpToGenAiToolAdapter):
