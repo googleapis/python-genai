@@ -294,7 +294,7 @@ class HttpResponse:
           dict[str, str],
           httpx.Headers,
           'CIMultiDictProxy[str]',
-          'CaseInsensitiveDict',
+          'CaseInsensitiveDict',  # type: ignore[type-arg]
       ],
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
@@ -313,7 +313,7 @@ class HttpResponse:
       self.headers = {key: value for key, value in headers.items()}
     elif type(headers).__name__ == 'CIMultiDictProxy':
       self.headers = {
-          key: ', '.join(headers.getall(key)) for key in headers.keys()
+          key: ', '.join(headers.getall(key)) for key in headers.keys()  # type: ignore[union-attr]
       }
 
     self.status_code: int = 200
@@ -406,7 +406,7 @@ class HttpResponse:
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       response_stream = self.response_stream.iter_lines()
     else:
-      response_stream = self.response_stream.iter_lines(decode_unicode=True)
+      response_stream = self.response_stream.iter_lines(decode_unicode=True)  # type: ignore[call-arg]
     for line in response_stream:
       if not line:
         if data_buffer:
