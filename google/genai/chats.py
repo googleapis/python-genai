@@ -117,8 +117,9 @@ def _extract_curated_history(
         i += 1
       if is_valid:
         curated_history.extend(current_output)
-      elif curated_history:
-        curated_history.pop()
+      else:
+        while curated_history and curated_history[-1].role == 'user':
+          curated_history.pop()
   return curated_history
 
 

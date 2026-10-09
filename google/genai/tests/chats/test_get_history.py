@@ -237,6 +237,25 @@ def test_history_with_valid_and_invalid_model_output():
   assert chat.get_history(curated=True) == []
 
 
+def test_history_with_consecutive_user_inputs_and_invalid_model_turn():
+  history = [
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 1')],
+      ),
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='user input 2')],
+      ),
+      types.Content(
+          role='model',
+          parts=[],  # invalid content
+      ),
+  ]
+
+  assert chats._extract_curated_history(history) == []
+
+
 def test_history_end_with_user_input():
   history = [
       types.Content(
