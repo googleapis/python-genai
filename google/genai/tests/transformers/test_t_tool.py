@@ -77,6 +77,37 @@ def test_function(client):
 
 
 @pytest.mark.usefixtures('client')
+def test_function_with_optional_scalar_params(client):
+  def test_func(arg1: typing.Optional[int] = None, arg2: typing.Optional[str] = None):
+    pass
+
+  assert t.t_tool(client, test_func) == types.Tool(
+      function_declarations=[
+          types.FunctionDeclaration(
+              name='test_func',
+              description='',
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'arg1': {
+                          'anyOf': [{'type': 'integer'}, {'type': 'null'}],
+                          'type': 'integer',
+                          'default': None,
+                      },
+                      'arg2': {
+                          'anyOf': [{'type': 'string'}, {'type': 'null'}],
+                          'type': 'string',
+                          'default': None,
+                      },
+                  },
+                  'required': [],
+              },
+          )
+      ]
+  )
+
+
+@pytest.mark.usefixtures('client')
 def test_dictionary(client):
   assert t.t_tool(
       client,
