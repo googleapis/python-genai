@@ -414,10 +414,10 @@ class HttpResponse:
           data_buffer = []
         continue
 
-      # In streaming mode, the response of JSON is prefixed with "data: " which
+      # In streaming mode, the response of JSON is prefixed with either "data:" or "data: " which
       # we must strip before parsing.
-      if line.startswith('data: '):
-        data_buffer.append(line[len('data: '):])
+      if line.startswith('data:'):
+        data_buffer.append(line[len('data:'):].lstrip())
         continue
 
       # When API returns an error message, it comes line by line. So we buffer
@@ -467,10 +467,10 @@ class HttpResponse:
               yield '\n'.join(data_buffer)
               data_buffer = []
             continue
-          # In streaming mode, the response of JSON is prefixed with "data: "
+          # In streaming mode, the response of JSON is prefixed with either "data:" or "data: "
           # which we must strip before parsing.
-          if line.startswith('data: '):
-            data_buffer.append(line[len('data: '):])
+          if line.startswith('data:'):
+            data_buffer.append(line[len('data:'):].lstrip())
             continue
 
           # When API returns an error message, it comes line by line. So we buffer
@@ -520,10 +520,10 @@ class HttpResponse:
               data_buffer = []
             continue
 
-          # In streaming mode, the response of JSON is prefixed with "data: "
+          # In streaming mode, the response of JSON is prefixed with either "data:" or "data: "
           # which we must strip before parsing.
-          if line.startswith('data: '):
-            data_buffer.append(line[len('data: '):])
+          if line.startswith('data:'):
+            data_buffer.append(line[len('data:'):].lstrip())
             continue
 
           # When API returns an error message, it comes line by line. So we
