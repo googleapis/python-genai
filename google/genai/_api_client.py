@@ -2384,7 +2384,7 @@ class BaseApiClient:
             break
           delay_seconds = INITIAL_RETRY_DELAY * (DELAY_MULTIPLIER**retry_count)
           retry_count += 1
-          time.sleep(delay_seconds)
+          await asyncio.sleep(delay_seconds)
 
         offset += chunk_size
         if (

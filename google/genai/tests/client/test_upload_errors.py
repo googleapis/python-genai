@@ -133,6 +133,34 @@ async def test_async_upload_url_rewrite_httpx(client: api_client.BaseApiClient):
 
 
 @pytest.mark.asyncio
+async def test_async_upload_retry_uses_async_sleep(
+    client: api_client.BaseApiClient,
+):
+  mock_async_httpx_client = mock.MagicMock(spec=httpx.AsyncClient)
+  mock_async_httpx_client.request = mock.AsyncMock(side_effect=[
+      _httpx_response(200),
+      _httpx_response(200, headers={"X-Goog-Upload-Status": "final"}),
+  ])
+  client._async_httpx_client = mock_async_httpx_client
+
+  with (
+      mock.patch.object(client, "_use_aiohttp", return_value=False),
+      mock.patch.object(
+          api_client.asyncio, "sleep", new=mock.AsyncMock()
+      ) as sleep,
+      io.BytesIO(b"test") as f,
+  ):
+    await client._async_upload_fd(
+        f,
+        "http://fake/upload",
+        4,
+        http_options=types.HttpOptions(),
+    )
+
+  sleep.assert_awaited_once_with(api_client.INITIAL_RETRY_DELAY)
+
+
+@pytest.mark.asyncio
 async def test_async_upload_fd_error_httpx(client: api_client.BaseApiClient):
   error_content = json.dumps({
       "error": {
