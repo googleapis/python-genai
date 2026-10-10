@@ -75,6 +75,29 @@ def _validate_response(response: GenerateContentResponse) -> bool:
   return _validate_content(response.candidates[0].content)
 
 
+def _update_stream_finish_reason(
+    chunk: GenerateContentResponse,
+    finish_reason: Optional[types.FinishReason],
+    hop_continuation_token: Optional[bytes],
+    enable_continuation: bool,
+) -> tuple[Optional[types.FinishReason], Optional[bytes]]:
+  if not chunk.candidates:
+    return finish_reason, hop_continuation_token
+  candidate = chunk.candidates[0]
+  if candidate.continuation_token:
+    hop_continuation_token = candidate.continuation_token
+  if candidate.finish_reason:
+    finish_reason = candidate.finish_reason
+  if (
+      enable_continuation
+      and hop_continuation_token
+      and _is_resumable_finish_reason(finish_reason)
+  ):
+    finish_reason = None
+    hop_continuation_token = None
+  return finish_reason, hop_continuation_token
+
+
 def _extract_curated_history(
     comprehensive_history: list[Content],
 ) -> list[Content]:
@@ -542,6 +565,10 @@ class Chat(_BaseChat):
 
     if disable_afc:
       if isinstance(self._modules, Models):
+        enable_continuation = _should_enable_automatic_continuation(
+            parsed_config, default_enabled=True
+        )
+        hop_continuation_token = None
         for chunk in self._generate_content_stream_with_continuation(
             contents=contents_to_model,  # type: ignore[arg-type]
             config=parsed_config,
@@ -550,8 +577,12 @@ class Chat(_BaseChat):
             is_valid = False
           if chunk.candidates and chunk.candidates[0].content:
             model_output.append(chunk.candidates[0].content)
-          if chunk.candidates and chunk.candidates[0].finish_reason:
-            finish_reason = chunk.candidates[0].finish_reason
+          finish_reason, hop_continuation_token = _update_stream_finish_reason(
+              chunk,
+              finish_reason,
+              hop_continuation_token,
+              enable_continuation,
+          )
           yield chunk
         self.record_history(
             user_input=user_input,
@@ -579,6 +610,9 @@ class Chat(_BaseChat):
         f"AFC is enabled with max remote calls: {remaining_remote_calls_afc}."
     )
     function_map = _extra_utils.get_function_map(parsed_config)
+    enable_continuation = _should_enable_automatic_continuation(
+        parsed_config, default_enabled=True
+    )
     i = 0
     if isinstance(self._modules, Models):
       while remaining_remote_calls_afc > 0:
@@ -599,6 +633,7 @@ class Chat(_BaseChat):
 
         model_output = []
         finish_reason = None
+        hop_continuation_token = None
         is_valid = True
         func_response_parts = []
         chunk = None
@@ -622,8 +657,12 @@ class Chat(_BaseChat):
 
           if chunk.candidates and chunk.candidates[0].content:
             model_output.append(chunk.candidates[0].content)
-          if chunk.candidates and chunk.candidates[0].finish_reason:
-            finish_reason = chunk.candidates[0].finish_reason
+          finish_reason, hop_continuation_token = _update_stream_finish_reason(
+              chunk,
+              finish_reason,
+              hop_continuation_token,
+              enable_continuation,
+          )
           yield chunk
 
         if is_last_remote_call_afc:
@@ -643,7 +682,7 @@ class Chat(_BaseChat):
           self.record_history(
               user_input=user_input,
               model_output=model_output,
-              is_valid=is_valid,
+              is_valid=is_valid and finish_reason is not None,
           )
           user_input = func_response_content
 
@@ -1103,6 +1142,10 @@ class AsyncChat(_BaseChat):
       if disable_afc:
         output_contents = []
         finish_reason = None
+        hop_continuation_token = None
+        enable_continuation = _should_enable_automatic_continuation(
+            parsed_config, default_enabled=True
+        )
         is_valid = True
         chunk = None
         async for chunk in self._generate_content_stream_with_continuation(
@@ -1113,8 +1156,12 @@ class AsyncChat(_BaseChat):
             is_valid = False
           if chunk.candidates and chunk.candidates[0].content:
             output_contents.append(chunk.candidates[0].content)
-          if chunk.candidates and chunk.candidates[0].finish_reason:
-            finish_reason = chunk.candidates[0].finish_reason
+          finish_reason, hop_continuation_token = _update_stream_finish_reason(
+              chunk,
+              finish_reason,
+              hop_continuation_token,
+              enable_continuation,
+          )
           yield chunk
 
         if not output_contents or finish_reason is None:
@@ -1212,6 +1259,9 @@ class AsyncChat(_BaseChat):
             mcp_to_genai_tool_adapters,
             is_caller_method_async=True,
         )
+        enable_continuation = _should_enable_automatic_continuation(
+            final_parsed_config, default_enabled=True
+        )
 
         i = 0
         model_output: list[types.Content] = []
@@ -1236,6 +1286,7 @@ class AsyncChat(_BaseChat):
 
           model_output = []
           finish_reason = None
+          hop_continuation_token = None
           is_valid = True
           func_response_parts = []
           chunk = None
@@ -1261,8 +1312,14 @@ class AsyncChat(_BaseChat):
 
             if chunk.candidates and chunk.candidates[0].content:
               model_output.append(chunk.candidates[0].content)
-            if chunk.candidates and chunk.candidates[0].finish_reason:
-              finish_reason = chunk.candidates[0].finish_reason
+            finish_reason, hop_continuation_token = (
+                _update_stream_finish_reason(
+                    chunk,
+                    finish_reason,
+                    hop_continuation_token,
+                    enable_continuation,
+                )
+            )
             yield chunk
 
           if is_last_remote_call_afc:
@@ -1282,7 +1339,7 @@ class AsyncChat(_BaseChat):
           self.record_history(
               user_input=user_input,
               model_output=model_output,
-              is_valid=is_valid,
+              is_valid=is_valid and finish_reason is not None,
           )
           user_input = func_response_content
 

@@ -1618,3 +1618,119 @@ async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
     )
     assert mock_gc.call_count == 1
     assert resp.text == 'Async Hop 1. '
+
+
+def test_chat_send_message_stream_incomplete_continuation_not_recorded(
+    mock_api_client,
+):
+  """When a continuation hop is cut off without finish_reason, the turn is excluded from curated history."""
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-pro')
+
+  hop1_chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model', parts=[types.Part(text='Hop 1 part. ')]
+                  ),
+                  continuation_token=b'tok_hop_1',
+              )
+          ]
+      ),
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model', parts=[types.Part(text='End of hop 1. ')]
+                  ),
+                  finish_reason=types.FinishReason.CONTINUATION,
+              )
+          ]
+      ),
+  ]
+  hop2_cutoff_chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model',
+                      parts=[types.Part(text='Hop 2 cut off mid-stream')],
+                  ),
+                  finish_reason=None,
+              )
+          ]
+      )
+  ]
+
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      side_effect=[iter(hop1_chunks), iter(hop2_cutoff_chunks)],
+  ) as mock_stream:
+    chunks = list(chat.send_message_stream('Write a long story'))
+    assert mock_stream.call_count == 2
+    assert [c.text for c in chunks] == [
+        'Hop 1 part. ',
+        'End of hop 1. ',
+        'Hop 2 cut off mid-stream',
+    ]
+    assert chat.get_history(curated=True) == []
+
+
+@pytest.mark.asyncio
+async def test_async_chat_send_message_stream_incomplete_continuation_not_recorded(
+    mock_api_client,
+):
+  """When an async continuation hop is cut off without finish_reason, the turn is excluded from curated history."""
+  models_module = models.AsyncModels(mock_api_client)
+  chats_module = chats.AsyncChats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-pro')
+
+  hop1_chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model', parts=[types.Part(text='Async Hop 1. ')]
+                  ),
+                  continuation_token=b'async_tok_hop_1',
+                  finish_reason=types.FinishReason.CONTINUATION,
+              )
+          ]
+      )
+  ]
+  hop2_cutoff_chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model',
+                      parts=[types.Part(text='Async Hop 2 cut off')],
+                  ),
+                  finish_reason=None,
+              )
+          ]
+      )
+  ]
+
+  async def _make_async_stream(chunk_list):
+    for c in chunk_list:
+      yield c
+
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream(hop1_chunks),
+          _make_async_stream(hop2_cutoff_chunks),
+      ],
+  ) as mock_async_stream:
+    chunks = []
+    async for chunk in await chat.send_message_stream('Write a long story'):
+      chunks.append(chunk)
+    assert mock_async_stream.call_count == 2
+    assert [c.text for c in chunks] == ['Async Hop 1. ', 'Async Hop 2 cut off']
+    assert chat.get_history(curated=True) == []
