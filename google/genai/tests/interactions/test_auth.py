@@ -52,6 +52,10 @@ def test_interactions_gemini_url(monkeypatch):
         request = mock_send.call_args[0][0]
         assert str(request.url).endswith('/v1beta/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
+        assert request.headers['user-agent'].startswith('google-genai-sdk/')
+        assert 'gl-python/' in request.headers['user-agent']
+        assert 'speakeasy-sdk' not in request.headers['user-agent']
+        assert request.headers['x-goog-api-client'] == request.headers['user-agent']
 
 
 def test_interactions_gemini_no_vertex_auth(monkeypatch):
@@ -275,6 +279,10 @@ async def test_async_interactions_gemini_url(monkeypatch):
         request = mock_send.call_args[0][0]
         assert str(request.url).endswith('/v1beta/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
+        assert request.headers['user-agent'].startswith('google-genai-sdk/')
+        assert 'gl-python/' in request.headers['user-agent']
+        assert 'speakeasy-sdk' not in request.headers['user-agent']
+        assert request.headers['x-goog-api-client'] == request.headers['user-agent']
 
 @pytest.mark.asyncio
 async def test_async_interactions_gemini_no_vertex_auth(monkeypatch):

@@ -67,7 +67,7 @@ class GoogleGenAIAuthHook(BeforeRequestHook):
     ) -> Union[httpx.Request, Exception]:
         security = _resolve_security(hook_ctx.security_source)
 
-        _apply_default_headers(security, request)
+        _apply_default_headers(hook_ctx, security, request)
         _apply_user_project(hook_ctx, request)
         _apply_auth(security, request)
 
@@ -97,14 +97,18 @@ def _resolve_security(security_source: Any) -> Optional[types.Security]:
 
 
 def _apply_default_headers(
-    security: Optional[types.Security], request: httpx.Request
+    hook_ctx: BeforeRequestContext,
+    security: Optional[types.Security],
+    request: httpx.Request,
 ) -> None:
     headers = security.default_headers if security else None
+    default_ua = getattr(hook_ctx.config, "user_agent", None)
     for key, value in (headers or {}).items():
-        if request.headers.get(key) is None:
+        existing = request.headers.get(key)
+        if existing is None or (
+            key.lower() == "user-agent" and existing == default_ua
+        ):
             request.headers[key] = value
-
-
 
 
 def _apply_user_project(
