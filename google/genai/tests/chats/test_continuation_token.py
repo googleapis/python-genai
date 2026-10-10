@@ -17,11 +17,13 @@
 
 from unittest import mock
 
+import httpx
 import pydantic
 import pytest
 
 from ... import chats
 from ... import client
+from ... import errors
 from ... import models
 from ... import types
 
@@ -1734,3 +1736,214 @@ async def test_async_chat_send_message_stream_incomplete_continuation_not_record
     assert mock_async_stream.call_count == 2
     assert [c.text for c in chunks] == ['Async Hop 1. ', 'Async Hop 2 cut off']
     assert chat.get_history(curated=True) == []
+
+
+def test_chat_send_message_stream_recovers_from_midstream_checkpoint_error(
+    mock_api_client,
+):
+  """Chat.send_message_stream resumes when a hop ends or errors with finish_reason=None after receiving a continuation_token."""
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+
+  chunk_pre_32k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Chat Intro. ')]
+              ),
+          )
+      ]
+  )
+  chunk_ckpt_35k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Chat Ckpt 35k. ')]
+              ),
+              continuation_token=b'chat_v2_ckpt_35k',
+          )
+      ]
+  )
+  chunk_hop2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Chat resumed and completed.')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  def _failing_hop(chunks_before_error, exc=None):
+    for c in chunks_before_error:
+      yield c.model_copy(deep=True)
+    if exc is not None:
+      raise exc
+
+  server_503 = errors.ServerError(
+      503,
+      {
+          'error': {
+              'code': 503,
+              'message': 'Service unavailable',
+              'status': 'UNAVAILABLE',
+          }
+      },
+  )
+
+  # 1. Recovers across both AFC-enabled and AFC-disabled paths (on mid-stream exception or premature EOF) and records valid curated history
+  for disable_afc in (False, True):
+    for hop1_exc in (server_503, None):
+      chat = chats_module.create(model='gemini-2.5-pro')
+      with mock.patch.object(
+          models.Models,
+          'generate_content_stream',
+          side_effect=[
+              _failing_hop([chunk_pre_32k, chunk_ckpt_35k], hop1_exc),
+              iter([chunk_hop2_final.model_copy(deep=True)]),
+          ],
+      ) as mock_stream:
+        chunks = list(
+            chat.send_message_stream(
+                'Write a long story',
+                config=types.GenerateContentConfig(
+                    automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                        disable=disable_afc
+                    )
+                ),
+            )
+        )
+        assert mock_stream.call_count == 2
+        assert (
+            mock_stream.call_args_list[0].kwargs['config'].continuation_token
+            is None
+        )
+        assert (
+            mock_stream.call_args_list[1].kwargs['config'].continuation_token
+            == b'chat_v2_ckpt_35k'
+        )
+        assert [c.text for c in chunks] == [
+            'Chat Intro. ',
+            'Chat Ckpt 35k. ',
+            'Chat resumed and completed.',
+        ]
+        history = chat.get_history(curated=True)
+        assert len(history) == 4
+        assert history[0].role == 'user'
+        assert [h.parts[0].text for h in history[1:]] == [
+            'Chat Intro. ',
+            'Chat Ckpt 35k. ',
+            'Chat resumed and completed.',
+        ]
+
+  # 2. Error before any checkpoint token in the hop -> raises and does not record curated history
+  chat = chats_module.create(model='gemini-2.5-pro')
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      side_effect=[
+          _failing_hop([chunk_pre_32k], httpx.ReadTimeout('read timed out'))
+      ],
+  ) as mock_stream:
+    stream = chat.send_message_stream('Write a long story')
+    assert next(stream).text == 'Chat Intro. '
+    with pytest.raises(httpx.ReadTimeout):
+      next(stream)
+    assert mock_stream.call_count == 1
+    assert chat.get_history(curated=True) == []
+
+
+@pytest.mark.asyncio
+async def test_async_chat_send_message_stream_recovers_from_midstream_checkpoint_error(
+    mock_api_client,
+):
+  """AsyncChat.send_message_stream resumes when a hop ends or errors with finish_reason=None after receiving a continuation_token."""
+  models_module = models.AsyncModels(mock_api_client)
+  chats_module = chats.AsyncChats(modules=models_module)
+
+  chunk_pre_32k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Chat Intro. ')]
+              ),
+          )
+      ]
+  )
+  chunk_ckpt_35k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Chat Ckpt 35k. ')]
+              ),
+              continuation_token=b'async_chat_v2_ckpt_35k',
+          )
+      ]
+  )
+  chunk_hop2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Async Chat resumed.')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  async def _make_async_stream(chunk_list, exc=None):
+    for c in chunk_list:
+      yield c.model_copy(deep=True)
+    if exc is not None:
+      raise exc
+
+  server_503 = errors.ServerError(
+      503,
+      {
+          'error': {
+              'code': 503,
+              'message': 'Service unavailable',
+              'status': 'UNAVAILABLE',
+          }
+      },
+  )
+
+  for disable_afc in (False, True):
+    for hop1_exc in (server_503, None):
+      chat = chats_module.create(model='gemini-2.5-pro')
+      with mock.patch.object(
+          models.AsyncModels,
+          'generate_content_stream',
+          new_callable=mock.AsyncMock,
+          side_effect=[
+              _make_async_stream([chunk_pre_32k, chunk_ckpt_35k], hop1_exc),
+              _make_async_stream([chunk_hop2_final]),
+          ],
+      ) as mock_async_stream:
+        chunks = []
+        async for chunk in await chat.send_message_stream(
+            'Write a long story async',
+            config=types.GenerateContentConfig(
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                    disable=disable_afc
+                )
+            ),
+        ):
+          chunks.append(chunk)
+        assert mock_async_stream.call_count == 2
+        assert (
+            mock_async_stream.call_args_list[1]
+            .kwargs['config']
+            .continuation_token
+            == b'async_chat_v2_ckpt_35k'
+        )
+        assert [c.text for c in chunks] == [
+            'Async Chat Intro. ',
+            'Async Chat Ckpt 35k. ',
+            'Async Chat resumed.',
+        ]
+        history = chat.get_history(curated=True)
+        assert len(history) == 4
