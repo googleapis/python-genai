@@ -17,11 +17,13 @@
 
 from unittest import mock
 
+import httpx
 import pydantic
 import pytest
 
 from ... import _extra_utils
 from ... import client
+from ... import errors
 from ... import models
 from ... import types
 
@@ -62,6 +64,7 @@ def test_continuation_helpers_edge_cases():
       default_enabled=False,
   )
 
+  assert _extra_utils.is_resumable_finish_reason(None)
   assert _extra_utils.is_resumable_finish_reason(
       types.FinishReason.CONTINUATION
   )
@@ -76,6 +79,19 @@ def test_continuation_helpers_edge_cases():
           types.GenerateContentResponse(candidates=[])
       )
       is None
+  )
+  assert (
+      _extra_utils.should_continue_generation(
+          types.GenerateContentResponse(
+              candidates=[
+                  types.Candidate(
+                      finish_reason=None,
+                      continuation_token=b'tok',
+                  )
+              ]
+          )
+      )
+      == b'tok'
   )
   assert (
       _extra_utils.should_continue_generation(
@@ -1747,3 +1763,293 @@ async def test_async_models_afc_decoupled_from_continuation_token(
         is None
     )
     assert chunks[-1].text == 'It is Sunny in Mountain View!'
+
+
+def test_models_generate_content_stream_recovers_from_midstream_checkpoint_error(
+    mock_api_client,
+):
+  """Streaming Models.generate_content_stream resumes when a hop ends or errors with finish_reason=None after receiving a continuation_token."""
+  models_module = models.Models(mock_api_client)
+
+  chunk_pre_32k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Intro. ')]
+              ),
+          )
+      ]
+  )
+  chunk_ckpt_35k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Checkpoint 35k. ')]
+              ),
+              continuation_token=b'v2_ckpt_35k',
+          )
+      ]
+  )
+  chunk_ckpt_40k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Checkpoint 40k. ')]
+              ),
+              continuation_token=b'v2_ckpt_40k',
+          )
+      ]
+  )
+  chunk_hop2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Resumed and completed.')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  def _failing_hop(chunks_before_error, exc=None):
+    for c in chunks_before_error:
+      yield c.model_copy(deep=True)
+    if exc is not None:
+      raise exc
+
+  server_503 = errors.ServerError(
+      503,
+      {
+          'error': {
+              'code': 503,
+              'message': 'Service unavailable',
+              'status': 'UNAVAILABLE',
+          }
+      },
+  )
+
+  # 1. Recovers from mid-stream exception or premature EOF (finish_reason=None) using latest v2 checkpoint token
+  for hop1_exc in (server_503, httpx.ReadTimeout('read timed out'), None):
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        side_effect=[
+            _failing_hop(
+                [chunk_pre_32k, chunk_ckpt_35k, chunk_ckpt_40k],
+                hop1_exc,
+            ),
+            iter([chunk_hop2_final.model_copy(deep=True)]),
+        ],
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents='Write a long book',
+          )
+      )
+      assert mock_raw_stream.call_count == 2
+      assert (
+          mock_raw_stream.call_args_list[0].kwargs['config'] is None
+          or mock_raw_stream.call_args_list[0]
+          .kwargs['config']
+          .continuation_token
+          is None
+      )
+      assert (
+          mock_raw_stream.call_args_list[1].kwargs['config'].continuation_token
+          == b'v2_ckpt_40k'
+      )
+      assert [c.text for c in chunks] == [
+          'Intro. ',
+          'Checkpoint 35k. ',
+          'Checkpoint 40k. ',
+          'Resumed and completed.',
+      ]
+      assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+
+  # 2. Error before any checkpoint token in the hop -> raises without retrying
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_failing_hop([chunk_pre_32k], server_503)],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Intro. '
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 1
+
+  # 3. Error when automatic_continuation=False -> raises even if checkpoint token was emitted
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_failing_hop([chunk_ckpt_35k], server_503)],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+        config=types.GenerateContentConfig(automatic_continuation=False),
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 1
+
+  # 4. Consecutive failure on resumed hop before any new checkpoint token -> raises without infinite looping
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          _failing_hop([chunk_ckpt_35k], server_503),
+          _failing_hop([chunk_pre_32k], server_503),
+      ],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    assert next(stream).text == 'Intro. '
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_async_models_generate_content_stream_recovers_from_midstream_checkpoint_error(
+    mock_api_client,
+):
+  """AsyncModels.generate_content_stream resumes when a hop ends or errors with finish_reason=None after receiving a continuation_token."""
+  models_module = models.AsyncModels(mock_api_client)
+
+  chunk_pre_32k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Intro. ')]
+              ),
+          )
+      ]
+  )
+  chunk_ckpt_35k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Ckpt 35k. ')]
+              ),
+              continuation_token=b'async_v2_ckpt_35k',
+          )
+      ]
+  )
+  chunk_ckpt_40k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Ckpt 40k. ')]
+              ),
+              continuation_token=b'async_v2_ckpt_40k',
+          )
+      ]
+  )
+  chunk_hop2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Async resumed and completed.')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  async def _make_async_stream(chunk_list, exc=None):
+    for c in chunk_list:
+      yield c.model_copy(deep=True)
+    if exc is not None:
+      raise exc
+
+  server_504 = errors.ServerError(
+      504,
+      {
+          'error': {
+              'code': 504,
+              'message': 'Deadline exceeded',
+              'status': 'DEADLINE_EXCEEDED',
+          }
+      },
+  )
+
+  # 1. Recovers from mid-stream exception or premature EOF (finish_reason=None) using latest v2 checkpoint token
+  for hop1_exc in (server_504, httpx.ReadTimeout('async read timed out'), None):
+    with mock.patch.object(
+        models.AsyncModels,
+        '_generate_content_stream',
+        new_callable=mock.AsyncMock,
+        side_effect=[
+            _make_async_stream(
+                [chunk_pre_32k, chunk_ckpt_35k, chunk_ckpt_40k],
+                hop1_exc,
+            ),
+            _make_async_stream([chunk_hop2_final]),
+        ],
+    ) as mock_async_stream:
+      chunks = []
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        chunks.append(chunk)
+      assert mock_async_stream.call_count == 2
+      assert (
+          mock_async_stream.call_args_list[1]
+          .kwargs['config']
+          .continuation_token
+          == b'async_v2_ckpt_40k'
+      )
+      assert [c.text for c in chunks] == [
+          'Async Intro. ',
+          'Async Ckpt 35k. ',
+          'Async Ckpt 40k. ',
+          'Async resumed and completed.',
+      ]
+      assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+
+  # 2. Error before any checkpoint token in the hop -> raises without retrying
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_make_async_stream([chunk_pre_32k], server_504)],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Intro. ']
+    assert mock_async_stream.call_count == 1
+
+  # 3. Error when automatic_continuation=False -> raises even if checkpoint token was emitted
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_make_async_stream([chunk_ckpt_35k], server_504)],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+          config=types.GenerateContentConfig(automatic_continuation=False),
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ']
+    assert mock_async_stream.call_count == 1

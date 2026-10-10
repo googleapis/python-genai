@@ -91,6 +91,7 @@ def _update_stream_finish_reason(
   if (
       enable_continuation
       and hop_continuation_token
+      and finish_reason is not None
       and _is_resumable_finish_reason(finish_reason)
   ):
     finish_reason = None
@@ -311,18 +312,29 @@ class Chat(_BaseChat):
       hop_finish_reason = None
       continuation_token = None
 
-      for chunk in self._modules.generate_content_stream(
-          model=self._model,
-          contents=contents,  # type: ignore[arg-type]
-          config=call_config,
-      ):
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+      try:
+        for chunk in self._modules.generate_content_stream(
+            model=self._model,
+            contents=contents,  # type: ignore[arg-type]
+            config=call_config,
+        ):
+          if chunk.candidates:
+            candidate = chunk.candidates[0]
+            if candidate.finish_reason:
+              hop_finish_reason = candidate.finish_reason
+            if candidate.continuation_token:
+              continuation_token = candidate.continuation_token
+          yield chunk
+      except Exception:  # pylint: disable=broad-exception-caught
+        # If the stream fails after emitting a checkpoint continuation_token
+        # without a terminal finish_reason, suppress the error so the outer
+        # loop resumes from the latest checkpoint.
+        if not (
+            enable_continuation
+            and continuation_token
+            and _is_resumable_finish_reason(hop_finish_reason)
+        ):
+          raise
 
   def send_message(
       self,
@@ -803,19 +815,30 @@ class AsyncChat(_BaseChat):
       hop_finish_reason = None
       continuation_token = None
 
-      response_stream = await self._modules.generate_content_stream(
-          model=self._model,
-          contents=contents,  # type: ignore[arg-type]
-          config=call_config,
-      )
-      async for chunk in response_stream:
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+      try:
+        response_stream = await self._modules.generate_content_stream(
+            model=self._model,
+            contents=contents,  # type: ignore[arg-type]
+            config=call_config,
+        )
+        async for chunk in response_stream:
+          if chunk.candidates:
+            candidate = chunk.candidates[0]
+            if candidate.finish_reason:
+              hop_finish_reason = candidate.finish_reason
+            if candidate.continuation_token:
+              continuation_token = candidate.continuation_token
+          yield chunk
+      except Exception:  # pylint: disable=broad-exception-caught
+        # If the stream fails after emitting a checkpoint continuation_token
+        # without a terminal finish_reason, suppress the error so the outer
+        # loop resumes from the latest checkpoint.
+        if not (
+            enable_continuation
+            and continuation_token
+            and _is_resumable_finish_reason(hop_finish_reason)
+        ):
+          raise
 
   async def send_message(
       self,
