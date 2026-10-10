@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.30.0](https://github.com/googleapis/python-genai/compare/v2.29.0...v2.30.0) (2026-10-10)
+
+
+### Features
+
+* Add `continuation_token` to the Interactions `interaction.status_update` event. ([02db4c5](https://github.com/googleapis/python-genai/commit/02db4c595523f5d8545023aa9ede2723985d9343))
+* Add a CONTINUATION_REQUIRED Interaction status ([bf9d6d7](https://github.com/googleapis/python-genai/commit/bf9d6d7ce9ad78a7a5bc9a166c7fbcf2da0623ce))
+* Add startOffset/endOffset to Transcription and interimTranscriptTimestampEnabled to RealtimeInputConfig ([c644a94](https://github.com/googleapis/python-genai/commit/c644a948d3279ada98032200f17ba12e04ed0525))
+* Add usage in InteractionStatusUpdate events ([56c3a1a](https://github.com/googleapis/python-genai/commit/56c3a1a99a8c2bb3ccf914b5f9a1f0a745eb716c))
+* Allow automatic resumption of continuation token for in generate content and generate content stream. Default behavior for this feature is disabled ([83e43ea](https://github.com/googleapis/python-genai/commit/83e43ea082fd101b67a4e61a3c1a12e674881748))
+* Enable automatic continuation token resumption for chats module. ([9ebf714](https://github.com/googleapis/python-genai/commit/9ebf71497338b8cb6edc651d99c91145e36ee7bf))
+
+
+### Bug Fixes
+
+* Do not record incomplete continuation stream turns in curated chat history ([b382e01](https://github.com/googleapis/python-genai/commit/b382e01e8e214998c1e28cb26811bfcd0f79c11f))
+* **gemini-api-cli:** Remove unsupported 2.5 and 1.6 models from Interactions model options and CLI examples ([fe5fb10](https://github.com/googleapis/python-genai/commit/fe5fb10ec895392dbb1b7f45a76901e7abed9a8b))
+* **genai:** Deduplicate Flash and Omni descriptions in ModelOption ([33efaad](https://github.com/googleapis/python-genai/commit/33efaad19f9c34c262423731885a6ab9c4760dad))
+* **interactions:** Restore `super().model_construct` in `Interaction` model validator ([ccd5dd3](https://github.com/googleapis/python-genai/commit/ccd5dd32b14b119f7d3a3254541add6db493222c))
+* Use the mTLS endpoint on the httpx and websocket transports ([97d5821](https://github.com/googleapis/python-genai/commit/97d5821da9591645919fbcac5179c1327882fc7c))
+
 ## [2.29.0](https://github.com/googleapis/python-genai/compare/v2.28.0...v2.29.0) (2026-10-07)
 
 
