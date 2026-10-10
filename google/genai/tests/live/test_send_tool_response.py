@@ -131,6 +131,40 @@ async def test_function_response(mock_websocket, vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
+async def test_function_response_inline_data(mock_websocket, vertexai):
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+
+  input = types.FunctionResponse(
+      name='take_photo',
+      response={'output': 'Photo taken.'},
+      parts=[
+          types.FunctionResponsePart.from_bytes(
+              data=b'\x89PNG', mime_type='image/png'
+          )
+      ],
+  )
+  if not vertexai:
+    input.id = 'some-id'
+
+  await session.send_tool_response(function_responses=input)
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  sent_response = sent_data['tool_response']['functionResponses'][0]
+  inline_data = pytest_helper.get_value_ignore_key_case(
+      sent_response['parts'][0], 'inline_data'
+  )
+
+  assert inline_data['data'] == 'iVBORw=='
+  assert (
+      pytest_helper.get_value_ignore_key_case(inline_data, 'mime_type')
+      == 'image/png'
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
 async def test_function_response_scheduling(mock_websocket, vertexai):
   api_client = mock_api_client(vertexai=vertexai)
   session = live.AsyncSession(api_client=api_client, websocket=mock_websocket)
