@@ -451,6 +451,8 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
           'Hop 1 continuation. ',
           'Hop 2 stop.',
       ]
+      assert chunks[0].candidates[0].finish_reason is None
+      assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
 
   # 2. Explicit automatic_continuation=False -> disabled in unary & stream
   for disable_afc in (False, True):
@@ -492,6 +494,10 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
       )
       assert mock_raw_stream.call_count == 1
       assert [c.text for c in chunks] == ['Hop 1 continuation. ']
+      assert (
+          chunks[0].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
 
   # 3. finish_reason != CONTINUATION (e.g. MAX_TOKENS) -> stops loop even when automatic_continuation=True
   for disable_afc in (False, True):
@@ -538,6 +544,9 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
           == 50000
       )
       assert [c.text for c in chunks] == ['Stopped at hop 1.']
+      assert (
+          chunks[0].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
+      )
 
   # 4. Explicit automatic_continuation=True -> continues on CONTINUATION and forwards max_output_tokens as-is
   with mock.patch.object(
@@ -1125,6 +1134,13 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
       ]
       assert chunks[2].initial_prompt_token_count == 24
       assert chunks[2].usage_metadata.prompt_token_count == 24
+      assert [c.candidates[0].finish_reason for c in chunks[:-1]] == [None] * (
+          len(chunks) - 1
+      )
+      assert (
+          hop1_chunks[2].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
       assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
       assert chunks[-1].candidates[0].continuation_token is None
       assert chunks[-1].usage_metadata is not None
@@ -1586,6 +1602,18 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           'Async chunk 5.',
       ]
       assert chunk_objs[1].initial_prompt_token_count == 24
+      assert [c.candidates[0].finish_reason for c in chunk_objs[:-1]] == [
+          None
+      ] * (len(chunk_objs) - 1)
+      assert chunk_objs[-1].candidates[0].finish_reason == types.FinishReason.STOP
+      assert (
+          stream_hop1_chunks[1].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
+      assert (
+          stream_hop2_chunks[0].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
       assert chunk_objs[-1].usage_metadata is not None
       assert chunk_objs[-1].initial_prompt_token_count == 24
       assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
@@ -1717,6 +1745,10 @@ async def test_async_models_automatic_continuation_config_rules(
         chunks.append(chunk)
       assert mock_async_stream.call_count == 1
       assert [c.text for c in chunks] == [hop1_resp.text]
+      assert (
+          chunks[0].candidates[0].finish_reason
+          == hop1_resp.candidates[0].finish_reason
+      )
 
   # 2. Default (config=None or automatic_continuation=None) -> continues across hops in unary & stream
   for cfg in (None, types.GenerateContentConfig()):
@@ -1757,6 +1789,8 @@ async def test_async_models_automatic_continuation_config_rules(
         chunks.append(chunk)
       assert mock_async_stream.call_count == 2
       assert [c.text for c in chunks] == ['Async Hop 1. ', 'Async Hop 2.']
+      assert chunks[0].candidates[0].finish_reason is None
+      assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
 
   # 3. automatic_continuation=True with max_output_tokens set and finish_reason == CONTINUATION -> continues and forwards max_output_tokens as-is
   with mock.patch.object(

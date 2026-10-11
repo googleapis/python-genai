@@ -6152,10 +6152,8 @@ class Models(_api_module.BaseModule):
     )
     is_first_hop = True
 
-    while is_first_hop or (
-        enable_continuation
-        and continuation_token
-        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+    while is_first_hop or _extra_utils.can_resume_stream(
+        enable_continuation, continuation_token, hop_finish_reason
     ):
       is_first_hop = False
       call_config = _extra_utils.prepare_continuation_config(
@@ -6175,6 +6173,9 @@ class Models(_api_module.BaseModule):
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
               continuation_token = candidate.continuation_token
+            chunk = _extra_utils.clear_intermediate_finish_reason(
+                chunk, enable_continuation, continuation_token
+            )
           if chunk.usage_metadata is not None:
             if accumulated_usage is not None:
               merged_usage = _extra_utils.merge_pydantic_models(
@@ -6189,10 +6190,8 @@ class Models(_api_module.BaseModule):
         # If the stream fails after emitting a checkpoint continuation_token
         # without a terminal finish_reason, suppress the error so the outer
         # loop resumes from the latest checkpoint.
-        if not (
-            enable_continuation
-            and continuation_token
-            and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+        if not _extra_utils.can_resume_stream(
+            enable_continuation, continuation_token, hop_finish_reason
         ):
           raise
       if hop_usage is not None:
@@ -6408,9 +6407,10 @@ class Models(_api_module.BaseModule):
 
     Automatic continuation is enabled by default. When a stream hop ends with
     `finish_reason == FinishReason.CONTINUATION` and includes a
-    `continuation_token` on the first candidate, the SDK automatically starts
-    follow-up stream requests with the `continuation_token` and yields chunks
-    until `finish_reason` is no longer `CONTINUATION`. Set
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
     `config=types.GenerateContentConfig(automatic_continuation=False)` to
     disable this behavior.
 
@@ -8410,10 +8410,8 @@ class AsyncModels(_api_module.BaseModule):
     )
     is_first_hop = True
 
-    while is_first_hop or (
-        enable_continuation
-        and continuation_token
-        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+    while is_first_hop or _extra_utils.can_resume_stream(
+        enable_continuation, continuation_token, hop_finish_reason
     ):
       is_first_hop = False
       call_config = _extra_utils.prepare_continuation_config(
@@ -8434,6 +8432,9 @@ class AsyncModels(_api_module.BaseModule):
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
               continuation_token = candidate.continuation_token
+            chunk = _extra_utils.clear_intermediate_finish_reason(
+                chunk, enable_continuation, continuation_token
+            )
           if chunk.usage_metadata is not None:
             if accumulated_usage is not None:
               merged_usage = _extra_utils.merge_pydantic_models(
@@ -8448,10 +8449,8 @@ class AsyncModels(_api_module.BaseModule):
         # If the stream fails after emitting a checkpoint continuation_token
         # without a terminal finish_reason, suppress the error so the outer
         # loop resumes from the latest checkpoint.
-        if not (
-            enable_continuation
-            and continuation_token
-            and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+        if not _extra_utils.can_resume_stream(
+            enable_continuation, continuation_token, hop_finish_reason
         ):
           raise
       if hop_usage is not None:
@@ -8712,9 +8711,10 @@ class AsyncModels(_api_module.BaseModule):
 
     Automatic continuation is enabled by default. When a stream hop ends with
     `finish_reason == FinishReason.CONTINUATION` and includes a
-    `continuation_token` on the first candidate, the SDK automatically starts
-    follow-up stream requests with the `continuation_token` and yields chunks
-    until `finish_reason` is no longer `CONTINUATION`. Set
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
     `config=types.GenerateContentConfig(automatic_continuation=False)` to
     disable this behavior.
 

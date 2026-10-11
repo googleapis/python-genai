@@ -810,6 +810,39 @@ def is_resumable_finish_reason(
   )
 
 
+def can_resume_stream(
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+    finish_reason: Optional[types.FinishReason],
+) -> bool:
+  """Returns True if a streaming hop should auto-resume with continuation_token."""
+  return bool(
+      enable_continuation
+      and continuation_token
+      and is_resumable_finish_reason(finish_reason)
+  )
+
+
+def clear_intermediate_finish_reason(
+    chunk: types.GenerateContentResponse,
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+) -> types.GenerateContentResponse:
+  """Clears finish_reason on candidates[0] when the stream will auto-continue."""
+  if not chunk.candidates:
+    return chunk
+  candidate = chunk.candidates[0]
+  if candidate.finish_reason and can_resume_stream(
+      enable_continuation, continuation_token, candidate.finish_reason
+  ):
+    updated_candidates = list(chunk.candidates)
+    updated_candidates[0] = candidate.model_copy(
+        update={'finish_reason': None}
+    )
+    return chunk.model_copy(update={'candidates': updated_candidates})
+  return chunk
+
+
 def should_continue_generation(
     response: Optional[types.GenerateContentResponse],
 ) -> Optional[bytes]:

@@ -499,6 +499,9 @@ def test_chat_automatic_continuation_config_rules(
     )
     assert mock_stream.call_count == 1
     assert [c.text for c in chunks] == ['Hop 1. ']
+    assert (
+        chunks[0].candidates[0].finish_reason == types.FinishReason.CONTINUATION
+    )
 
 
 def test_chat_send_message_incompatible_tools_with_continuation(
@@ -999,6 +1002,9 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
     ]
     assert chunks[2].initial_prompt_token_count == 24
     assert chunks[2].usage_metadata.prompt_token_count == 24
+    assert [c.candidates[0].finish_reason for c in chunks[:-1]] == [None] * (
+        len(chunks) - 1
+    )
     assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
     assert chunks[-1].candidates[0].continuation_token is None
     assert chunks[-1].usage_metadata is not None
@@ -1064,6 +1070,9 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
         )
     )
     assert mock_stream.call_count == 4
+    assert [c.candidates[0].finish_reason for c in chunks[:-1]] == [None] * (
+        len(chunks) - 1
+    )
     assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
     assert chunks[-1].usage_metadata is not None
     assert chunks[-1].initial_prompt_token_count == 24
@@ -1463,6 +1472,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
         'Async chunk 5.',
     ]
     assert chunk_objs[1].initial_prompt_token_count == 24
+    assert [c.candidates[0].finish_reason for c in chunk_objs[:-1]] == [
+        None
+    ] * (len(chunk_objs) - 1)
+    assert chunk_objs[-1].candidates[0].finish_reason == types.FinishReason.STOP
     assert chunk_objs[-1].usage_metadata is not None
     assert chunk_objs[-1].initial_prompt_token_count == 24
     assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
@@ -1510,6 +1523,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
         'Async chunk 4. ',
         'Async chunk 5.',
     ]
+    assert [c.candidates[0].finish_reason for c in chunk_objs[:-1]] == [
+        None
+    ] * (len(chunk_objs) - 1)
+    assert chunk_objs[-1].candidates[0].finish_reason == types.FinishReason.STOP
     assert chunk_objs[-1].usage_metadata is not None
     assert chunk_objs[-1].initial_prompt_token_count == 24
     assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
