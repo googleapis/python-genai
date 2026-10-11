@@ -20,6 +20,7 @@ from unittest import mock
 import pydantic
 import pytest
 
+from ... import _extra_utils
 from ... import chats
 from ... import client
 from ... import models
@@ -43,19 +44,19 @@ def mock_api_client():
 
 def test_continuation_helpers_edge_cases():
   """Tests helper edge cases for config preparation and response merging."""
-  assert chats._should_continue_generation(None) is None
+  assert _extra_utils.should_continue_generation(None) is None
   assert (
-      chats._should_continue_generation(
+      _extra_utils.should_continue_generation(
           types.GenerateContentResponse(candidates=[])
       )
       is None
   )
 
-  cfg_from_none = chats._prepare_continuation_config(None, b'tok')
+  cfg_from_none = _extra_utils.prepare_continuation_config(None, b'tok')
   assert cfg_from_none is not None
   assert cfg_from_none.continuation_token == b'tok'
 
-  cfg_from_dict = chats._prepare_continuation_config(
+  cfg_from_dict = _extra_utils.prepare_continuation_config(
       {'temperature': 0.5}, b'tok'  # type: ignore[arg-type]
   )
   assert cfg_from_dict is not None
@@ -63,14 +64,15 @@ def test_continuation_helpers_edge_cases():
   assert cfg_from_dict.temperature == 0.5
 
   assert (
-      chats._merge_continuation_responses([]) == types.GenerateContentResponse()
+      _extra_utils.merge_continuation_responses([])
+      == types.GenerateContentResponse()
   )
 
   cand = types.Candidate(
       content=types.Content(role='model', parts=[types.Part(text='hi')])
   )
-  assert chats._merge_candidates([], [cand]) == [cand]
-  assert chats._merge_candidates([cand], []) == [cand]
+  assert _extra_utils.merge_candidates([], [cand]) == [cand]
+  assert _extra_utils.merge_candidates([cand], []) == [cand]
 
   # ModalityTokenCount when prev_val is empty list and curr_val is non-empty list
   r1 = types.GenerateContentResponse(
@@ -87,7 +89,7 @@ def test_continuation_helpers_edge_cases():
           ]
       )
   )
-  merged = chats._merge_continuation_responses([r1, r2])
+  merged = _extra_utils.merge_continuation_responses([r1, r2])
   assert merged.usage_metadata is not None
   assert merged.usage_metadata.prompt_tokens_details == [
       types.ModalityTokenCount(
@@ -177,7 +179,7 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
 
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[hop1_response, hop2_response, hop3_response, hop4_response],
   ) as mock_gc:
     response = chat.send_message('Write a very long story')
@@ -255,7 +257,7 @@ def test_chat_send_message_explicit_max_output_tokens_stops_on_max_tokens(
 
   # 1. Sync unary (AFC enabled by default, max_output_tokens on chat config)
   with mock.patch.object(
-      models.Models, 'generate_content', return_value=hop1_response
+      models.Models, '_generate_content', return_value=hop1_response
   ) as mock_gc:
     response = chat.send_message('Short response please')
     assert mock_gc.call_count == 1
@@ -266,7 +268,7 @@ def test_chat_send_message_explicit_max_output_tokens_stops_on_max_tokens(
   # 2. Sync unary (AFC disabled, max_output_tokens on method config)
   chat_no_cfg = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
-      models.Models, 'generate_content', return_value=hop1_response
+      models.Models, '_generate_content', return_value=hop1_response
   ) as mock_gc:
     response = chat_no_cfg.send_message(
         'Short response please',
@@ -309,7 +311,7 @@ def test_chat_send_message_explicit_max_output_tokens_stops_on_max_tokens(
   ]
   with mock.patch.object(
       models.Models,
-      'generate_content_stream',
+      '_generate_content_stream',
       return_value=iter(stream_chunks),
   ) as mock_stream:
     chunks = list(chat.send_message_stream('Short stream please'))
@@ -325,7 +327,7 @@ def test_chat_send_message_explicit_max_output_tokens_stops_on_max_tokens(
   # 4. Sync stream (AFC disabled, max_output_tokens on method config)
   with mock.patch.object(
       models.Models,
-      'generate_content_stream',
+      '_generate_content_stream',
       return_value=iter(stream_chunks),
   ) as mock_stream:
     chunks = list(
@@ -385,7 +387,7 @@ def test_chat_automatic_continuation_config_rules(
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[
           hop1_response.model_copy(deep=True),
           hop2_response.model_copy(deep=True),
@@ -400,7 +402,7 @@ def test_chat_automatic_continuation_config_rules(
     chat = chats_module.create(model='gemini-2.5-pro')
     with mock.patch.object(
         models.Models,
-        'generate_content',
+        '_generate_content',
         side_effect=[
             hop1_response.model_copy(deep=True),
             hop2_response.model_copy(deep=True),
@@ -422,7 +424,7 @@ def test_chat_automatic_continuation_config_rules(
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       return_value=hop1_response.model_copy(deep=True),
   ) as mock_gc:
     response = chat.send_message(
@@ -445,7 +447,7 @@ def test_chat_automatic_continuation_config_rules(
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[
           hop1_response.model_copy(deep=True),
           hop2_response.model_copy(deep=True),
@@ -457,17 +459,16 @@ def test_chat_automatic_continuation_config_rules(
     )
     assert mock_gc.call_count == 2
     assert response.text == 'Hop 1. Hop 2.'
-    # Per-hop config passed to Models.generate_content has automatic_continuation cleared
     assert (
         mock_gc.call_args_list[0].kwargs['config'].automatic_continuation
-        is None
+        is True
     )
 
   # Rule 4: automatic_continuation=False, max_output_tokens unset -> disabled
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       return_value=hop1_response.model_copy(deep=True),
   ) as mock_gc:
     response = chat.send_message(
@@ -482,7 +483,7 @@ def test_chat_automatic_continuation_config_rules(
   stream_chunks = [hop1_response.model_copy(deep=True)]
   with mock.patch.object(
       models.Models,
-      'generate_content_stream',
+      '_generate_content_stream',
       return_value=iter(stream_chunks),
   ) as mock_stream:
     chunks = list(
@@ -531,7 +532,7 @@ def test_chat_send_message_incompatible_tools_with_continuation(
       ]
   )
   with mock.patch.object(
-      models.Models, 'generate_content', side_effect=[hop1, hop2]
+      models.Models, '_generate_content', side_effect=[hop1, hop2]
   ) as mock_gc:
     resp = chat.send_message(
         'Test incompatible tools',
@@ -576,7 +577,7 @@ def test_chat_send_message_preserves_empty_text_thought_part(mock_api_client):
 
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[hop1_response, hop2_response],
   ) as mock_gc:
     response = chat.send_message('Solve hard math problem')
@@ -695,7 +696,7 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
 
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[hop1_response, hop2_response],
   ):
     response = chat.send_message(
@@ -929,7 +930,7 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
   # Test without AFC (disable=True)
   with mock.patch.object(
       models.Models,
-      'generate_content_stream',
+      '_generate_content_stream',
       side_effect=[
           iter(hop1_chunks),
           iter(hop2_chunks),
@@ -991,7 +992,7 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
   chat_default = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.Models,
-      'generate_content_stream',
+      '_generate_content_stream',
       side_effect=[
           iter(hop1_chunks),
           iter(hop2_chunks),
@@ -1087,7 +1088,7 @@ def test_chat_afc_decoupled_from_continuation_token(mock_api_client):
 
   with mock.patch.object(
       models.Models,
-      'generate_content',
+      '_generate_content',
       side_effect=[turn1_hop1, turn1_hop2, turn2_final],
   ) as mock_gc:
     response = chat.send_message('What is the weather in Mountain View?')
@@ -1170,7 +1171,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
   chat_no_afc = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[
           hop1.model_copy(deep=True),
@@ -1200,7 +1201,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
   chat_incompat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[
           hop1.model_copy(deep=True),
@@ -1221,7 +1222,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
   chat_default_unary = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[
           hop1.model_copy(deep=True),
@@ -1351,7 +1352,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
   async_chat_no_afc = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content_stream',
+      '_generate_content_stream',
       new_callable=mock.AsyncMock,
       side_effect=[
           _make_async_stream(stream_hop1_chunks),
@@ -1383,7 +1384,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
   async_chat_default = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content_stream',
+      '_generate_content_stream',
       new_callable=mock.AsyncMock,
       side_effect=[
           _make_async_stream(stream_hop1_chunks),
@@ -1435,7 +1436,7 @@ async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
   # Async unary with chat-level max_output_tokens (default AFC)
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       return_value=hop1_response,
   ) as mock_async_gc:
@@ -1449,7 +1450,7 @@ async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
   chat_no_default = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       return_value=hop1_response,
   ) as mock_async_gc:
@@ -1501,7 +1502,7 @@ async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
   )
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content_stream',
+      '_generate_content_stream',
       new_callable=mock.AsyncMock,
       side_effect=[_make_async_stream(stream_hop1_chunks)],
   ) as mock_async_stream:
@@ -1519,7 +1520,7 @@ async def test_async_chat_explicit_max_output_tokens_stops_on_max_tokens(
   # Async stream with method-level max_output_tokens (AFC disabled)
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content_stream',
+      '_generate_content_stream',
       new_callable=mock.AsyncMock,
       side_effect=[_make_async_stream(stream_hop1_chunks)],
   ) as mock_async_stream:
@@ -1574,7 +1575,7 @@ async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
   ) as mock_gc:
@@ -1593,7 +1594,7 @@ async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       side_effect=[hop1.model_copy(deep=True), hop2.model_copy(deep=True)],
   ) as mock_gc:
@@ -1608,7 +1609,7 @@ async def test_async_chat_automatic_continuation_config_rules(mock_api_client):
   chat = chats_module.create(model='gemini-2.5-pro')
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content',
+      '_generate_content',
       new_callable=mock.AsyncMock,
       return_value=hop1.model_copy(deep=True),
   ) as mock_gc:
@@ -1666,7 +1667,7 @@ def test_chat_send_message_stream_incomplete_continuation_not_recorded(
 
   with mock.patch.object(
       models.Models,
-      'generate_content_stream',
+      '_generate_content_stream',
       side_effect=[iter(hop1_chunks), iter(hop2_cutoff_chunks)],
   ) as mock_stream:
     chunks = list(chat.send_message_stream('Write a long story'))
@@ -1721,7 +1722,7 @@ async def test_async_chat_send_message_stream_incomplete_continuation_not_record
 
   with mock.patch.object(
       models.AsyncModels,
-      'generate_content_stream',
+      '_generate_content_stream',
       new_callable=mock.AsyncMock,
       side_effect=[
           _make_async_stream(hop1_chunks),
