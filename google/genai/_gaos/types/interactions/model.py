@@ -24,10 +24,6 @@ from typing import Literal, Union
 
 Model = Union[
     Literal[
-        # Our first hybrid reasoning model which supports a 1M token context window and has thinking budgets.
-        "gemini-2.5-flash",
-        # Our state-of-the-art multipurpose model, which excels at coding and complex reasoning tasks.
-        "gemini-2.5-pro",
         # Gemma 4 26B A4B IT
         "gemma-4-26b-a4b-it",
         # Gemma 4 31B IT
@@ -38,8 +34,14 @@ Model = Union[
         "gemini-flash-lite-latest",
         # Latest release of Gemini Pro
         "gemini-pro-latest",
+        # Our first hybrid reasoning model which supports a 1M token context window and has thinking budgets.
+        "gemini-2.5-flash",
+        # Our state-of-the-art multipurpose model, which excels at coding and complex reasoning tasks.
+        "gemini-2.5-pro",
         # Our smallest and most cost effective model, built for at scale usage.
         "gemini-2.5-flash-lite",
+        # Gemini 3.5 Flash-Lite - Our fastest, most cost-effective 3.5 model for high-throughput execution.
+        "gemini-3.5-flash-lite",
         # Our native image generation model, optimized for speed, flexibility, and contextual understanding. Text input and output is priced the same as 2.5 Flash.
         "gemini-2.5-flash-image",
         # Our most intelligent model built for speed, combining frontier intelligence with superior search and grounding.
@@ -50,21 +52,25 @@ Model = Union[
         "gemini-3.1-pro-preview-customtools",
         # Our most cost-efficient model, optimized for high-volume agentic tasks, translation, and simple data processing.
         "gemini-3.1-flash-lite",
+        # Gemini 3.1 Flash Lite Image.
+        "gemini-3.1-flash-lite-image",
         # Gemini 3 Pro Image
         "gemini-3-pro-image",
         # Gemini 3 Pro Image Preview
         "nano-banana-pro-preview",
         # Gemini 3.1 Flash Image.
         "gemini-3.1-flash-image",
+        # Gemini Nano Banana 2.1.
+        "gemini-nano-banana-2.1",
         # Gemini 3.1 Flash TTS: Powerful, low-latency speech generation. Enjoy natural outputs, steerable prompts, and new expressive audio tags for precise narration control.
         "gemini-3.1-flash-tts-preview",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.5 Flash - Our earlier Flash model, built for speed and foundational performance across routine, high-throughput workloads.
         "gemini-3.5-flash",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.6 Flash - Our previous generation Flash model, balancing speed and multimodal capabilities across general agentic and everyday tasks.
         "gemini-3.6-flash",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.7 Flash - Our high-speed, efficient Flash model built for everyday coding, agentic tool use, and reliable multi-step execution.
         "gemini-3.7-flash",
-        # Our most intelligent model for sustained frontier performance in agentic and coding tasks.
+        # Gemini 3.8 Flash - Our most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.
         "gemini-3.8-flash",
         # Gemini 3.8 Flash TTS - Flagship TTS model for Voice Design and dual-speaker screenplay control. Prompt custom vocal personas, direct line-by-line delivery, and add vocal bursts.
         "gemini-3.8-flash-tts",
@@ -82,7 +88,7 @@ Model = Union[
         "lyria-3.5",
         # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
         "gemini-omni-1.1-flash",
-        # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
+        # Preview release of our multimodal model for conversational video generation, editing, and cinematic control.
         "gemini-omni-flash-preview",
     ],
     UnrecognizedStr,

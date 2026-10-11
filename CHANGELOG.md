@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.29.0](https://github.com/googleapis/python-genai/compare/v2.28.0...v2.29.0) (2026-10-07)
+
+
+### Features
+
+* Support `"allowlist": "disabled"` in environment network config. ([fa4acc7](https://github.com/googleapis/python-genai/commit/fa4acc70a56fe8118914d58a0d8767d5b3c51f21))
+* Update discovery doc ([84bf19c](https://github.com/googleapis/python-genai/commit/84bf19c9394bb3cc41f56c11d125cf6e5de86e3a))
+
+
+### Bug Fixes
+
+* Only log direct AFC warning when functions are present in the config ([6e36aaa](https://github.com/googleapis/python-genai/commit/6e36aaae5b03b955de6297b71f57452cfc744ac8))
+
+
+### Documentation
+
+* Refresh docs for 2.28.0 ([618f0aa](https://github.com/googleapis/python-genai/commit/618f0aa89c7fa61be973fabfa5747fb93a21b1bf))
+* Update code samples to gemini-flash-latest, gemini-3.1-flash-lite-image, and gemini-3.8-flash-tts ([5673494](https://github.com/googleapis/python-genai/commit/5673494fdb2a5db875e0d7f68c18bb2e1029af12))
+* Update generated SDK docstring examples to use gemini-flash-latest ([28e0915](https://github.com/googleapis/python-genai/commit/28e0915b4b57607badafb3181b19c67fb7b475c9))
+
 ## [2.28.0](https://github.com/googleapis/python-genai/compare/v2.27.0...v2.28.0) (2026-10-02)
 
 

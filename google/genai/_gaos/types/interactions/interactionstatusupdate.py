@@ -20,6 +20,7 @@
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL, UnrecognizedStr
 from ...utils import validate_const
+from .usage import Usage, UsageTypedDict
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
@@ -37,6 +38,7 @@ InteractionStatusUpdateStatus = Union[
         "incomplete",
         "budget_exceeded",
         "queued",
+        "continuation_required",
     ],
     UnrecognizedStr,
 ]
@@ -45,17 +47,28 @@ InteractionStatusUpdateStatus = Union[
 class InteractionStatusUpdateTypedDict(TypedDict):
     interaction_id: str
     status: InteractionStatusUpdateStatus
+    continuation_token: NotRequired[str]
+    r"""An optional opaque continuation token used to resume decoding from the
+    latest checkpoint after a disconnected stream.
+    """
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
     """
     event_type: Literal["interaction.status_update"]
+    usage: NotRequired[UsageTypedDict]
+    r"""Statistics on the interaction request's token usage."""
 
 
 class InteractionStatusUpdate(BaseModel):
     interaction_id: str
 
     status: InteractionStatusUpdateStatus
+
+    continuation_token: Optional[str] = None
+    r"""An optional opaque continuation token used to resume decoding from the
+    latest checkpoint after a disconnected stream.
+    """
 
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
@@ -70,9 +83,12 @@ class InteractionStatusUpdate(BaseModel):
         pydantic.Field(alias="event_type"),
     ] = "interaction.status_update"
 
+    usage: Optional[Usage] = None
+    r"""Statistics on the interaction request's token usage."""
+
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["event_id"])
+        optional_fields = set(["continuation_token", "event_id", "usage"])
         serialized = handler(self)
         m = {}
 

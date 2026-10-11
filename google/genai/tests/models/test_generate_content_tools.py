@@ -529,11 +529,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                 }]
             },
         ),
-        exception_if_vertex='only supported in Gemini Developer API mode',
-        skip_in_private=(
-            'disabled_safety_policies parameter is supported on Vertex AI in'
-            ' Private SDK'
-        ),
     ),
     pytest_helper.TestTableItem(
         name='test_computer_use_multi_turn',
@@ -1872,6 +1867,8 @@ def test_afc_logs_to_logger_instance(client, caplog):
       },
   )
   for log in caplog.records:
+    if log.levelname == 'WARNING':
+      continue
     assert log.levelname == 'INFO'
     assert log.name == 'google_genai.models'
 

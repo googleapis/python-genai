@@ -2286,7 +2286,7 @@ class Batches(_api_module.BaseModule):
     .. code-block:: python
 
       batch_job = client.batches.create(
-          model="gemini-2.0-flash-001",
+          model="gemini-flash-latest",
           src="gs://path/to/input/data",
       )
       print(batch_job.state)
@@ -2916,7 +2916,7 @@ class AsyncBatches(_api_module.BaseModule):
     .. code-block:: python
 
       batch_job = await client.aio.batches.create(
-          model="gemini-2.0-flash-001",
+          model="gemini-flash-latest",
           src="gs://path/to/input/data",
       )
     """

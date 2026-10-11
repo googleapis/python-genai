@@ -17,8 +17,10 @@ from unittest import mock
 import httpx
 import pytest
 
-from ..._gaos import google_genai as gaos_google_genai
 from ... import client as client_lib
+from ..._gaos import google_genai as gaos_google_genai
+from ..._gaos.types.interactions import interaction as gaos_interaction
+from ..._gaos.utils import serializers as gaos_serializers
 
 
 pytest_plugins = ("pytest_asyncio",)
@@ -199,3 +201,33 @@ def test_allowlist_entry_with_list_transform():
   # Serialization should preserve it as a list
   dumped = entry.model_dump()
   assert dumped["transform"] == [{"Authorization": "Bearer TOKEN"}]
+
+
+def test_interaction_model_construct():
+  """Tests Interaction.model_construct binding and legacy lyria coercion."""
+  interaction = gaos_interaction.Interaction.model_construct(id="x")
+  assert isinstance(interaction, gaos_interaction.Interaction)
+  assert interaction.id == "x"
+
+  lyria_interaction = gaos_interaction.Interaction.model_construct(
+      id="y",
+      model="lyria-3-pro-preview",
+      outputs=[{"type": "audio", "data": "abc"}],
+  )
+  assert isinstance(lyria_interaction, gaos_interaction.Interaction)
+  assert lyria_interaction.id == "y"
+  assert lyria_interaction.steps == [
+      {"type": "model_output", "content": [{"type": "audio", "data": "abc"}]}
+  ]
+
+
+def test_interaction_lenient_parsing():
+  """Tests lenient response parsing when required fields are omitted."""
+  # Payload missing required `status` field falls back to
+  # _construct_model_lenient, which calls Interaction.model_construct(...).
+  parsed = gaos_serializers.construct_unvalidated(
+      {"id": "x"}, gaos_interaction.Interaction
+  )
+  assert isinstance(parsed, gaos_interaction.Interaction)
+  assert parsed.id == "x"
+

@@ -245,11 +245,11 @@ class AsyncClient:
           enterprise=True, project='my-project-id', location='us-central1'
       ).aio
       response_1 = await async_client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='Hello World',
       )
       response_2 = await async_client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='Hello World',
       )
       # Close the client to release resources.
@@ -638,14 +638,14 @@ class Client:
       from google.genai import Client
 
       client = Client(
-          vertexai=True, project='my-project-id', location='us-central1'
+          enterprise=True, project='my-project-id', location='us-central1'
       )
       response_1 = client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='Hello World',
       )
       response_2 = client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='Hello World',
       )
       # Close the client to release resources.

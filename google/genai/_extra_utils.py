@@ -777,3 +777,232 @@ def get_usage_header(
 
   http_options.headers = existing_headers
   return config_model
+
+
+def should_enable_automatic_continuation(
+    config: Optional[types.GenerateContentConfigOrDict],
+    *,
+    default_enabled: bool = True,
+) -> bool:
+  """Returns whether automatic continuation token resumption is enabled."""
+  if config is None:
+    return default_enabled
+  if isinstance(config, dict):
+    automatic_continuation = config.get('automatic_continuation')
+  else:
+    automatic_continuation = getattr(config, 'automatic_continuation', None)
+  if automatic_continuation is None:
+    return default_enabled
+  return bool(automatic_continuation)
+
+
+def is_resumable_finish_reason(
+    finish_reason: Optional[types.FinishReason],
+) -> bool:
+  """Returns True if finish_reason is eligible for automatic continuation."""
+  return finish_reason == types.FinishReason.CONTINUATION
+
+
+def should_continue_generation(
+    response: Optional[types.GenerateContentResponse],
+) -> Optional[bytes]:
+  """Returns continuation_token if generation should auto-resume, else None."""
+  if not response or not response.candidates:
+    return None
+  candidate = response.candidates[0]
+  if not candidate.continuation_token:
+    return None
+  if is_resumable_finish_reason(candidate.finish_reason):
+    return candidate.continuation_token
+  return None
+
+
+def prepare_continuation_config(
+    base_config: Optional[types.GenerateContentConfigOrDict],
+    continuation_token: Optional[bytes],
+    *,
+    clear_automatic_continuation: bool = False,
+) -> Optional[types.GenerateContentConfig]:
+  """Returns a shallow copy of base_config with continuation_token set."""
+  has_auto_cont = (
+      base_config.get('automatic_continuation') is not None
+      if isinstance(base_config, dict)
+      else getattr(base_config, 'automatic_continuation', None) is not None
+  )
+  need_clear_auto_cont = clear_automatic_continuation and has_auto_cont
+  if (
+      not continuation_token
+      and not need_clear_auto_cont
+      and (
+          base_config is None
+          or isinstance(base_config, types.GenerateContentConfig)
+      )
+  ):
+    return base_config
+  if base_config is None:
+    return types.GenerateContentConfig(continuation_token=continuation_token)
+  if isinstance(base_config, dict):
+    copied_dict: dict[str, Any] = dict(base_config)
+    if continuation_token:
+      copied_dict['continuation_token'] = continuation_token
+    if need_clear_auto_cont:
+      copied_dict['automatic_continuation'] = None
+    return types.GenerateContentConfig(**copied_dict)
+  updates: dict[str, Any] = {}
+  if continuation_token:
+    updates['continuation_token'] = continuation_token
+  if need_clear_auto_cont:
+    updates['automatic_continuation'] = None
+  return base_config.model_copy(update=updates)
+
+
+def merge_modality_token_counts(
+    prev_list: list[types.ModalityTokenCount],
+    curr_list: list[types.ModalityTokenCount],
+) -> list[types.ModalityTokenCount]:
+  """Sums token_count per modality across two lists of ModalityTokenCount."""
+  counts_by_modality: dict[Any, int] = {}
+  order: list[Any] = []
+  for item in prev_list + curr_list:
+    if item.modality not in counts_by_modality:
+      counts_by_modality[item.modality] = 0
+      order.append(item.modality)
+    counts_by_modality[item.modality] += item.token_count or 0
+  return [
+      types.ModalityTokenCount(
+          modality=mod, token_count=counts_by_modality[mod]
+      )
+      for mod in order
+  ]
+
+
+def merge_safety_ratings(
+    prev_list: list[types.SafetyRating],
+    curr_list: list[types.SafetyRating],
+) -> list[types.SafetyRating]:
+  """Deduplicates safety ratings by category, keeping the latest hop's rating."""
+  by_category: dict[Any, types.SafetyRating] = {}
+  order: list[Any] = []
+  for rating in prev_list + curr_list:
+    if rating.category not in by_category:
+      order.append(rating.category)
+    by_category[rating.category] = rating
+  return [by_category[cat] for cat in order]
+
+
+def merge_candidates(
+    prev_candidates: list[types.Candidate],
+    curr_candidates: list[types.Candidate],
+) -> list[types.Candidate]:
+  """Merges candidates element-wise across continuation hops."""
+  if not prev_candidates:
+    return curr_candidates
+  if not curr_candidates:
+    return prev_candidates
+  result: list[types.Candidate] = []
+  for prev_candidate, curr_candidate in zip(prev_candidates, curr_candidates):
+    merged_candidate = merge_pydantic_models(prev_candidate, curr_candidate)
+    result.append(merged_candidate)
+  result.extend(prev_candidates[len(curr_candidates) :])
+  result.extend(curr_candidates[len(prev_candidates) :])
+  return result
+
+
+def merge_pydantic_models(prev: C, curr: C) -> C:
+  """Recursively merges two Pydantic BaseModel instances across continuation hops."""
+  merged_data: dict[str, Any] = {}
+  for field_name in type(curr).model_fields:
+    prev_val = getattr(prev, field_name, None)
+    curr_val = getattr(curr, field_name, None)
+
+    # Terminal hop state on Candidate must reflect the final hop even if None
+    # e.g., continuation_token is None when the final hop finishes with STOP
+    if isinstance(curr, types.Candidate) and field_name in (
+        'continuation_token',
+        'finish_reason',
+        'finish_message',
+    ):
+      merged_data[field_name] = curr_val
+      continue
+
+    if curr_val is None:
+      merged_data[field_name] = prev_val
+    elif prev_val is None:
+      merged_data[field_name] = curr_val
+    elif isinstance(prev_val, _common.BaseModel) and isinstance(
+        curr_val, _common.BaseModel
+    ):
+      merged_data[field_name] = merge_pydantic_models(prev_val, curr_val)
+    elif (
+        isinstance(prev_val, (int, float))
+        and not isinstance(prev_val, bool)
+        and isinstance(curr_val, (int, float))
+        and not isinstance(curr_val, bool)
+        and (
+            isinstance(curr, types.GenerateContentResponseUsageMetadata)
+            or field_name == 'token_count'
+            or field_name.endswith('_count')
+            or field_name.endswith('_sum')
+        )
+    ):
+      merged_data[field_name] = prev_val + curr_val
+    elif isinstance(prev_val, list) and isinstance(curr_val, list):
+      if field_name == 'candidates':
+        merged_data[field_name] = merge_candidates(prev_val, curr_val)
+      elif prev_val and isinstance(prev_val[0], types.ModalityTokenCount):
+        merged_data[field_name] = merge_modality_token_counts(
+            prev_val, curr_val
+        )
+      elif curr_val and isinstance(curr_val[0], types.ModalityTokenCount):
+        merged_data[field_name] = merge_modality_token_counts(
+            prev_val, curr_val
+        )
+      elif field_name == 'safety_ratings':
+        merged_data[field_name] = merge_safety_ratings(prev_val, curr_val)
+      else:
+        # Concatenates Content.parts (keeping each hop's Part distinct and
+        # preserving empty placeholder Parts), GroundingChunks, Citations, etc.
+        merged_data[field_name] = prev_val + curr_val
+    else:
+      merged_data[field_name] = curr_val
+
+  return curr.model_copy(update=merged_data)
+
+
+def merge_continuation_responses(
+    responses: list[types.GenerateContentResponse],
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> types.GenerateContentResponse:
+  """Merges a sequence of continuation hop responses into a single response."""
+  if not responses:
+    return types.GenerateContentResponse()
+  if len(responses) == 1:
+    return responses[0]
+  merged = responses[0]
+  for resp in responses[1:]:
+    merged = merge_pydantic_models(merged, resp)
+
+  if config is not None:
+    response_schema = (
+        config.get('response_schema')
+        if isinstance(config, dict)
+        else getattr(config, 'response_schema', None)
+    )
+    response_json_schema = (
+        config.get('response_json_schema')
+        if isinstance(config, dict)
+        else getattr(config, 'response_json_schema', None)
+    )
+    if response_schema is not None or response_json_schema is not None:
+      config_dict = {
+          'response_schema': response_schema,
+          'response_json_schema': response_json_schema,
+      }
+      reparsed = types.GenerateContentResponse._from_response(
+          response=merged.model_dump(exclude_none=True),
+          kwargs={'config': config_dict},
+      )
+      merged.parsed = reparsed.parsed
+
+  return merged
+

@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+env:
+  SPEAKEASY_VERSION: v2.945.4
+
 jobs:
   mypy:
     runs-on: ubuntu-latest

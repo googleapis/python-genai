@@ -225,38 +225,6 @@ def _ComputeTokensResponse_from_vertex(
   return to_object
 
 
-def _ComputerUse_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
-    setv(
-        to_object,
-        ['enablePromptInjectionDetection'],
-        getv(from_object, ['enable_prompt_injection_detection']),
-    )
-
-  if getv(from_object, ['disabled_safety_policies']) is not None:
-    raise ValueError(
-        'disabled_safety_policies parameter is only supported in Gemini'
-        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  return to_object
-
-
 def _ContentEmbeddingStatistics_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -4127,13 +4095,7 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ComputerUse_to_vertex(
-            getv(from_object, ['computer_use']), to_object, root_object
-        ),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
@@ -5786,7 +5748,7 @@ class Models(_api_module.BaseModule):
     .. code-block:: python
 
       response = client.models.count_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -5897,7 +5859,7 @@ class Models(_api_module.BaseModule):
     .. code-block:: python
 
       response = client.models.compute_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -6146,6 +6108,70 @@ class Models(_api_module.BaseModule):
           config=config,
       )
 
+  def _generate_content_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: types.ContentListUnionDict,
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> types.GenerateContentResponse:
+    """Generates content and, when automatic_continuation is enabled, follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    continuation_token: Optional[bytes] = None
+    responses: list[types.GenerateContentResponse] = []
+
+    while not responses or (enable_continuation and continuation_token):
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      response = self._generate_content(
+          model=model, contents=contents, config=call_config
+      )
+      responses.append(response)
+      continuation_token = _extra_utils.should_continue_generation(response)
+
+    return _extra_utils.merge_continuation_responses(responses, config=config)
+
+  def _generate_content_stream_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: types.ContentListUnionDict,
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> Iterator[types.GenerateContentResponse]:
+    """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    continuation_token: Optional[bytes] = None
+    hop_finish_reason: Optional[types.FinishReason] = None
+    is_first_hop = True
+
+    while is_first_hop or (
+        enable_continuation
+        and continuation_token
+        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+    ):
+      is_first_hop = False
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      hop_finish_reason = None
+      continuation_token = None
+
+      for chunk in self._generate_content_stream(
+          model=model, contents=contents, config=call_config
+      ):
+        if chunk.candidates:
+          candidate = chunk.candidates[0]
+          if candidate.finish_reason:
+            hop_finish_reason = candidate.finish_reason
+          if candidate.continuation_token:
+            continuation_token = candidate.continuation_token
+        yield chunk
+
   def generate_content(
       self,
       *,
@@ -6157,23 +6183,31 @@ class Models(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-flash-latest'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-flash-latest' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-flash-latest'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-flash-latest'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -6189,7 +6223,7 @@ class Models(_api_module.BaseModule):
       )
 
       response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       )
@@ -6200,7 +6234,7 @@ class Models(_api_module.BaseModule):
       # * Timeless Petals
 
       response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents=[
           types.Part.from_text(text='What is shown in this image?'),
           types.Part.from_uri(file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -6225,14 +6259,14 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
-      return self._generate_content(
+      return self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
     if incompatible_tools_indexes:
       _extra_utils.log_afc_incompatible_tools_warning(
           config, incompatible_tools_indexes
       )
-      return self._generate_content(
+      return self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
 
@@ -6242,15 +6276,6 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
-    if not Models._logged_afc_warning:
-      logger.warning(
-          'Direct use of automatic function calling (AFC) in'
-          ' Models.generate_content is not recommended. Instead, we recommend'
-          ' to use AFC in Chat.send_message. Similarly, direct use of AFC in'
-          ' Models.generate_content_stream is not recommended. Instead, we'
-          ' recommend to use AFC in Chat.send_message_stream.'
-      )
-      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     response = types.GenerateContentResponse()
     i = 0
@@ -6260,13 +6285,23 @@ class Models(_api_module.BaseModule):
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
+        if not Models._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'Models.generate_content is not recommended. Instead, we '
+              'recommend to use AFC in Chat.send_message. Similarly, direct '
+              'use of AFC in Models.generate_content_stream is not '
+              'recommended. Instead, we recommend to use AFC in '
+              'Chat.send_message_stream.'
+          )
+          Models._logged_afc_warning = True
         parsed_config_to_call = _extra_utils.get_usage_header(
             parsed_config_to_call,
             types.GenerateContentConfig,
             'afc',
         )
       i += 1
-      response = self._generate_content(
+      response = self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config_to_call
       )
 
@@ -6327,23 +6362,31 @@ class Models(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-flash-latest'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-flash-latest' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-flash-latest'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-flash-latest'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically starts
+    follow-up stream requests with the `continuation_token` and yields chunks
+    until `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -6359,7 +6402,7 @@ class Models(_api_module.BaseModule):
       )
 
       for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       ):
@@ -6370,7 +6413,7 @@ class Models(_api_module.BaseModule):
       # * Timeless Petals
 
       for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents=[
           types.Part.from_text('What is shown in this image?'),
           types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
@@ -6395,7 +6438,7 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
-      yield from self._generate_content_stream(
+      yield from self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -6404,7 +6447,7 @@ class Models(_api_module.BaseModule):
       _extra_utils.log_afc_incompatible_tools_warning(
           config, incompatible_tools_indexes
       )
-      yield from self._generate_content_stream(
+      yield from self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -6419,15 +6462,6 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
-    if not Models._logged_afc_warning:
-      logger.warning(
-          'Direct use of automatic function calling (AFC) in '
-          'Models.generate_content_stream is not recommended. Instead, we '
-          'recommend to use AFC in Chat.send_message_stream. Similarly, direct '
-          'use of AFC in Models.generate_content is not recommended. Instead, '
-          'we recommend to use AFC in Chat.send_message.'
-      )
-      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     i = 0
     while remaining_remote_calls_afc > 0:
@@ -6436,11 +6470,21 @@ class Models(_api_module.BaseModule):
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
+        if not Models._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'Models.generate_content_stream is not recommended. Instead, we '
+              'recommend to use AFC in Chat.send_message_stream. Similarly, '
+              'direct use of AFC in Models.generate_content is not '
+              'recommended. Instead, we recommend to use AFC in '
+              'Chat.send_message.'
+          )
+          Models._logged_afc_warning = True
         parsed_config_to_call = _extra_utils.get_usage_header(
             parsed_config_to_call, types.GenerateContentConfig, 'afc'
         )
       i += 1
-      response = self._generate_content_stream(
+      response = self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config_to_call
       )
       remaining_remote_calls_afc -= 1
@@ -6453,7 +6497,7 @@ class Models(_api_module.BaseModule):
 
       model_output = []
       func_response_parts = []
-      chunk = None  # type: ignore[assignment]
+      chunk: Optional[types.GenerateContentResponse] = None
 
       for chunk in response:
         if (
@@ -6834,7 +6878,7 @@ class Models(_api_module.BaseModule):
 
       response=client.models.list(config={'page_size': 5, 'query_base': True})
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-flash-latest' ...
     """
 
     config = (
@@ -8007,7 +8051,7 @@ class AsyncModels(_api_module.BaseModule):
     .. code-block:: python
 
       response = await client.aio.models.count_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -8117,7 +8161,7 @@ class AsyncModels(_api_module.BaseModule):
     .. code-block:: python
 
       response = await client.aio.models.compute_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='What is your name?',
       )
       print(response)
@@ -8296,6 +8340,71 @@ class AsyncModels(_api_module.BaseModule):
   _logged_generate_videos_deprecation_warning = False
   _logged_afc_warning = False
 
+  async def _generate_content_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> types.GenerateContentResponse:
+    """Generates content and, when automatic_continuation is enabled, follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    continuation_token: Optional[bytes] = None
+    responses: list[types.GenerateContentResponse] = []
+
+    while not responses or (enable_continuation and continuation_token):
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      response = await self._generate_content(
+          model=model, contents=contents, config=call_config
+      )
+      responses.append(response)
+      continuation_token = _extra_utils.should_continue_generation(response)
+
+    return _extra_utils.merge_continuation_responses(responses, config=config)
+
+  async def _generate_content_stream_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> AsyncIterator[types.GenerateContentResponse]:
+    """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    continuation_token: Optional[bytes] = None
+    hop_finish_reason: Optional[types.FinishReason] = None
+    is_first_hop = True
+
+    while is_first_hop or (
+        enable_continuation
+        and continuation_token
+        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+    ):
+      is_first_hop = False
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      hop_finish_reason = None
+      continuation_token = None
+
+      response_stream = await self._generate_content_stream(
+          model=model, contents=contents, config=call_config
+      )
+      async for chunk in response_stream:  # type: ignore[attr-defined]
+        if chunk.candidates:
+          candidate = chunk.candidates[0]
+          if candidate.finish_reason:
+            hop_finish_reason = candidate.finish_reason
+          if candidate.continuation_token:
+            continuation_token = candidate.continuation_token
+        yield chunk
+
   async def generate_content(
       self,
       *,
@@ -8306,6 +8415,14 @@ class AsyncModels(_api_module.BaseModule):
     """Makes an API request to generate content using a model.
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -8321,7 +8438,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       response = await client.aio.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-flash-latest',
           contents='User input: I like bagels. Answer:',
           config=types.GenerateContentConfig(
               system_instruction=
@@ -8410,7 +8527,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       if _extra_utils.should_disable_afc(final_parsed_config):
-        return await self._generate_content(
+        return await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config
         )
 
@@ -8418,7 +8535,7 @@ class AsyncModels(_api_module.BaseModule):
         _extra_utils.log_afc_incompatible_tools_warning(
             config, incompatible_tools_indexes
         )
-        return await self._generate_content(
+        return await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config
         )
 
@@ -8428,16 +8545,6 @@ class AsyncModels(_api_module.BaseModule):
       logger.info(
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
       )
-      if not AsyncModels._logged_afc_warning:
-        logger.warning(
-            'Direct use of automatic function calling (AFC) in '
-            'AsyncModels.generate_content is not recommended. Instead, we '
-            'recommend to use AFC in AsyncChat.send_message. Similarly, direct '
-            'use of AFC in AsyncModels.generate_content_stream is not '
-            'recommended. Instead, we recommend to use AFC in '
-            'AsyncChat.send_message_stream.'
-        )
-        AsyncModels._logged_afc_warning = True
       automatic_function_calling_history: list[types.Content] = []
       response = types.GenerateContentResponse()
 
@@ -8453,12 +8560,22 @@ class AsyncModels(_api_module.BaseModule):
             else None
         )
         if function_map:
+          if not AsyncModels._logged_afc_warning:
+            logger.warning(
+                'Direct use of automatic function calling (AFC) in '
+                'AsyncModels.generate_content is not recommended. Instead, we '
+                'recommend to use AFC in AsyncChat.send_message. Similarly, '
+                'direct use of AFC in AsyncModels.generate_content_stream is '
+                'not recommended. Instead, we recommend to use AFC in '
+                'AsyncChat.send_message_stream.'
+            )
+            AsyncModels._logged_afc_warning = True
           final_parsed_config_to_call = _extra_utils.get_usage_header(
               final_parsed_config_to_call,
               types.GenerateContentConfig,
               usage='afc',
           )
-        response = await self._generate_content(
+        response = await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config_to_call
         )
         remaining_remote_calls_afc -= 1
@@ -8523,23 +8640,31 @@ class AsyncModels(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-flash-latest'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-flash-latest' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-flash-latest'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-flash-latest'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-flash-latest'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically starts
+    follow-up stream requests with the `continuation_token` and yields chunks
+    until `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -8555,7 +8680,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       ):
@@ -8566,7 +8691,7 @@ class AsyncModels(_api_module.BaseModule):
       # * Timeless Petals
 
       async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-flash-latest',
         contents=[
           types.Part.from_text('What is shown in this image?'),
           types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
@@ -8649,7 +8774,7 @@ class AsyncModels(_api_module.BaseModule):
         )
 
         if _extra_utils.should_disable_afc(final_parsed_config):
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
@@ -8660,7 +8785,7 @@ class AsyncModels(_api_module.BaseModule):
           _extra_utils.log_afc_incompatible_tools_warning(
               config, incompatible_tools_indexes
           )
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
@@ -8678,16 +8803,6 @@ class AsyncModels(_api_module.BaseModule):
             'AFC is enabled with max remote calls:'
             f' {remaining_remote_calls_afc}.'
         )
-        if not AsyncModels._logged_afc_warning:
-          logger.warning(
-              'Direct use of automatic function calling (AFC) in '
-              'AsyncModels.generate_content_stream is not recommended. '
-              'Instead, we recommend to use AFC in '
-              'AsyncChat.send_message_stream. Similarly, direct use of AFC in '
-              'AsyncModels.generate_content is not recommended. '
-              'Instead, we recommend to use AFC in AsyncChat.send_message.'
-          )
-          AsyncModels._logged_afc_warning = True
         automatic_function_calling_history: list[types.Content] = []
         i = 0
         loop_contents = contents
@@ -8706,6 +8821,16 @@ class AsyncModels(_api_module.BaseModule):
               else None
           )
           if function_map:
+            if not AsyncModels._logged_afc_warning:
+              logger.warning(
+                  'Direct use of automatic function calling (AFC) in '
+                  'AsyncModels.generate_content_stream is not recommended. '
+                  'Instead, we recommend to use AFC in '
+                  'AsyncChat.send_message_stream. Similarly, direct use of AFC '
+                  'in AsyncModels.generate_content is not recommended. '
+                  'Instead, we recommend to use AFC in AsyncChat.send_message.'
+              )
+              AsyncModels._logged_afc_warning = True
             final_parsed_config_to_call = _extra_utils.get_usage_header(
                 final_parsed_config_to_call,
                 types.GenerateContentConfig,
@@ -8714,7 +8839,7 @@ class AsyncModels(_api_module.BaseModule):
 
           i += 1
 
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model,
               contents=loop_contents,
               config=final_parsed_config_to_call,
@@ -8731,7 +8856,6 @@ class AsyncModels(_api_module.BaseModule):
 
           model_output = []
           func_response_parts = []
-          chunk = None  # type: ignore[assignment]
 
           async for chunk in response:  # type: ignore[attr-defined]
             if (
@@ -8873,7 +8997,7 @@ class AsyncModels(_api_module.BaseModule):
           config={'page_size': 5, 'query_base': True}
         )
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-flash-latest' ...
     """
 
     config = (

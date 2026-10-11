@@ -49,10 +49,10 @@ InteractionSSEEventTypedDict = TypeAliasType(
         ErrorEventTypedDict,
         InteractionCompletedEventTypedDict,
         InteractionCreatedEventTypedDict,
-        InteractionStatusUpdateTypedDict,
         StepStartTypedDict,
         StepDeltaTypedDict,
         StepStopTypedDict,
+        InteractionStatusUpdateTypedDict,
     ],
 )
 
