@@ -946,8 +946,7 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
         and isinstance(curr_val, (int, float))
         and not isinstance(curr_val, bool)
         and (
-            isinstance(curr, types.GenerateContentResponseUsageMetadata)
-            or field_name == 'token_count'
+            field_name == 'token_count'
             or field_name.endswith('_count')
             or field_name.endswith('_sum')
         )
@@ -973,7 +972,18 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
     else:
       merged_data[field_name] = curr_val
 
-  return curr.model_copy(update=merged_data)
+  merged = curr.model_copy(update=merged_data)
+  if (
+      isinstance(prev, types.GenerateContentResponseUsageMetadata)
+      and isinstance(curr, types.GenerateContentResponseUsageMetadata)
+      and isinstance(merged, types.GenerateContentResponseUsageMetadata)
+  ):
+    merged._initial_prompt_token_count = (
+        prev.initial_prompt_token_count
+        if prev.initial_prompt_token_count is not None
+        else curr.initial_prompt_token_count
+    )
+  return merged
 
 
 def merge_continuation_responses(

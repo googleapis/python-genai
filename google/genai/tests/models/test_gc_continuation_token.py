@@ -199,6 +199,26 @@ def test_continuation_helpers_edge_cases():
       )
   ]
 
+  total_only_merged = _extra_utils.merge_pydantic_models(
+      types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=15, total_token_count=100
+      ),
+      types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=80, total_token_count=50
+      ),
+  )
+  assert total_only_merged.prompt_token_count == 95
+  assert total_only_merged.initial_prompt_token_count == 15
+  assert total_only_merged.total_token_count == 150
+  assert types.GenerateContentResponse().initial_prompt_token_count is None
+  single_hop_resp = types.GenerateContentResponse(
+      usage_metadata=types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=42
+      )
+  )
+  assert single_hop_resp.initial_prompt_token_count == 42
+  assert single_hop_resp.usage_metadata.initial_prompt_token_count == 42
+
 
 def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
   """Models.generate_content with automatic_continuation=True auto-resumes across 4 hops."""
@@ -328,6 +348,8 @@ def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
           response.usage_metadata.prompt_token_count
           == 10 + 32778 + 65546 + 98314
       )
+      assert response.initial_prompt_token_count == 10
+      assert response.usage_metadata.initial_prompt_token_count == 10
       assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
       assert (
           response.usage_metadata.thoughts_token_count == 500 + 300 + 200 + 100
@@ -702,11 +724,29 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
       ],
       usage_metadata=types.GenerateContentResponseUsageMetadata(
           prompt_token_count=20,
+          cached_content_token_count=8,
           candidates_token_count=100,
-          total_token_count=120,
+          thoughts_token_count=30,
+          tool_use_prompt_token_count=5,
+          total_token_count=155,
           prompt_tokens_details=[
               types.ModalityTokenCount(
                   modality=types.MediaModality.TEXT, token_count=20
+              )
+          ],
+          cache_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=8
+              )
+          ],
+          candidates_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=100
+              )
+          ],
+          tool_use_prompt_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=5
               )
           ],
       ),
@@ -749,11 +789,29 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
       ],
       usage_metadata=types.GenerateContentResponseUsageMetadata(
           prompt_token_count=120,
+          cached_content_token_count=8,
           candidates_token_count=50,
-          total_token_count=170,
+          thoughts_token_count=15,
+          tool_use_prompt_token_count=10,
+          total_token_count=195,
           prompt_tokens_details=[
               types.ModalityTokenCount(
                   modality=types.MediaModality.TEXT, token_count=120
+              )
+          ],
+          cache_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=8
+              )
+          ],
+          candidates_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=50
+              )
+          ],
+          tool_use_prompt_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=10
               )
           ],
       ),
@@ -782,9 +840,32 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
     assert cand.grounding_metadata.web_search_queries == ['query 1', 'query 2']
     assert cand.logprobs_result.log_probability_sum == -3.5
     assert len(cand.logprobs_result.chosen_candidates) == 2
+    assert response.initial_prompt_token_count == 20
+    assert response.usage_metadata.initial_prompt_token_count == 20
+    assert response.usage_metadata.prompt_token_count == 140
+    assert response.usage_metadata.cached_content_token_count == 16
+    assert response.usage_metadata.candidates_token_count == 150
+    assert response.usage_metadata.thoughts_token_count == 45
+    assert response.usage_metadata.tool_use_prompt_token_count == 15
+    assert response.usage_metadata.total_token_count == 350
     assert response.usage_metadata.prompt_tokens_details == [
         types.ModalityTokenCount(
             modality=types.MediaModality.TEXT, token_count=140
+        )
+    ]
+    assert response.usage_metadata.cache_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=16
+        )
+    ]
+    assert response.usage_metadata.candidates_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=150
+        )
+    ]
+    assert response.usage_metadata.tool_use_prompt_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=15
         )
     ]
 
@@ -856,8 +937,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_1',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=24,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=32792,
+              thoughts_token_count=400,
+              total_token_count=33192,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -902,8 +985,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_2',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=32792,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=65560,
+              thoughts_token_count=300,
+              total_token_count=65860,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -946,8 +1031,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_3',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=65560,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=98328,
+              thoughts_token_count=200,
+              total_token_count=98528,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -989,8 +1076,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_4',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=98328,
+              cached_content_token_count=10,
               candidates_token_count=11903,
-              total_token_count=110231,
+              thoughts_token_count=100,
+              total_token_count=110331,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1034,8 +1123,34 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           '## CHAPTER 4: Code Generation\n',
           'End of compiler textbook.',
       ]
+      assert chunks[2].initial_prompt_token_count == 24
+      assert chunks[2].usage_metadata.prompt_token_count == 24
       assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
       assert chunks[-1].candidates[0].continuation_token is None
+      assert chunks[-1].usage_metadata is not None
+      assert chunks[-1].initial_prompt_token_count == 24
+      assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
+      assert (
+          chunks[-1].usage_metadata.prompt_token_count
+          == 24 + 32792 + 65560 + 98328
+      )
+      assert chunks[-1].usage_metadata.cached_content_token_count == 40
+      assert (
+          chunks[-1].usage_metadata.candidates_token_count
+          == 32768 * 3 + 11903
+      )
+      assert (
+          chunks[-1].usage_metadata.thoughts_token_count
+          == 400 + 300 + 200 + 100
+      )
+      assert (
+          chunks[-1].usage_metadata.total_token_count
+          == 33192 + 65860 + 98528 + 110331
+      )
+      assert (
+          chunks[-1].usage_metadata.traffic_type
+          == types.TrafficType.ON_DEMAND
+      )
 
       first_call_kwargs = mock_raw_stream.call_args_list[0].kwargs
       second_call_kwargs = mock_raw_stream.call_args_list[1].kwargs
@@ -1344,8 +1459,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=24,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=32792,
+              thoughts_token_count=400,
+              total_token_count=33192,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1363,8 +1480,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=32792,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=65560,
+              thoughts_token_count=300,
+              total_token_count=65860,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1382,8 +1501,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=65560,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=98328,
+              thoughts_token_count=200,
+              total_token_count=98528,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1400,8 +1521,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=98328,
+              cached_content_token_count=12,
               candidates_token_count=1024,
-              total_token_count=99352,
+              thoughts_token_count=100,
+              total_token_count=99452,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1448,20 +1571,41 @@ async def test_async_models_generate_content_and_stream_auto_resume(
             _make_async_stream(stream_hop4_chunks),
         ],
     ) as mock_async_stream:
-      chunks = []
+      chunk_objs = []
       async for chunk in await models_module.generate_content_stream(
           model='gemini-2.5-pro',
           contents='Hello async stream',
           config=stream_cfg,
       ):
-        chunks.append(chunk.text)
-      assert chunks == [
+        chunk_objs.append(chunk)
+      assert [c.text for c in chunk_objs] == [
           'Async chunk 1. ',
           'Async chunk 2. ',
           'Async chunk 3. ',
           'Async chunk 4. ',
           'Async chunk 5.',
       ]
+      assert chunk_objs[1].initial_prompt_token_count == 24
+      assert chunk_objs[-1].usage_metadata is not None
+      assert chunk_objs[-1].initial_prompt_token_count == 24
+      assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
+      assert (
+          chunk_objs[-1].usage_metadata.prompt_token_count
+          == 24 + 32792 + 65560 + 98328
+      )
+      assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+      assert (
+          chunk_objs[-1].usage_metadata.candidates_token_count
+          == 32768 * 3 + 1024
+      )
+      assert (
+          chunk_objs[-1].usage_metadata.thoughts_token_count
+          == 400 + 300 + 200 + 100
+      )
+      assert (
+          chunk_objs[-1].usage_metadata.total_token_count
+          == 33192 + 65860 + 98528 + 99452
+      )
       _assert_async_stream_4_hops(mock_async_stream)
 
 

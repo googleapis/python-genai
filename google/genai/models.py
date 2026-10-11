@@ -6147,6 +6147,9 @@ class Models(_api_module.BaseModule):
     )
     continuation_token: Optional[bytes] = None
     hop_finish_reason: Optional[types.FinishReason] = None
+    accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
+        None
+    )
     is_first_hop = True
 
     while is_first_hop or (
@@ -6160,6 +6163,7 @@ class Models(_api_module.BaseModule):
       )
       hop_finish_reason = None
       continuation_token = None
+      hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
 
       try:
         for chunk in self._generate_content_stream(
@@ -6171,6 +6175,15 @@ class Models(_api_module.BaseModule):
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
               continuation_token = candidate.continuation_token
+          if chunk.usage_metadata is not None:
+            if accumulated_usage is not None:
+              merged_usage = _extra_utils.merge_pydantic_models(
+                  accumulated_usage, chunk.usage_metadata
+              )
+              chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
+              hop_usage = merged_usage
+            else:
+              hop_usage = chunk.usage_metadata
           yield chunk
       except Exception:  # pylint: disable=broad-exception-caught
         # If the stream fails after emitting a checkpoint continuation_token
@@ -6182,6 +6195,8 @@ class Models(_api_module.BaseModule):
             and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
         ):
           raise
+      if hop_usage is not None:
+        accumulated_usage = hop_usage
 
   def generate_content(
       self,
@@ -8390,6 +8405,9 @@ class AsyncModels(_api_module.BaseModule):
     )
     continuation_token: Optional[bytes] = None
     hop_finish_reason: Optional[types.FinishReason] = None
+    accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
+        None
+    )
     is_first_hop = True
 
     while is_first_hop or (
@@ -8403,6 +8421,7 @@ class AsyncModels(_api_module.BaseModule):
       )
       hop_finish_reason = None
       continuation_token = None
+      hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
 
       try:
         response_stream = await self._generate_content_stream(
@@ -8415,6 +8434,15 @@ class AsyncModels(_api_module.BaseModule):
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
               continuation_token = candidate.continuation_token
+          if chunk.usage_metadata is not None:
+            if accumulated_usage is not None:
+              merged_usage = _extra_utils.merge_pydantic_models(
+                  accumulated_usage, chunk.usage_metadata
+              )
+              chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
+              hop_usage = merged_usage
+            else:
+              hop_usage = chunk.usage_metadata
           yield chunk
       except Exception:  # pylint: disable=broad-exception-caught
         # If the stream fails after emitting a checkpoint continuation_token
@@ -8426,6 +8454,8 @@ class AsyncModels(_api_module.BaseModule):
             and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
         ):
           raise
+      if hop_usage is not None:
+        accumulated_usage = hop_usage
 
   async def generate_content(
       self,

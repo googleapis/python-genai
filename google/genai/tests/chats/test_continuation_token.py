@@ -211,8 +211,11 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
     ]
     assert response.usage_metadata is not None
     assert (
-        response.usage_metadata.prompt_token_count == 10 + 32778 + 65546 + 98314
+        response.usage_metadata.prompt_token_count
+        == 10 + 32778 + 65546 + 98314
     )
+    assert response.initial_prompt_token_count == 10
+    assert response.usage_metadata.initial_prompt_token_count == 10
     assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
     assert response.usage_metadata.thoughts_token_count == 500 + 300 + 200 + 100
     assert (
@@ -639,11 +642,17 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
       ],
       usage_metadata=types.GenerateContentResponseUsageMetadata(
           prompt_token_count=20,
+          cached_content_token_count=8,
           candidates_token_count=100,
           total_token_count=120,
           prompt_tokens_details=[
               types.ModalityTokenCount(
                   modality=types.MediaModality.TEXT, token_count=20
+              )
+          ],
+          candidates_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=100
               )
           ],
       ),
@@ -686,11 +695,17 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
       ],
       usage_metadata=types.GenerateContentResponseUsageMetadata(
           prompt_token_count=120,
+          cached_content_token_count=8,
           candidates_token_count=50,
           total_token_count=170,
           prompt_tokens_details=[
               types.ModalityTokenCount(
                   modality=types.MediaModality.TEXT, token_count=120
+              )
+          ],
+          candidates_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=50
               )
           ],
       ),
@@ -715,9 +730,20 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
     assert cand.grounding_metadata.web_search_queries == ['query 1', 'query 2']
     assert cand.logprobs_result.log_probability_sum == -3.5
     assert len(cand.logprobs_result.chosen_candidates) == 2
+    assert response.initial_prompt_token_count == 20
+    assert response.usage_metadata.initial_prompt_token_count == 20
+    assert response.usage_metadata.prompt_token_count == 140
+    assert response.usage_metadata.cached_content_token_count == 16
+    assert response.usage_metadata.candidates_token_count == 150
+    assert response.usage_metadata.total_token_count == 290
     assert response.usage_metadata.prompt_tokens_details == [
         types.ModalityTokenCount(
             modality=types.MediaModality.TEXT, token_count=140
+        )
+    ]
+    assert response.usage_metadata.candidates_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=150
         )
     ]
 
@@ -789,8 +815,10 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
           response_id='resp_hop_1',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=24,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=32792,
+              thoughts_token_count=400,
+              total_token_count=33192,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -835,8 +863,10 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
           response_id='resp_hop_2',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=32792,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=65560,
+              thoughts_token_count=300,
+              total_token_count=65860,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -879,8 +909,10 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
           response_id='resp_hop_3',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=65560,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=98328,
+              thoughts_token_count=200,
+              total_token_count=98528,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -922,8 +954,10 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
           response_id='resp_hop_4',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=98328,
+              cached_content_token_count=10,
               candidates_token_count=11903,
-              total_token_count=110231,
+              thoughts_token_count=100,
+              total_token_count=110331,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -963,8 +997,29 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
         '## CHAPTER 4: Code Generation\n',
         'End of compiler textbook.',
     ]
+    assert chunks[2].initial_prompt_token_count == 24
+    assert chunks[2].usage_metadata.prompt_token_count == 24
     assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
     assert chunks[-1].candidates[0].continuation_token is None
+    assert chunks[-1].usage_metadata is not None
+    assert chunks[-1].initial_prompt_token_count == 24
+    assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
+    assert (
+        chunks[-1].usage_metadata.prompt_token_count
+        == 24 + 32792 + 65560 + 98328
+    )
+    assert chunks[-1].usage_metadata.cached_content_token_count == 40
+    assert (
+        chunks[-1].usage_metadata.candidates_token_count == 32768 * 3 + 11903
+    )
+    assert (
+        chunks[-1].usage_metadata.thoughts_token_count
+        == 400 + 300 + 200 + 100
+    )
+    assert (
+        chunks[-1].usage_metadata.total_token_count
+        == 33192 + 65860 + 98528 + 110331
+    )
 
     first_call_kwargs = mock_stream.call_args_list[0].kwargs
     second_call_kwargs = mock_stream.call_args_list[1].kwargs
@@ -1010,6 +1065,25 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
     )
     assert mock_stream.call_count == 4
     assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+    assert chunks[-1].usage_metadata is not None
+    assert chunks[-1].initial_prompt_token_count == 24
+    assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
+    assert (
+        chunks[-1].usage_metadata.prompt_token_count
+        == 24 + 32792 + 65560 + 98328
+    )
+    assert chunks[-1].usage_metadata.cached_content_token_count == 40
+    assert (
+        chunks[-1].usage_metadata.candidates_token_count == 32768 * 3 + 11903
+    )
+    assert (
+        chunks[-1].usage_metadata.thoughts_token_count
+        == 400 + 300 + 200 + 100
+    )
+    assert (
+        chunks[-1].usage_metadata.total_token_count
+        == 33192 + 65860 + 98528 + 110331
+    )
     first_call_kwargs = mock_stream.call_args_list[0].kwargs
     second_call_kwargs = mock_stream.call_args_list[1].kwargs
     third_call_kwargs = mock_stream.call_args_list[2].kwargs
@@ -1269,8 +1343,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=24,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=32792,
+              thoughts_token_count=400,
+              total_token_count=33192,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1288,8 +1364,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=32792,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=65560,
+              thoughts_token_count=300,
+              total_token_count=65860,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1307,8 +1385,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=65560,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=98328,
+              thoughts_token_count=200,
+              total_token_count=98528,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1325,8 +1405,10 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=98328,
+              cached_content_token_count=12,
               candidates_token_count=1024,
-              total_token_count=99352,
+              thoughts_token_count=100,
+              total_token_count=99452,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1363,7 +1445,7 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           _make_async_stream(stream_hop4_chunks),
       ],
   ) as mock_async_stream:
-    chunks = []
+    chunk_objs = []
     async for chunk in await async_chat_no_afc.send_message_stream(
         'Hello async stream no afc',
         config=types.GenerateContentConfig(
@@ -1372,14 +1454,35 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
             )
         ),
     ):
-      chunks.append(chunk.text)
-    assert chunks == [
+      chunk_objs.append(chunk)
+    assert [c.text for c in chunk_objs] == [
         'Async chunk 1. ',
         'Async chunk 2. ',
         'Async chunk 3. ',
         'Async chunk 4. ',
         'Async chunk 5.',
     ]
+    assert chunk_objs[1].initial_prompt_token_count == 24
+    assert chunk_objs[-1].usage_metadata is not None
+    assert chunk_objs[-1].initial_prompt_token_count == 24
+    assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
+    assert (
+        chunk_objs[-1].usage_metadata.prompt_token_count
+        == 24 + 32792 + 65560 + 98328
+    )
+    assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+    assert (
+        chunk_objs[-1].usage_metadata.candidates_token_count
+        == 32768 * 3 + 1024
+    )
+    assert (
+        chunk_objs[-1].usage_metadata.thoughts_token_count
+        == 400 + 300 + 200 + 100
+    )
+    assert (
+        chunk_objs[-1].usage_metadata.total_token_count
+        == 33192 + 65860 + 98528 + 99452
+    )
     _assert_async_stream_4_hops(mock_async_stream)
 
   # Test default AFC path in AsyncChat.send_message_stream
@@ -1395,18 +1498,38 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
           _make_async_stream(stream_hop4_chunks),
       ],
   ) as mock_async_stream:
-    chunks = []
+    chunk_objs = []
     async for chunk in await async_chat_default.send_message_stream(
         'Hello async stream'
     ):
-      chunks.append(chunk.text)
-    assert chunks == [
+      chunk_objs.append(chunk)
+    assert [c.text for c in chunk_objs] == [
         'Async chunk 1. ',
         'Async chunk 2. ',
         'Async chunk 3. ',
         'Async chunk 4. ',
         'Async chunk 5.',
     ]
+    assert chunk_objs[-1].usage_metadata is not None
+    assert chunk_objs[-1].initial_prompt_token_count == 24
+    assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
+    assert (
+        chunk_objs[-1].usage_metadata.prompt_token_count
+        == 24 + 32792 + 65560 + 98328
+    )
+    assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+    assert (
+        chunk_objs[-1].usage_metadata.candidates_token_count
+        == 32768 * 3 + 1024
+    )
+    assert (
+        chunk_objs[-1].usage_metadata.thoughts_token_count
+        == 400 + 300 + 200 + 100
+    )
+    assert (
+        chunk_objs[-1].usage_metadata.total_token_count
+        == 33192 + 65860 + 98528 + 99452
+    )
     _assert_async_stream_4_hops(mock_async_stream)
 
 
