@@ -6161,16 +6161,27 @@ class Models(_api_module.BaseModule):
       hop_finish_reason = None
       continuation_token = None
 
-      for chunk in self._generate_content_stream(
-          model=model, contents=contents, config=call_config
-      ):
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+      try:
+        for chunk in self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        ):
+          if chunk.candidates:
+            candidate = chunk.candidates[0]
+            if candidate.finish_reason:
+              hop_finish_reason = candidate.finish_reason
+            if candidate.continuation_token:
+              continuation_token = candidate.continuation_token
+          yield chunk
+      except Exception:  # pylint: disable=broad-exception-caught
+        # If the stream fails after emitting a checkpoint continuation_token
+        # without a terminal finish_reason, suppress the error so the outer
+        # loop resumes from the latest checkpoint.
+        if not (
+            enable_continuation
+            and continuation_token
+            and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+        ):
+          raise
 
   def generate_content(
       self,
@@ -8393,17 +8404,28 @@ class AsyncModels(_api_module.BaseModule):
       hop_finish_reason = None
       continuation_token = None
 
-      response_stream = await self._generate_content_stream(
-          model=model, contents=contents, config=call_config
-      )
-      async for chunk in response_stream:  # type: ignore[attr-defined]
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+      try:
+        response_stream = await self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        )
+        async for chunk in response_stream:  # type: ignore[attr-defined]
+          if chunk.candidates:
+            candidate = chunk.candidates[0]
+            if candidate.finish_reason:
+              hop_finish_reason = candidate.finish_reason
+            if candidate.continuation_token:
+              continuation_token = candidate.continuation_token
+          yield chunk
+      except Exception:  # pylint: disable=broad-exception-caught
+        # If the stream fails after emitting a checkpoint continuation_token
+        # without a terminal finish_reason, suppress the error so the outer
+        # loop resumes from the latest checkpoint.
+        if not (
+            enable_continuation
+            and continuation_token
+            and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+        ):
+          raise
 
   async def generate_content(
       self,

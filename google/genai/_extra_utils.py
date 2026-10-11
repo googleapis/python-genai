@@ -168,7 +168,6 @@ def log_afc_incompatible_tools_warning(
     )
 
 
-
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
     mcp_to_genai_tool_adapters: Optional[
@@ -799,8 +798,16 @@ def should_enable_automatic_continuation(
 def is_resumable_finish_reason(
     finish_reason: Optional[types.FinishReason],
 ) -> bool:
-  """Returns True if finish_reason is eligible for automatic continuation."""
-  return finish_reason == types.FinishReason.CONTINUATION
+  """Returns True if finish_reason is eligible for automatic continuation.
+
+  A completed generation always ends with finish_reason != CONTINUATION. If the
+  last received response has finish_reason == None (e.g. mid-stream checkpoint
+  before a stream cutoff/error) or FinishReason.CONTINUATION, it can be resumed
+  when a continuation_token is present.
+  """
+  return (
+      finish_reason is None or finish_reason == types.FinishReason.CONTINUATION
+  )
 
 
 def should_continue_generation(
@@ -1005,4 +1012,3 @@ def merge_continuation_responses(
       merged.parsed = reparsed.parsed
 
   return merged
-

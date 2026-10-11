@@ -83,6 +83,7 @@ def _update_stream_finish_reason(
   if (
       enable_continuation
       and hop_continuation_token
+      and finish_reason is not None
       and _is_resumable_finish_reason(finish_reason)
   ):
     finish_reason = None
