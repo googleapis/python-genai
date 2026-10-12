@@ -6173,6 +6173,13 @@ class Models(_api_module.BaseModule):
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
               continuation_token = candidate.continuation_token
+            elif (
+                candidate.finish_reason
+                and not _extra_utils.is_resumable_finish_reason(
+                    candidate.finish_reason
+                )
+            ):
+              continuation_token = None
             chunk = _extra_utils.clear_intermediate_finish_reason(
                 chunk, enable_continuation, continuation_token
             )
@@ -8432,6 +8439,13 @@ class AsyncModels(_api_module.BaseModule):
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
               continuation_token = candidate.continuation_token
+            elif (
+                candidate.finish_reason
+                and not _extra_utils.is_resumable_finish_reason(
+                    candidate.finish_reason
+                )
+            ):
+              continuation_token = None
             chunk = _extra_utils.clear_intermediate_finish_reason(
                 chunk, enable_continuation, continuation_token
             )

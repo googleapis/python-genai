@@ -2095,6 +2095,24 @@ def test_models_generate_content_stream_recovers_from_midstream_checkpoint_error
       next(stream)
     assert mock_raw_stream.call_count == 2
 
+  # 5. Error after STOP finish_reason in same hop -> stale checkpoint token was cleared, so does not resume
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          _failing_hop([chunk_ckpt_35k, chunk_hop2_final], server_503),
+      ],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    assert next(stream).text == 'Resumed and completed.'
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 1
+
 
 @pytest.mark.asyncio
 async def test_async_models_generate_content_stream_recovers_from_midstream_checkpoint_error(
@@ -2250,3 +2268,22 @@ async def test_async_models_generate_content_stream_recovers_from_midstream_chec
         received.append(chunk.text)
     assert received == ['Async Ckpt 35k. ']
     assert mock_async_stream.call_count == 2
+
+  # 5. Error after STOP finish_reason in same hop -> stale checkpoint token was cleared, so does not resume
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_ckpt_35k, chunk_hop2_final], server_504),
+      ],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ', 'Async resumed and completed.']
+    assert mock_async_stream.call_count == 1
