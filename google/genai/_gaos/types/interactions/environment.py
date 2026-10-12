@@ -33,12 +33,10 @@ from typing import Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-EnvParam = TypeAliasType("EnvParam", Union[Dict[str, EnvVarParam], str])
-r"""Environment variables to set in the sandbox environment."""
+EnvParam = TypeAliasType("EnvParam", Union[EnvVarParam, str])
 
 
-Env = TypeAliasType("Env", Union[Dict[str, EnvVar], str])
-r"""Environment variables to set in the sandbox environment."""
+Env = TypeAliasType("Env", Union[EnvVar, str])
 
 
 NetworkEnum = Literal["disabled",]
@@ -59,7 +57,7 @@ r"""Network configuration for the environment."""
 class EnvironmentParam(TypedDict):
     r"""Configuration for a custom environment."""
 
-    env: NotRequired[EnvParam]
+    env: NotRequired[Dict[str, EnvParam]]
     r"""Environment variables to set in the sandbox environment."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the interaction. If specified, the request will
@@ -74,7 +72,7 @@ class EnvironmentParam(TypedDict):
 class Environment(BaseModel):
     r"""Configuration for a custom environment."""
 
-    env: Optional[Env] = None
+    env: Optional[Dict[str, Env]] = None
     r"""Environment variables to set in the sandbox environment."""
 
     environment_id: Optional[str] = None
