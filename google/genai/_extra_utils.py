@@ -21,6 +21,7 @@ import io
 import logging
 import mimetypes
 import os
+import re
 import sys
 import typing
 from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
@@ -54,6 +55,79 @@ C = TypeVar('C', bound='_common.BaseModel')
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
 logger = logging.getLogger('google_genai.models')
+
+_GEMINI_VERSION_PATTERN = re.compile(r'^gemini-(\d+)(?:\.(\d+))?(?:-|$)')
+_logged_temperature_warning = False
+_logged_top_p_warning = False
+_logged_top_k_warning = False
+_logged_thinking_budget_warning = False
+
+
+def is_gemini_3_6_or_newer(model: Optional[str]) -> bool:
+  """Returns True if the model is Gemini 3.6 or newer."""
+  if not model:
+    return False
+  model_id = model.rsplit('/', 1)[-1].lower()
+  match = _GEMINI_VERSION_PATTERN.match(model_id)
+  if not match:
+    return False
+  major = int(match.group(1))
+  minor = int(match.group(2)) if match.group(2) is not None else 0
+  return major > 3 or (major == 3 and minor >= 6)
+
+
+def warn_unsupported_parameters(
+    model: Optional[str],
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> None:
+  """Logs one-time warnings for parameters not supported on Gemini 3.6+."""
+  global _logged_temperature_warning
+  global _logged_top_p_warning
+  global _logged_top_k_warning
+  global _logged_thinking_budget_warning
+  if not config or not is_gemini_3_6_or_newer(model):
+    return
+  if isinstance(config, dict):
+    temperature = config.get('temperature')
+    top_p = config.get('top_p')
+    top_k = config.get('top_k')
+    thinking_config = config.get('thinking_config')
+    if isinstance(thinking_config, dict):
+      thinking_budget = thinking_config.get('thinking_budget')
+    else:
+      thinking_budget = getattr(thinking_config, 'thinking_budget', None)
+  else:
+    temperature = getattr(config, 'temperature', None)
+    top_p = getattr(config, 'top_p', None)
+    top_k = getattr(config, 'top_k', None)
+    thinking_config = getattr(config, 'thinking_config', None)
+    if isinstance(thinking_config, dict):
+      thinking_budget = thinking_config.get('thinking_budget')
+    else:
+      thinking_budget = getattr(thinking_config, 'thinking_budget', None)
+
+  if temperature is not None and not _logged_temperature_warning:
+    _logged_temperature_warning = True
+    logger.warning(
+        'temperature is not supported on Gemini 3.6 and newer models and is'
+        ' ignored.'
+    )
+  if top_p is not None and not _logged_top_p_warning:
+    _logged_top_p_warning = True
+    logger.warning(
+        'top_p is not supported on Gemini 3.6 and newer models and is ignored.'
+    )
+  if top_k is not None and not _logged_top_k_warning:
+    _logged_top_k_warning = True
+    logger.warning(
+        'top_k is not supported on Gemini 3.6 and newer models and is ignored.'
+    )
+  if thinking_budget is not None and not _logged_thinking_budget_warning:
+    _logged_thinking_budget_warning = True
+    logger.warning(
+        'thinking_budget is not supported on Gemini 3.6 and newer models and'
+        ' is ignored. Please use thinking_level instead.'
+    )
 
 
 def _create_generate_content_config_model(

@@ -448,39 +448,246 @@ async def test_async_interactions_vertex_auth_refresh_on_retry():
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_extra_headers_override():
-    from ..._api_client import BaseApiClient
-    from ..._api_client import AsyncHttpxClient
+  from ..._api_client import BaseApiClient
+  from ..._api_client import AsyncHttpxClient
 
-    creds = mock.Mock()
-    creds.quota_project_id = "test-quota-project"
-    client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
+  creds = mock.Mock()
+  creds.quota_project_id = 'test-quota-project'
+  client = Client(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=creds,
+  )
 
-    with (
-        mock.patch.object(BaseApiClient, "_access_token", return_value='default-token') as mock_access_token,
-        mock.patch.object(AsyncHttpxClient, "send") as mock_send,
-    ):
-        mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
+  with (
+      mock.patch.object(
+          BaseApiClient, '_access_token', return_value='default-token'
+      ) as mock_access_token,
+      mock.patch.object(AsyncHttpxClient, 'send') as mock_send,
+  ):
+    mock_send.return_value = Response(
+        200,
+        request=Request('POST', ''),
+        headers={'content-type': 'application/json'},
+        content='{"status": "completed"}',
+    )
 
-        # Override Authorization
-        await client.aio.interactions.create(
-            model='gemini-1.5-flash',
-            input='Hello',
-            extra_headers={'Authorization': 'Bearer manual-token'}
-        )
-        mock_send.assert_called_once()
-        headers = mock_send.call_args[0][0].headers
-        assert headers['authorization'] == 'Bearer manual-token'
+    # Override Authorization
+    await client.aio.interactions.create(
+        model='gemini-1.5-flash',
+        input='Hello',
+        extra_headers={'Authorization': 'Bearer manual-token'},
+    )
+    mock_send.assert_called_once()
+    headers = mock_send.call_args[0][0].headers
+    assert headers['authorization'] == 'Bearer manual-token'
 
-        mock_send.reset_mock()
-        mock_access_token.reset_mock()
+    mock_send.reset_mock()
+    mock_access_token.reset_mock()
 
-        # Provide API Key
-        await client.aio.interactions.create(
-            model='gemini-1.5-flash',
-            input='Hello',
-            extra_headers={'x-goog-api-key': 'manual-key'}
-        )
-        mock_send.assert_called_once()
-        headers = mock_send.call_args[0][0].headers
-        assert headers['x-goog-api-key'] == 'manual-key'
-        assert 'authorization' not in headers
+    # Provide API Key
+    await client.aio.interactions.create(
+        model='gemini-1.5-flash',
+        input='Hello',
+        extra_headers={'x-goog-api-key': 'manual-key'},
+    )
+    mock_send.assert_called_once()
+    headers = mock_send.call_args[0][0].headers
+    assert headers['x-goog-api-key'] == 'manual-key'
+    assert 'authorization' not in headers
+
+
+@pytest.mark.parametrize(
+    'model, expected',
+    [
+        ('gemini-3.6-flash', True),
+        ('publishers/google/models/gemini-3.6-pro', True),
+        ('models/gemini-3.6-flash', True),
+        ('gemini-3.8-flash', True),
+        ('gemini-3.1-pro', False),
+        ('gemini-3-flash', False),
+        ('gemini-2.5-flash', False),
+        ('gemini-flash-latest', False),
+        (None, False),
+        ('', False),
+    ],
+)
+def test_interactions_is_gemini_3_6_or_newer(model, expected):
+  from ..._gaos._hooks import google_genai_auth
+
+  assert google_genai_auth._is_gemini_3_6_or_newer(model) is expected
+
+
+def test_interactions_unsupported_parameters_warning_once(monkeypatch, caplog):
+  import json
+  import logging
+  from ..._gaos._hooks import google_genai_auth
+  from ..._gaos._hooks.types import (
+      BeforeRequestContext,
+      HookContext,
+      ResponseContext,
+  )
+  from ..._gaos.sdkconfiguration import SDKConfiguration
+
+  monkeypatch.setattr(google_genai_auth, '_logged_temperature_warning', False)
+  monkeypatch.setattr(google_genai_auth, '_logged_top_p_warning', False)
+  monkeypatch.setattr(google_genai_auth, '_logged_top_k_warning', False)
+
+  caplog.set_level(logging.WARNING, logger='google_genai.interactions')
+
+  hook = google_genai_auth.GoogleGenAIAuthHook()
+  sdk_config = mock.MagicMock(spec=SDKConfiguration)
+  sdk_config.globals = mock.MagicMock(user_project=None)
+  create_ctx = BeforeRequestContext(
+      HookContext(
+          config=sdk_config,
+          base_url='https://generativelanguage.googleapis.com/v1beta',
+          operation_id='CreateInteraction',
+          oauth2_scopes=None,
+          security_source=None,
+          tags=None,
+          extensions=None,
+          response=ResponseContext(),
+      )
+  )
+  other_ctx = BeforeRequestContext(
+      HookContext(
+          config=sdk_config,
+          base_url='https://generativelanguage.googleapis.com/v1beta',
+          operation_id='GetInteraction',
+          oauth2_scopes=None,
+          security_source=None,
+          tags=None,
+          extensions=None,
+          response=ResponseContext(),
+      )
+  )
+
+  # Non-CreateInteraction operation should not warn
+  hook.before_request(
+      other_ctx,
+      Request(
+          'POST',
+          'https://generativelanguage.googleapis.com/v1beta/interactions',
+          content=json.dumps({
+              'model': 'gemini-3.6-flash',
+              'generation_config': {
+                  'temperature': 0.7,
+                  'top_p': 0.9,
+                  'top_k': 40,
+              },
+          }).encode('utf-8'),
+      ),
+  )
+  assert len(caplog.records) == 0
+
+  # Older model (gemini-3.1-pro) should not warn
+  hook.before_request(
+      create_ctx,
+      Request(
+          'POST',
+          'https://generativelanguage.googleapis.com/v1beta/interactions',
+          content=json.dumps({
+              'model': 'gemini-3.1-pro',
+              'generation_config': {
+                  'temperature': 0.7,
+                  'top_p': 0.9,
+                  'top_k': 40,
+              },
+          }).encode('utf-8'),
+      ),
+  )
+  assert len(caplog.records) == 0
+
+  # First call on gemini-3.6-flash logs warnings for temperature, top_p, top_k
+  hook.before_request(
+      create_ctx,
+      Request(
+          'POST',
+          'https://generativelanguage.googleapis.com/v1beta/interactions',
+          content=json.dumps({
+              'model': 'gemini-3.6-flash',
+              'generation_config': {
+                  'temperature': 0.7,
+                  'top_p': 0.9,
+                  'top_k': 40,
+              },
+          }).encode('utf-8'),
+      ),
+  )
+  assert [r.message for r in caplog.records] == [
+      (
+          'temperature is not supported on Gemini 3.6 and newer models and is'
+          ' ignored.'
+      ),
+      'top_p is not supported on Gemini 3.6 and newer models and is ignored.',
+      'top_k is not supported on Gemini 3.6 and newer models and is ignored.',
+  ]
+
+  # Second call on gemini-3.6-flash does not log again
+  caplog.clear()
+  hook.before_request(
+      create_ctx,
+      Request(
+          'POST',
+          'https://generativelanguage.googleapis.com/v1beta/interactions',
+          content=json.dumps({
+              'model': 'gemini-3.6-flash',
+              'generation_config': {
+                  'temperature': 0.5,
+                  'top_p': 0.8,
+                  'top_k': 20,
+              },
+          }).encode('utf-8'),
+      ),
+  )
+  assert len(caplog.records) == 0
+
+
+def test_interactions_create_end_to_end_warning_once(monkeypatch, caplog):
+  import logging
+  from ..._gaos._hooks import google_genai_auth
+
+  monkeypatch.setenv('GOOGLE_API_KEY', 'test-api-key')
+  monkeypatch.setattr(google_genai_auth, '_logged_temperature_warning', False)
+  monkeypatch.setattr(google_genai_auth, '_logged_top_p_warning', False)
+  monkeypatch.setattr(google_genai_auth, '_logged_top_k_warning', False)
+
+  caplog.set_level(logging.WARNING, logger='google_genai.interactions')
+  client = Client()
+
+  with mock.patch.object(HTTPClient, 'send') as mock_send:
+    mock_send.return_value = Response(
+        200,
+        request=Request('POST', ''),
+        headers={'content-type': 'application/json'},
+        content='{"status": "completed"}',
+    )
+    client.interactions.create(
+        model='gemini-3.1-pro',
+        input='Hello',
+        generation_config={'temperature': 0.7, 'top_p': 0.9},
+    )
+    assert len(caplog.records) == 0
+
+    client.interactions.create(
+        model='gemini-3.6-flash',
+        input='Hello',
+        generation_config={'temperature': 0.7, 'top_p': 0.9},
+    )
+    assert [r.message for r in caplog.records] == [
+        (
+            'temperature is not supported on Gemini 3.6 and newer models and is'
+            ' ignored.'
+        ),
+        'top_p is not supported on Gemini 3.6 and newer models and is ignored.',
+    ]
+
+    caplog.clear()
+    client.interactions.create(
+        model='gemini-3.6-flash',
+        input='Hello again',
+        generation_config={'temperature': 0.5, 'top_p': 0.8},
+    )
+    assert len(caplog.records) == 0

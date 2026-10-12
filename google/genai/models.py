@@ -6278,6 +6278,7 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
+    _extra_utils.warn_unsupported_parameters(model, config)
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(config)
     )
@@ -6458,6 +6459,7 @@ class Models(_api_module.BaseModule):
       # scones.
     """
 
+    _extra_utils.warn_unsupported_parameters(model, config)
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(config)
     )
@@ -8516,6 +8518,7 @@ class AsyncModels(_api_module.BaseModule):
       print(response.text)
       # J'aime les bagels.
     """
+    _extra_utils.warn_unsupported_parameters(model, config)
     # Retrieve and cache any MCP sessions if provided.
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(
@@ -8768,6 +8771,7 @@ class AsyncModels(_api_module.BaseModule):
       # The image shows a flat lay arrangement of freshly baked blueberry
       # scones.
     """
+    _extra_utils.warn_unsupported_parameters(model, config)
     if not config:
       parsed_config = None
     elif isinstance(config, dict):
