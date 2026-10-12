@@ -207,9 +207,12 @@ def test_continuation_helpers_edge_cases():
           prompt_token_count=80, total_token_count=50
       ),
   )
-  assert total_only_merged.prompt_token_count == 95
+  assert total_only_merged.prompt_token_count == 15
   assert total_only_merged.initial_prompt_token_count == 15
-  assert total_only_merged.total_token_count == 150
+  assert total_only_merged.total_token_count == 100
+  assert total_only_merged.billable_usage == types.BillableUsage(
+      prompt_token_count=95, total_token_count=150
+  )
   assert types.GenerateContentResponse().initial_prompt_token_count is None
   single_hop_resp = types.GenerateContentResponse(
       usage_metadata=types.GenerateContentResponseUsageMetadata(
@@ -218,6 +221,7 @@ def test_continuation_helpers_edge_cases():
   )
   assert single_hop_resp.initial_prompt_token_count == 42
   assert single_hop_resp.usage_metadata.initial_prompt_token_count == 42
+  assert single_hop_resp.usage_metadata.billable_usage is None
 
 
 def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
@@ -344,10 +348,7 @@ def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
           types.Part(text='Hop 4 final part.'),
       ]
       assert response.usage_metadata is not None
-      assert (
-          response.usage_metadata.prompt_token_count
-          == 10 + 32778 + 65546 + 98314
-      )
+      assert response.usage_metadata.prompt_token_count == 10
       assert response.initial_prompt_token_count == 10
       assert response.usage_metadata.initial_prompt_token_count == 10
       assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
@@ -356,7 +357,13 @@ def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
       )
       assert (
           response.usage_metadata.total_token_count
-          == 33278 + 65846 + 98514 + 99438
+          == 10 + (32768 * 3 + 1024) + (500 + 300 + 200 + 100)
+      )
+      assert response.usage_metadata.billable_usage == types.BillableUsage(
+          prompt_token_count=10 + 32778 + 65546 + 98314,
+          candidates_token_count=32768 * 3 + 1024,
+          thoughts_token_count=500 + 300 + 200 + 100,
+          total_token_count=33278 + 65846 + 98514 + 99438,
       )
       # Caller's config is not mutated
       assert user_config.continuation_token is None
@@ -851,20 +858,20 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
     assert len(cand.logprobs_result.chosen_candidates) == 2
     assert response.initial_prompt_token_count == 20
     assert response.usage_metadata.initial_prompt_token_count == 20
-    assert response.usage_metadata.prompt_token_count == 140
-    assert response.usage_metadata.cached_content_token_count == 16
+    assert response.usage_metadata.prompt_token_count == 20
+    assert response.usage_metadata.cached_content_token_count == 8
     assert response.usage_metadata.candidates_token_count == 150
     assert response.usage_metadata.thoughts_token_count == 45
     assert response.usage_metadata.tool_use_prompt_token_count == 15
-    assert response.usage_metadata.total_token_count == 350
+    assert response.usage_metadata.total_token_count == 230
     assert response.usage_metadata.prompt_tokens_details == [
         types.ModalityTokenCount(
-            modality=types.MediaModality.TEXT, token_count=140
+            modality=types.MediaModality.TEXT, token_count=20
         )
     ]
     assert response.usage_metadata.cache_tokens_details == [
         types.ModalityTokenCount(
-            modality=types.MediaModality.TEXT, token_count=16
+            modality=types.MediaModality.TEXT, token_count=8
         )
     ]
     assert response.usage_metadata.candidates_tokens_details == [
@@ -877,6 +884,14 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
             modality=types.MediaModality.TEXT, token_count=15
         )
     ]
+    assert response.usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=140,
+        cached_content_token_count=16,
+        candidates_token_count=150,
+        thoughts_token_count=45,
+        tool_use_prompt_token_count=15,
+        total_token_count=350,
+    )
 
 
 def test_models_generate_content_stream_auto_resumes_across_hops(
@@ -1146,11 +1161,8 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
       assert chunks[-1].usage_metadata is not None
       assert chunks[-1].initial_prompt_token_count == 24
       assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
-      assert (
-          chunks[-1].usage_metadata.prompt_token_count
-          == 24 + 32792 + 65560 + 98328
-      )
-      assert chunks[-1].usage_metadata.cached_content_token_count == 40
+      assert chunks[-1].usage_metadata.prompt_token_count == 24
+      assert chunks[-1].usage_metadata.cached_content_token_count == 10
       assert (
           chunks[-1].usage_metadata.candidates_token_count
           == 32768 * 3 + 11903
@@ -1161,7 +1173,14 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
       )
       assert (
           chunks[-1].usage_metadata.total_token_count
-          == 33192 + 65860 + 98528 + 110331
+          == 24 + (32768 * 3 + 11903) + (400 + 300 + 200 + 100)
+      )
+      assert chunks[-1].usage_metadata.billable_usage == types.BillableUsage(
+          prompt_token_count=24 + 32792 + 65560 + 98328,
+          cached_content_token_count=40,
+          candidates_token_count=32768 * 3 + 11903,
+          thoughts_token_count=400 + 300 + 200 + 100,
+          total_token_count=33192 + 65860 + 98528 + 110331,
       )
       assert (
           chunks[-1].usage_metadata.traffic_type
@@ -1617,11 +1636,8 @@ async def test_async_models_generate_content_and_stream_auto_resume(
       assert chunk_objs[-1].usage_metadata is not None
       assert chunk_objs[-1].initial_prompt_token_count == 24
       assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
-      assert (
-          chunk_objs[-1].usage_metadata.prompt_token_count
-          == 24 + 32792 + 65560 + 98328
-      )
-      assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+      assert chunk_objs[-1].usage_metadata.prompt_token_count == 24
+      assert chunk_objs[-1].usage_metadata.cached_content_token_count == 12
       assert (
           chunk_objs[-1].usage_metadata.candidates_token_count
           == 32768 * 3 + 1024
@@ -1632,7 +1648,14 @@ async def test_async_models_generate_content_and_stream_auto_resume(
       )
       assert (
           chunk_objs[-1].usage_metadata.total_token_count
-          == 33192 + 65860 + 98528 + 99452
+          == 24 + (32768 * 3 + 1024) + (400 + 300 + 200 + 100)
+      )
+      assert chunk_objs[-1].usage_metadata.billable_usage == types.BillableUsage(
+          prompt_token_count=24 + 32792 + 65560 + 98328,
+          cached_content_token_count=48,
+          candidates_token_count=32768 * 3 + 1024,
+          thoughts_token_count=400 + 300 + 200 + 100,
+          total_token_count=33192 + 65860 + 98528 + 99452,
       )
       _assert_async_stream_4_hops(mock_async_stream)
 

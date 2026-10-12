@@ -8548,6 +8548,60 @@ class ModalityTokenCountDict(TypedDict, total=False):
 ModalityTokenCountOrDict = Union[ModalityTokenCount, ModalityTokenCountDict]
 
 
+class BillableUsage(_common.BaseModel):
+  """Cumulative billed token counts summed across all continuation hops."""
+
+  cached_content_token_count: Optional[int] = Field(
+      default=None,
+      description="""Cumulative number of tokens in the cached content across all continuation hops.""",
+  )
+  candidates_token_count: Optional[int] = Field(
+      default=None,
+      description="""Cumulative number of tokens in the generated candidates across all continuation hops.""",
+  )
+  prompt_token_count: Optional[int] = Field(
+      default=None,
+      description="""Cumulative number of input prompt tokens billed across all continuation hops, including re-prefilled tokens on continuation requests.""",
+  )
+  thoughts_token_count: Optional[int] = Field(
+      default=None,
+      description="""Cumulative number of tokens that were part of the model's generated "thoughts" output across all continuation hops.""",
+  )
+  tool_use_prompt_token_count: Optional[int] = Field(
+      default=None,
+      description="""Cumulative number of tokens in the results from tool executions across all continuation hops.""",
+  )
+  total_token_count: Optional[int] = Field(
+      default=None,
+      description="""Cumulative total number of tokens billed across all continuation hops.""",
+  )
+
+
+class BillableUsageDict(TypedDict, total=False):
+  """Cumulative billed token counts summed across all continuation hops."""
+
+  cached_content_token_count: Optional[int]
+  """Cumulative number of tokens in the cached content across all continuation hops."""
+
+  candidates_token_count: Optional[int]
+  """Cumulative number of tokens in the generated candidates across all continuation hops."""
+
+  prompt_token_count: Optional[int]
+  """Cumulative number of input prompt tokens billed across all continuation hops, including re-prefilled tokens on continuation requests."""
+
+  thoughts_token_count: Optional[int]
+  """Cumulative number of tokens that were part of the model's generated "thoughts" output across all continuation hops."""
+
+  tool_use_prompt_token_count: Optional[int]
+  """Cumulative number of tokens in the results from tool executions across all continuation hops."""
+
+  total_token_count: Optional[int]
+  """Cumulative total number of tokens billed across all continuation hops."""
+
+
+BillableUsageOrDict = Union[BillableUsage, BillableUsageDict]
+
+
 class GenerateContentResponseUsageMetadata(_common.BaseModel):
   """Usage metadata about the content generation request and response.
 
@@ -8598,6 +8652,10 @@ class GenerateContentResponseUsageMetadata(_common.BaseModel):
   traffic_type: Optional[TrafficType] = Field(
       default=None,
       description="""Output only. The traffic type for this request.""",
+  )
+  billable_usage: Optional[BillableUsage] = Field(
+      default=None,
+      description="""Output only. Cumulative billed token counts summed across all continuation hops when automatic continuation is used.""",
   )
   _initial_prompt_token_count: Optional[int] = pydantic.PrivateAttr(
       default=None

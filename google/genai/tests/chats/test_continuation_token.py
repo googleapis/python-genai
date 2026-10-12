@@ -210,17 +210,20 @@ def test_chat_send_message_default_auto_resumes_on_max_tokens(mock_api_client):
         types.Part(text='Hop 4 final part.'),
     ]
     assert response.usage_metadata is not None
-    assert (
-        response.usage_metadata.prompt_token_count
-        == 10 + 32778 + 65546 + 98314
-    )
+    assert response.usage_metadata.prompt_token_count == 10
     assert response.initial_prompt_token_count == 10
     assert response.usage_metadata.initial_prompt_token_count == 10
     assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
     assert response.usage_metadata.thoughts_token_count == 500 + 300 + 200 + 100
     assert (
         response.usage_metadata.total_token_count
-        == 33278 + 65846 + 98514 + 99438
+        == 10 + (32768 * 3 + 1024) + (500 + 300 + 200 + 100)
+    )
+    assert response.usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=10 + 32778 + 65546 + 98314,
+        candidates_token_count=32768 * 3 + 1024,
+        thoughts_token_count=500 + 300 + 200 + 100,
+        total_token_count=33278 + 65846 + 98514 + 99438,
     )
 
     assert chat._config.continuation_token is None
@@ -735,13 +738,13 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
     assert len(cand.logprobs_result.chosen_candidates) == 2
     assert response.initial_prompt_token_count == 20
     assert response.usage_metadata.initial_prompt_token_count == 20
-    assert response.usage_metadata.prompt_token_count == 140
-    assert response.usage_metadata.cached_content_token_count == 16
+    assert response.usage_metadata.prompt_token_count == 20
+    assert response.usage_metadata.cached_content_token_count == 8
     assert response.usage_metadata.candidates_token_count == 150
-    assert response.usage_metadata.total_token_count == 290
+    assert response.usage_metadata.total_token_count == 170
     assert response.usage_metadata.prompt_tokens_details == [
         types.ModalityTokenCount(
-            modality=types.MediaModality.TEXT, token_count=140
+            modality=types.MediaModality.TEXT, token_count=20
         )
     ]
     assert response.usage_metadata.candidates_tokens_details == [
@@ -749,6 +752,12 @@ def test_chat_send_message_recursive_metadata_and_parsed_schema_merging(
             modality=types.MediaModality.TEXT, token_count=150
         )
     ]
+    assert response.usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=140,
+        cached_content_token_count=16,
+        candidates_token_count=150,
+        total_token_count=290,
+    )
 
 
 def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
@@ -1010,11 +1019,8 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
     assert chunks[-1].usage_metadata is not None
     assert chunks[-1].initial_prompt_token_count == 24
     assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
-    assert (
-        chunks[-1].usage_metadata.prompt_token_count
-        == 24 + 32792 + 65560 + 98328
-    )
-    assert chunks[-1].usage_metadata.cached_content_token_count == 40
+    assert chunks[-1].usage_metadata.prompt_token_count == 24
+    assert chunks[-1].usage_metadata.cached_content_token_count == 10
     assert (
         chunks[-1].usage_metadata.candidates_token_count == 32768 * 3 + 11903
     )
@@ -1024,7 +1030,14 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
     )
     assert (
         chunks[-1].usage_metadata.total_token_count
-        == 33192 + 65860 + 98528 + 110331
+        == 24 + (32768 * 3 + 11903) + (400 + 300 + 200 + 100)
+    )
+    assert chunks[-1].usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=24 + 32792 + 65560 + 98328,
+        cached_content_token_count=40,
+        candidates_token_count=32768 * 3 + 11903,
+        thoughts_token_count=400 + 300 + 200 + 100,
+        total_token_count=33192 + 65860 + 98528 + 110331,
     )
 
     first_call_kwargs = mock_stream.call_args_list[0].kwargs
@@ -1077,11 +1090,8 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
     assert chunks[-1].usage_metadata is not None
     assert chunks[-1].initial_prompt_token_count == 24
     assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
-    assert (
-        chunks[-1].usage_metadata.prompt_token_count
-        == 24 + 32792 + 65560 + 98328
-    )
-    assert chunks[-1].usage_metadata.cached_content_token_count == 40
+    assert chunks[-1].usage_metadata.prompt_token_count == 24
+    assert chunks[-1].usage_metadata.cached_content_token_count == 10
     assert (
         chunks[-1].usage_metadata.candidates_token_count == 32768 * 3 + 11903
     )
@@ -1091,7 +1101,14 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
     )
     assert (
         chunks[-1].usage_metadata.total_token_count
-        == 33192 + 65860 + 98528 + 110331
+        == 24 + (32768 * 3 + 11903) + (400 + 300 + 200 + 100)
+    )
+    assert chunks[-1].usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=24 + 32792 + 65560 + 98328,
+        cached_content_token_count=40,
+        candidates_token_count=32768 * 3 + 11903,
+        thoughts_token_count=400 + 300 + 200 + 100,
+        total_token_count=33192 + 65860 + 98528 + 110331,
     )
     first_call_kwargs = mock_stream.call_args_list[0].kwargs
     second_call_kwargs = mock_stream.call_args_list[1].kwargs
@@ -1479,11 +1496,8 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
     assert chunk_objs[-1].usage_metadata is not None
     assert chunk_objs[-1].initial_prompt_token_count == 24
     assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
-    assert (
-        chunk_objs[-1].usage_metadata.prompt_token_count
-        == 24 + 32792 + 65560 + 98328
-    )
-    assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+    assert chunk_objs[-1].usage_metadata.prompt_token_count == 24
+    assert chunk_objs[-1].usage_metadata.cached_content_token_count == 12
     assert (
         chunk_objs[-1].usage_metadata.candidates_token_count
         == 32768 * 3 + 1024
@@ -1494,7 +1508,14 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
     )
     assert (
         chunk_objs[-1].usage_metadata.total_token_count
-        == 33192 + 65860 + 98528 + 99452
+        == 24 + (32768 * 3 + 1024) + (400 + 300 + 200 + 100)
+    )
+    assert chunk_objs[-1].usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=24 + 32792 + 65560 + 98328,
+        cached_content_token_count=48,
+        candidates_token_count=32768 * 3 + 1024,
+        thoughts_token_count=400 + 300 + 200 + 100,
+        total_token_count=33192 + 65860 + 98528 + 99452,
     )
     _assert_async_stream_4_hops(mock_async_stream)
 
@@ -1530,11 +1551,8 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
     assert chunk_objs[-1].usage_metadata is not None
     assert chunk_objs[-1].initial_prompt_token_count == 24
     assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
-    assert (
-        chunk_objs[-1].usage_metadata.prompt_token_count
-        == 24 + 32792 + 65560 + 98328
-    )
-    assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+    assert chunk_objs[-1].usage_metadata.prompt_token_count == 24
+    assert chunk_objs[-1].usage_metadata.cached_content_token_count == 12
     assert (
         chunk_objs[-1].usage_metadata.candidates_token_count
         == 32768 * 3 + 1024
@@ -1545,7 +1563,14 @@ async def test_async_chat_send_message_and_stream_auto_resume(mock_api_client):
     )
     assert (
         chunk_objs[-1].usage_metadata.total_token_count
-        == 33192 + 65860 + 98528 + 99452
+        == 24 + (32768 * 3 + 1024) + (400 + 300 + 200 + 100)
+    )
+    assert chunk_objs[-1].usage_metadata.billable_usage == types.BillableUsage(
+        prompt_token_count=24 + 32792 + 65560 + 98328,
+        cached_content_token_count=48,
+        candidates_token_count=32768 * 3 + 1024,
+        thoughts_token_count=400 + 300 + 200 + 100,
+        total_token_count=33192 + 65860 + 98528 + 99452,
     )
     _assert_async_stream_4_hops(mock_async_stream)
 

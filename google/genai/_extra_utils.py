@@ -948,8 +948,234 @@ def merge_candidates(
   return result
 
 
+def _sum_opt_int(a: Optional[int], b: Optional[int]) -> Optional[int]:
+  if a is None:
+    return b
+  if b is None:
+    return a
+  return a + b
+
+
+def _extract_billable_usage(
+    usage: types.GenerateContentResponseUsageMetadata,
+) -> types.BillableUsage:
+  if usage.billable_usage is not None:
+    return usage.billable_usage
+  return types.BillableUsage(
+      prompt_token_count=usage.prompt_token_count,
+      cached_content_token_count=usage.cached_content_token_count,
+      candidates_token_count=usage.candidates_token_count,
+      thoughts_token_count=usage.thoughts_token_count,
+      tool_use_prompt_token_count=usage.tool_use_prompt_token_count,
+      total_token_count=usage.total_token_count,
+  )
+
+
+def merge_usage_metadata(
+    prev: types.GenerateContentResponseUsageMetadata,
+    curr: types.GenerateContentResponseUsageMetadata,
+) -> types.GenerateContentResponseUsageMetadata:
+  """Merges UsageMetadata across continuation hops.
+
+  Top-level prompt/cache fields preserve the initial hop's context window,
+  output/thought/tool-use token counts are summed linearly, total_token_count
+  reflects the final context window, and billable_usage accumulates quadratic
+  billed token counts across all hops.
+  """
+  prev_billable = _extract_billable_usage(prev)
+  curr_billable = _extract_billable_usage(curr)
+
+  billable_prompt = _sum_opt_int(
+      prev_billable.prompt_token_count, curr_billable.prompt_token_count
+  )
+  billable_cached = _sum_opt_int(
+      prev_billable.cached_content_token_count,
+      curr_billable.cached_content_token_count,
+  )
+  billable_candidates = _sum_opt_int(
+      prev_billable.candidates_token_count, curr_billable.candidates_token_count
+  )
+  billable_thoughts = _sum_opt_int(
+      prev_billable.thoughts_token_count, curr_billable.thoughts_token_count
+  )
+  billable_tool_use = _sum_opt_int(
+      prev_billable.tool_use_prompt_token_count,
+      curr_billable.tool_use_prompt_token_count,
+  )
+  billable_total = _sum_opt_int(
+      prev_billable.total_token_count, curr_billable.total_token_count
+  )
+  if billable_total is None and any(
+      v is not None
+      for v in (
+          billable_prompt,
+          billable_candidates,
+          billable_thoughts,
+          billable_tool_use,
+      )
+  ):
+    billable_total = (
+        (billable_prompt or 0)
+        + (billable_candidates or 0)
+        + (billable_thoughts or 0)
+        + (billable_tool_use or 0)
+    )
+
+  has_any_billable = (
+      any(
+          v is not None
+          for v in (
+              billable_prompt,
+              billable_cached,
+              billable_candidates,
+              billable_thoughts,
+              billable_tool_use,
+              billable_total,
+          )
+      )
+      or prev.billable_usage is not None
+      or curr.billable_usage is not None
+  )
+  billable_usage = (
+      types.BillableUsage(
+          prompt_token_count=billable_prompt,
+          cached_content_token_count=billable_cached,
+          candidates_token_count=billable_candidates,
+          thoughts_token_count=billable_thoughts,
+          tool_use_prompt_token_count=billable_tool_use,
+          total_token_count=billable_total,
+      )
+      if has_any_billable
+      else None
+  )
+
+  prompt_token_count = (
+      prev.prompt_token_count
+      if prev.prompt_token_count is not None
+      else curr.prompt_token_count
+  )
+  cached_content_token_count = (
+      prev.cached_content_token_count
+      if prev.cached_content_token_count is not None
+      else curr.cached_content_token_count
+  )
+  prompt_tokens_details = (
+      prev.prompt_tokens_details
+      if prev.prompt_tokens_details
+      else (
+          curr.prompt_tokens_details
+          if curr.prompt_tokens_details is not None
+          else prev.prompt_tokens_details
+      )
+  )
+  cache_tokens_details = (
+      prev.cache_tokens_details
+      if prev.cache_tokens_details
+      else (
+          curr.cache_tokens_details
+          if curr.cache_tokens_details is not None
+          else prev.cache_tokens_details
+      )
+  )
+
+  candidates_token_count = _sum_opt_int(
+      prev.candidates_token_count, curr.candidates_token_count
+  )
+  thoughts_token_count = _sum_opt_int(
+      prev.thoughts_token_count, curr.thoughts_token_count
+  )
+  tool_use_prompt_token_count = _sum_opt_int(
+      prev.tool_use_prompt_token_count, curr.tool_use_prompt_token_count
+  )
+  candidates_tokens_details = (
+      merge_modality_token_counts(
+          prev.candidates_tokens_details, curr.candidates_tokens_details
+      )
+      if prev.candidates_tokens_details is not None
+      and curr.candidates_tokens_details is not None
+      else (
+          prev.candidates_tokens_details
+          if curr.candidates_tokens_details is None
+          else curr.candidates_tokens_details
+      )
+  )
+  tool_use_prompt_tokens_details = (
+      merge_modality_token_counts(
+          prev.tool_use_prompt_tokens_details,
+          curr.tool_use_prompt_tokens_details,
+      )
+      if prev.tool_use_prompt_tokens_details is not None
+      and curr.tool_use_prompt_tokens_details is not None
+      else (
+          prev.tool_use_prompt_tokens_details
+          if curr.tool_use_prompt_tokens_details is None
+          else curr.tool_use_prompt_tokens_details
+      )
+  )
+
+  total_token_count: Optional[int] = None
+  if any(
+      v is not None
+      for v in (
+          candidates_token_count,
+          thoughts_token_count,
+          tool_use_prompt_token_count,
+      )
+  ):
+    total_token_count = (
+        (prompt_token_count or 0)
+        + (candidates_token_count or 0)
+        + (thoughts_token_count or 0)
+        + (tool_use_prompt_token_count or 0)
+    )
+  elif prev.total_token_count is not None or curr.total_token_count is not None:
+    prev_non_prompt = max(
+        0, (prev.total_token_count or 0) - (prev.prompt_token_count or 0)
+    )
+    curr_non_prompt = max(
+        0, (curr.total_token_count or 0) - (curr.prompt_token_count or 0)
+    )
+    total_token_count = (
+        (prompt_token_count or 0) + prev_non_prompt + curr_non_prompt
+    )
+  elif prompt_token_count is not None:
+    total_token_count = prompt_token_count
+
+  traffic_type = (
+      curr.traffic_type if curr.traffic_type is not None else prev.traffic_type
+  )
+
+  merged = curr.model_copy(
+      update={
+          'prompt_token_count': prompt_token_count,
+          'cached_content_token_count': cached_content_token_count,
+          'prompt_tokens_details': prompt_tokens_details,
+          'cache_tokens_details': cache_tokens_details,
+          'candidates_token_count': candidates_token_count,
+          'thoughts_token_count': thoughts_token_count,
+          'tool_use_prompt_token_count': tool_use_prompt_token_count,
+          'candidates_tokens_details': candidates_tokens_details,
+          'tool_use_prompt_tokens_details': tool_use_prompt_tokens_details,
+          'total_token_count': total_token_count,
+          'traffic_type': traffic_type,
+          'billable_usage': billable_usage,
+      }
+  )
+  merged._initial_prompt_token_count = (
+      prev.initial_prompt_token_count
+      if prev.initial_prompt_token_count is not None
+      else curr.initial_prompt_token_count
+  )
+  return merged
+
+
 def merge_pydantic_models(prev: C, curr: C) -> C:
   """Recursively merges two Pydantic BaseModel instances across continuation hops."""
+  if isinstance(prev, types.GenerateContentResponseUsageMetadata) and isinstance(
+      curr, types.GenerateContentResponseUsageMetadata
+  ):
+    return typing.cast(C, merge_usage_metadata(prev, curr))
+
   merged_data: dict[str, Any] = {}
   for field_name in type(curr).model_fields:
     prev_val = getattr(prev, field_name, None)
@@ -1005,18 +1231,7 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
     else:
       merged_data[field_name] = curr_val
 
-  merged = curr.model_copy(update=merged_data)
-  if (
-      isinstance(prev, types.GenerateContentResponseUsageMetadata)
-      and isinstance(curr, types.GenerateContentResponseUsageMetadata)
-      and isinstance(merged, types.GenerateContentResponseUsageMetadata)
-  ):
-    merged._initial_prompt_token_count = (
-        prev.initial_prompt_token_count
-        if prev.initial_prompt_token_count is not None
-        else curr.initial_prompt_token_count
-    )
-  return merged
+  return curr.model_copy(update=merged_data)
 
 
 def merge_continuation_responses(
