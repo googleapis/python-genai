@@ -1807,12 +1807,21 @@ def test_chat_send_message_stream_incomplete_continuation_not_recorded(
       )
   ]
 
+  # Because hop 2 already yielded candidate content before cutting off without a
+  # checkpoint token, it must not retry from hop 1's token (which would duplicate
+  # chunks) and instead raises APIError immediately.
   with mock.patch.object(
       models.Models,
       '_generate_content_stream',
       side_effect=[iter(hop1_chunks), iter(hop2_cutoff_chunks)],
   ) as mock_stream:
-    chunks = list(chat.send_message_stream('Write a long story'))
+    chunks = []
+    with pytest.raises(
+        errors.APIError,
+        match='Automatic continuation stream ended prematurely',
+    ):
+      for chunk in chat.send_message_stream('Write a long story'):
+        chunks.append(chunk)
     assert mock_stream.call_count == 2
     assert [c.text for c in chunks] == [
         'Hop 1 part. ',
@@ -1872,8 +1881,12 @@ async def test_async_chat_send_message_stream_incomplete_continuation_not_record
       ],
   ) as mock_async_stream:
     chunks = []
-    async for chunk in await chat.send_message_stream('Write a long story'):
-      chunks.append(chunk)
+    with pytest.raises(
+        errors.APIError,
+        match='Automatic continuation stream ended prematurely',
+    ):
+      async for chunk in await chat.send_message_stream('Write a long story'):
+        chunks.append(chunk)
     assert mock_async_stream.call_count == 2
     assert [c.text for c in chunks] == ['Async Hop 1. ', 'Async Hop 2 cut off']
     assert chat.get_history(curated=True) == []

@@ -6147,28 +6147,41 @@ class Models(_api_module.BaseModule):
     )
     continuation_token: Optional[bytes] = None
     hop_finish_reason: Optional[types.FinishReason] = None
+    hop_has_prompt_feedback = False
     accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
         None
     )
     is_first_hop = True
+    reconnects_without_progress = 0
 
     while is_first_hop or _extra_utils.can_resume_stream(
-        enable_continuation, continuation_token, hop_finish_reason
+        enable_continuation,
+        continuation_token,
+        hop_finish_reason,
+        hop_has_prompt_feedback,
     ):
       is_first_hop = False
       call_config = _extra_utils.prepare_continuation_config(
           config, continuation_token
       )
+      hop_start_token = continuation_token
       hop_finish_reason = None
+      hop_has_prompt_feedback = False
+      hop_has_yielded_content = False
       continuation_token = None
+      hop_error: Optional[Exception] = None
       hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
 
       try:
         for chunk in self._generate_content_stream(
             model=model, contents=contents, config=call_config
         ):
+          if chunk.prompt_feedback is not None:
+            hop_has_prompt_feedback = True
           if chunk.candidates:
             candidate = chunk.candidates[0]
+            if candidate.content and candidate.content.parts:
+              hop_has_yielded_content = True
             if candidate.finish_reason:
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
@@ -6186,16 +6199,48 @@ class Models(_api_module.BaseModule):
             else:
               hop_usage = chunk.usage_metadata
           yield chunk
-      except Exception:  # pylint: disable=broad-exception-caught
-        # If the stream fails after emitting a checkpoint continuation_token
-        # without a terminal finish_reason, suppress the error so the outer
-        # loop resumes from the latest checkpoint.
-        if not _extra_utils.can_resume_stream(
-            enable_continuation, continuation_token, hop_finish_reason
-        ):
-          raise
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        hop_error = e
       if hop_usage is not None:
         accumulated_usage = hop_usage
+      # If the stream fails or ends without a terminal finish_reason, resume
+      # from the latest checkpoint token. If the hop failed before emitting a
+      # checkpoint of its own and before yielding content, retry from the token
+      # the hop started with.
+      continuation_token, reconnects_without_progress = (
+          _extra_utils.next_stream_continuation_token(
+              hop_start_token=hop_start_token,
+              hop_token=continuation_token,
+              finish_reason=hop_finish_reason,
+              reconnects_without_progress=reconnects_without_progress,
+              has_prompt_feedback=hop_has_prompt_feedback,
+              hop_has_yielded_content=hop_has_yielded_content,
+          )
+      )
+      if not _extra_utils.can_resume_stream(
+          enable_continuation,
+          continuation_token,
+          hop_finish_reason,
+          hop_has_prompt_feedback,
+      ):
+        if hop_error is not None:
+          raise hop_error
+        if (
+            enable_continuation
+            and hop_start_token is not None
+            and hop_finish_reason is None
+            and not hop_has_prompt_feedback
+        ):
+          raise errors.APIError(
+              0,
+              {
+                  'message': (
+                      'Automatic continuation stream ended prematurely'
+                      ' without a finish_reason.'
+                  ),
+                  'status': 'UNKNOWN',
+              },
+          )
 
   def generate_content(
       self,
@@ -8405,20 +8450,29 @@ class AsyncModels(_api_module.BaseModule):
     )
     continuation_token: Optional[bytes] = None
     hop_finish_reason: Optional[types.FinishReason] = None
+    hop_has_prompt_feedback = False
     accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
         None
     )
     is_first_hop = True
+    reconnects_without_progress = 0
 
     while is_first_hop or _extra_utils.can_resume_stream(
-        enable_continuation, continuation_token, hop_finish_reason
+        enable_continuation,
+        continuation_token,
+        hop_finish_reason,
+        hop_has_prompt_feedback,
     ):
       is_first_hop = False
       call_config = _extra_utils.prepare_continuation_config(
           config, continuation_token
       )
+      hop_start_token = continuation_token
       hop_finish_reason = None
+      hop_has_prompt_feedback = False
+      hop_has_yielded_content = False
       continuation_token = None
+      hop_error: Optional[Exception] = None
       hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
 
       try:
@@ -8426,8 +8480,12 @@ class AsyncModels(_api_module.BaseModule):
             model=model, contents=contents, config=call_config
         )
         async for chunk in response_stream:  # type: ignore[attr-defined]
+          if chunk.prompt_feedback is not None:
+            hop_has_prompt_feedback = True
           if chunk.candidates:
             candidate = chunk.candidates[0]
+            if candidate.content and candidate.content.parts:
+              hop_has_yielded_content = True
             if candidate.finish_reason:
               hop_finish_reason = candidate.finish_reason
             if candidate.continuation_token:
@@ -8445,16 +8503,48 @@ class AsyncModels(_api_module.BaseModule):
             else:
               hop_usage = chunk.usage_metadata
           yield chunk
-      except Exception:  # pylint: disable=broad-exception-caught
-        # If the stream fails after emitting a checkpoint continuation_token
-        # without a terminal finish_reason, suppress the error so the outer
-        # loop resumes from the latest checkpoint.
-        if not _extra_utils.can_resume_stream(
-            enable_continuation, continuation_token, hop_finish_reason
-        ):
-          raise
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        hop_error = e
       if hop_usage is not None:
         accumulated_usage = hop_usage
+      # If the stream fails or ends without a terminal finish_reason, resume
+      # from the latest checkpoint token. If the hop failed before emitting a
+      # checkpoint of its own and before yielding content, retry from the token
+      # the hop started with.
+      continuation_token, reconnects_without_progress = (
+          _extra_utils.next_stream_continuation_token(
+              hop_start_token=hop_start_token,
+              hop_token=continuation_token,
+              finish_reason=hop_finish_reason,
+              reconnects_without_progress=reconnects_without_progress,
+              has_prompt_feedback=hop_has_prompt_feedback,
+              hop_has_yielded_content=hop_has_yielded_content,
+          )
+      )
+      if not _extra_utils.can_resume_stream(
+          enable_continuation,
+          continuation_token,
+          hop_finish_reason,
+          hop_has_prompt_feedback,
+      ):
+        if hop_error is not None:
+          raise hop_error
+        if (
+            enable_continuation
+            and hop_start_token is not None
+            and hop_finish_reason is None
+            and not hop_has_prompt_feedback
+        ):
+          raise errors.APIError(
+              0,
+              {
+                  'message': (
+                      'Automatic continuation stream ended prematurely'
+                      ' without a finish_reason.'
+                  ),
+                  'status': 'UNKNOWN',
+              },
+          )
 
   async def generate_content(
       self,

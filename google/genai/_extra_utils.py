@@ -814,13 +814,73 @@ def can_resume_stream(
     enable_continuation: bool,
     continuation_token: Optional[bytes],
     finish_reason: Optional[types.FinishReason],
+    has_prompt_feedback: bool = False,
 ) -> bool:
   """Returns True if a streaming hop should auto-resume with continuation_token."""
   return bool(
       enable_continuation
       and continuation_token
+      and not has_prompt_feedback
       and is_resumable_finish_reason(finish_reason)
   )
+
+
+# Maximum number of consecutive streaming reconnects that do not receive a new
+# checkpoint continuation_token before the error is surfaced to the caller.
+MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS = 3
+
+
+def next_stream_continuation_token(
+    *,
+    hop_start_token: Optional[bytes],
+    hop_token: Optional[bytes],
+    finish_reason: Optional[types.FinishReason],
+    reconnects_without_progress: int,
+    has_prompt_feedback: bool = False,
+    hop_has_yielded_content: bool = False,
+) -> tuple[Optional[bytes], int]:
+  """Returns the token to resume the next streaming hop from.
+
+  Long-decode checkpoints are only emitted part way through each hop, so a
+  connection can drop during prefill before the hop has produced a checkpoint of
+  its own. In that case, if no candidate content has been yielded yet, the hop
+  can be retried from the token it was started with.
+
+  Args:
+    hop_start_token: The continuation_token the hop was requested with (None for
+      the initial request).
+    hop_token: The latest continuation_token received during the hop.
+    finish_reason: The finish_reason received during the hop, or None if the
+      stream ended (or failed) without one.
+    reconnects_without_progress: Number of consecutive previous hops that ended
+      without receiving a new continuation_token.
+    has_prompt_feedback: Whether prompt_feedback was received during the hop.
+    hop_has_yielded_content: Whether the hop already yielded candidate content
+      parts before disconnecting.
+
+  Returns:
+    A tuple of (token to resume from or None to stop, updated
+    reconnects_without_progress).
+  """
+  if finish_reason is not None or has_prompt_feedback:
+    if (
+        finish_reason == types.FinishReason.CONTINUATION
+        and not has_prompt_feedback
+        and hop_token
+        and hop_token != hop_start_token
+    ):
+      return hop_token, 0
+    # The server ended the hop without a new token (or returned prompt_feedback);
+    # replaying the same token would only repeat the hop.
+    return None, 0
+  if hop_token and hop_token != hop_start_token:
+    return hop_token, 0
+  if (
+      hop_has_yielded_content
+      or reconnects_without_progress >= MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+  ):
+    return None, reconnects_without_progress
+  return hop_start_token, reconnects_without_progress + 1
 
 
 def clear_intermediate_finish_reason(
@@ -930,6 +990,22 @@ def merge_safety_ratings(
   return [by_category[cat] for cat in order]
 
 
+def _clear_stale_continuation_on_candidate(
+    cand: types.Candidate,
+) -> types.Candidate:
+  """Clears stale continuation state on a candidate carried over without a matching terminal candidate."""
+  if (
+      cand.continuation_token is None
+      and cand.finish_reason != types.FinishReason.CONTINUATION
+  ):
+    return cand
+  updates: dict[str, Any] = {'continuation_token': None}
+  if cand.finish_reason == types.FinishReason.CONTINUATION:
+    updates['finish_reason'] = None
+    updates['finish_message'] = None
+  return cand.model_copy(update=updates)
+
+
 def merge_candidates(
     prev_candidates: list[types.Candidate],
     curr_candidates: list[types.Candidate],
@@ -938,12 +1014,15 @@ def merge_candidates(
   if not prev_candidates:
     return curr_candidates
   if not curr_candidates:
-    return prev_candidates
+    return [_clear_stale_continuation_on_candidate(c) for c in prev_candidates]
   result: list[types.Candidate] = []
   for prev_candidate, curr_candidate in zip(prev_candidates, curr_candidates):
     merged_candidate = merge_pydantic_models(prev_candidate, curr_candidate)
     result.append(merged_candidate)
-  result.extend(prev_candidates[len(curr_candidates) :])
+  result.extend(
+      _clear_stale_continuation_on_candidate(c)
+      for c in prev_candidates[len(curr_candidates) :]
+  )
   result.extend(curr_candidates[len(prev_candidates) :])
   return result
 
@@ -966,7 +1045,14 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
       continue
 
     if curr_val is None:
-      merged_data[field_name] = prev_val
+      if (
+          isinstance(prev, types.GenerateContentResponse)
+          and field_name == 'candidates'
+          and prev_val is not None
+      ):
+        merged_data[field_name] = merge_candidates(prev_val, [])
+      else:
+        merged_data[field_name] = prev_val
     elif prev_val is None:
       merged_data[field_name] = curr_val
     elif isinstance(prev_val, _common.BaseModel) and isinstance(
