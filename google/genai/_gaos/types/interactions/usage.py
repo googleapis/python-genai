@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 from .. import BaseModel, UNSET_SENTINEL
-from .billableusage import BillableUsage, BillableUsageTypedDict
 from .groundingtoolcount import GroundingToolCount, GroundingToolCountTypedDict
 from .modalitytokens import ModalityTokens, ModalityTokensTypedDict
 from pydantic import model_serializer
@@ -30,8 +29,6 @@ from typing_extensions import NotRequired, TypedDict
 class UsageTypedDict(TypedDict):
     r"""Statistics on the interaction request's token usage."""
 
-    billable_usage: NotRequired[BillableUsageTypedDict]
-    r"""Accumulated billable token usage across all continuation calls."""
     cached_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of cached token usage by modality."""
     grounding_tool_count: NotRequired[List[GroundingToolCountTypedDict]]
@@ -60,9 +57,6 @@ class UsageTypedDict(TypedDict):
 
 class Usage(BaseModel):
     r"""Statistics on the interaction request's token usage."""
-
-    billable_usage: Optional[BillableUsage] = None
-    r"""Accumulated billable token usage across all continuation calls."""
 
     cached_tokens_by_modality: Optional[List[ModalityTokens]] = None
     r"""A breakdown of cached token usage by modality."""
@@ -103,7 +97,6 @@ class Usage(BaseModel):
     def serialize_model(self, handler):
         optional_fields = set(
             [
-                "billable_usage",
                 "cached_tokens_by_modality",
                 "grounding_tool_count",
                 "input_tokens_by_modality",

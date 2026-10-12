@@ -44,7 +44,6 @@ if TYPE_CHECKING:
         AudioResponseFormatMimeType,
         AudioResponseFormatParam,
     )
-    from .billableusage import BillableUsage, BillableUsageTypedDict
     from .codeexecution import CodeExecution, CodeExecutionParam
     from .codeexecutioncallarguments import (
         CodeExecutionCallArguments,
@@ -470,8 +469,6 @@ __all__ = [
     "AudioResponseFormatDelivery",
     "AudioResponseFormatMimeType",
     "AudioResponseFormatParam",
-    "BillableUsage",
-    "BillableUsageTypedDict",
     "CodeExecution",
     "CodeExecutionCallArguments",
     "CodeExecutionCallArgumentsParam",
@@ -882,8 +879,6 @@ _dynamic_imports: dict[str, str] = {
     "AudioResponseFormatDelivery": ".audioresponseformat",
     "AudioResponseFormatMimeType": ".audioresponseformat",
     "AudioResponseFormatParam": ".audioresponseformat",
-    "BillableUsage": ".billableusage",
-    "BillableUsageTypedDict": ".billableusage",
     "CodeExecution": ".codeexecution",
     "CodeExecutionParam": ".codeexecution",
     "CodeExecutionCallArguments": ".codeexecutioncallarguments",
