@@ -15,6 +15,8 @@
 
 """Unit tests for automatic continuation_token resumption in Models and AsyncModels."""
 
+import base64
+import json
 from unittest import mock
 
 import httpx
@@ -519,7 +521,10 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
           config=cfg,
       )
       assert mock_raw_gc.call_count == 1
-      assert mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
+      assert (
+          mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens
+          == 50000
+      )
       assert response.text == 'Stopped at hop 1.'
       assert (
           response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
@@ -563,8 +568,14 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
         config={'automatic_continuation': True, 'max_output_tokens': 50000},
     )
     assert mock_raw_gc.call_count == 2
-    assert mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
-    assert mock_raw_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+    assert (
+        mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens
+        == 50000
+    )
+    assert (
+        mock_raw_gc.call_args_list[1].kwargs['config'].max_output_tokens
+        == 50000
+    )
     assert response.text == 'Hop 1 continuation. Hop 2 stop.'
 
 
@@ -1152,8 +1163,7 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
       )
       assert chunks[-1].usage_metadata.cached_content_token_count == 40
       assert (
-          chunks[-1].usage_metadata.candidates_token_count
-          == 32768 * 3 + 11903
+          chunks[-1].usage_metadata.candidates_token_count == 32768 * 3 + 11903
       )
       assert (
           chunks[-1].usage_metadata.thoughts_token_count
@@ -1164,8 +1174,7 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           == 33192 + 65860 + 98528 + 110331
       )
       assert (
-          chunks[-1].usage_metadata.traffic_type
-          == types.TrafficType.ON_DEMAND
+          chunks[-1].usage_metadata.traffic_type == types.TrafficType.ON_DEMAND
       )
 
       first_call_kwargs = mock_raw_stream.call_args_list[0].kwargs
@@ -1260,12 +1269,18 @@ def test_models_afc_decoupled_from_continuation_token(mock_api_client):
         ),
     )
     assert mock_raw_gc.call_count == 3
-    assert mock_raw_gc.call_args_list[0].kwargs['config'].continuation_token is None
+    assert (
+        mock_raw_gc.call_args_list[0].kwargs['config'].continuation_token
+        is None
+    )
     assert (
         mock_raw_gc.call_args_list[1].kwargs['config'].continuation_token
         == b'afc_tok_1'
     )
-    assert mock_raw_gc.call_args_list[2].kwargs['config'].continuation_token is None
+    assert (
+        mock_raw_gc.call_args_list[2].kwargs['config'].continuation_token
+        is None
+    )
     assert response.text == 'It is Sunny in Mountain View!'
 
   # 2. Streaming Models.generate_content_stream with AFC + continuation
@@ -1605,7 +1620,9 @@ async def test_async_models_generate_content_and_stream_auto_resume(
       assert [c.candidates[0].finish_reason for c in chunk_objs[:-1]] == [
           None
       ] * (len(chunk_objs) - 1)
-      assert chunk_objs[-1].candidates[0].finish_reason == types.FinishReason.STOP
+      assert (
+          chunk_objs[-1].candidates[0].finish_reason == types.FinishReason.STOP
+      )
       assert (
           stream_hop1_chunks[1].candidates[0].finish_reason
           == types.FinishReason.CONTINUATION
@@ -1811,8 +1828,14 @@ async def test_async_models_automatic_continuation_config_rules(
     )
     assert mock_async_gc.call_count == 2
     assert response.text == 'Async Hop 1. Async Hop 2.'
-    assert mock_async_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
-    assert mock_async_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+    assert (
+        mock_async_gc.call_args_list[0].kwargs['config'].max_output_tokens
+        == 50000
+    )
+    assert (
+        mock_async_gc.call_args_list[1].kwargs['config'].max_output_tokens
+        == 50000
+    )
 
 
 @pytest.mark.asyncio
@@ -2287,3 +2310,519 @@ async def test_async_models_generate_content_stream_recovers_from_midstream_chec
         received.append(chunk.text)
     assert received == ['Async Ckpt 35k. ', 'Async resumed and completed.']
     assert mock_async_stream.call_count == 1
+
+
+TOK_UNARY_HOP1_B64 = base64.b64encode(b'tok_unary_hop1').decode('ascii')
+TOK_STREAM_CP1_B64 = base64.b64encode(b'tok_stream_cp1').decode('ascii')
+TOK_STREAM_FINAL_B64 = base64.b64encode(b'tok_stream_final').decode('ascii')
+TOK_STREAM_HOP1_B64 = base64.b64encode(b'tok_stream_hop1').decode('ascii')
+TOK_STREAM_HOP2_B64 = base64.b64encode(b'tok_stream_hop2').decode('ascii')
+
+UNARY_HOP1_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [
+                {'text': 'Thinking step 1...', 'thought': True},
+                {'text': 'Hello '},
+            ],
+        },
+        'finishReason': 'CONTINUATION',
+        'continuationToken': TOK_UNARY_HOP1_B64,
+        'groundingMetadata': {
+            'webSearchQueries': ['query1'],
+            'searchEntryPoint': {'renderedContent': '<div>hop1</div>'},
+        },
+        'citationMetadata': {
+            'citationSources': [{
+                'startIndex': 0,
+                'endIndex': 5,
+                'uri': 'https://a.example',
+            }]
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 120,
+        'candidatesTokenCount': 50,
+        'thoughtsTokenCount': 30,
+        'totalTokenCount': 200,
+        'cachedContentTokenCount': 40,
+        'toolUsePromptTokenCount': 10,
+        'trafficType': 'ON_DEMAND',
+    },
+}
+
+UNARY_HOP2_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [
+                {'text': 'world!'},
+            ],
+        },
+        'finishReason': 'STOP',
+        'groundingMetadata': {
+            'webSearchQueries': ['query2'],
+            'searchEntryPoint': {'renderedContent': '<div>hop2</div>'},
+        },
+        'citationMetadata': {
+            'citationSources': [{
+                'startIndex': 6,
+                'endIndex': 12,
+                'uri': 'https://b.example',
+            }]
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 200,
+        'candidatesTokenCount': 25,
+        'thoughtsTokenCount': 15,
+        'totalTokenCount': 240,
+        'cachedContentTokenCount': 180,
+        'toolUsePromptTokenCount': 5,
+        'trafficType': 'ON_DEMAND',
+    },
+}
+
+STREAM_HOP1_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Stream 1 '}],
+        },
+        'finishReason': 'CONTINUATION',
+        'continuationToken': TOK_STREAM_HOP1_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 150,
+        'candidatesTokenCount': 64000,
+        'totalTokenCount': 64150,
+    },
+}
+
+STREAM_HOP2_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Stream 2!'}],
+        },
+        'finishReason': 'STOP',
+        'continuationToken': TOK_STREAM_HOP2_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 64150,
+        'candidatesTokenCount': 1200,
+        'totalTokenCount': 65350,
+    },
+}
+
+STREAM_DROP_PART_A_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Part A '}],
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 100,
+        'candidatesTokenCount': 10,
+        'totalTokenCount': 110,
+    },
+}
+
+STREAM_DROP_PART_B_CKPT_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Part B '}],
+        },
+        'continuationToken': TOK_STREAM_CP1_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 100,
+        'candidatesTokenCount': 35000,
+        'totalTokenCount': 35100,
+    },
+}
+
+STREAM_DROP_PART_C_STOP_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Part C!'}],
+        },
+        'finishReason': 'STOP',
+        'continuationToken': TOK_STREAM_FINAL_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 35100,
+        'candidatesTokenCount': 500,
+        'totalTokenCount': 35600,
+    },
+}
+
+STREAM_UNCHECKPOINTED_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Uncheckpointed '}],
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 100,
+        'candidatesTokenCount': 10,
+        'totalTokenCount': 110,
+    },
+}
+
+STREAM_STALE_CHUNK1_CKPT_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Chunk 1 checkpoint '}],
+        },
+        'continuationToken': TOK_STREAM_CP1_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 50,
+        'candidatesTokenCount': 200,
+        'totalTokenCount': 250,
+    },
+}
+
+STREAM_STALE_CHUNK2_STOP_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Chunk 2 stop'}],
+        },
+        'finishReason': 'STOP',
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 50,
+        'candidatesTokenCount': 205,
+        'totalTokenCount': 255,
+    },
+}
+
+
+def _json_http_response(payload: dict[str, object]) -> types.HttpResponse:
+  return types.HttpResponse(headers={}, body=json.dumps(payload))
+
+
+def _stream_http_responses(
+    payloads: list[dict[str, object]], exc: Exception | None = None
+):
+  for payload in payloads:
+    yield _json_http_response(payload)
+  if exc is not None:
+    raise exc
+
+
+async def _async_stream_http_responses(
+    payloads: list[dict[str, object]], exc: Exception | None = None
+):
+  for payload in payloads:
+    yield _json_http_response(payload)
+  if exc is not None:
+    raise exc
+
+
+def test_e2e_unary_multihop_aggregation_and_usage():
+  """Verifies unary multi-hop request/response serialization, aggregation, and usage."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request',
+      side_effect=[
+          _json_http_response(UNARY_HOP1_PAYLOAD),
+          _json_http_response(UNARY_HOP2_PAYLOAD),
+      ],
+  ) as mock_request:
+    resp = test_client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello',
+    )
+  cand = resp.candidates[0]
+  u = resp.usage_metadata
+
+  assert mock_request.call_count == 2
+  assert 'continuationToken' not in mock_request.call_args_list[0].args[2]
+  assert 'automaticContinuation' not in mock_request.call_args_list[0].args[2]
+  assert (
+      mock_request.call_args_list[1].args[2].get('continuationToken')
+      == TOK_UNARY_HOP1_B64
+  )
+  assert 'automaticContinuation' not in mock_request.call_args_list[1].args[2]
+  assert resp.text == 'Hello world!'
+  assert cand.finish_reason == types.FinishReason.STOP
+  assert u.initial_prompt_token_count == 120
+  assert u.prompt_token_count == 320
+  assert u.candidates_token_count == 75
+  assert u.thoughts_token_count == 45
+  assert u.cached_content_token_count == 220
+  assert u.tool_use_prompt_token_count == 15
+  assert u.total_token_count == 440
+  assert cand.grounding_metadata.web_search_queries == ['query1', 'query2']
+  assert (
+      cand.grounding_metadata.search_entry_point.rendered_content
+      == '<div>hop2</div>'
+  )
+  assert len(cand.citation_metadata.citations) == 2
+
+
+def test_e2e_unary_automatic_continuation_false():
+  """Verifies automatic_continuation=False stops after one hop and decodes token."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request',
+      return_value=_json_http_response(UNARY_HOP1_PAYLOAD),
+  ) as mock_request:
+    resp_no_cont = test_client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello',
+        config=types.GenerateContentConfig(automatic_continuation=False),
+    )
+
+  assert mock_request.call_count == 1
+  assert 'automaticContinuation' not in mock_request.call_args_list[0].args[2]
+  assert (
+      resp_no_cont.candidates[0].finish_reason
+      == types.FinishReason.CONTINUATION
+  )
+  assert resp_no_cont.candidates[0].continuation_token == b'tok_unary_hop1'
+  assert resp_no_cont.usage_metadata.initial_prompt_token_count == 120
+  assert resp_no_cont.usage_metadata.prompt_token_count == 120
+
+
+def test_e2e_streaming_continuation_boundary():
+  """Verifies streaming continuation clears intermediate finish_reason across hops."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses([STREAM_HOP1_PAYLOAD]),
+          _stream_http_responses([STREAM_HOP2_PAYLOAD]),
+      ],
+  ) as mock_stream:
+    chunks = list(
+        test_client.models.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Stream test',
+        )
+    )
+
+  assert mock_stream.call_count == 2
+  assert (
+      mock_stream.call_args_list[1].args[2].get('continuationToken')
+      == TOK_STREAM_HOP1_B64
+  )
+  assert len(chunks) == 2
+  assert chunks[0].candidates[0].finish_reason is None
+  assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
+  assert ''.join(c.text for c in chunks) == 'Stream 1 Stream 2!'
+  assert chunks[0].usage_metadata.initial_prompt_token_count == 150
+  assert chunks[1].usage_metadata.initial_prompt_token_count == 150
+
+
+def test_e2e_streaming_drop_recovery_after_checkpoint():
+  """Verifies streaming recovery when request_streamed drops after a checkpoint."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses(
+              [STREAM_DROP_PART_A_PAYLOAD, STREAM_DROP_PART_B_CKPT_PAYLOAD],
+              exc=httpx.RemoteProtocolError('peer closed connection'),
+          ),
+          _stream_http_responses([STREAM_DROP_PART_C_STOP_PAYLOAD]),
+      ],
+  ) as mock_stream:
+    drop_chunks = list(
+        test_client.models.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Drop test',
+        )
+    )
+
+  assert mock_stream.call_count == 2
+  assert (
+      mock_stream.call_args_list[1].args[2].get('continuationToken')
+      == TOK_STREAM_CP1_B64
+  )
+  assert len(drop_chunks) == 3
+  assert ''.join(c.text for c in drop_chunks) == 'Part A Part B Part C!'
+  assert drop_chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+  assert all(
+      c.usage_metadata.initial_prompt_token_count == 100 for c in drop_chunks
+  )
+
+
+def test_e2e_streaming_drop_before_checkpoint_raises():
+  """Verifies streaming error before any checkpoint token propagates without retry."""
+  test_client = client.Client(api_key='test-key')
+  yielded_before_err = []
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses(
+              [STREAM_UNCHECKPOINTED_PAYLOAD],
+              exc=httpx.RemoteProtocolError('peer closed connection'),
+          )
+      ],
+  ) as mock_stream:
+    with pytest.raises(httpx.RemoteProtocolError):
+      for ch in test_client.models.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Drop before checkpoint test',
+      ):
+        yielded_before_err.append(ch.text)
+
+  assert mock_stream.call_count == 1
+  assert yielded_before_err == ['Uncheckpointed ']
+
+
+def test_e2e_streaming_stale_token_discard_on_stop():
+  """Verifies an earlier checkpoint token in the same hop is discarded on STOP."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses([
+              STREAM_STALE_CHUNK1_CKPT_PAYLOAD,
+              STREAM_STALE_CHUNK2_STOP_PAYLOAD,
+          ])
+      ],
+  ) as mock_stream:
+    chunks = list(
+        test_client.models.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Stale token test',
+        )
+    )
+
+  assert mock_stream.call_count == 1
+  assert len(chunks) == 2
+  assert chunks[0].text == 'Chunk 1 checkpoint '
+  assert chunks[1].text == 'Chunk 2 stop'
+  assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
+  assert chunks[1].candidates[0].continuation_token is None
+
+
+def test_e2e_chat_unary_vs_stream_history():
+  """Verifies Chat history accumulation across multi-hop unary and stream calls."""
+  test_client = client.Client(api_key='test-key')
+  with (
+      mock.patch.object(
+          client.BaseApiClient,
+          'request',
+          side_effect=[
+              _json_http_response(UNARY_HOP1_PAYLOAD),
+              _json_http_response(UNARY_HOP2_PAYLOAD),
+          ],
+      ) as mock_request,
+      mock.patch.object(
+          client.BaseApiClient,
+          'request_streamed',
+          side_effect=[
+              _stream_http_responses([STREAM_HOP1_PAYLOAD]),
+              _stream_http_responses([STREAM_HOP2_PAYLOAD]),
+          ],
+      ) as mock_stream,
+  ):
+    chat_unary = test_client.chats.create(model='gemini-2.5-pro')
+    _ = chat_unary.send_message('Hello unary chat')
+    unary_history = chat_unary.get_history()
+
+    chat_stream = test_client.chats.create(model='gemini-2.5-pro')
+    _ = list(chat_stream.send_message_stream('Hello stream chat'))
+    stream_history = chat_stream.get_history()
+
+  assert mock_request.call_count == 2
+  assert mock_stream.call_count == 2
+  assert len(unary_history) == 2
+  assert unary_history[0].role == 'user'
+  assert unary_history[1].role == 'model'
+  assert (
+      ''.join(p.text for p in unary_history[1].parts if not p.thought)
+      == 'Hello world!'
+  )
+
+  assert len(stream_history) == 3
+  assert stream_history[0].role == 'user'
+  assert all(h.role == 'model' for h in stream_history[1:])
+  assert [h.parts[0].text for h in stream_history[1:]] == [
+      'Stream 1 ',
+      'Stream 2!',
+  ]
+
+
+@pytest.mark.asyncio
+async def test_e2e_async_client_continuation():
+  """Verifies AsyncClient unary multi-hop and streaming checkpoint recovery."""
+  async with client.Client(api_key='test-key').aio as aclient:
+    with (
+        mock.patch.object(
+            client.BaseApiClient,
+            'async_request',
+            new_callable=mock.AsyncMock,
+            side_effect=[
+                _json_http_response(UNARY_HOP1_PAYLOAD),
+                _json_http_response(UNARY_HOP2_PAYLOAD),
+            ],
+        ) as mock_async_request,
+        mock.patch.object(
+            client.BaseApiClient,
+            'async_request_streamed',
+            new_callable=mock.AsyncMock,
+            side_effect=[
+                _async_stream_http_responses(
+                    [
+                        STREAM_DROP_PART_A_PAYLOAD,
+                        STREAM_DROP_PART_B_CKPT_PAYLOAD,
+                    ],
+                    exc=httpx.RemoteProtocolError('peer closed connection'),
+                ),
+                _async_stream_http_responses([STREAM_DROP_PART_C_STOP_PAYLOAD]),
+            ],
+        ) as mock_async_stream,
+    ):
+      aresp = await aclient.models.generate_content(
+          model='gemini-2.5-pro',
+          contents='Async hello',
+      )
+      astream_chunks = []
+      async for ch in await aclient.models.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Async drop',
+      ):
+        astream_chunks.append(ch)
+
+    assert mock_async_request.call_count == 2
+    assert (
+        mock_async_request.call_args_list[1].args[2].get('continuationToken')
+        == TOK_UNARY_HOP1_B64
+    )
+    assert mock_async_stream.call_count == 2
+    assert (
+        mock_async_stream.call_args_list[1].args[2].get('continuationToken')
+        == TOK_STREAM_CP1_B64
+    )
+    assert aresp.text == 'Hello world!'
+    assert aresp.usage_metadata.initial_prompt_token_count == 120
+    assert ''.join(c.text for c in astream_chunks) == 'Part A Part B Part C!'
