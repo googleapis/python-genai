@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.30.1](https://github.com/googleapis/python-genai/compare/v2.30.0...v2.30.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* Concatenate output_text across multi-step model responses in a turn ([180c345](https://github.com/googleapis/python-genai/commit/180c3453f91e4734b828534950fa7f8526934b59))
+
 ## [2.30.0](https://github.com/googleapis/python-genai/compare/v2.29.0...v2.30.0) (2026-10-13)
 
 
