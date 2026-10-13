@@ -144,8 +144,20 @@ def get_env_api_key() -> Optional[str]:
   return env_google_api_key or env_gemini_api_key or None
 
 
+def collapse_header_case_variants(
+    headers: dict[str, str], header_key: str
+) -> None:
+  """Merges every case variant of `header_key` into the lowercase key."""
+  variant_keys = [k for k in headers if k.lower() == header_key]
+  if variant_keys:
+    values = dict.fromkeys(headers.pop(k) for k in variant_keys)
+    headers[header_key] = ' '.join(values)
+
+
 def append_library_version_headers(headers: dict[str, str]) -> None:
   """Appends the telemetry header to the headers dict."""
+  collapse_header_case_variants(headers, 'user-agent')
+  collapse_header_case_variants(headers, 'x-goog-api-client')
   library_label = f'google-genai-sdk/{version.__version__}'
   language_label = 'gl-python/' + sys.version.split()[0]
   version_header_value = f'{library_label} {language_label}'
