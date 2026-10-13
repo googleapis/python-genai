@@ -443,6 +443,8 @@ class AsyncSession:
         if response.get('id') is None:
           raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
 
+    tool_response_dict = _common.encode_unserializable_types(tool_response_dict)
+
     await self._ws.send(json.dumps({'tool_response': tool_response_dict}))
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
