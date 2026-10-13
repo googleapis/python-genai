@@ -168,7 +168,6 @@ def log_afc_incompatible_tools_warning(
     )
 
 
-
 def get_function_map(
     config: Optional[types.GenerateContentConfigOrDict] = None,
     mcp_to_genai_tool_adapters: Optional[
@@ -805,8 +804,49 @@ def should_enable_automatic_continuation(
 def is_resumable_finish_reason(
     finish_reason: Optional[types.FinishReason],
 ) -> bool:
-  """Returns True if finish_reason is eligible for automatic continuation."""
-  return finish_reason == types.FinishReason.CONTINUATION
+  """Returns True if finish_reason is eligible for automatic continuation.
+
+  A completed generation always ends with finish_reason != CONTINUATION. If the
+  last received response has finish_reason == None (e.g. mid-stream checkpoint
+  before a stream cutoff/error) or FinishReason.CONTINUATION, it can be resumed
+  when a continuation_token is present.
+  """
+  return (
+      finish_reason is None or finish_reason == types.FinishReason.CONTINUATION
+  )
+
+
+def can_resume_stream(
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+    finish_reason: Optional[types.FinishReason],
+) -> bool:
+  """Returns True if a streaming hop should auto-resume with continuation_token."""
+  return bool(
+      enable_continuation
+      and continuation_token
+      and is_resumable_finish_reason(finish_reason)
+  )
+
+
+def clear_intermediate_finish_reason(
+    chunk: types.GenerateContentResponse,
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+) -> types.GenerateContentResponse:
+  """Clears finish_reason on candidates[0] when the stream will auto-continue."""
+  if not chunk.candidates:
+    return chunk
+  candidate = chunk.candidates[0]
+  if candidate.finish_reason and can_resume_stream(
+      enable_continuation, continuation_token, candidate.finish_reason
+  ):
+    updated_candidates = list(chunk.candidates)
+    updated_candidates[0] = candidate.model_copy(
+        update={'finish_reason': None}
+    )
+    return chunk.model_copy(update={'candidates': updated_candidates})
+  return chunk
 
 
 def should_continue_generation(
@@ -945,8 +985,7 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
         and isinstance(curr_val, (int, float))
         and not isinstance(curr_val, bool)
         and (
-            isinstance(curr, types.GenerateContentResponseUsageMetadata)
-            or field_name == 'token_count'
+            field_name == 'token_count'
             or field_name.endswith('_count')
             or field_name.endswith('_sum')
         )
@@ -972,7 +1011,18 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
     else:
       merged_data[field_name] = curr_val
 
-  return curr.model_copy(update=merged_data)
+  merged = curr.model_copy(update=merged_data)
+  if (
+      isinstance(prev, types.GenerateContentResponseUsageMetadata)
+      and isinstance(curr, types.GenerateContentResponseUsageMetadata)
+      and isinstance(merged, types.GenerateContentResponseUsageMetadata)
+  ):
+    merged._initial_prompt_token_count = (
+        prev.initial_prompt_token_count
+        if prev.initial_prompt_token_count is not None
+        else curr.initial_prompt_token_count
+    )
+  return merged
 
 
 def merge_continuation_responses(
@@ -1011,4 +1061,3 @@ def merge_continuation_responses(
       merged.parsed = reparsed.parsed
 
   return merged
-

@@ -640,6 +640,45 @@ response = client.models.generate_content(
 print(response.text)
 ```
 
+### Automatic Continuation
+
+Automatic continuation is enabled by default. When a response stops with
+`finish_reason` set to `CONTINUATION` and returns a `continuation_token`, the
+SDK automatically sends follow-up requests with the token until generation
+completes and returns the merged response. To disable automatic continuation,
+set `automatic_continuation=False` in `GenerateContentConfig`.
+
+Streaming (`generate_content_stream`), async
+(`client.aio.models.generate_content` and
+`client.aio.models.generate_content_stream`), and chats (`chat.send_message`
+and `chat.send_message_stream`) work very similarly.
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    enterprise=True, project='your-project-id', location='global'
+)
+
+# Automatic continuation is enabled by default.
+response = client.models.generate_content(
+    model='gemini-flash-latest',
+    contents='Write a comprehensive multi-chapter guide on compiler design.',
+)
+print(response.text)
+
+# Set automatic_continuation=False to disable automatic continuation.
+single_hop_response = client.models.generate_content(
+    model='gemini-flash-latest',
+    contents='Write a comprehensive multi-chapter guide on compiler design.',
+    config=types.GenerateContentConfig(
+        automatic_continuation=False,
+    ),
+)
+print(single_hop_response.text)
+```
+
 ### List Base Models
 
 To retrieve tuned models, see [list tuned models](#list-tuned-models).

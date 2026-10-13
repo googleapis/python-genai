@@ -6147,12 +6147,13 @@ class Models(_api_module.BaseModule):
     )
     continuation_token: Optional[bytes] = None
     hop_finish_reason: Optional[types.FinishReason] = None
+    accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
+        None
+    )
     is_first_hop = True
 
-    while is_first_hop or (
-        enable_continuation
-        and continuation_token
-        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+    while is_first_hop or _extra_utils.can_resume_stream(
+        enable_continuation, continuation_token, hop_finish_reason
     ):
       is_first_hop = False
       call_config = _extra_utils.prepare_continuation_config(
@@ -6160,17 +6161,48 @@ class Models(_api_module.BaseModule):
       )
       hop_finish_reason = None
       continuation_token = None
+      hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
 
-      for chunk in self._generate_content_stream(
-          model=model, contents=contents, config=call_config
-      ):
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+      try:
+        for chunk in self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        ):
+          if chunk.candidates:
+            candidate = chunk.candidates[0]
+            if candidate.finish_reason:
+              hop_finish_reason = candidate.finish_reason
+            if candidate.continuation_token:
+              continuation_token = candidate.continuation_token
+            elif (
+                candidate.finish_reason
+                and not _extra_utils.is_resumable_finish_reason(
+                    candidate.finish_reason
+                )
+            ):
+              continuation_token = None
+            chunk = _extra_utils.clear_intermediate_finish_reason(
+                chunk, enable_continuation, continuation_token
+            )
+          if chunk.usage_metadata is not None:
+            if accumulated_usage is not None:
+              merged_usage = _extra_utils.merge_pydantic_models(
+                  accumulated_usage, chunk.usage_metadata
+              )
+              chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
+              hop_usage = merged_usage
+            else:
+              hop_usage = chunk.usage_metadata
+          yield chunk
+      except Exception:  # pylint: disable=broad-exception-caught
+        # If the stream fails after emitting a checkpoint continuation_token
+        # without a terminal finish_reason, suppress the error so the outer
+        # loop resumes from the latest checkpoint.
+        if not _extra_utils.can_resume_stream(
+            enable_continuation, continuation_token, hop_finish_reason
+        ):
+          raise
+      if hop_usage is not None:
+        accumulated_usage = hop_usage
 
   def generate_content(
       self,
@@ -6382,9 +6414,10 @@ class Models(_api_module.BaseModule):
 
     Automatic continuation is enabled by default. When a stream hop ends with
     `finish_reason == FinishReason.CONTINUATION` and includes a
-    `continuation_token` on the first candidate, the SDK automatically starts
-    follow-up stream requests with the `continuation_token` and yields chunks
-    until `finish_reason` is no longer `CONTINUATION`. Set
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
     `config=types.GenerateContentConfig(automatic_continuation=False)` to
     disable this behavior.
 
@@ -8379,12 +8412,13 @@ class AsyncModels(_api_module.BaseModule):
     )
     continuation_token: Optional[bytes] = None
     hop_finish_reason: Optional[types.FinishReason] = None
+    accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
+        None
+    )
     is_first_hop = True
 
-    while is_first_hop or (
-        enable_continuation
-        and continuation_token
-        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
+    while is_first_hop or _extra_utils.can_resume_stream(
+        enable_continuation, continuation_token, hop_finish_reason
     ):
       is_first_hop = False
       call_config = _extra_utils.prepare_continuation_config(
@@ -8392,18 +8426,49 @@ class AsyncModels(_api_module.BaseModule):
       )
       hop_finish_reason = None
       continuation_token = None
+      hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
 
-      response_stream = await self._generate_content_stream(
-          model=model, contents=contents, config=call_config
-      )
-      async for chunk in response_stream:  # type: ignore[attr-defined]
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+      try:
+        response_stream = await self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        )
+        async for chunk in response_stream:  # type: ignore[attr-defined]
+          if chunk.candidates:
+            candidate = chunk.candidates[0]
+            if candidate.finish_reason:
+              hop_finish_reason = candidate.finish_reason
+            if candidate.continuation_token:
+              continuation_token = candidate.continuation_token
+            elif (
+                candidate.finish_reason
+                and not _extra_utils.is_resumable_finish_reason(
+                    candidate.finish_reason
+                )
+            ):
+              continuation_token = None
+            chunk = _extra_utils.clear_intermediate_finish_reason(
+                chunk, enable_continuation, continuation_token
+            )
+          if chunk.usage_metadata is not None:
+            if accumulated_usage is not None:
+              merged_usage = _extra_utils.merge_pydantic_models(
+                  accumulated_usage, chunk.usage_metadata
+              )
+              chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
+              hop_usage = merged_usage
+            else:
+              hop_usage = chunk.usage_metadata
+          yield chunk
+      except Exception:  # pylint: disable=broad-exception-caught
+        # If the stream fails after emitting a checkpoint continuation_token
+        # without a terminal finish_reason, suppress the error so the outer
+        # loop resumes from the latest checkpoint.
+        if not _extra_utils.can_resume_stream(
+            enable_continuation, continuation_token, hop_finish_reason
+        ):
+          raise
+      if hop_usage is not None:
+        accumulated_usage = hop_usage
 
   async def generate_content(
       self,
@@ -8660,9 +8725,10 @@ class AsyncModels(_api_module.BaseModule):
 
     Automatic continuation is enabled by default. When a stream hop ends with
     `finish_reason == FinishReason.CONTINUATION` and includes a
-    `continuation_token` on the first candidate, the SDK automatically starts
-    follow-up stream requests with the `continuation_token` and yields chunks
-    until `finish_reason` is no longer `CONTINUATION`. Set
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
     `config=types.GenerateContentConfig(automatic_continuation=False)` to
     disable this behavior.
 

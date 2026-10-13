@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.30.0](https://github.com/googleapis/python-genai/compare/v2.29.0...v2.30.0) (2026-10-13)
+
+
+### Features
+
+* Accumulate streaming continuation usage metadata and expose initial_prompt_token_count ([b27f3cd](https://github.com/googleapis/python-genai/commit/b27f3cde9ebbfe49a00ba2b167f534bc86e46fce))
+* Add `continuation_token` to the Interactions `interaction.status_update` event. ([02db4c5](https://github.com/googleapis/python-genai/commit/02db4c595523f5d8545023aa9ede2723985d9343))
+* Add a CONTINUATION_REQUIRED Interaction status ([bf9d6d7](https://github.com/googleapis/python-genai/commit/bf9d6d7ce9ad78a7a5bc9a166c7fbcf2da0623ce))
+* Add billable token counts fields ([6a6501c](https://github.com/googleapis/python-genai/commit/6a6501c92392b3780b67a895cb3bdf963c1b2bf4))
+* Add startOffset/endOffset to Transcription and interimTranscriptTimestampEnabled to RealtimeInputConfig ([c644a94](https://github.com/googleapis/python-genai/commit/c644a948d3279ada98032200f17ba12e04ed0525))
+* Add usage in InteractionStatusUpdate events ([56c3a1a](https://github.com/googleapis/python-genai/commit/56c3a1a99a8c2bb3ccf914b5f9a1f0a745eb716c))
+* Allow automatic resumption of continuation token for in generate content and generate content stream. Default behavior for this feature is disabled ([83e43ea](https://github.com/googleapis/python-genai/commit/83e43ea082fd101b67a4e61a3c1a12e674881748))
+* **cli:** Update Speakeasy generator to v2.948.0, bump CLI to v0.4.2, and apply CLI overlay fixes ([cdcd3dd](https://github.com/googleapis/python-genai/commit/cdcd3dde488b936f68e1b107a40465c1a76658f7))
+* Enable automatic continuation token resumption for chats module. ([9ebf714](https://github.com/googleapis/python-genai/commit/9ebf71497338b8cb6edc651d99c91145e36ee7bf))
+
+
+### Bug Fixes
+
+* Clear intermediate CONTINUATION finish_reason in streaming continuation ([8a641d8](https://github.com/googleapis/python-genai/commit/8a641d8146941000d8d19df81cfc5d85ee16f370))
+* Do not record incomplete continuation stream turns in curated chat history ([b382e01](https://github.com/googleapis/python-genai/commit/b382e01e8e214998c1e28cb26811bfcd0f79c11f))
+* **gemini-api-cli:** Remove unsupported 2.5 and 1.6 models from Interactions model options and CLI examples ([fe5fb10](https://github.com/googleapis/python-genai/commit/fe5fb10ec895392dbb1b7f45a76901e7abed9a8b))
+* **genai:** Deduplicate Flash and Omni descriptions in ModelOption ([33efaad](https://github.com/googleapis/python-genai/commit/33efaad19f9c34c262423731885a6ab9c4760dad))
+* **interactions:** Restore `super().model_construct` in `Interaction` model validator ([ccd5dd3](https://github.com/googleapis/python-genai/commit/ccd5dd32b14b119f7d3a3254541add6db493222c))
+* **python:** Discard stale checkpoint token on non-resumable finish reason ([f44e8ee](https://github.com/googleapis/python-genai/commit/f44e8eea085027f34b3dcdb58a474b8425da3444))
+* Raise default HTTP timeouts so long-running requests aren't killed client-side ([b006b4b](https://github.com/googleapis/python-genai/commit/b006b4bb72b555963181e87a87be2a061d650779))
+* Resume streaming generation from the latest checkpoint continuation token on mid-stream errors or cutoffs ([90bb32b](https://github.com/googleapis/python-genai/commit/90bb32bcd9bca471beb8dcb300401538df3f6f3f))
+* Update EnvironmentConfig.env schema to map keys to EnvVar or string. ([3108d8c](https://github.com/googleapis/python-genai/commit/3108d8c9748eb872ab440de9b3d07264938459ea))
+* Use the mTLS endpoint on the httpx and websocket transports ([97d5821](https://github.com/googleapis/python-genai/commit/97d5821da9591645919fbcac5179c1327882fc7c))
+
 ## [2.29.0](https://github.com/googleapis/python-genai/compare/v2.28.0...v2.29.0) (2026-10-07)
 
 

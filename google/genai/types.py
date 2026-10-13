@@ -8599,6 +8599,16 @@ class GenerateContentResponseUsageMetadata(_common.BaseModel):
       default=None,
       description="""Output only. The traffic type for this request.""",
   )
+  _initial_prompt_token_count: Optional[int] = pydantic.PrivateAttr(
+      default=None
+  )
+
+  @property
+  def initial_prompt_token_count(self) -> Optional[int]:
+    """Returns the prompt token count from the initial request prior to any continuation hops."""
+    if self._initial_prompt_token_count is not None:
+      return self._initial_prompt_token_count
+    return self.prompt_token_count
 
 
 class GenerateContentResponseUsageMetadataDict(TypedDict, total=False):
@@ -8892,6 +8902,13 @@ class GenerateContentResponse(_common.BaseModel):
       if part.code_execution_result is not None:
         return part.code_execution_result.output
     return None
+
+  @property
+  def initial_prompt_token_count(self) -> Optional[int]:
+    """Returns the prompt token count from the initial request prior to any continuation hops."""
+    if self.usage_metadata is None:
+      return None
+    return self.usage_metadata.initial_prompt_token_count
 
   @classmethod
   def _from_response(

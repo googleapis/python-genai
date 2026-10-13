@@ -15,13 +15,17 @@
 
 """Unit tests for automatic continuation_token resumption in Models and AsyncModels."""
 
+import base64
+import json
 from unittest import mock
 
+import httpx
 import pydantic
 import pytest
 
 from ... import _extra_utils
 from ... import client
+from ... import errors
 from ... import models
 from ... import types
 
@@ -62,6 +66,7 @@ def test_continuation_helpers_edge_cases():
       default_enabled=False,
   )
 
+  assert _extra_utils.is_resumable_finish_reason(None)
   assert _extra_utils.is_resumable_finish_reason(
       types.FinishReason.CONTINUATION
   )
@@ -76,6 +81,19 @@ def test_continuation_helpers_edge_cases():
           types.GenerateContentResponse(candidates=[])
       )
       is None
+  )
+  assert (
+      _extra_utils.should_continue_generation(
+          types.GenerateContentResponse(
+              candidates=[
+                  types.Candidate(
+                      finish_reason=None,
+                      continuation_token=b'tok',
+                  )
+              ]
+          )
+      )
+      == b'tok'
   )
   assert (
       _extra_utils.should_continue_generation(
@@ -182,6 +200,26 @@ def test_continuation_helpers_edge_cases():
           modality=types.MediaModality.TEXT, token_count=10
       )
   ]
+
+  total_only_merged = _extra_utils.merge_pydantic_models(
+      types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=15, total_token_count=100
+      ),
+      types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=80, total_token_count=50
+      ),
+  )
+  assert total_only_merged.prompt_token_count == 95
+  assert total_only_merged.initial_prompt_token_count == 15
+  assert total_only_merged.total_token_count == 150
+  assert types.GenerateContentResponse().initial_prompt_token_count is None
+  single_hop_resp = types.GenerateContentResponse(
+      usage_metadata=types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=42
+      )
+  )
+  assert single_hop_resp.initial_prompt_token_count == 42
+  assert single_hop_resp.usage_metadata.initial_prompt_token_count == 42
 
 
 def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
@@ -312,6 +350,8 @@ def test_models_generate_content_auto_resumes_across_4_hops(mock_api_client):
           response.usage_metadata.prompt_token_count
           == 10 + 32778 + 65546 + 98314
       )
+      assert response.initial_prompt_token_count == 10
+      assert response.usage_metadata.initial_prompt_token_count == 10
       assert response.usage_metadata.candidates_token_count == 32768 * 3 + 1024
       assert (
           response.usage_metadata.thoughts_token_count == 500 + 300 + 200 + 100
@@ -413,6 +453,8 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
           'Hop 1 continuation. ',
           'Hop 2 stop.',
       ]
+      assert chunks[0].candidates[0].finish_reason is None
+      assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
 
   # 2. Explicit automatic_continuation=False -> disabled in unary & stream
   for disable_afc in (False, True):
@@ -454,6 +496,10 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
       )
       assert mock_raw_stream.call_count == 1
       assert [c.text for c in chunks] == ['Hop 1 continuation. ']
+      assert (
+          chunks[0].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
 
   # 3. finish_reason != CONTINUATION (e.g. MAX_TOKENS) -> stops loop even when automatic_continuation=True
   for disable_afc in (False, True):
@@ -475,7 +521,10 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
           config=cfg,
       )
       assert mock_raw_gc.call_count == 1
-      assert mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
+      assert (
+          mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens
+          == 50000
+      )
       assert response.text == 'Stopped at hop 1.'
       assert (
           response.candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
@@ -500,6 +549,9 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
           == 50000
       )
       assert [c.text for c in chunks] == ['Stopped at hop 1.']
+      assert (
+          chunks[0].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
+      )
 
   # 4. Explicit automatic_continuation=True -> continues on CONTINUATION and forwards max_output_tokens as-is
   with mock.patch.object(
@@ -516,8 +568,14 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
         config={'automatic_continuation': True, 'max_output_tokens': 50000},
     )
     assert mock_raw_gc.call_count == 2
-    assert mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
-    assert mock_raw_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+    assert (
+        mock_raw_gc.call_args_list[0].kwargs['config'].max_output_tokens
+        == 50000
+    )
+    assert (
+        mock_raw_gc.call_args_list[1].kwargs['config'].max_output_tokens
+        == 50000
+    )
     assert response.text == 'Hop 1 continuation. Hop 2 stop.'
 
 
@@ -686,11 +744,29 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
       ],
       usage_metadata=types.GenerateContentResponseUsageMetadata(
           prompt_token_count=20,
+          cached_content_token_count=8,
           candidates_token_count=100,
-          total_token_count=120,
+          thoughts_token_count=30,
+          tool_use_prompt_token_count=5,
+          total_token_count=155,
           prompt_tokens_details=[
               types.ModalityTokenCount(
                   modality=types.MediaModality.TEXT, token_count=20
+              )
+          ],
+          cache_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=8
+              )
+          ],
+          candidates_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=100
+              )
+          ],
+          tool_use_prompt_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=5
               )
           ],
       ),
@@ -733,11 +809,29 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
       ],
       usage_metadata=types.GenerateContentResponseUsageMetadata(
           prompt_token_count=120,
+          cached_content_token_count=8,
           candidates_token_count=50,
-          total_token_count=170,
+          thoughts_token_count=15,
+          tool_use_prompt_token_count=10,
+          total_token_count=195,
           prompt_tokens_details=[
               types.ModalityTokenCount(
                   modality=types.MediaModality.TEXT, token_count=120
+              )
+          ],
+          cache_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=8
+              )
+          ],
+          candidates_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=50
+              )
+          ],
+          tool_use_prompt_tokens_details=[
+              types.ModalityTokenCount(
+                  modality=types.MediaModality.TEXT, token_count=10
               )
           ],
       ),
@@ -766,9 +860,32 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
     assert cand.grounding_metadata.web_search_queries == ['query 1', 'query 2']
     assert cand.logprobs_result.log_probability_sum == -3.5
     assert len(cand.logprobs_result.chosen_candidates) == 2
+    assert response.initial_prompt_token_count == 20
+    assert response.usage_metadata.initial_prompt_token_count == 20
+    assert response.usage_metadata.prompt_token_count == 140
+    assert response.usage_metadata.cached_content_token_count == 16
+    assert response.usage_metadata.candidates_token_count == 150
+    assert response.usage_metadata.thoughts_token_count == 45
+    assert response.usage_metadata.tool_use_prompt_token_count == 15
+    assert response.usage_metadata.total_token_count == 350
     assert response.usage_metadata.prompt_tokens_details == [
         types.ModalityTokenCount(
             modality=types.MediaModality.TEXT, token_count=140
+        )
+    ]
+    assert response.usage_metadata.cache_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=16
+        )
+    ]
+    assert response.usage_metadata.candidates_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=150
+        )
+    ]
+    assert response.usage_metadata.tool_use_prompt_tokens_details == [
+        types.ModalityTokenCount(
+            modality=types.MediaModality.TEXT, token_count=15
         )
     ]
 
@@ -840,8 +957,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_1',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=24,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=32792,
+              thoughts_token_count=400,
+              total_token_count=33192,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -886,8 +1005,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_2',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=32792,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=65560,
+              thoughts_token_count=300,
+              total_token_count=65860,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -930,8 +1051,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_3',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=65560,
+              cached_content_token_count=10,
               candidates_token_count=32768,
-              total_token_count=98328,
+              thoughts_token_count=200,
+              total_token_count=98528,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -973,8 +1096,10 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           response_id='resp_hop_4',
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=98328,
+              cached_content_token_count=10,
               candidates_token_count=11903,
-              total_token_count=110231,
+              thoughts_token_count=100,
+              total_token_count=110331,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1018,8 +1143,39 @@ def test_models_generate_content_stream_auto_resumes_across_hops(
           '## CHAPTER 4: Code Generation\n',
           'End of compiler textbook.',
       ]
+      assert chunks[2].initial_prompt_token_count == 24
+      assert chunks[2].usage_metadata.prompt_token_count == 24
+      assert [c.candidates[0].finish_reason for c in chunks[:-1]] == [None] * (
+          len(chunks) - 1
+      )
+      assert (
+          hop1_chunks[2].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
       assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
       assert chunks[-1].candidates[0].continuation_token is None
+      assert chunks[-1].usage_metadata is not None
+      assert chunks[-1].initial_prompt_token_count == 24
+      assert chunks[-1].usage_metadata.initial_prompt_token_count == 24
+      assert (
+          chunks[-1].usage_metadata.prompt_token_count
+          == 24 + 32792 + 65560 + 98328
+      )
+      assert chunks[-1].usage_metadata.cached_content_token_count == 40
+      assert (
+          chunks[-1].usage_metadata.candidates_token_count == 32768 * 3 + 11903
+      )
+      assert (
+          chunks[-1].usage_metadata.thoughts_token_count
+          == 400 + 300 + 200 + 100
+      )
+      assert (
+          chunks[-1].usage_metadata.total_token_count
+          == 33192 + 65860 + 98528 + 110331
+      )
+      assert (
+          chunks[-1].usage_metadata.traffic_type == types.TrafficType.ON_DEMAND
+      )
 
       first_call_kwargs = mock_raw_stream.call_args_list[0].kwargs
       second_call_kwargs = mock_raw_stream.call_args_list[1].kwargs
@@ -1113,12 +1269,18 @@ def test_models_afc_decoupled_from_continuation_token(mock_api_client):
         ),
     )
     assert mock_raw_gc.call_count == 3
-    assert mock_raw_gc.call_args_list[0].kwargs['config'].continuation_token is None
+    assert (
+        mock_raw_gc.call_args_list[0].kwargs['config'].continuation_token
+        is None
+    )
     assert (
         mock_raw_gc.call_args_list[1].kwargs['config'].continuation_token
         == b'afc_tok_1'
     )
-    assert mock_raw_gc.call_args_list[2].kwargs['config'].continuation_token is None
+    assert (
+        mock_raw_gc.call_args_list[2].kwargs['config'].continuation_token
+        is None
+    )
     assert response.text == 'It is Sunny in Mountain View!'
 
   # 2. Streaming Models.generate_content_stream with AFC + continuation
@@ -1328,8 +1490,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=24,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=32792,
+              thoughts_token_count=400,
+              total_token_count=33192,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1347,8 +1511,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=32792,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=65560,
+              thoughts_token_count=300,
+              total_token_count=65860,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1366,8 +1532,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=65560,
+              cached_content_token_count=12,
               candidates_token_count=32768,
-              total_token_count=98328,
+              thoughts_token_count=200,
+              total_token_count=98528,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1384,8 +1552,10 @@ async def test_async_models_generate_content_and_stream_auto_resume(
           ],
           usage_metadata=types.GenerateContentResponseUsageMetadata(
               prompt_token_count=98328,
+              cached_content_token_count=12,
               candidates_token_count=1024,
-              total_token_count=99352,
+              thoughts_token_count=100,
+              total_token_count=99452,
               traffic_type=types.TrafficType.ON_DEMAND,
           ),
       ),
@@ -1432,20 +1602,55 @@ async def test_async_models_generate_content_and_stream_auto_resume(
             _make_async_stream(stream_hop4_chunks),
         ],
     ) as mock_async_stream:
-      chunks = []
+      chunk_objs = []
       async for chunk in await models_module.generate_content_stream(
           model='gemini-2.5-pro',
           contents='Hello async stream',
           config=stream_cfg,
       ):
-        chunks.append(chunk.text)
-      assert chunks == [
+        chunk_objs.append(chunk)
+      assert [c.text for c in chunk_objs] == [
           'Async chunk 1. ',
           'Async chunk 2. ',
           'Async chunk 3. ',
           'Async chunk 4. ',
           'Async chunk 5.',
       ]
+      assert chunk_objs[1].initial_prompt_token_count == 24
+      assert [c.candidates[0].finish_reason for c in chunk_objs[:-1]] == [
+          None
+      ] * (len(chunk_objs) - 1)
+      assert (
+          chunk_objs[-1].candidates[0].finish_reason == types.FinishReason.STOP
+      )
+      assert (
+          stream_hop1_chunks[1].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
+      assert (
+          stream_hop2_chunks[0].candidates[0].finish_reason
+          == types.FinishReason.CONTINUATION
+      )
+      assert chunk_objs[-1].usage_metadata is not None
+      assert chunk_objs[-1].initial_prompt_token_count == 24
+      assert chunk_objs[-1].usage_metadata.initial_prompt_token_count == 24
+      assert (
+          chunk_objs[-1].usage_metadata.prompt_token_count
+          == 24 + 32792 + 65560 + 98328
+      )
+      assert chunk_objs[-1].usage_metadata.cached_content_token_count == 48
+      assert (
+          chunk_objs[-1].usage_metadata.candidates_token_count
+          == 32768 * 3 + 1024
+      )
+      assert (
+          chunk_objs[-1].usage_metadata.thoughts_token_count
+          == 400 + 300 + 200 + 100
+      )
+      assert (
+          chunk_objs[-1].usage_metadata.total_token_count
+          == 33192 + 65860 + 98528 + 99452
+      )
       _assert_async_stream_4_hops(mock_async_stream)
 
 
@@ -1557,6 +1762,10 @@ async def test_async_models_automatic_continuation_config_rules(
         chunks.append(chunk)
       assert mock_async_stream.call_count == 1
       assert [c.text for c in chunks] == [hop1_resp.text]
+      assert (
+          chunks[0].candidates[0].finish_reason
+          == hop1_resp.candidates[0].finish_reason
+      )
 
   # 2. Default (config=None or automatic_continuation=None) -> continues across hops in unary & stream
   for cfg in (None, types.GenerateContentConfig()):
@@ -1597,6 +1806,8 @@ async def test_async_models_automatic_continuation_config_rules(
         chunks.append(chunk)
       assert mock_async_stream.call_count == 2
       assert [c.text for c in chunks] == ['Async Hop 1. ', 'Async Hop 2.']
+      assert chunks[0].candidates[0].finish_reason is None
+      assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
 
   # 3. automatic_continuation=True with max_output_tokens set and finish_reason == CONTINUATION -> continues and forwards max_output_tokens as-is
   with mock.patch.object(
@@ -1617,8 +1828,14 @@ async def test_async_models_automatic_continuation_config_rules(
     )
     assert mock_async_gc.call_count == 2
     assert response.text == 'Async Hop 1. Async Hop 2.'
-    assert mock_async_gc.call_args_list[0].kwargs['config'].max_output_tokens == 50000
-    assert mock_async_gc.call_args_list[1].kwargs['config'].max_output_tokens == 50000
+    assert (
+        mock_async_gc.call_args_list[0].kwargs['config'].max_output_tokens
+        == 50000
+    )
+    assert (
+        mock_async_gc.call_args_list[1].kwargs['config'].max_output_tokens
+        == 50000
+    )
 
 
 @pytest.mark.asyncio
@@ -1747,3 +1964,865 @@ async def test_async_models_afc_decoupled_from_continuation_token(
         is None
     )
     assert chunks[-1].text == 'It is Sunny in Mountain View!'
+
+
+def test_models_generate_content_stream_recovers_from_midstream_checkpoint_error(
+    mock_api_client,
+):
+  """Streaming Models.generate_content_stream resumes when a hop ends or errors with finish_reason=None after receiving a continuation_token."""
+  models_module = models.Models(mock_api_client)
+
+  chunk_pre_32k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Intro. ')]
+              ),
+          )
+      ]
+  )
+  chunk_ckpt_35k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Checkpoint 35k. ')]
+              ),
+              continuation_token=b'v2_ckpt_35k',
+          )
+      ]
+  )
+  chunk_ckpt_40k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Checkpoint 40k. ')]
+              ),
+              continuation_token=b'v2_ckpt_40k',
+          )
+      ]
+  )
+  chunk_hop2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Resumed and completed.')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  def _failing_hop(chunks_before_error, exc=None):
+    for c in chunks_before_error:
+      yield c.model_copy(deep=True)
+    if exc is not None:
+      raise exc
+
+  server_503 = errors.ServerError(
+      503,
+      {
+          'error': {
+              'code': 503,
+              'message': 'Service unavailable',
+              'status': 'UNAVAILABLE',
+          }
+      },
+  )
+
+  # 1. Recovers from mid-stream exception or premature EOF (finish_reason=None) using latest v2 checkpoint token
+  for hop1_exc in (server_503, httpx.ReadTimeout('read timed out'), None):
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        side_effect=[
+            _failing_hop(
+                [chunk_pre_32k, chunk_ckpt_35k, chunk_ckpt_40k],
+                hop1_exc,
+            ),
+            iter([chunk_hop2_final.model_copy(deep=True)]),
+        ],
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents='Write a long book',
+          )
+      )
+      assert mock_raw_stream.call_count == 2
+      assert (
+          mock_raw_stream.call_args_list[0].kwargs['config'] is None
+          or mock_raw_stream.call_args_list[0]
+          .kwargs['config']
+          .continuation_token
+          is None
+      )
+      assert (
+          mock_raw_stream.call_args_list[1].kwargs['config'].continuation_token
+          == b'v2_ckpt_40k'
+      )
+      assert [c.text for c in chunks] == [
+          'Intro. ',
+          'Checkpoint 35k. ',
+          'Checkpoint 40k. ',
+          'Resumed and completed.',
+      ]
+      assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+
+  # 2. Error before any checkpoint token in the hop -> raises without retrying
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_failing_hop([chunk_pre_32k], server_503)],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Intro. '
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 1
+
+  # 3. Error when automatic_continuation=False -> raises even if checkpoint token was emitted
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_failing_hop([chunk_ckpt_35k], server_503)],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+        config=types.GenerateContentConfig(automatic_continuation=False),
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 1
+
+  # 4. Consecutive failure on resumed hop before any new checkpoint chunk is emitted -> raises without infinite looping
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          _failing_hop([chunk_ckpt_35k], server_503),
+          _failing_hop([], server_503),
+      ],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 2
+
+  # 5. Error after STOP finish_reason in same hop -> stale checkpoint token was cleared, so does not resume
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          _failing_hop([chunk_ckpt_35k, chunk_hop2_final], server_503),
+      ],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    assert next(stream).text == 'Resumed and completed.'
+    with pytest.raises(errors.ServerError):
+      next(stream)
+    assert mock_raw_stream.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_async_models_generate_content_stream_recovers_from_midstream_checkpoint_error(
+    mock_api_client,
+):
+  """AsyncModels.generate_content_stream resumes when a hop ends or errors with finish_reason=None after receiving a continuation_token."""
+  models_module = models.AsyncModels(mock_api_client)
+
+  chunk_pre_32k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Intro. ')]
+              ),
+          )
+      ]
+  )
+  chunk_ckpt_35k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Ckpt 35k. ')]
+              ),
+              continuation_token=b'async_v2_ckpt_35k',
+          )
+      ]
+  )
+  chunk_ckpt_40k = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Ckpt 40k. ')]
+              ),
+              continuation_token=b'async_v2_ckpt_40k',
+          )
+      ]
+  )
+  chunk_hop2_final = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Async resumed and completed.')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+  async def _make_async_stream(chunk_list, exc=None):
+    for c in chunk_list:
+      yield c.model_copy(deep=True)
+    if exc is not None:
+      raise exc
+
+  server_504 = errors.ServerError(
+      504,
+      {
+          'error': {
+              'code': 504,
+              'message': 'Deadline exceeded',
+              'status': 'DEADLINE_EXCEEDED',
+          }
+      },
+  )
+
+  # 1. Recovers from mid-stream exception or premature EOF (finish_reason=None) using latest v2 checkpoint token
+  for hop1_exc in (server_504, httpx.ReadTimeout('async read timed out'), None):
+    with mock.patch.object(
+        models.AsyncModels,
+        '_generate_content_stream',
+        new_callable=mock.AsyncMock,
+        side_effect=[
+            _make_async_stream(
+                [chunk_pre_32k, chunk_ckpt_35k, chunk_ckpt_40k],
+                hop1_exc,
+            ),
+            _make_async_stream([chunk_hop2_final]),
+        ],
+    ) as mock_async_stream:
+      chunks = []
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        chunks.append(chunk)
+      assert mock_async_stream.call_count == 2
+      assert (
+          mock_async_stream.call_args_list[1]
+          .kwargs['config']
+          .continuation_token
+          == b'async_v2_ckpt_40k'
+      )
+      assert [c.text for c in chunks] == [
+          'Async Intro. ',
+          'Async Ckpt 35k. ',
+          'Async Ckpt 40k. ',
+          'Async resumed and completed.',
+      ]
+      assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+
+  # 2. Error before any checkpoint token in the hop -> raises without retrying
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_make_async_stream([chunk_pre_32k], server_504)],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Intro. ']
+    assert mock_async_stream.call_count == 1
+
+  # 3. Error when automatic_continuation=False -> raises even if checkpoint token was emitted
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_make_async_stream([chunk_ckpt_35k], server_504)],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+          config=types.GenerateContentConfig(automatic_continuation=False),
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ']
+    assert mock_async_stream.call_count == 1
+
+  # 4. Consecutive failure on resumed hop before any new checkpoint chunk is emitted -> raises without infinite looping
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_ckpt_35k], server_504),
+          _make_async_stream([], server_504),
+      ],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ']
+    assert mock_async_stream.call_count == 2
+
+  # 5. Error after STOP finish_reason in same hop -> stale checkpoint token was cleared, so does not resume
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_ckpt_35k, chunk_hop2_final], server_504),
+      ],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ', 'Async resumed and completed.']
+    assert mock_async_stream.call_count == 1
+
+
+TOK_UNARY_HOP1_B64 = base64.b64encode(b'tok_unary_hop1').decode('ascii')
+TOK_STREAM_CP1_B64 = base64.b64encode(b'tok_stream_cp1').decode('ascii')
+TOK_STREAM_FINAL_B64 = base64.b64encode(b'tok_stream_final').decode('ascii')
+TOK_STREAM_HOP1_B64 = base64.b64encode(b'tok_stream_hop1').decode('ascii')
+TOK_STREAM_HOP2_B64 = base64.b64encode(b'tok_stream_hop2').decode('ascii')
+
+UNARY_HOP1_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [
+                {'text': 'Thinking step 1...', 'thought': True},
+                {'text': 'Hello '},
+            ],
+        },
+        'finishReason': 'CONTINUATION',
+        'continuationToken': TOK_UNARY_HOP1_B64,
+        'groundingMetadata': {
+            'webSearchQueries': ['query1'],
+            'searchEntryPoint': {'renderedContent': '<div>hop1</div>'},
+        },
+        'citationMetadata': {
+            'citationSources': [{
+                'startIndex': 0,
+                'endIndex': 5,
+                'uri': 'https://a.example',
+            }]
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 120,
+        'candidatesTokenCount': 50,
+        'thoughtsTokenCount': 30,
+        'totalTokenCount': 200,
+        'cachedContentTokenCount': 40,
+        'toolUsePromptTokenCount': 10,
+        'trafficType': 'ON_DEMAND',
+    },
+}
+
+UNARY_HOP2_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [
+                {'text': 'world!'},
+            ],
+        },
+        'finishReason': 'STOP',
+        'groundingMetadata': {
+            'webSearchQueries': ['query2'],
+            'searchEntryPoint': {'renderedContent': '<div>hop2</div>'},
+        },
+        'citationMetadata': {
+            'citationSources': [{
+                'startIndex': 6,
+                'endIndex': 12,
+                'uri': 'https://b.example',
+            }]
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 200,
+        'candidatesTokenCount': 25,
+        'thoughtsTokenCount': 15,
+        'totalTokenCount': 240,
+        'cachedContentTokenCount': 180,
+        'toolUsePromptTokenCount': 5,
+        'trafficType': 'ON_DEMAND',
+    },
+}
+
+STREAM_HOP1_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Stream 1 '}],
+        },
+        'finishReason': 'CONTINUATION',
+        'continuationToken': TOK_STREAM_HOP1_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 150,
+        'candidatesTokenCount': 64000,
+        'totalTokenCount': 64150,
+    },
+}
+
+STREAM_HOP2_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Stream 2!'}],
+        },
+        'finishReason': 'STOP',
+        'continuationToken': TOK_STREAM_HOP2_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 64150,
+        'candidatesTokenCount': 1200,
+        'totalTokenCount': 65350,
+    },
+}
+
+STREAM_DROP_PART_A_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Part A '}],
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 100,
+        'candidatesTokenCount': 10,
+        'totalTokenCount': 110,
+    },
+}
+
+STREAM_DROP_PART_B_CKPT_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Part B '}],
+        },
+        'continuationToken': TOK_STREAM_CP1_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 100,
+        'candidatesTokenCount': 35000,
+        'totalTokenCount': 35100,
+    },
+}
+
+STREAM_DROP_PART_C_STOP_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Part C!'}],
+        },
+        'finishReason': 'STOP',
+        'continuationToken': TOK_STREAM_FINAL_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 35100,
+        'candidatesTokenCount': 500,
+        'totalTokenCount': 35600,
+    },
+}
+
+STREAM_UNCHECKPOINTED_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Uncheckpointed '}],
+        },
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 100,
+        'candidatesTokenCount': 10,
+        'totalTokenCount': 110,
+    },
+}
+
+STREAM_STALE_CHUNK1_CKPT_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Chunk 1 checkpoint '}],
+        },
+        'continuationToken': TOK_STREAM_CP1_B64,
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 50,
+        'candidatesTokenCount': 200,
+        'totalTokenCount': 250,
+    },
+}
+
+STREAM_STALE_CHUNK2_STOP_PAYLOAD = {
+    'candidates': [{
+        'index': 0,
+        'content': {
+            'role': 'model',
+            'parts': [{'text': 'Chunk 2 stop'}],
+        },
+        'finishReason': 'STOP',
+    }],
+    'usageMetadata': {
+        'promptTokenCount': 50,
+        'candidatesTokenCount': 205,
+        'totalTokenCount': 255,
+    },
+}
+
+
+def _json_http_response(payload: dict[str, object]) -> types.HttpResponse:
+  return types.HttpResponse(headers={}, body=json.dumps(payload))
+
+
+def _stream_http_responses(
+    payloads: list[dict[str, object]], exc: Exception | None = None
+):
+  for payload in payloads:
+    yield _json_http_response(payload)
+  if exc is not None:
+    raise exc
+
+
+async def _async_stream_http_responses(
+    payloads: list[dict[str, object]], exc: Exception | None = None
+):
+  for payload in payloads:
+    yield _json_http_response(payload)
+  if exc is not None:
+    raise exc
+
+
+def test_e2e_unary_multihop_aggregation_and_usage():
+  """Verifies unary multi-hop request/response serialization, aggregation, and usage."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request',
+      side_effect=[
+          _json_http_response(UNARY_HOP1_PAYLOAD),
+          _json_http_response(UNARY_HOP2_PAYLOAD),
+      ],
+  ) as mock_request:
+    resp = test_client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello',
+    )
+  cand = resp.candidates[0]
+  u = resp.usage_metadata
+
+  assert mock_request.call_count == 2
+  assert 'continuationToken' not in mock_request.call_args_list[0].args[2]
+  assert 'automaticContinuation' not in mock_request.call_args_list[0].args[2]
+  assert (
+      mock_request.call_args_list[1].args[2].get('continuationToken')
+      == TOK_UNARY_HOP1_B64
+  )
+  assert 'automaticContinuation' not in mock_request.call_args_list[1].args[2]
+  assert resp.text == 'Hello world!'
+  assert cand.finish_reason == types.FinishReason.STOP
+  assert u.initial_prompt_token_count == 120
+  assert u.prompt_token_count == 320
+  assert u.candidates_token_count == 75
+  assert u.thoughts_token_count == 45
+  assert u.cached_content_token_count == 220
+  assert u.tool_use_prompt_token_count == 15
+  assert u.total_token_count == 440
+  assert cand.grounding_metadata.web_search_queries == ['query1', 'query2']
+  assert (
+      cand.grounding_metadata.search_entry_point.rendered_content
+      == '<div>hop2</div>'
+  )
+  assert len(cand.citation_metadata.citations) == 2
+
+
+def test_e2e_unary_automatic_continuation_false():
+  """Verifies automatic_continuation=False stops after one hop and decodes token."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request',
+      return_value=_json_http_response(UNARY_HOP1_PAYLOAD),
+  ) as mock_request:
+    resp_no_cont = test_client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents='Hello',
+        config=types.GenerateContentConfig(automatic_continuation=False),
+    )
+
+  assert mock_request.call_count == 1
+  assert 'automaticContinuation' not in mock_request.call_args_list[0].args[2]
+  assert (
+      resp_no_cont.candidates[0].finish_reason
+      == types.FinishReason.CONTINUATION
+  )
+  assert resp_no_cont.candidates[0].continuation_token == b'tok_unary_hop1'
+  assert resp_no_cont.usage_metadata.initial_prompt_token_count == 120
+  assert resp_no_cont.usage_metadata.prompt_token_count == 120
+
+
+def test_e2e_streaming_continuation_boundary():
+  """Verifies streaming continuation clears intermediate finish_reason across hops."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses([STREAM_HOP1_PAYLOAD]),
+          _stream_http_responses([STREAM_HOP2_PAYLOAD]),
+      ],
+  ) as mock_stream:
+    chunks = list(
+        test_client.models.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Stream test',
+        )
+    )
+
+  assert mock_stream.call_count == 2
+  assert (
+      mock_stream.call_args_list[1].args[2].get('continuationToken')
+      == TOK_STREAM_HOP1_B64
+  )
+  assert len(chunks) == 2
+  assert chunks[0].candidates[0].finish_reason is None
+  assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
+  assert ''.join(c.text for c in chunks) == 'Stream 1 Stream 2!'
+  assert chunks[0].usage_metadata.initial_prompt_token_count == 150
+  assert chunks[1].usage_metadata.initial_prompt_token_count == 150
+
+
+def test_e2e_streaming_drop_recovery_after_checkpoint():
+  """Verifies streaming recovery when request_streamed drops after a checkpoint."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses(
+              [STREAM_DROP_PART_A_PAYLOAD, STREAM_DROP_PART_B_CKPT_PAYLOAD],
+              exc=httpx.RemoteProtocolError('peer closed connection'),
+          ),
+          _stream_http_responses([STREAM_DROP_PART_C_STOP_PAYLOAD]),
+      ],
+  ) as mock_stream:
+    drop_chunks = list(
+        test_client.models.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Drop test',
+        )
+    )
+
+  assert mock_stream.call_count == 2
+  assert (
+      mock_stream.call_args_list[1].args[2].get('continuationToken')
+      == TOK_STREAM_CP1_B64
+  )
+  assert len(drop_chunks) == 3
+  assert ''.join(c.text for c in drop_chunks) == 'Part A Part B Part C!'
+  assert drop_chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+  assert all(
+      c.usage_metadata.initial_prompt_token_count == 100 for c in drop_chunks
+  )
+
+
+def test_e2e_streaming_drop_before_checkpoint_raises():
+  """Verifies streaming error before any checkpoint token propagates without retry."""
+  test_client = client.Client(api_key='test-key')
+  yielded_before_err = []
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses(
+              [STREAM_UNCHECKPOINTED_PAYLOAD],
+              exc=httpx.RemoteProtocolError('peer closed connection'),
+          )
+      ],
+  ) as mock_stream:
+    with pytest.raises(httpx.RemoteProtocolError):
+      for ch in test_client.models.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Drop before checkpoint test',
+      ):
+        yielded_before_err.append(ch.text)
+
+  assert mock_stream.call_count == 1
+  assert yielded_before_err == ['Uncheckpointed ']
+
+
+def test_e2e_streaming_stale_token_discard_on_stop():
+  """Verifies an earlier checkpoint token in the same hop is discarded on STOP."""
+  test_client = client.Client(api_key='test-key')
+  with mock.patch.object(
+      client.BaseApiClient,
+      'request_streamed',
+      side_effect=[
+          _stream_http_responses([
+              STREAM_STALE_CHUNK1_CKPT_PAYLOAD,
+              STREAM_STALE_CHUNK2_STOP_PAYLOAD,
+          ])
+      ],
+  ) as mock_stream:
+    chunks = list(
+        test_client.models.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Stale token test',
+        )
+    )
+
+  assert mock_stream.call_count == 1
+  assert len(chunks) == 2
+  assert chunks[0].text == 'Chunk 1 checkpoint '
+  assert chunks[1].text == 'Chunk 2 stop'
+  assert chunks[1].candidates[0].finish_reason == types.FinishReason.STOP
+  assert chunks[1].candidates[0].continuation_token is None
+
+
+def test_e2e_chat_unary_vs_stream_history():
+  """Verifies Chat history accumulation across multi-hop unary and stream calls."""
+  test_client = client.Client(api_key='test-key')
+  with (
+      mock.patch.object(
+          client.BaseApiClient,
+          'request',
+          side_effect=[
+              _json_http_response(UNARY_HOP1_PAYLOAD),
+              _json_http_response(UNARY_HOP2_PAYLOAD),
+          ],
+      ) as mock_request,
+      mock.patch.object(
+          client.BaseApiClient,
+          'request_streamed',
+          side_effect=[
+              _stream_http_responses([STREAM_HOP1_PAYLOAD]),
+              _stream_http_responses([STREAM_HOP2_PAYLOAD]),
+          ],
+      ) as mock_stream,
+  ):
+    chat_unary = test_client.chats.create(model='gemini-2.5-pro')
+    _ = chat_unary.send_message('Hello unary chat')
+    unary_history = chat_unary.get_history()
+
+    chat_stream = test_client.chats.create(model='gemini-2.5-pro')
+    _ = list(chat_stream.send_message_stream('Hello stream chat'))
+    stream_history = chat_stream.get_history()
+
+  assert mock_request.call_count == 2
+  assert mock_stream.call_count == 2
+  assert len(unary_history) == 2
+  assert unary_history[0].role == 'user'
+  assert unary_history[1].role == 'model'
+  assert (
+      ''.join(p.text for p in unary_history[1].parts if not p.thought)
+      == 'Hello world!'
+  )
+
+  assert len(stream_history) == 3
+  assert stream_history[0].role == 'user'
+  assert all(h.role == 'model' for h in stream_history[1:])
+  assert [h.parts[0].text for h in stream_history[1:]] == [
+      'Stream 1 ',
+      'Stream 2!',
+  ]
+
+
+@pytest.mark.asyncio
+async def test_e2e_async_client_continuation():
+  """Verifies AsyncClient unary multi-hop and streaming checkpoint recovery."""
+  async with client.Client(api_key='test-key').aio as aclient:
+    with (
+        mock.patch.object(
+            client.BaseApiClient,
+            'async_request',
+            new_callable=mock.AsyncMock,
+            side_effect=[
+                _json_http_response(UNARY_HOP1_PAYLOAD),
+                _json_http_response(UNARY_HOP2_PAYLOAD),
+            ],
+        ) as mock_async_request,
+        mock.patch.object(
+            client.BaseApiClient,
+            'async_request_streamed',
+            new_callable=mock.AsyncMock,
+            side_effect=[
+                _async_stream_http_responses(
+                    [
+                        STREAM_DROP_PART_A_PAYLOAD,
+                        STREAM_DROP_PART_B_CKPT_PAYLOAD,
+                    ],
+                    exc=httpx.RemoteProtocolError('peer closed connection'),
+                ),
+                _async_stream_http_responses([STREAM_DROP_PART_C_STOP_PAYLOAD]),
+            ],
+        ) as mock_async_stream,
+    ):
+      aresp = await aclient.models.generate_content(
+          model='gemini-2.5-pro',
+          contents='Async hello',
+      )
+      astream_chunks = []
+      async for ch in await aclient.models.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Async drop',
+      ):
+        astream_chunks.append(ch)
+
+    assert mock_async_request.call_count == 2
+    assert (
+        mock_async_request.call_args_list[1].args[2].get('continuationToken')
+        == TOK_UNARY_HOP1_B64
+    )
+    assert mock_async_stream.call_count == 2
+    assert (
+        mock_async_stream.call_args_list[1].args[2].get('continuationToken')
+        == TOK_STREAM_CP1_B64
+    )
+    assert aresp.text == 'Hello world!'
+    assert aresp.usage_metadata.initial_prompt_token_count == 120
+    assert ''.join(c.text for c in astream_chunks) == 'Part A Part B Part C!'

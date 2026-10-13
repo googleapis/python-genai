@@ -34,7 +34,13 @@ Model = Union[
         "gemini-flash-lite-latest",
         # Latest release of Gemini Pro
         "gemini-pro-latest",
+        # Our first hybrid reasoning model which supports a 1M token context window and has thinking budgets.
+        "gemini-2.5-flash",
+        # Our state-of-the-art multipurpose model, which excels at coding and complex reasoning tasks.
+        "gemini-2.5-pro",
         # Our smallest and most cost effective model, built for at scale usage.
+        "gemini-2.5-flash-lite",
+        # Gemini 3.5 Flash-Lite - Our fastest, most cost-effective 3.5 model for high-throughput execution.
         "gemini-3.5-flash-lite",
         # Our native image generation model, optimized for speed, flexibility, and contextual understanding. Text input and output is priced the same as 2.5 Flash.
         "gemini-2.5-flash-image",
@@ -74,6 +80,8 @@ Model = Union[
         "lyria-3-clip-preview",
         # Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.
         "lyria-3-pro-preview",
+        # Gemini Robotics-ER 1.6 Preview
+        "gemini-robotics-er-1.6-preview",
         # Gemini Robotics Embodied Reasoning 2 Preview
         "gemini-robotics-er-2-preview",
         # Our flagship music generation model, optimized for full-length songs with complex structural coherence.

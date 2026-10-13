@@ -58,10 +58,10 @@ class PingWebhookGlobals(BaseModel):
 class PingWebhookRequestParam(TypedDict):
     id: str
     r"""Required. The ID of the webhook to ping."""
+    body: webhooks_pingwebhookrequest.PingWebhookRequestParam
+    r"""Required. The request body."""
     api_version: NotRequired[str]
     r"""API version for request routing."""
-    body: NotRequired[webhooks_pingwebhookrequest.PingWebhookRequestParam]
-    r"""Required. The request body."""
 
 
 class PingWebhookRequest(BaseModel):
@@ -70,21 +70,21 @@ class PingWebhookRequest(BaseModel):
     ]
     r"""Required. The ID of the webhook to ping."""
 
+    body: Annotated[
+        webhooks_pingwebhookrequest.PingWebhookRequest,
+        FieldMetadata(request=RequestMetadata(media_type="application/json")),
+    ]
+    r"""Required. The request body."""
+
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
     r"""API version for request routing."""
 
-    body: Annotated[
-        Optional[webhooks_pingwebhookrequest.PingWebhookRequest],
-        FieldMetadata(request=RequestMetadata(media_type="application/json")),
-    ] = None
-    r"""Required. The request body."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "body"])
+        optional_fields = set(["api_version"])
         serialized = handler(self)
         m = {}
 
