@@ -655,6 +655,16 @@ def _raise_for_unsupported_mldev_properties(
     raise ValueError('additionalProperties is only supported in Gemini Enterprise Agent Platform mode, , not in Gemini Developer API mode.')
 
 
+# Field-level annotations that override the referenced definition's values
+# when a '$ref' is inlined.
+_REF_SIBLING_ANNOTATIONS = ('description', 'title')
+
+
+def _ref_sibling_annotations(schema: _common.StringDict) -> _common.StringDict:
+  """Returns the annotations that `schema` declares beside its '$ref'."""
+  return {key: schema[key] for key in _REF_SIBLING_ANNOTATIONS if key in schema}
+
+
 def process_schema(
     schema: _common.StringDict,
     client: Optional[_api_client.BaseApiClient],
@@ -778,16 +788,24 @@ def process_schema(
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
   if (ref := schema.pop('$ref', None)) is not None:
+    annotations = _ref_sibling_annotations(schema)
     if (resolved := _resolve_ref(ref)) is not None:
       schema.update(resolved)
+      schema.update(annotations)
     visited_dicts_path.remove(id(schema))
     return
 
   def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
+    annotations: _common.StringDict = {}
     if (ref := sub_schema.pop('$ref', None)) is not None:
+      annotations = _ref_sibling_annotations(sub_schema)
       resolved = _resolve_ref(ref)
-      return {} if resolved is None else resolved
+      if resolved is None:
+        return {}
+      # `resolved` is already a copy, so the shared definition is unchanged.
+      resolved.update(annotations)
+      return resolved
 
     process_schema(
         sub_schema,
@@ -797,6 +815,9 @@ def process_schema(
         visited_dicts_path=visited_dicts_path,
         visited_refs=visited_refs,
     )
+    if annotations:
+      # Copy, since the definition is shared by every reference.
+      return {**sub_schema, **annotations}
     return sub_schema
 
   if (any_of := schema.get('anyOf')) is not None:
