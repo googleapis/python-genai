@@ -20,6 +20,7 @@ import contextlib
 import json
 import os
 import ssl
+import threading
 import typing
 from typing import Any, AsyncIterator
 from unittest import mock
@@ -29,6 +30,7 @@ from unittest.mock import patch
 import warnings
 
 import certifi
+from google.auth import credentials as google_auth_credentials
 from google.oauth2.credentials import Credentials
 import pytest
 from websockets import client
@@ -115,6 +117,14 @@ def mock_api_client(vertexai=False, credentials=None, http_options=None):
 
   api_client._host = lambda: 'test_host'
   api_client._credentials = credentials
+  api_client._sync_auth_lock = threading.Lock()
+  api_client._async_auth_locks = {}
+  api_client._get_async_auth_lock = (
+      lambda: gl_client.BaseApiClient._get_async_auth_lock(api_client)
+  )
+  api_client._async_access_token = (
+      lambda: gl_client.BaseApiClient._async_access_token(api_client)
+  )
   api_client._http_options = types.HttpOptions.model_validate(
       {'headers': {}}
   )  # Ensure headers exist
@@ -2211,6 +2221,130 @@ async def test_connect_with_default_credentials(mock_websocket):
     assert capture['headers']['Authorization'] == 'Bearer default_test_token'
 
   await _test_connect()
+
+
+@pytest.mark.asyncio
+async def test_connect_vertex_adc_resolved_off_event_loop_and_cached(
+    mock_websocket,
+):
+  """ADC is resolved and refreshed once per client, off the event loop."""
+  client = gl_client.BaseApiClient(
+      vertexai=True, project='test-project', location='us-central1'
+  )
+  assert client._credentials is None
+  loop_thread = threading.get_ident()
+  adc_threads = []
+  refresh_threads = []
+  captured_headers = []
+
+  creds = mock.Mock(spec=google_auth_credentials.Credentials)
+  creds.token = None
+  creds.expired = False
+  creds.valid = False
+  creds.quota_project_id = None
+
+  def refresh(_):
+    refresh_threads.append(threading.get_ident())
+    creds.token = 'adc_token'
+    creds.valid = True
+
+  creds.refresh = Mock(side_effect=refresh)
+
+  def auth_default(**_):
+    adc_threads.append(threading.get_ident())
+    return creds, 'test-project'
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    captured_headers.append(additional_headers)
+    yield mock_websocket
+
+  with patch('google.auth.default', new=Mock(side_effect=auth_default)):
+    with patch.object(live, 'ws_connect', new=mock_connect):
+      for _ in range(2):
+        async with live.AsyncLive(client).connect(model='test-model'):
+          pass
+
+  assert len(adc_threads) == 1
+  assert adc_threads[0] != loop_thread
+  assert len(refresh_threads) == 1
+  assert refresh_threads[0] != loop_thread
+  assert client._credentials is creds
+  assert [h['Authorization'] for h in captured_headers] == [
+      'Bearer adc_token',
+      'Bearer adc_token',
+  ]
+
+
+@pytest.mark.asyncio
+async def test_connect_vertex_refreshes_provided_credentials_off_event_loop(
+    mock_websocket,
+):
+  """Expired explicit credentials are refreshed off the event loop, not ADC."""
+  loop_thread = threading.get_ident()
+  refresh_threads = []
+  capture = {}
+
+  creds = mock.Mock(spec=google_auth_credentials.Credentials)
+  creds.token = None
+  creds.expired = True
+  creds.valid = False
+  creds.quota_project_id = None
+
+  def refresh(_):
+    refresh_threads.append(threading.get_ident())
+    creds.token = 'refreshed_token'
+    creds.expired = False
+    creds.valid = True
+
+  creds.refresh = Mock(side_effect=refresh)
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=creds,
+  )
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch(
+      'google.auth.default',
+      new=Mock(side_effect=AssertionError('ADC must not be used')),
+  ):
+    with patch.object(live, 'ws_connect', new=mock_connect):
+      async with live.AsyncLive(client).connect(model='test-model'):
+        pass
+
+  assert len(refresh_threads) == 1
+  assert refresh_threads[0] != loop_thread
+  assert capture['headers']['Authorization'] == 'Bearer refreshed_token'
+
+
+@pytest.mark.asyncio
+async def test_connect_vertex_raises_when_refresh_yields_no_token():
+  """A refresh that leaves no token fails before the websocket opens."""
+  creds = mock.Mock(spec=google_auth_credentials.Credentials)
+  creds.token = None
+  creds.expired = True
+  creds.quota_project_id = None
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=creds,
+  )
+  mock_connect = Mock()
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    with pytest.raises(RuntimeError, match='Could not resolve API token'):
+      async with live.AsyncLive(client).connect(model='test-model'):
+        pass
+
+  creds.refresh.assert_called_once()
+  mock_connect.assert_not_called()
 
 
 @pytest.mark.asyncio

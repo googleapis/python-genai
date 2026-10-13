@@ -25,7 +25,6 @@ import typing
 from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
 
-import google.auth
 import pydantic
 import websockets
 
@@ -53,20 +52,6 @@ except ModuleNotFoundError:
   # This try/except is for TAP, mypy complains about it which is why we have the type: ignore
   from websockets.client import ClientConnection  # type: ignore
   from websockets.client import connect as ws_connect  # type: ignore
-
-
-def _auth_requests() -> Any:
-  """Returns google-auth's requests transport, or None if it is unavailable.
-
-  Resolved on use rather than at module scope, because importing it pulls in
-  the whole `requests` stack and only credential refresh below needs it.
-  """
-  try:
-    from google.auth.transport import requests
-
-    return requests
-  except ImportError:
-    return None
 
 
 if typing.TYPE_CHECKING:
@@ -1052,22 +1037,7 @@ class AsyncLive(_api_module.BaseModule):
       else:
         uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
 
-        if not self._api_client._credentials:
-          # Get bearer token through Application Default Credentials.
-          creds, _ = google.auth.default(  # type: ignore
-              scopes=['https://www.googleapis.com/auth/cloud-platform']
-          )
-        else:
-          creds = self._api_client._credentials
-        # creds.valid is False, and creds.token is None
-        # Need to refresh credentials to populate those
-        if not (creds.token and creds.valid):
-          auth_requests = _auth_requests()
-          if auth_requests is None:
-            raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
-          auth_req = auth_requests.Request()
-          creds.refresh(auth_req)  # type: ignore[no-untyped-call]
-        bearer_token = creds.token
+        bearer_token = await self._api_client._async_access_token()
 
         original_headers = self._api_client._http_options.headers
         headers = (
