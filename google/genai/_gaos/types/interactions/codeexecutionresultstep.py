@@ -20,11 +20,24 @@
 from __future__ import annotations
 from .. import Base64EncodedString, Base64FileInput, BaseModel, UNSET_SENTINEL
 from ...utils import validate_const
+from .content import Content, ContentParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing import List, Literal, Optional, Union
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
+
+
+CodeExecutionResultStepResultParam = TypeAliasType(
+    "CodeExecutionResultStepResultParam", Union[List[ContentParam], str]
+)
+r"""The output of the code execution."""
+
+
+CodeExecutionResultStepResult = TypeAliasType(
+    "CodeExecutionResultStepResult", Union[List[Content], str]
+)
+r"""The output of the code execution."""
 
 
 class CodeExecutionResultStepParam(TypedDict):
@@ -32,8 +45,8 @@ class CodeExecutionResultStepParam(TypedDict):
 
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
-    result: str
-    r"""Required. The output of the code execution."""
+    result: CodeExecutionResultStepResultParam
+    r"""The output of the code execution."""
     is_error: NotRequired[bool]
     r"""Whether the code execution resulted in an error."""
     signature: NotRequired[Union[str, Base64FileInput]]
@@ -47,8 +60,8 @@ class CodeExecutionResultStep(BaseModel):
     call_id: str
     r"""Required. ID to match the ID from the function call block."""
 
-    result: str
-    r"""Required. The output of the code execution."""
+    result: CodeExecutionResultStepResult
+    r"""The output of the code execution."""
 
     is_error: Optional[bool] = None
     r"""Whether the code execution resulted in an error."""
