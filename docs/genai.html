@@ -739,9 +739,6 @@ that are still running.</p>
 <li><p><strong>api_version</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – API version for request routing.</p></li>
 <li><p><strong>background</strong> – Input only. Whether to run the model interaction in the background.</p></li>
 <li><p><strong>cached_content</strong> – The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}</p></li>
-<li><p><strong>continuation_token</strong> – Opaque token to resume a long decode. Output: set when status is
-INCOMPLETE and decoding can be resumed. Input: pass the latest token
-back unchanged in CreateInteraction to continue decoding.</p></li>
 <li><p><strong>environment</strong> – The environment configuration for the interaction. Can be an object
 specifying remote environment sources or a string referencing an existing
 environment ID.</p></li>
@@ -873,9 +870,6 @@ that are still running.</p>
 <li><p><strong>api_version</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – API version for request routing.</p></li>
 <li><p><strong>background</strong> – Input only. Whether to run the model interaction in the background.</p></li>
 <li><p><strong>cached_content</strong> – The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}</p></li>
-<li><p><strong>continuation_token</strong> – Opaque token to resume a long decode. Output: set when status is
-INCOMPLETE and decoding can be resumed. Input: pass the latest token
-back unchanged in CreateInteraction to continue decoding.</p></li>
 <li><p><strong>environment</strong> – The environment configuration for the interaction. Can be an object
 specifying remote environment sources or a string referencing an existing
 environment ID.</p></li>
@@ -1301,8 +1295,8 @@ Provide this to retrieve the subsequent page.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>id</strong> – Required. The ID of the webhook to ping.</p></li>
-<li><p><strong>api_version</strong> – API version for request routing.</p></li>
 <li><p><strong>body</strong> – Required. The request body.</p></li>
+<li><p><strong>api_version</strong> – API version for request routing.</p></li>
 <li><p><strong>extra_headers</strong> – Additional headers to set or replace on requests.</p></li>
 <li><p><strong>extra_query</strong> – Additional query parameters to append to requests.</p></li>
 <li><p><strong>extra_body</strong> – Additional JSON object fields to merge into request bodies.</p></li>
@@ -1491,8 +1485,8 @@ Provide this to retrieve the subsequent page.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>id</strong> – Required. The ID of the webhook to ping.</p></li>
-<li><p><strong>api_version</strong> – API version for request routing.</p></li>
 <li><p><strong>body</strong> – Required. The request body.</p></li>
+<li><p><strong>api_version</strong> – API version for request routing.</p></li>
 <li><p><strong>extra_headers</strong> – Additional headers to set or replace on requests.</p></li>
 <li><p><strong>extra_query</strong> – Additional query parameters to append to requests.</p></li>
 <li><p><strong>extra_body</strong> – Additional JSON object fields to merge into request bodies.</p></li>
@@ -2762,6 +2756,13 @@ reference images for editing.</p></li>
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">generate_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genai.models.AsyncModels.generate_content" title="Link to this definition">¶</a></dt>
 <dd><p>Makes an API request to generate content using a model.</p>
 <p>Some models support multimodal input and output.</p>
+<p>Automatic continuation is enabled by default. When the model stops with
+<cite>finish_reason == FinishReason.CONTINUATION</cite> and returns a
+<cite>continuation_token</cite> on the first candidate, the SDK automatically sends
+follow-up requests with the <cite>continuation_token</cite> until <cite>finish_reason</cite> is no
+longer <cite>CONTINUATION</cite>, and returns the merged response. Set
+<cite>config=types.GenerateContentConfig(automatic_continuation=False)</cite> to
+disable this behavior.</p>
 <p>Built-in MCP support is an experimental feature.</p>
 <p>Usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
@@ -2822,6 +2823,14 @@ for example:
 ‘tunedModels/1234567890123456789’</p></li>
 </ul>
 <p>Some models support multimodal input and output.</p>
+<p>Automatic continuation is enabled by default. When a stream hop ends with
+<cite>finish_reason == FinishReason.CONTINUATION</cite> and includes a
+<cite>continuation_token</cite> on the first candidate, the SDK automatically clears
+the intermediate <cite>CONTINUATION</cite> <cite>finish_reason</cite>, starts follow-up stream
+requests with the <cite>continuation_token</cite>, and yields chunks until
+<cite>finish_reason</cite> is no longer <cite>CONTINUATION</cite>. Set
+<cite>config=types.GenerateContentConfig(automatic_continuation=False)</cite> to
+disable this behavior.</p>
 <p>Built-in MCP support is an experimental feature.</p>
 <p>Usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
@@ -3316,6 +3325,13 @@ for example:
 ‘tunedModels/1234567890123456789’</p></li>
 </ul>
 <p>Some models support multimodal input and output.</p>
+<p>Automatic continuation is enabled by default. When the model stops with
+<cite>finish_reason == FinishReason.CONTINUATION</cite> and returns a
+<cite>continuation_token</cite> on the first candidate, the SDK automatically sends
+follow-up requests with the <cite>continuation_token</cite> until <cite>finish_reason</cite> is no
+longer <cite>CONTINUATION</cite>, and returns the merged response. Set
+<cite>config=types.GenerateContentConfig(automatic_continuation=False)</cite> to
+disable this behavior.</p>
 <p>Built-in MCP support is an experimental feature.</p>
 <p>Usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
@@ -3385,6 +3401,14 @@ for example:
 ‘tunedModels/1234567890123456789’</p></li>
 </ul>
 <p>Some models support multimodal input and output.</p>
+<p>Automatic continuation is enabled by default. When a stream hop ends with
+<cite>finish_reason == FinishReason.CONTINUATION</cite> and includes a
+<cite>continuation_token</cite> on the first candidate, the SDK automatically clears
+the intermediate <cite>CONTINUATION</cite> <cite>finish_reason</cite>, starts follow-up stream
+requests with the <cite>continuation_token</cite>, and yields chunks until
+<cite>finish_reason</cite> is no longer <cite>CONTINUATION</cite>. Set
+<cite>config=types.GenerateContentConfig(automatic_continuation=False)</cite> to
+disable this behavior.</p>
 <p>Built-in MCP support is an experimental feature.</p>
 <p>Usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">google.genai</span><span class="w"> </span><span class="kn">import</span> <span class="n">types</span>
@@ -14040,6 +14064,11 @@ validated to form a valid model.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.GenerateContentConfig.automatic_continuation">
+<span class="sig-name descname"><span class="pre">automatic_continuation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfig.automatic_continuation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.GenerateContentConfig.automatic_function_calling">
 <span class="sig-name descname"><span class="pre">automatic_function_calling</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#genai.types.AutomaticFunctionCallingConfig" title="genai.types.AutomaticFunctionCallingConfig"><span class="pre">AutomaticFunctionCallingConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfig.automatic_function_calling" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -14234,6 +14263,15 @@ model.</p>
 <dt class="sig sig-object py" id="genai.types.GenerateContentConfigDict.audio_transcription_config">
 <span class="sig-name descname"><span class="pre">audio_transcription_config</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#genai.types.AudioTranscriptionConfigDict" title="genai.types.AudioTranscriptionConfigDict"><span class="pre">AudioTranscriptionConfigDict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfigDict.audio_transcription_config" title="Link to this definition">¶</a></dt>
 <dd><p>Optional. Configuration for audio transcription (speech recognition).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.GenerateContentConfigDict.automatic_continuation">
+<span class="sig-name descname"><span class="pre">automatic_continuation</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentConfigDict.automatic_continuation" title="Link to this definition">¶</a></dt>
+<dd><p>Defaults to true. When a response ends with finish reason
+<cite>CONTINUATION</cite>, the SDK sends the same request again with the response’s
+continuation token until the model finishes. Timeouts, retries and
+billing apply to each request. Set to false to turn this off.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -14551,6 +14589,12 @@ the
 first one.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="genai.types.GenerateContentResponse.initial_prompt_token_count">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">initial_prompt_token_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentResponse.initial_prompt_token_count" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the prompt token count from the initial request prior to any continuation hops.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.GenerateContentResponse.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'alias_generator':</span> <span class="pre">&lt;function</span> <span class="pre">to_camel&gt;,</span> <span class="pre">'arbitrary_types_allowed':</span> <span class="pre">True,</span> <span class="pre">'defer_build':</span> <span class="pre">True,</span> <span class="pre">'extra':</span> <span class="pre">'forbid',</span> <span class="pre">'from_attributes':</span> <span class="pre">True,</span> <span class="pre">'ignored_types':</span> <span class="pre">(&lt;class</span> <span class="pre">'typing.TypeVar'&gt;,),</span> <span class="pre">'populate_by_name':</span> <span class="pre">True,</span> <span class="pre">'protected_namespaces':</span> <span class="pre">(),</span> <span class="pre">'ser_json_bytes':</span> <span class="pre">'base64',</span> <span class="pre">'val_json_bytes':</span> <span class="pre">'base64',</span> <span class="pre">'validate_by_alias':</span> <span class="pre">True,</span> <span class="pre">'validate_by_name':</span> <span class="pre">True}</span></span><a class="headerlink" href="#genai.types.GenerateContentResponse.model_config" title="Link to this definition">¶</a></dt>
@@ -14762,10 +14806,34 @@ validated to form a valid model.</p>
 <span class="sig-name descname"><span class="pre">candidates_tokens_details</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#genai.types.ModalityTokenCount" title="genai.types.ModalityTokenCount"><span class="pre">ModalityTokenCount</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentResponseUsageMetadata.candidates_tokens_details" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="genai.types.GenerateContentResponseUsageMetadata.initial_prompt_token_count">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">initial_prompt_token_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.GenerateContentResponseUsageMetadata.initial_prompt_token_count" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the prompt token count from the initial request prior to any continuation hops.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.GenerateContentResponseUsageMetadata.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'alias_generator':</span> <span class="pre">&lt;function</span> <span class="pre">to_camel&gt;,</span> <span class="pre">'arbitrary_types_allowed':</span> <span class="pre">True,</span> <span class="pre">'defer_build':</span> <span class="pre">True,</span> <span class="pre">'extra':</span> <span class="pre">'forbid',</span> <span class="pre">'from_attributes':</span> <span class="pre">True,</span> <span class="pre">'ignored_types':</span> <span class="pre">(&lt;class</span> <span class="pre">'typing.TypeVar'&gt;,),</span> <span class="pre">'populate_by_name':</span> <span class="pre">True,</span> <span class="pre">'protected_namespaces':</span> <span class="pre">(),</span> <span class="pre">'ser_json_bytes':</span> <span class="pre">'base64',</span> <span class="pre">'val_json_bytes':</span> <span class="pre">'base64',</span> <span class="pre">'validate_by_alias':</span> <span class="pre">True,</span> <span class="pre">'validate_by_name':</span> <span class="pre">True}</span></span><a class="headerlink" href="#genai.types.GenerateContentResponseUsageMetadata.model_config" title="Link to this definition">¶</a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="genai.types.GenerateContentResponseUsageMetadata.model_post_init">
+<span class="sig-name descname"><span class="pre">model_post_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="positional-only-separator o"><abbr title="Positional-only parameter separator (PEP 570)"><span class="pre">/</span></abbr></span></em><span class="sig-paren">)</span><a class="headerlink" href="#genai.types.GenerateContentResponseUsageMetadata.model_post_init" title="Link to this definition">¶</a></dt>
+<dd><p>This function is meant to behave like a BaseModel method to initialize private attributes.</p>
+<p>It takes context as an argument since that’s what pydantic-core passes when calling it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>self</strong> – The BaseModel instance.</p></li>
+<li><p><strong>context</strong> – The context.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -26597,6 +26665,11 @@ validated to form a valid model.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.RealtimeInputConfig.interim_transcript_timestamp_enabled">
+<span class="sig-name descname"><span class="pre">interim_transcript_timestamp_enabled</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.RealtimeInputConfig.interim_transcript_timestamp_enabled" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.RealtimeInputConfig.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigDict</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'alias_generator':</span> <span class="pre">&lt;function</span> <span class="pre">to_camel&gt;,</span> <span class="pre">'arbitrary_types_allowed':</span> <span class="pre">True,</span> <span class="pre">'defer_build':</span> <span class="pre">True,</span> <span class="pre">'extra':</span> <span class="pre">'forbid',</span> <span class="pre">'from_attributes':</span> <span class="pre">True,</span> <span class="pre">'ignored_types':</span> <span class="pre">(&lt;class</span> <span class="pre">'typing.TypeVar'&gt;,),</span> <span class="pre">'populate_by_name':</span> <span class="pre">True,</span> <span class="pre">'protected_namespaces':</span> <span class="pre">(),</span> <span class="pre">'ser_json_bytes':</span> <span class="pre">'base64',</span> <span class="pre">'val_json_bytes':</span> <span class="pre">'base64',</span> <span class="pre">'validate_by_alias':</span> <span class="pre">True,</span> <span class="pre">'validate_by_name':</span> <span class="pre">True}</span></span><a class="headerlink" href="#genai.types.RealtimeInputConfig.model_config" title="Link to this definition">¶</a></dt>
 <dd><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p>
@@ -26626,6 +26699,12 @@ disabled.</p>
 <dt class="sig sig-object py" id="genai.types.RealtimeInputConfigDict.automatic_activity_detection">
 <span class="sig-name descname"><span class="pre">automatic_activity_detection</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#genai.types.AutomaticActivityDetectionDict" title="genai.types.AutomaticActivityDetectionDict"><span class="pre">AutomaticActivityDetectionDict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.RealtimeInputConfigDict.automatic_activity_detection" title="Link to this definition">¶</a></dt>
 <dd><p>If not set, automatic activity detection is enabled by default. If automatic voice detection is disabled, the client must send activity signals.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.RealtimeInputConfigDict.interim_transcript_timestamp_enabled">
+<span class="sig-name descname"><span class="pre">interim_transcript_timestamp_enabled</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.RealtimeInputConfigDict.interim_transcript_timestamp_enabled" title="Link to this definition">¶</a></dt>
+<dd><p>If true, enables interim transcript timestamps.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -32305,6 +32384,11 @@ corresponding <cite>ToolCall</cite>.</p>
 validated to form a valid model.</p>
 <p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.Transcription.end_offset">
+<span class="sig-name descname"><span class="pre">end_offset</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.Transcription.end_offset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.Transcription.finished">
 <span class="sig-name descname"><span class="pre">finished</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.Transcription.finished" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -32326,6 +32410,11 @@ validated to form a valid model.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.Transcription.start_offset">
+<span class="sig-name descname"><span class="pre">start_offset</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.Transcription.start_offset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.Transcription.text">
 <span class="sig-name descname"><span class="pre">text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.Transcription.text" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -32343,6 +32432,12 @@ validated to form a valid model.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></p>
 <p>Audio transcription in Server Content.</p>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.TranscriptionDict.end_offset">
+<span class="sig-name descname"><span class="pre">end_offset</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.TranscriptionDict.end_offset" title="Link to this definition">¶</a></dt>
+<dd><p>End offset in time of the transcription relative to the start of the audio.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="genai.types.TranscriptionDict.finished">
 <span class="sig-name descname"><span class="pre">finished</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.TranscriptionDict.finished" title="Link to this definition">¶</a></dt>
 <dd><p>Optional. The bool indicates the end of the transcription.</p>
@@ -32358,6 +32453,12 @@ validated to form a valid model.</p>
 <dt class="sig sig-object py" id="genai.types.TranscriptionDict.speaker_label">
 <span class="sig-name descname"><span class="pre">speaker_label</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.TranscriptionDict.speaker_label" title="Link to this definition">¶</a></dt>
 <dd><p>A label identifying the speaker of this audio segment (e.g. “spk_1”, “spk_2”).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="genai.types.TranscriptionDict.start_offset">
+<span class="sig-name descname"><span class="pre">start_offset</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#genai.types.TranscriptionDict.start_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Start offset in time of the transcription relative to the start of the audio.</p>
 </dd></dl>
 
 <dl class="py attribute">
