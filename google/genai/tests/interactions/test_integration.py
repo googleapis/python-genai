@@ -239,3 +239,104 @@ def test_interactions_default_timeout():
       timeout=None, connect=5.0
   )
 
+
+def _thought(signature):
+  return {
+      "type": "thought",
+      "signature": signature,
+      "summary": [{"type": "text", "text": f"summary {signature}"}],
+  }
+
+
+def _text(value):
+  return {"type": "model_output", "content": [{"type": "text", "text": value}]}
+
+
+_FUNCTION_CALL = {
+    "type": "function_call",
+    "id": "call_1",
+    "name": "get_weather",
+    "arguments": {"city": "Mountain View"},
+}
+_FUNCTION_RESULT = {
+    "type": "function_result",
+    "call_id": "call_1",
+    "name": "get_weather",
+    "result": "Sunny",
+}
+
+
+@pytest.mark.parametrize(
+    "steps,expected",
+    [
+        pytest.param(
+            [
+                _thought("a"),
+                _text("First part. "),
+                _thought("b"),
+                _text("Second part. "),
+                {"type": "model_output"},
+                _text("Third part."),
+                _thought("c"),
+            ],
+            "First part. Second part. Third part.",
+            id="long_decode_multi_step",
+        ),
+        pytest.param(
+            [
+                _text("Before tool call. "),
+                _FUNCTION_CALL,
+                _FUNCTION_RESULT,
+                _thought("a"),
+                _text("Final part 1. "),
+                _thought("b"),
+                _text("Final part 2."),
+                {**_FUNCTION_CALL, "id": "call_trailing"},
+            ],
+            "Final part 1. Final part 2.",
+            id="tool_boundary",
+        ),
+        pytest.param(
+            [
+                _text("Previous turn. "),
+                {
+                    "type": "user_input",
+                    "content": [{"type": "text", "text": "Next question"}],
+                },
+                _thought("a"),
+                _text("A"),
+                _thought("b"),
+                _text("B"),
+            ],
+            "AB",
+            id="user_input_boundary",
+        ),
+        pytest.param(
+            [
+                {
+                    "type": "model_output",
+                    "content": [
+                        {"type": "text", "text": "X"},
+                        {
+                            "type": "image",
+                            "data": "aW1hZ2U=",
+                            "mime_type": "image/png",
+                        },
+                    ],
+                },
+                _thought("a"),
+                _text("Y"),
+            ],
+            "Y",
+            id="non_text_barrier",
+        ),
+    ],
+)
+def test_output_text_across_steps(steps, expected):
+  payload = {"id": "v1_123", "status": "completed", "steps": steps}
+
+  interaction = gaos_interaction.Interaction.model_validate(payload)
+  assert interaction.output_text == expected
+
+  wrapped = gaos_google_genai._add_output_properties_if_interaction(payload)  # pylint: disable=protected-access
+  assert wrapped["output_text"] == expected

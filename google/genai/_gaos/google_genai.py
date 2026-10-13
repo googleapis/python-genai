@@ -1382,17 +1382,18 @@ def _output_properties_from_steps(steps: list[Any]) -> dict[str, Any]:
     collecting = False
 
     for step in reversed(steps):
-        if _get_value(step, 'type') == 'user_input':
+        step_type = _get_value(step, 'type')
+        if step_type == 'user_input':
             break
-        if _get_value(step, 'type') != 'model_output':
+        if step_type == 'thought':
+            continue
+        if step_type != 'model_output':
             if collecting:
                 break
             continue
 
         content = _get_value(step, 'content')
         if not isinstance(content, list):
-            if collecting:
-                break
             continue
 
         should_stop = False
