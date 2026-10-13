@@ -938,7 +938,10 @@ def merge_candidates(
   if not prev_candidates:
     return curr_candidates
   if not curr_candidates:
-    return prev_candidates
+    return [
+        merge_pydantic_models(prev_candidate, types.Candidate())
+        for prev_candidate in prev_candidates
+    ]
   result: list[types.Candidate] = []
   for prev_candidate, curr_candidate in zip(prev_candidates, curr_candidates):
     merged_candidate = merge_pydantic_models(prev_candidate, curr_candidate)
@@ -965,6 +968,16 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
       merged_data[field_name] = curr_val
       continue
 
+    # Route candidates through merge_candidates even when curr.candidates is
+    # None so preserved candidates clear terminal continuation state.
+    if (
+        isinstance(curr, types.GenerateContentResponse)
+        and field_name == 'candidates'
+        and prev_val is not None
+    ):
+      merged_data[field_name] = merge_candidates(prev_val, curr_val or [])
+      continue
+
     if curr_val is None:
       merged_data[field_name] = prev_val
     elif prev_val is None:
@@ -986,9 +999,7 @@ def merge_pydantic_models(prev: C, curr: C) -> C:
     ):
       merged_data[field_name] = prev_val + curr_val
     elif isinstance(prev_val, list) and isinstance(curr_val, list):
-      if field_name == 'candidates':
-        merged_data[field_name] = merge_candidates(prev_val, curr_val)
-      elif prev_val and isinstance(prev_val[0], types.ModalityTokenCount):
+      if prev_val and isinstance(prev_val[0], types.ModalityTokenCount):
         merged_data[field_name] = merge_modality_token_counts(
             prev_val, curr_val
         )

@@ -2826,3 +2826,72 @@ async def test_e2e_async_client_continuation():
     assert aresp.text == 'Hello world!'
     assert aresp.usage_metadata.initial_prompt_token_count == 120
     assert ''.join(c.text for c in astream_chunks) == 'Part A Part B Part C!'
+
+
+def test_merge_continuation_responses_empty_candidates_clears_finish_reason_and_preserves_prompt_feedback(
+    mock_api_client,
+):
+  """When a continuation hop returns no candidates (e.g. prompt_feedback block), finish_reason is cleared to None and prompt_feedback is preserved."""
+  models_module = models.Models(mock_api_client)
+
+  hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='Partial output before block.')],
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok_hop_1',
+              finish_message='Continuing',
+          )
+      ],
+      usage_metadata=types.GenerateContentResponseUsageMetadata(
+          prompt_token_count=10,
+          candidates_token_count=100,
+          total_token_count=110,
+      ),
+  )
+
+  for empty_candidates in (None, []):
+    hop2 = types.GenerateContentResponse(
+        candidates=empty_candidates,
+        prompt_feedback=types.GenerateContentResponsePromptFeedback(
+            block_reason=types.BlockedReason.OTHER,
+            block_reason_message='Blocked on continuation hop',
+        ),
+        usage_metadata=types.GenerateContentResponseUsageMetadata(
+            prompt_token_count=110,
+            total_token_count=110,
+        ),
+    )
+
+    with mock.patch.object(
+        models.Models,
+        '_generate_content',
+        side_effect=[
+            hop1.model_copy(deep=True),
+            hop2.model_copy(deep=True),
+        ],
+    ) as mock_raw_gc:
+      response = models_module.generate_content(
+          model='gemini-2.5-pro',
+          contents='Test prompt',
+      )
+      assert mock_raw_gc.call_count == 2
+      assert response.text == 'Partial output before block.'
+      assert response.candidates is not None
+      assert len(response.candidates) == 1
+      assert response.candidates[0].finish_reason is None
+      assert response.candidates[0].continuation_token is None
+      assert response.candidates[0].finish_message is None
+      assert response.prompt_feedback is not None
+      assert response.prompt_feedback.block_reason == types.BlockedReason.OTHER
+      assert (
+          response.prompt_feedback.block_reason_message
+          == 'Blocked on continuation hop'
+      )
+      assert response.usage_metadata is not None
+      assert response.usage_metadata.prompt_token_count == 120
+      assert response.usage_metadata.initial_prompt_token_count == 10
+
