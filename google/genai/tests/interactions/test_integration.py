@@ -231,3 +231,11 @@ def test_interaction_lenient_parsing():
   assert isinstance(parsed, gaos_interaction.Interaction)
   assert parsed.id == "x"
 
+
+def test_interactions_default_timeout():
+  from ... import _interactions
+
+  assert _interactions.DEFAULT_TIMEOUT == httpx.Timeout(
+      timeout=None, connect=5.0
+  )
+
