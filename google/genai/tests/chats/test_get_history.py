@@ -441,6 +441,91 @@ def test_history_with_invalid_turns():
   assert chat.get_history(curated=True) == curated_history
 
 
+def _multi_content_user_turn():
+  return [
+      types.Content(
+          role='user',
+          parts=[types.Part.from_text(text='what is the weather')],
+      ),
+      types.Content(
+          role='user',
+          parts=[
+              types.Part.from_function_response(
+                  name='get_weather', response={'c': 21}
+              )
+          ],
+      ),
+  ]
+
+
+def test_history_with_multi_content_user_turn_and_invalid_model_output():
+  """An invalid model output drops every user content of its turn."""
+  history = _multi_content_user_turn() + [
+      types.Content(role='model', parts=[]),
+  ]
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == []
+
+
+def test_history_with_valid_turn_then_invalid_multi_content_user_turn():
+  """Dropping the rejected user turn stops at the previous valid output."""
+  valid_turn = [
+      types.Content(role='user', parts=[types.Part.from_text(text='u1')]),
+      types.Content(role='model', parts=[types.Part.from_text(text='m1')]),
+  ]
+  history = (
+      valid_turn
+      + _multi_content_user_turn()
+      + [types.Content(role='model', parts=[])]
+  )
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == valid_turn
+
+
+def test_history_with_invalid_multi_content_user_turn_then_valid_turn():
+  """No content of a rejected user turn attaches to the next valid turn."""
+  valid_turn = [
+      types.Content(role='user', parts=[types.Part.from_text(text='u2')]),
+      types.Content(role='model', parts=[types.Part.from_text(text='m2')]),
+  ]
+  history = (
+      _multi_content_user_turn()
+      + [types.Content(role='model', parts=[])]
+      + valid_turn
+  )
+
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == valid_turn
+
+
+def test_async_chat_create_with_invalid_multi_content_user_turn():
+  """The async chat drops the whole rejected user turn too."""
+  history = _multi_content_user_turn() + [
+      types.Content(role='model', parts=[]),
+  ]
+
+  models_module = models.AsyncModels(mock_api_client)
+  chats_module = chats.AsyncChats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash', history=history)
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == []
+
+
 def test_chat_with_empty_text_part(mock_generate_content_with_empty_text_part):
   models_module = models.Models(mock_api_client)
   chats_module = chats.Chats(modules=models_module)
