@@ -223,17 +223,31 @@ def join_url_path(base_url: str, path: str) -> str:
   return urlunparse(parsed_base._replace(path=base_path + '/' + path))
 
 
+_MULTI_REGIONAL_REP_SUFFIXES = tuple(
+    f'.{loc}.rep.{domain}'
+    for loc in _MULTI_REGIONAL_LOCATIONS
+    for domain in ('sandbox.googleapis.com', 'googleapis.com')
+)
+
+
 def to_mtls_url(url: str) -> str:
   """Rewrites a googleapis.com URL to its mTLS endpoint.
 
   For example, `aiplatform.googleapis.com` becomes
   `aiplatform.mtls.googleapis.com` and `foo.sandbox.googleapis.com` becomes
-  `foo.mtls.sandbox.googleapis.com`. URLs on other hosts, and URLs that already
-  point at an mTLS endpoint, are returned unchanged.
+  `foo.mtls.sandbox.googleapis.com`. URLs on other hosts, URLs that already
+  point at an mTLS endpoint, and multi-regional `.rep.googleapis.com` endpoints
+  (which do not publish `.rep.mtls.googleapis.com` DNS records) are returned
+  unchanged.
   """
   parsed = urlparse(url)
   netloc = parsed.netloc
-  if netloc.endswith(('.mtls.googleapis.com', '.mtls.sandbox.googleapis.com')):
+  hostname = parsed.hostname or ''
+  if hostname.endswith(
+      ('.mtls.googleapis.com', '.mtls.sandbox.googleapis.com')
+  ):
+    return url
+  if hostname.endswith(_MULTI_REGIONAL_REP_SUFFIXES):
     return url
   for domain in ('sandbox.googleapis.com', 'googleapis.com'):
     if netloc.endswith('.' + domain):
@@ -1587,7 +1601,9 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls:
+      if self._use_mtls_endpoint(
+          client_cert_loaded=bool(self._authorized_session._is_mtls)
+      ):
         url = to_mtls_url(url)
       response = self._authorized_session.request(  # type: ignore[no-untyped-call]
           method=http_request.method.upper(),
@@ -1660,7 +1676,9 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls:  # type: ignore[union-attr]
+          if self._use_mtls_endpoint(
+              client_cert_loaded=bool(session._is_mtls)  # type: ignore[union-attr]
+          ):
             url = to_mtls_url(url)
         elif self._aiohttp_use_mtls_endpoint:
           url = to_mtls_url(url)
@@ -1730,7 +1748,9 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls:  # type: ignore[union-attr]
+          if self._use_mtls_endpoint(
+              client_cert_loaded=bool(session._is_mtls)  # type: ignore[union-attr]
+          ):
             url = to_mtls_url(url)
         elif self._aiohttp_use_mtls_endpoint:
           url = to_mtls_url(url)
@@ -2136,7 +2156,9 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls:
+      if self._use_mtls_endpoint(
+          client_cert_loaded=bool(self._authorized_session._is_mtls)
+      ):
         url = to_mtls_url(url)
       if destination is not None:
         response = self._authorized_session.request(  # type: ignore[no-untyped-call]
@@ -2505,7 +2527,9 @@ class BaseApiClient:
         await session.configure_mtls_channel(  # type: ignore[union-attr]
             client_cert_source
         )
-        if session._is_mtls:  # type: ignore[union-attr]
+        if self._use_mtls_endpoint(
+            client_cert_loaded=bool(session._is_mtls)  # type: ignore[union-attr]
+        ):
           url = to_mtls_url(url)
       elif self._aiohttp_use_mtls_endpoint:
         url = to_mtls_url(url)
