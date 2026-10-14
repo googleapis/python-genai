@@ -342,6 +342,26 @@ def _get_required_fields_from_json_schema(json_schema: dict[str, Any]) -> Option
   return required_fields
 
 
+def _infer_type_from_any_of(json_schema_dict: dict[str, Any]) -> str:
+  """Infers the JSON schema `type` from `anyOf` members.
+
+  Pydantic doesn't assign the `type` field when the schema has 'anyOf', but
+  Vertex requires it. When every non-null member of `anyOf` shares the same
+  scalar type (e.g. `int | None` -> integer), that type is used so the model
+  doesn't receive a misleading `"type": "object"`. Falls back to `"object"`
+  for heterogeneous members or members without a concrete type.
+  """
+  member_types = set()
+  for member in json_schema_dict.get('anyOf', []):
+    member_type = member.get('type')
+    if member_type is None or member_type == 'null':
+      continue
+    member_types.add(member_type)
+  if len(member_types) == 1:
+    return next(iter(member_types))
+  return 'object'
+
+
 def parse_function_declaration_json_schema(
     callable: Callable[..., Any],
     behavior: Optional[types.Behavior]
@@ -381,8 +401,8 @@ def parse_function_declaration_json_schema(
           root_defs.update(json_schema_dict.pop('definitions'))
         # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
         # but Vertex requires it.
-        if not 'type' in json_schema_dict and 'anyOf' in json_schema_dict:
-          json_schema_dict['type'] = 'object'
+        if 'type' not in json_schema_dict and 'anyOf' in json_schema_dict:
+          json_schema_dict['type'] = _infer_type_from_any_of(json_schema_dict)
         if param.default is not inspect._empty:
           json_schema_dict['default'] = param.default
         parameters_properties_json_schema[name] = json_schema_dict
