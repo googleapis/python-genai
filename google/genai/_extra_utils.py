@@ -930,6 +930,59 @@ def merge_safety_ratings(
   return [by_category[cat] for cat in order]
 
 
+def _shift_candidate_grounding_supports(
+    prev: types.Candidate,
+    curr: types.Candidate,
+) -> types.Candidate:
+  """Shifts curr's GroundingSupport chunk and part indices by prev's lengths."""
+  curr_gm = curr.grounding_metadata
+  if curr_gm is None or not curr_gm.grounding_supports:
+    return curr
+
+  part_offset = (
+      len(prev.content.parts)
+      if prev.content is not None and prev.content.parts
+      else 0
+  )
+  chunk_offset = (
+      len(prev.grounding_metadata.grounding_chunks)
+      if prev.grounding_metadata is not None
+      and prev.grounding_metadata.grounding_chunks
+      else 0
+  )
+  if part_offset == 0 and chunk_offset == 0:
+    return curr
+
+  shifted_supports: list[types.GroundingSupport] = []
+  for support in curr_gm.grounding_supports:
+    support_updates: dict[str, Any] = {}
+    if chunk_offset > 0 and support.grounding_chunk_indices:
+      support_updates['grounding_chunk_indices'] = [
+          idx + chunk_offset for idx in support.grounding_chunk_indices
+      ]
+    if part_offset > 0 and support.segment is not None:
+      prev_part_index = (
+          support.segment.part_index
+          if support.segment.part_index is not None
+          else 0
+      )
+      support_updates['segment'] = support.segment.model_copy(
+          update={'part_index': prev_part_index + part_offset}
+      )
+    if support_updates:
+      shifted_supports.append(support.model_copy(update=support_updates))
+    else:
+      shifted_supports.append(support)
+
+  return curr.model_copy(
+      update={
+          'grounding_metadata': curr_gm.model_copy(
+              update={'grounding_supports': shifted_supports}
+          )
+      }
+  )
+
+
 def merge_candidates(
     prev_candidates: list[types.Candidate],
     curr_candidates: list[types.Candidate],
@@ -953,6 +1006,8 @@ def merge_candidates(
 
 def merge_pydantic_models(prev: C, curr: C) -> C:
   """Recursively merges two Pydantic BaseModel instances across continuation hops."""
+  if isinstance(prev, types.Candidate) and isinstance(curr, types.Candidate):
+    curr = typing.cast(C, _shift_candidate_grounding_supports(prev, curr))
   merged_data: dict[str, Any] = {}
   for field_name in type(curr).model_fields:
     prev_val = getattr(prev, field_name, None)

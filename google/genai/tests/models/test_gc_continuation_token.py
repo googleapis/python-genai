@@ -890,6 +890,455 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
     ]
 
 
+def test_merge_continuation_responses_shifts_grounding_support_chunk_and_part_indices():
+  """Merging responses across hops shifts GroundingSupport chunk and part indices."""
+  hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[
+                      types.Part(text='Thinking...', thought=True),
+                      types.Part(text='part 1 '),
+                  ],
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok_1',
+              grounding_metadata=types.GroundingMetadata(
+                  grounding_chunks=[
+                      types.GroundingChunk(
+                          image=types.GroundingChunkImage(
+                              image_uri='https://img1.example/a.png',
+                              source_uri='https://source1.example/img',
+                              title='Image 1',
+                              domain='source1.example',
+                          )
+                      ),
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://source1.example',
+                              title='Source 1',
+                          )
+                      ),
+                  ],
+                  grounding_supports=[
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[0, 1],
+                          confidence_scores=[0.9, 0.8],
+                          segment=types.Segment(
+                              part_index=1,
+                              start_index=0,
+                              end_index=7,
+                              text='part 1 ',
+                          ),
+                      )
+                  ],
+              ),
+          )
+      ]
+  )
+  hop2 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='part 2 ')],
+              ),
+              finish_reason=types.FinishReason.STOP,
+              grounding_metadata=types.GroundingMetadata(
+                  grounding_chunks=[
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://source2.example',
+                              title='Source 2',
+                          )
+                      )
+                  ],
+                  grounding_supports=[
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[0],
+                          confidence_scores=[0.95],
+                          segment=types.Segment(
+                              part_index=0,
+                              start_index=0,
+                              end_index=7,
+                              text='part 2 ',
+                          ),
+                      ),
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[0],
+                          segment=types.Segment(
+                              start_index=0,
+                              end_index=7,
+                              text='part 2 ',
+                          ),
+                      ),
+                  ],
+              ),
+          )
+      ]
+  )
+
+  merged = _extra_utils.merge_continuation_responses([hop1, hop2])
+  cand = merged.candidates[0]
+  gm = cand.grounding_metadata
+
+  assert len(gm.grounding_chunks) == 3
+  assert len(gm.grounding_supports) == 3
+
+  # First hop's support remains unchanged.
+  assert gm.grounding_supports[0].grounding_chunk_indices == [0, 1]
+  assert gm.grounding_supports[0].segment.part_index == 1
+
+  # Second hop's supports have chunk indices shifted by +2 and part_index by +2.
+  s1 = gm.grounding_supports[1]
+  assert s1.grounding_chunk_indices == [2]
+  assert s1.segment.part_index == 2
+  assert (
+      gm.grounding_chunks[s1.grounding_chunk_indices[0]].web.uri
+      == 'https://source2.example'
+  )
+  assert cand.content.parts[s1.segment.part_index].text == 'part 2 '
+
+  # Support with omitted part_index (None -> 0) also shifts by +2.
+  s2 = gm.grounding_supports[2]
+  assert s2.grounding_chunk_indices == [2]
+  assert s2.segment.part_index == 2
+
+  # Original hop2 input must not be mutated.
+  assert hop2.candidates[0].grounding_metadata.grounding_supports[
+      0
+  ].grounding_chunk_indices == [0]
+  assert (
+      hop2.candidates[0]
+      .grounding_metadata.grounding_supports[0]
+      .segment.part_index
+      == 0
+  )
+  assert (
+      hop2.candidates[0]
+      .grounding_metadata.grounding_supports[1]
+      .segment.part_index
+      is None
+  )
+
+
+def test_merge_continuation_responses_grounding_supports_corner_cases():
+  """Covers 3-hop cumulative shifting, None grounding_metadata/segment, empty chunk indices, and multi-candidate independence."""
+  hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              index=0,
+              content=types.Content(
+                  role='model',
+                  parts=[
+                      types.Part(text='c0-h1-p0 '),
+                      types.Part(text='c0-h1-p1 '),
+                  ],
+              ),
+              grounding_metadata=None,
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b't1',
+          ),
+          types.Candidate(
+              index=1,
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='c1-h1-p0 ')],
+              ),
+              grounding_metadata=types.GroundingMetadata(
+                  grounding_chunks=[
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://c1-s0.example'
+                          )
+                      )
+                  ],
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b't1-c1',
+          ),
+      ]
+  )
+  hop2 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              index=0,
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='c0-h2-p0 ')],
+              ),
+              grounding_metadata=types.GroundingMetadata(
+                  grounding_chunks=[
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://c0-s0.example'
+                          )
+                      ),
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://c0-s1.example'
+                          )
+                      ),
+                  ],
+                  grounding_supports=None,
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b't2',
+          ),
+          types.Candidate(
+              index=1,
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='c1-h2-p0 ')],
+              ),
+              grounding_metadata=types.GroundingMetadata(
+                  grounding_chunks=[
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://c1-s1.example'
+                          )
+                      )
+                  ],
+                  grounding_supports=[
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[0],
+                          segment=types.Segment(part_index=0, text='c1-h2-p0 '),
+                      )
+                  ],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          ),
+      ]
+  )
+  hop3 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              index=0,
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='c0-h3-p0.')],
+              ),
+              grounding_metadata=types.GroundingMetadata(
+                  grounding_chunks=[
+                      types.GroundingChunk(
+                          web=types.GroundingChunkWeb(
+                              uri='https://c0-s2.example'
+                          )
+                      )
+                  ],
+                  grounding_supports=[
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[0],
+                          segment=None,
+                      ),
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[],
+                          segment=types.Segment(part_index=0, text='c0-h3-p0.'),
+                      ),
+                      types.GroundingSupport(
+                          grounding_chunk_indices=[0],
+                          segment=types.Segment(part_index=0, text='c0-h3-p0.'),
+                      ),
+                  ],
+              ),
+              finish_reason=types.FinishReason.STOP,
+          ),
+      ]
+  )
+
+  merged = _extra_utils.merge_continuation_responses([hop1, hop2, hop3])
+
+  cand0 = merged.candidates[0]
+  gm0 = cand0.grounding_metadata
+  assert len(cand0.content.parts) == 4
+  assert len(gm0.grounding_chunks) == 3
+  assert len(gm0.grounding_supports) == 3
+  assert gm0.grounding_supports[0].segment is None
+  assert gm0.grounding_supports[0].grounding_chunk_indices == [2]
+  assert gm0.grounding_supports[1].grounding_chunk_indices == []
+  assert gm0.grounding_supports[1].segment.part_index == 3
+  s2 = gm0.grounding_supports[2]
+  assert (
+      gm0.grounding_chunks[s2.grounding_chunk_indices[0]].web.uri
+      == 'https://c0-s2.example'
+  )
+  assert cand0.content.parts[s2.segment.part_index].text == 'c0-h3-p0.'
+
+  cand1 = merged.candidates[1]
+  gm1 = cand1.grounding_metadata
+  assert gm1.grounding_supports[0].grounding_chunk_indices == [1]
+  assert gm1.grounding_supports[0].segment.part_index == 1
+  assert (
+      gm1.grounding_chunks[
+          gm1.grounding_supports[0].grounding_chunk_indices[0]
+      ].web.uri
+      == 'https://c1-s1.example'
+  )
+  assert (
+      cand1.content.parts[gm1.grounding_supports[0].segment.part_index].text
+      == 'c1-h2-p0 '
+  )
+
+
+def test_models_generate_content_stream_grounding_metadata_across_hops(
+    mock_api_client,
+):
+  """Verifies generate_content_stream preserves per-chunk grounding_metadata and merges cleanly across hops."""
+  models_module = models.Models(mock_api_client)
+
+  hop1_chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model',
+                      parts=[types.Part(text='hop 1 intro, ')],
+                  ),
+              )
+          ]
+      ),
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model',
+                      parts=[types.Part(text='hop 1 grounded. ')],
+                  ),
+                  grounding_metadata=types.GroundingMetadata(
+                      grounding_chunks=[
+                          types.GroundingChunk(
+                              web=types.GroundingChunkWeb(
+                                  uri='https://source1.example'
+                              )
+                          )
+                      ],
+                      grounding_supports=[
+                          types.GroundingSupport(
+                              grounding_chunk_indices=[0],
+                              segment=types.Segment(
+                                  part_index=0, text='hop 1 grounded. '
+                              ),
+                          )
+                      ],
+                  ),
+                  finish_reason=types.FinishReason.CONTINUATION,
+                  continuation_token=b'tok-stream-1',
+              )
+          ]
+      ),
+  ]
+  hop2_chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model',
+                      parts=[types.Part(text='hop 2 intro, ')],
+                  ),
+              )
+          ]
+      ),
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model',
+                      parts=[types.Part(text='hop 2 grounded.')],
+                  ),
+                  grounding_metadata=types.GroundingMetadata(
+                      grounding_chunks=[
+                          types.GroundingChunk(
+                              web=types.GroundingChunkWeb(
+                                  uri='https://source2.example'
+                              )
+                          )
+                      ],
+                      grounding_supports=[
+                          types.GroundingSupport(
+                              grounding_chunk_indices=[0],
+                              segment=types.Segment(
+                                  part_index=0, text='hop 2 grounded.'
+                              ),
+                          )
+                      ],
+                  ),
+                  finish_reason=types.FinishReason.STOP,
+              )
+          ]
+      ),
+  ]
+
+  with mock.patch.object(
+      models_module,
+      '_generate_content_stream',
+      side_effect=[iter(hop1_chunks), iter(hop2_chunks)],
+  ) as mock_stream:
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-flash',
+            contents='Grounded stream query',
+        )
+    )
+
+  assert mock_stream.call_count == 2
+  assert len(chunks) == 4
+  # Each yielded terminal hop chunk resolves its support to its own grounding_chunks[0] and parts[0].
+  s_hop1 = chunks[1].candidates[0].grounding_metadata.grounding_supports[0]
+  assert (
+      chunks[1]
+      .candidates[0]
+      .grounding_metadata.grounding_chunks[s_hop1.grounding_chunk_indices[0]]
+      .web.uri
+      == 'https://source1.example'
+  )
+  assert (
+      chunks[1].candidates[0].content.parts[s_hop1.segment.part_index].text
+      == 'hop 1 grounded. '
+  )
+  assert chunks[1].candidates[0].finish_reason is None
+
+  s_hop2 = chunks[3].candidates[0].grounding_metadata.grounding_supports[0]
+  assert (
+      chunks[3]
+      .candidates[0]
+      .grounding_metadata.grounding_chunks[s_hop2.grounding_chunk_indices[0]]
+      .web.uri
+      == 'https://source2.example'
+  )
+  assert (
+      chunks[3].candidates[0].content.parts[s_hop2.segment.part_index].text
+      == 'hop 2 grounded.'
+  )
+  assert chunks[3].candidates[0].finish_reason == types.FinishReason.STOP
+
+  # Merging all streamed chunks shifts GroundingSupports indices across the 4 chunks.
+  merged = _extra_utils.merge_continuation_responses(chunks)
+  cand = merged.candidates[0]
+  gm = cand.grounding_metadata
+  assert len(gm.grounding_supports) == 2
+  assert (
+      gm.grounding_chunks[
+          gm.grounding_supports[0].grounding_chunk_indices[0]
+      ].web.uri
+      == 'https://source1.example'
+  )
+  assert (
+      cand.content.parts[gm.grounding_supports[0].segment.part_index].text
+      == 'hop 1 grounded. '
+  )
+  assert (
+      gm.grounding_chunks[
+          gm.grounding_supports[1].grounding_chunk_indices[0]
+      ].web.uri
+      == 'https://source2.example'
+  )
+  assert (
+      cand.content.parts[gm.grounding_supports[1].segment.part_index].text
+      == 'hop 2 grounded.'
+  )
+
+
 def test_models_generate_content_stream_auto_resumes_across_hops(
     mock_api_client,
 ):
@@ -2333,6 +2782,13 @@ UNARY_HOP1_PAYLOAD = {
         'groundingMetadata': {
             'webSearchQueries': ['query1'],
             'searchEntryPoint': {'renderedContent': '<div>hop1</div>'},
+            'groundingChunks': [
+                {'web': {'uri': 'https://source1.example', 'title': 'Source 1'}}
+            ],
+            'groundingSupports': [{
+                'groundingChunkIndices': [0],
+                'segment': {'partIndex': 1, 'text': 'Hello '},
+            }],
         },
         'citationMetadata': {
             'citationSources': [{
@@ -2366,6 +2822,13 @@ UNARY_HOP2_PAYLOAD = {
         'groundingMetadata': {
             'webSearchQueries': ['query2'],
             'searchEntryPoint': {'renderedContent': '<div>hop2</div>'},
+            'groundingChunks': [
+                {'web': {'uri': 'https://source2.example', 'title': 'Source 2'}}
+            ],
+            'groundingSupports': [{
+                'groundingChunkIndices': [0],
+                'segment': {'partIndex': 0, 'text': 'world!'},
+            }],
         },
         'citationMetadata': {
             'citationSources': [{
@@ -2578,6 +3041,17 @@ def test_e2e_unary_multihop_aggregation_and_usage():
       cand.grounding_metadata.search_entry_point.rendered_content
       == '<div>hop2</div>'
   )
+  gm = cand.grounding_metadata
+  assert len(gm.grounding_chunks) == 2
+  assert len(gm.grounding_supports) == 2
+  last_support = gm.grounding_supports[-1]
+  assert last_support.grounding_chunk_indices == [1]
+  assert (
+      gm.grounding_chunks[last_support.grounding_chunk_indices[0]].web.uri
+      == 'https://source2.example'
+  )
+  assert last_support.segment.part_index == 2
+  assert cand.content.parts[last_support.segment.part_index].text == 'world!'
   assert len(cand.citation_metadata.citations) == 2
 
 
@@ -2894,4 +3368,3 @@ def test_merge_continuation_responses_empty_candidates_clears_finish_reason_and_
       assert response.usage_metadata is not None
       assert response.usage_metadata.prompt_token_count == 120
       assert response.usage_metadata.initial_prompt_token_count == 10
-
