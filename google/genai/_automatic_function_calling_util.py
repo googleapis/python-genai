@@ -380,9 +380,19 @@ def parse_function_declaration_json_schema(
         if 'definitions' in json_schema_dict:
           root_defs.update(json_schema_dict.pop('definitions'))
         # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
-        # but Vertex requires it.
-        if not 'type' in json_schema_dict and 'anyOf' in json_schema_dict:
-          json_schema_dict['type'] = 'object'
+        # Only assign 'object' if all non-null subschemas in anyOf are objects.
+        if 'type' not in json_schema_dict and 'anyOf' in json_schema_dict:
+          any_of = json_schema_dict['anyOf']
+          non_null_subschemas = [
+              s
+              for s in any_of
+              if isinstance(s, dict) and s.get('type') != 'null'
+          ]
+          if non_null_subschemas and all(
+              s.get('type') == 'object' or '$ref' in s
+              for s in non_null_subschemas
+          ):
+            json_schema_dict['type'] = 'object'
         if param.default is not inspect._empty:
           json_schema_dict['default'] = param.default
         parameters_properties_json_schema[name] = json_schema_dict
