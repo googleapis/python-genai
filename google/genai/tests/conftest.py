@@ -31,13 +31,14 @@ from .. import types
 # Retry options for the shared integration tests, applied to every request the
 # test client makes so that a transient 5xx or 429 does not fail the nightly.
 #
-# Deliberately shorter than the SDK defaults: a multistep test retries per
-# request, so the backoff has to stay well inside the test timeout. Keep aligned with
-# the shared test clients in the other SDKs.
+# The max delay is deliberately capped below the SDK default: a multistep test
+# retries per request, so the backoff (about 30 s per request) has to stay well
+# inside the test timeout. Keep aligned with the shared test clients in the
+# other SDKs.
 _SHARED_TEST_RETRY_OPTIONS = types.HttpRetryOptions(
-    attempts=3,
-    initial_delay=1.0,
-    max_delay=10.0,
+    attempts=5,
+    initial_delay=2.0,
+    max_delay=16.0,
     exp_base=2.0,
     http_status_codes=[408, 429, 500, 502, 503, 504],
 )
