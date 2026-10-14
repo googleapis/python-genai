@@ -552,6 +552,8 @@ def test_models_automatic_continuation_config_rules(mock_api_client):
       assert (
           chunks[0].candidates[0].finish_reason == types.FinishReason.MAX_TOKENS
       )
+      # The token is surfaced so the caller can resume manually.
+      assert chunks[0].candidates[0].continuation_token == b'token_unused'
 
   # 4. Explicit automatic_continuation=True -> continues on CONTINUATION and forwards max_output_tokens as-is
   with mock.patch.object(
@@ -2549,7 +2551,31 @@ def test_models_generate_content_stream_recovers_from_midstream_checkpoint_error
       next(stream)
     assert mock_raw_stream.call_count == 1
 
-  # 4. Consecutive failure on resumed hop before any new checkpoint chunk is emitted -> raises without infinite looping
+  # 4. Consecutive connection drops on resumed hops before any new checkpoint
+  # chunk is emitted -> retries from the hop's start token a bounded number of
+  # times, then raises without infinite looping.
+  max_retries = _extra_utils.MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+  dropped = httpx.RemoteProtocolError('peer closed connection')
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_failing_hop([chunk_ckpt_35k], server_503)]
+      + [_failing_hop([], dropped) for _ in range(max_retries + 1)],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    with pytest.raises(httpx.RemoteProtocolError):
+      next(stream)
+    assert mock_raw_stream.call_count == max_retries + 2
+    for call in mock_raw_stream.call_args_list[1:]:
+      assert call.kwargs['config'].continuation_token == b'v2_ckpt_35k'
+
+  # 4b. A resumed hop's request is rejected before streaming anything (HTTP
+  # error status) -> raised without retrying; retrying rejected requests is the
+  # job of HttpOptions.retry_options.
   with mock.patch.object(
       models.Models,
       '_generate_content_stream',
@@ -2566,6 +2592,26 @@ def test_models_generate_content_stream_recovers_from_midstream_checkpoint_error
     with pytest.raises(errors.ServerError):
       next(stream)
     assert mock_raw_stream.call_count == 2
+
+  # 4c. A connection drop followed by retries that end cleanly without progress
+  # -> the drop is re-raised when the stream gives up, not hidden.
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          _failing_hop([chunk_ckpt_35k], server_503),
+          _failing_hop([], dropped),
+      ]
+      + [_failing_hop([]) for _ in range(max_retries)],
+  ) as mock_raw_stream:
+    stream = models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    )
+    assert next(stream).text == 'Checkpoint 35k. '
+    with pytest.raises(httpx.RemoteProtocolError):
+      next(stream)
+    assert mock_raw_stream.call_count == max_retries + 2
 
   # 5. Error after STOP finish_reason in same hop -> stale checkpoint token was cleared, so does not resume
   with mock.patch.object(
@@ -2584,6 +2630,111 @@ def test_models_generate_content_stream_recovers_from_midstream_checkpoint_error
     with pytest.raises(errors.ServerError):
       next(stream)
     assert mock_raw_stream.call_count == 1
+
+  # 6. Resumed hop drops (or closes cleanly) before emitting any content or
+  # checkpoint (e.g. during server prefill) -> retries from the token the hop
+  # was started with. (A rejected request is not retried; see 4b.)
+  chunk_hop1_boundary = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Hop 1 end. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'v2_hop1_end',
+          )
+      ]
+  )
+  for hop2_exc in (httpx.RemoteProtocolError('peer closed'), None):
+    with mock.patch.object(
+        models.Models,
+        '_generate_content_stream',
+        side_effect=[
+            iter([chunk_hop1_boundary.model_copy(deep=True)]),
+            _failing_hop([], hop2_exc),
+            iter([chunk_hop2_final.model_copy(deep=True)]),
+        ],
+    ) as mock_raw_stream:
+      chunks = list(
+          models_module.generate_content_stream(
+              model='gemini-2.5-pro',
+              contents='Write a long book',
+          )
+      )
+      assert mock_raw_stream.call_count == 3
+      assert [
+          call.kwargs['config'].continuation_token
+          for call in mock_raw_stream.call_args_list[1:]
+      ] == [b'v2_hop1_end', b'v2_hop1_end']
+      assert [c.text for c in chunks] == [
+          'Hop 1 end. ',
+          'Resumed and completed.',
+      ]
+      assert chunks[0].candidates[0].finish_reason is None
+      assert chunks[-1].candidates[0].finish_reason == types.FinishReason.STOP
+
+  # 6b. Resumed hop drops AFTER yielding candidate content but before its first
+  # checkpoint -> does NOT retry from hop_start_token (which would duplicate
+  # already-yielded text) and surfaces the error immediately.
+  chunk_hop2_pre_ckpt = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Hop 2 intro. ')]
+              ),
+          )
+      ]
+  )
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          iter([chunk_hop1_boundary.model_copy(deep=True)]),
+          _failing_hop(
+              [chunk_hop2_pre_ckpt], httpx.RemoteProtocolError('peer closed')
+          ),
+      ],
+  ) as mock_raw_stream:
+    received = []
+    with pytest.raises(httpx.RemoteProtocolError):
+      for chunk in models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book',
+      ):
+        received.append(chunk.text)
+    assert mock_raw_stream.call_count == 2
+    assert received == ['Hop 1 end. ', 'Hop 2 intro. ']
+
+  # 7. Resumed hop ends with finish_reason=CONTINUATION but no new token ->
+  # stops instead of replaying the hop's start token.
+  chunk_continuation_no_token = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='No token. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+          )
+      ]
+  )
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          iter([chunk_hop1_boundary.model_copy(deep=True)]),
+          iter([chunk_continuation_no_token.model_copy(deep=True)]),
+      ],
+  ) as mock_raw_stream:
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Write a long book',
+        )
+    )
+    assert mock_raw_stream.call_count == 2
+    assert chunks[-1].candidates[0].finish_reason == (
+        types.FinishReason.CONTINUATION
+    )
 
 
 @pytest.mark.asyncio
@@ -2721,7 +2872,32 @@ async def test_async_models_generate_content_stream_recovers_from_midstream_chec
     assert received == ['Async Ckpt 35k. ']
     assert mock_async_stream.call_count == 1
 
-  # 4. Consecutive failure on resumed hop before any new checkpoint chunk is emitted -> raises without infinite looping
+  # 4. Consecutive connection drops on resumed hops before any new checkpoint
+  # chunk is emitted -> retries from the hop's start token a bounded number of
+  # times, then raises without infinite looping.
+  max_retries = _extra_utils.MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+  dropped = httpx.RemoteProtocolError('peer closed connection')
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_make_async_stream([chunk_ckpt_35k], server_504)]
+      + [_make_async_stream([], dropped) for _ in range(max_retries + 1)],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(httpx.RemoteProtocolError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ']
+    assert mock_async_stream.call_count == max_retries + 2
+    for call in mock_async_stream.call_args_list[1:]:
+      assert call.kwargs['config'].continuation_token == b'async_v2_ckpt_35k'
+
+  # 4b. A resumed hop's request is rejected before streaming anything -> raised
+  # without retrying (left to HttpOptions.retry_options).
   with mock.patch.object(
       models.AsyncModels,
       '_generate_content_stream',
@@ -2741,6 +2917,28 @@ async def test_async_models_generate_content_stream_recovers_from_midstream_chec
     assert received == ['Async Ckpt 35k. ']
     assert mock_async_stream.call_count == 2
 
+  # 4c. A connection drop followed by retries that end cleanly without progress
+  # -> the drop is re-raised when the stream gives up, not hidden.
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_ckpt_35k], server_504),
+          _make_async_stream([], dropped),
+      ]
+      + [_make_async_stream([]) for _ in range(max_retries)],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(httpx.RemoteProtocolError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert received == ['Async Ckpt 35k. ']
+    assert mock_async_stream.call_count == max_retries + 2
+
   # 5. Error after STOP finish_reason in same hop -> stale checkpoint token was cleared, so does not resume
   with mock.patch.object(
       models.AsyncModels,
@@ -2759,6 +2957,344 @@ async def test_async_models_generate_content_stream_recovers_from_midstream_chec
         received.append(chunk.text)
     assert received == ['Async Ckpt 35k. ', 'Async resumed and completed.']
     assert mock_async_stream.call_count == 1
+
+  # 6. Resumed hop drops before emitting any content or checkpoint -> retries
+  # from the token the hop was started with.
+  chunk_hop1_boundary = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async hop 1 end. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'async_v2_hop1_end',
+          )
+      ]
+  )
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_hop1_boundary]),
+          _make_async_stream([], httpx.RemoteProtocolError('peer closed')),
+          _make_async_stream([chunk_hop2_final]),
+      ],
+  ) as mock_async_stream:
+    chunks = []
+    async for chunk in await models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book async',
+    ):
+      chunks.append(chunk)
+    assert mock_async_stream.call_count == 3
+    assert [
+        call.kwargs['config'].continuation_token
+        for call in mock_async_stream.call_args_list[1:]
+    ] == [b'async_v2_hop1_end', b'async_v2_hop1_end']
+    assert [c.text for c in chunks] == [
+        'Async hop 1 end. ',
+        'Async resumed and completed.',
+    ]
+
+  # 6b. Resumed hop drops AFTER yielding candidate content but before its first
+  # checkpoint -> does NOT retry from hop_start_token and raises immediately.
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_hop1_boundary]),
+          _make_async_stream(
+              [chunk_pre_32k], httpx.RemoteProtocolError('peer closed')
+          ),
+      ],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(httpx.RemoteProtocolError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro',
+          contents='Write a long book async',
+      ):
+        received.append(chunk.text)
+    assert mock_async_stream.call_count == 2
+    assert received == ['Async hop 1 end. ', 'Async Intro. ']
+
+
+
+def test_next_stream_continuation_token():
+  """StreamContinuation picks the token for the next streaming hop."""
+  max_retries = _extra_utils.MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+
+  def nxt(
+      *,
+      hop_start_token,
+      hop_token,
+      finish_reason,
+      reconnects_without_progress,
+      has_prompt_feedback=False,
+      hop_has_yielded_content=False,
+  ):
+    state = _extra_utils.StreamContinuation(config=None)
+    state._reconnects_without_progress = reconnects_without_progress
+    # `type(state._hop)` rather than `_extra_utils._StreamHop`: the private
+    # `_extra_utils` module re-exports with a wildcard import, which skips
+    # underscore-prefixed names.
+    state._hop = type(state._hop)(
+        start_token=hop_start_token,
+        token=hop_token,
+        finish_reason=finish_reason,
+        has_prompt_feedback=has_prompt_feedback,
+        has_yielded_content=hop_has_yielded_content,
+    )
+    return state._next_resume_token()
+
+  # New checkpoint token received -> resume from it and reset the retry count.
+  assert nxt(
+      hop_start_token=b'a',
+      hop_token=b'b',
+      finish_reason=None,
+      reconnects_without_progress=2,
+      hop_has_yielded_content=True,
+  ) == (b'b', 0)
+  assert nxt(
+      hop_start_token=None,
+      hop_token=b'b',
+      finish_reason=types.FinishReason.CONTINUATION,
+      reconnects_without_progress=0,
+      hop_has_yielded_content=True,
+  ) == (b'b', 0)
+
+  # Dropped before a new checkpoint and before yielding content -> retry from
+  # the hop's start token.
+  for hop_token in (None, b'a'):
+    assert nxt(
+        hop_start_token=b'a',
+        hop_token=hop_token,
+        finish_reason=None,
+        reconnects_without_progress=0,
+    ) == (b'a', 1)
+
+  # Dropped before a new checkpoint AFTER yielding content -> do not replay
+  # hop_start_token (would duplicate yielded content).
+  for hop_token in (None, b'a'):
+    assert nxt(
+        hop_start_token=b'a',
+        hop_token=hop_token,
+        finish_reason=None,
+        reconnects_without_progress=0,
+        hop_has_yielded_content=True,
+    ) == (None, 0)
+
+  # Initial request dropped before any checkpoint -> nothing to resume from.
+  assert nxt(
+      hop_start_token=None,
+      hop_token=None,
+      finish_reason=None,
+      reconnects_without_progress=0,
+  ) == (None, 1)
+
+  # Retry budget exhausted -> stop.
+  assert nxt(
+      hop_start_token=b'a',
+      hop_token=None,
+      finish_reason=None,
+      reconnects_without_progress=max_retries,
+  ) == (None, max_retries)
+
+  # Terminal finish_reason without a new token -> stop, never replay the hop.
+  for finish_reason in (
+      types.FinishReason.STOP,
+      types.FinishReason.CONTINUATION,
+  ):
+    for hop_token in (None, b'a'):
+      assert nxt(
+          hop_start_token=b'a',
+          hop_token=hop_token,
+          finish_reason=finish_reason,
+          reconnects_without_progress=0,
+      ) == (None, 0)
+
+  # Prompt feedback received -> stop immediately, never replay the hop.
+  for hop_token in (None, b'a', b'b'):
+    assert nxt(
+        hop_start_token=b'a',
+        hop_token=hop_token,
+        finish_reason=None,
+        reconnects_without_progress=0,
+        has_prompt_feedback=True,
+    ) == (None, 0)
+  assert not _extra_utils.can_resume_stream(
+      True, b'a', None, has_prompt_feedback=True
+  )
+
+
+def test_stream_continuation_hop2_prompt_feedback_does_not_retry(
+    mock_api_client,
+):
+  """Sync generate_content_stream stops cleanly without retrying when a resumed hop yields prompt_feedback."""
+  models_module = models.Models(mock_api_client)
+  chunk_hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Hop 1. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok_1',
+          )
+      ]
+  )
+  chunk_hop2_pf = types.GenerateContentResponse(
+      candidates=None,
+      prompt_feedback=types.GenerateContentResponsePromptFeedback(
+          block_reason=types.BlockedReason.SAFETY
+      ),
+  )
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[
+          iter([chunk_hop1.model_copy(deep=True)]),
+          iter([chunk_hop2_pf.model_copy(deep=True)]),
+      ],
+  ) as mock_raw_stream:
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-pro',
+            contents='Write a long book',
+        )
+    )
+    assert mock_raw_stream.call_count == 2
+    assert len(chunks) == 2
+    assert chunks[0].text == 'Hop 1. '
+    assert chunks[1].prompt_feedback is not None
+    assert chunks[1].prompt_feedback.block_reason == types.BlockedReason.SAFETY
+
+
+@pytest.mark.asyncio
+async def test_async_stream_continuation_hop2_prompt_feedback_does_not_retry(
+    mock_api_client,
+):
+  """Async generate_content_stream stops cleanly without retrying when a resumed hop yields prompt_feedback."""
+  models_module = models.AsyncModels(mock_api_client)
+  chunk_hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Hop 1. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'async_tok_1',
+          )
+      ]
+  )
+  chunk_hop2_pf = types.GenerateContentResponse(
+      candidates=None,
+      prompt_feedback=types.GenerateContentResponsePromptFeedback(
+          block_reason=types.BlockedReason.SAFETY
+      ),
+  )
+
+  async def _make_async_stream(chunk_list):
+    for c in chunk_list:
+      yield c.model_copy(deep=True)
+
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[
+          _make_async_stream([chunk_hop1]),
+          _make_async_stream([chunk_hop2_pf]),
+      ],
+  ) as mock_async_stream:
+    chunks = []
+    async for chunk in await models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book async',
+    ):
+      chunks.append(chunk)
+    assert mock_async_stream.call_count == 2
+    assert len(chunks) == 2
+    assert chunks[0].text == 'Async Hop 1. '
+    assert chunks[1].prompt_feedback is not None
+    assert chunks[1].prompt_feedback.block_reason == types.BlockedReason.SAFETY
+
+
+def test_stream_continuation_eof_without_finish_reason_ends_normally_after_retries(
+    mock_api_client,
+):
+  """Sync generate_content_stream ends normally (no SDK-invented error) if a resumed continuation stream closes cleanly without finish_reason after exhausting retries."""
+  models_module = models.Models(mock_api_client)
+  chunk_hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Hop 1. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok_1',
+          )
+      ]
+  )
+  max_retries = _extra_utils.MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[iter([chunk_hop1.model_copy(deep=True)])]
+      + [iter([]) for _ in range(max_retries + 1)],
+  ) as mock_raw_stream:
+    received = []
+    # No exception: the API returned no error, so the stream ends normally.
+    for chunk in models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book',
+    ):
+      received.append(chunk.text)
+    assert received == ['Hop 1. ']
+    assert mock_raw_stream.call_count == 1 + 1 + max_retries
+
+
+@pytest.mark.asyncio
+async def test_async_stream_continuation_eof_without_finish_reason_ends_normally_after_retries(
+    mock_api_client,
+):
+  """Async generate_content_stream ends normally (no SDK-invented error) if a resumed continuation stream closes cleanly without finish_reason after exhausting retries."""
+  models_module = models.AsyncModels(mock_api_client)
+  chunk_hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Async Hop 1. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'async_tok_1',
+          )
+      ]
+  )
+
+  async def _make_async_stream(chunk_list):
+    for c in chunk_list:
+      yield c.model_copy(deep=True)
+
+  max_retries = _extra_utils.MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_make_async_stream([chunk_hop1])]
+      + [_make_async_stream([]) for _ in range(max_retries + 1)],
+  ) as mock_async_stream:
+    received = []
+    # No exception: the API returned no error, so the stream ends normally.
+    async for chunk in await models_module.generate_content_stream(
+        model='gemini-2.5-pro',
+        contents='Write a long book async',
+    ):
+      received.append(chunk.text)
+    assert received == ['Async Hop 1. ']
+    assert mock_async_stream.call_count == 1 + 1 + max_retries
 
 
 TOK_UNARY_HOP1_B64 = base64.b64encode(b'tok_unary_hop1').decode('ascii')
@@ -3368,3 +3904,240 @@ def test_merge_continuation_responses_empty_candidates_clears_finish_reason_and_
       assert response.usage_metadata is not None
       assert response.usage_metadata.prompt_token_count == 120
       assert response.usage_metadata.initial_prompt_token_count == 10
+
+
+def _blocked_after_checkpoint_chunks():
+  text_chunk = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(role='model', parts=[types.Part(text='Hi ')])
+          )
+      ]
+  )
+  checkpoint_chunk = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='there. ')]
+              ),
+              continuation_token=b'ckpt_before_block',
+          )
+      ]
+  )
+  blocked_chunk = types.GenerateContentResponse(
+      prompt_feedback=types.GenerateContentResponsePromptFeedback(
+          block_reason=types.BlockedReason.SAFETY
+      )
+  )
+  return [text_chunk, checkpoint_chunk, blocked_chunk]
+
+
+def test_models_generate_content_stream_does_not_resume_after_block(
+    mock_api_client,
+):
+  """A no-candidate blocked chunk after a checkpoint ends the stream without resuming."""
+  models_module = models.Models(mock_api_client)
+  server_503 = errors.ServerError(
+      503, {'error': {'code': 503, 'message': 'x', 'status': 'UNAVAILABLE'}}
+  )
+
+  def _hop(exc=None):
+    for c in _blocked_after_checkpoint_chunks():
+      yield c
+    if exc is not None:
+      raise exc
+
+  # 1. Stream ends after the block -> no resume.
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_hop(), _hop()],
+  ) as mock_raw_stream:
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-pro', contents='Write something'
+        )
+    )
+    assert mock_raw_stream.call_count == 1
+    assert len(chunks) == 3
+    assert chunks[0].text == 'Hi '
+    assert chunks[1].text == 'there. '
+    assert not chunks[2].candidates
+    assert chunks[2].prompt_feedback.block_reason == types.BlockedReason.SAFETY
+
+  # 2. Error after the block -> raises instead of resuming from checkpoint.
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[_hop(server_503), _hop()],
+  ) as mock_raw_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      for chunk in models_module.generate_content_stream(
+          model='gemini-2.5-pro', contents='Write something'
+      ):
+        received.append(chunk)
+    assert len(received) == 3
+    assert mock_raw_stream.call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_async_models_generate_content_stream_does_not_resume_after_block(
+    mock_api_client,
+):
+  """Async: a no-candidate blocked chunk after a checkpoint ends the stream without resuming."""
+  models_module = models.AsyncModels(mock_api_client)
+  server_503 = errors.ServerError(
+      503, {'error': {'code': 503, 'message': 'x', 'status': 'UNAVAILABLE'}}
+  )
+
+  async def _hop(exc=None):
+    for c in _blocked_after_checkpoint_chunks():
+      yield c
+    if exc is not None:
+      raise exc
+
+  # 1. Stream ends after the block -> no resume.
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_hop(), _hop()],
+  ) as mock_async_stream:
+    chunks = []
+    async for chunk in await models_module.generate_content_stream(
+        model='gemini-2.5-pro', contents='Write something'
+    ):
+      chunks.append(chunk)
+    assert mock_async_stream.call_count == 1
+    assert len(chunks) == 3
+    assert chunks[0].text == 'Hi '
+    assert chunks[1].text == 'there. '
+    assert not chunks[2].candidates
+    assert chunks[2].prompt_feedback.block_reason == types.BlockedReason.SAFETY
+
+  # 2. Error after the block -> raises instead of resuming from checkpoint.
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_hop(server_503), _hop()],
+  ) as mock_async_stream:
+    received = []
+    with pytest.raises(errors.ServerError):
+      async for chunk in await models_module.generate_content_stream(
+          model='gemini-2.5-pro', contents='Write something'
+      ):
+        received.append(chunk)
+    assert len(received) == 3
+    assert mock_async_stream.call_count == 1
+
+
+def _max_tokens_on_resumed_hop_responses():
+  hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Hop 1. ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok_hop1',
+          )
+      ]
+  )
+  hop2 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Hop 2.')]
+              ),
+              finish_reason=types.FinishReason.MAX_TOKENS,
+              continuation_token=b'tok_hop2_max_tokens',
+          )
+      ]
+  )
+  return hop1, hop2
+
+
+def test_models_max_tokens_on_resumed_hop_stops_and_returns_token(
+    mock_api_client,
+):
+  """MAX_TOKENS on a later hop stops the loop and surfaces its token."""
+  models_module = models.Models(mock_api_client)
+
+  hop1, hop2 = _max_tokens_on_resumed_hop_responses()
+  with mock.patch.object(
+      models.Models, '_generate_content', side_effect=[hop1, hop2]
+  ) as mock_raw_gc:
+    response = models_module.generate_content(
+        model='gemini-2.5-pro', contents='Write something'
+    )
+    assert mock_raw_gc.call_count == 2
+    assert response.text == 'Hop 1. Hop 2.'
+    candidate = response.candidates[0]
+    assert candidate.finish_reason == types.FinishReason.MAX_TOKENS
+    assert candidate.continuation_token == b'tok_hop2_max_tokens'
+
+  hop1, hop2 = _max_tokens_on_resumed_hop_responses()
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream',
+      side_effect=[iter([hop1]), iter([hop2]), iter([])],
+  ) as mock_raw_stream:
+    # No APIError: MAX_TOKENS is a terminal finish_reason.
+    chunks = list(
+        models_module.generate_content_stream(
+            model='gemini-2.5-pro', contents='Write something'
+        )
+    )
+    assert mock_raw_stream.call_count == 2
+    assert [c.text for c in chunks] == ['Hop 1. ', 'Hop 2.']
+    assert chunks[0].candidates[0].finish_reason is None
+    last = chunks[-1].candidates[0]
+    assert last.finish_reason == types.FinishReason.MAX_TOKENS
+    assert last.continuation_token == b'tok_hop2_max_tokens'
+
+
+@pytest.mark.asyncio
+async def test_async_models_max_tokens_on_resumed_hop_stops_and_returns_token(
+    mock_api_client,
+):
+  """Async: MAX_TOKENS on a later hop stops the loop and surfaces its token."""
+  models_module = models.AsyncModels(mock_api_client)
+
+  hop1, hop2 = _max_tokens_on_resumed_hop_responses()
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content',
+      new_callable=mock.AsyncMock,
+      side_effect=[hop1, hop2],
+  ) as mock_raw_gc:
+    response = await models_module.generate_content(
+        model='gemini-2.5-pro', contents='Write something'
+    )
+    assert mock_raw_gc.call_count == 2
+    assert response.text == 'Hop 1. Hop 2.'
+    candidate = response.candidates[0]
+    assert candidate.finish_reason == types.FinishReason.MAX_TOKENS
+    assert candidate.continuation_token == b'tok_hop2_max_tokens'
+
+  async def _hop(resp):
+    yield resp
+
+  hop1, hop2 = _max_tokens_on_resumed_hop_responses()
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[_hop(hop1), _hop(hop2)],
+  ) as mock_async_stream:
+    chunks = []
+    async for chunk in await models_module.generate_content_stream(
+        model='gemini-2.5-pro', contents='Write something'
+    ):
+      chunks.append(chunk)
+    assert mock_async_stream.call_count == 2
+    assert [c.text for c in chunks] == ['Hop 1. ', 'Hop 2.']
+    last = chunks[-1].candidates[0]
+    assert last.finish_reason == types.FinishReason.MAX_TOKENS
+    assert last.continuation_token == b'tok_hop2_max_tokens'

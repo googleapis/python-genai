@@ -6142,67 +6142,19 @@ class Models(_api_module.BaseModule):
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Iterator[types.GenerateContentResponse]:
     """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
-    enable_continuation = _extra_utils.should_enable_automatic_continuation(
-        config, default_enabled=True
-    )
-    continuation_token: Optional[bytes] = None
-    hop_finish_reason: Optional[types.FinishReason] = None
-    accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
-        None
-    )
-    is_first_hop = True
-
-    while is_first_hop or _extra_utils.can_resume_stream(
-        enable_continuation, continuation_token, hop_finish_reason
-    ):
-      is_first_hop = False
-      call_config = _extra_utils.prepare_continuation_config(
-          config, continuation_token
-      )
-      hop_finish_reason = None
-      continuation_token = None
-      hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
-
+    state = _extra_utils.StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error: Optional[Exception] = None
       try:
         for chunk in self._generate_content_stream(
             model=model, contents=contents, config=call_config
         ):
-          if chunk.candidates:
-            candidate = chunk.candidates[0]
-            if candidate.finish_reason:
-              hop_finish_reason = candidate.finish_reason
-            if candidate.continuation_token:
-              continuation_token = candidate.continuation_token
-            elif (
-                candidate.finish_reason
-                and not _extra_utils.is_resumable_finish_reason(
-                    candidate.finish_reason
-                )
-            ):
-              continuation_token = None
-            chunk = _extra_utils.clear_intermediate_finish_reason(
-                chunk, enable_continuation, continuation_token
-            )
-          if chunk.usage_metadata is not None:
-            if accumulated_usage is not None:
-              merged_usage = _extra_utils.merge_pydantic_models(
-                  accumulated_usage, chunk.usage_metadata
-              )
-              chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
-              hop_usage = merged_usage
-            else:
-              hop_usage = chunk.usage_metadata
-          yield chunk
-      except Exception:  # pylint: disable=broad-exception-caught
-        # If the stream fails after emitting a checkpoint continuation_token
-        # without a terminal finish_reason, suppress the error so the outer
-        # loop resumes from the latest checkpoint.
-        if not _extra_utils.can_resume_stream(
-            enable_continuation, continuation_token, hop_finish_reason
-        ):
-          raise
-      if hop_usage is not None:
-        accumulated_usage = hop_usage
+          yield state.observe(chunk)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        error = e
+      if not state.end_hop(error):
+        return
 
   def generate_content(
       self,
@@ -8407,68 +8359,20 @@ class AsyncModels(_api_module.BaseModule):
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> AsyncIterator[types.GenerateContentResponse]:
     """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
-    enable_continuation = _extra_utils.should_enable_automatic_continuation(
-        config, default_enabled=True
-    )
-    continuation_token: Optional[bytes] = None
-    hop_finish_reason: Optional[types.FinishReason] = None
-    accumulated_usage: Optional[types.GenerateContentResponseUsageMetadata] = (
-        None
-    )
-    is_first_hop = True
-
-    while is_first_hop or _extra_utils.can_resume_stream(
-        enable_continuation, continuation_token, hop_finish_reason
-    ):
-      is_first_hop = False
-      call_config = _extra_utils.prepare_continuation_config(
-          config, continuation_token
-      )
-      hop_finish_reason = None
-      continuation_token = None
-      hop_usage: Optional[types.GenerateContentResponseUsageMetadata] = None
-
+    state = _extra_utils.StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error: Optional[Exception] = None
       try:
         response_stream = await self._generate_content_stream(
             model=model, contents=contents, config=call_config
         )
         async for chunk in response_stream:  # type: ignore[attr-defined]
-          if chunk.candidates:
-            candidate = chunk.candidates[0]
-            if candidate.finish_reason:
-              hop_finish_reason = candidate.finish_reason
-            if candidate.continuation_token:
-              continuation_token = candidate.continuation_token
-            elif (
-                candidate.finish_reason
-                and not _extra_utils.is_resumable_finish_reason(
-                    candidate.finish_reason
-                )
-            ):
-              continuation_token = None
-            chunk = _extra_utils.clear_intermediate_finish_reason(
-                chunk, enable_continuation, continuation_token
-            )
-          if chunk.usage_metadata is not None:
-            if accumulated_usage is not None:
-              merged_usage = _extra_utils.merge_pydantic_models(
-                  accumulated_usage, chunk.usage_metadata
-              )
-              chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
-              hop_usage = merged_usage
-            else:
-              hop_usage = chunk.usage_metadata
-          yield chunk
-      except Exception:  # pylint: disable=broad-exception-caught
-        # If the stream fails after emitting a checkpoint continuation_token
-        # without a terminal finish_reason, suppress the error so the outer
-        # loop resumes from the latest checkpoint.
-        if not _extra_utils.can_resume_stream(
-            enable_continuation, continuation_token, hop_finish_reason
-        ):
-          raise
-      if hop_usage is not None:
-        accumulated_usage = hop_usage
+          yield state.observe(chunk)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        error = e
+      if not state.end_hop(error):
+        return
 
   async def generate_content(
       self,
