@@ -24,7 +24,8 @@ from typing import Any, Callable, Mapping, Optional, Union, cast
 import httpx
 
 from .. import types, utils
-from .types import BeforeRequestContext, BeforeRequestHook
+from ..sdkconfiguration import SDKConfiguration
+from .types import BeforeRequestContext, BeforeRequestHook, SDKInitHook
 
 
 GOOGLE_GENAI_API_REVISION = "2026-05-20"
@@ -57,8 +58,13 @@ class GoogleGenAISecurityProvider:
         self._pending_access_token = None
 
 
-class GoogleGenAIAuthHook(BeforeRequestHook):
+class GoogleGenAIAuthHook(SDKInitHook, BeforeRequestHook):
     """Applies Google GenAI headers and custom auth before sending requests."""
+
+    def sdk_init(self, config: SDKConfiguration) -> SDKConfiguration:
+        if config.globals.api_version is None:
+            config.globals.api_version = "v1beta"
+        return config
 
     def before_request(
         self,
