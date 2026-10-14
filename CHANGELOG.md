@@ -1,21 +1,5 @@
 # Changelog
 
-## [2.31.0](https://github.com/googleapis/python-genai/compare/v2.30.1...v2.31.0) (2026-10-14)
-
-
-### Features
-
-* **interactions:** Add gemini-4-argon to Model enum ([8554b07](https://github.com/googleapis/python-genai/commit/8554b07d0025e19361b7a10a6384cc143f3a8ea9))
-
-
-### Bug Fixes
-
-* Clear continuation state and preserve prompt feedback when continuation hop returns no candidates ([a0d809c](https://github.com/googleapis/python-genai/commit/a0d809cd838ec02938c1646c47cc3ece2761fc09))
-* Fix the function declaration parser for union types. Fixes [#3060](https://github.com/googleapis/python-genai/issues/3060) ([be32e9e](https://github.com/googleapis/python-genai/commit/be32e9e074e6a403621a6d52ae97f81f0777549e))
-* Fix the grounding metadata merging for automatic continuation in generate content and generate content stream ([f1499bb](https://github.com/googleapis/python-genai/commit/f1499bb86c707d51b5b2684ff9423653cc74895c))
-* Make continuation streams retry dropped hops, stop on prompt_feedback, and keep real errors in generate_content ([339a929](https://github.com/googleapis/python-genai/commit/339a92921ac877d07d34a3646cddefdf9c71565c))
-* Match the mTLS endpoint to each transport's SSL context, including plain aiohttp ([f8a4693](https://github.com/googleapis/python-genai/commit/f8a469322cf66716ca3345c14516c0daa213ca1c))
-
 ## [2.30.1](https://github.com/googleapis/python-genai/compare/v2.30.0...v2.30.1) (2026-10-13)
 
 
