@@ -379,10 +379,6 @@ def parse_function_declaration_json_schema(
           root_defs.update(json_schema_dict.pop('$defs'))
         if 'definitions' in json_schema_dict:
           root_defs.update(json_schema_dict.pop('definitions'))
-        # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
-        # but Vertex requires it.
-        if not 'type' in json_schema_dict and 'anyOf' in json_schema_dict:
-          json_schema_dict['type'] = 'object'
         if param.default is not inspect._empty:
           json_schema_dict['default'] = param.default
         parameters_properties_json_schema[name] = json_schema_dict
@@ -437,10 +433,6 @@ def parse_function_declaration_json_schema(
       response_json_schema = _add_unevaluated_items_to_fixed_len_tuple_schema(
           response_json_schema
       )
-      # pydantic doesn't assign the `type` field when the schema has 'anyOf'.
-      # but Vertex requires it.
-      if 'type' not in response_json_schema and 'anyOf' in response_json_schema:
-        response_json_schema['type'] = 'object'
     except Exception as e:
       _raise_for_unsupported_param(
           return_value, callable.__name__, e
