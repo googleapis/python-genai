@@ -870,11 +870,13 @@ class Webhooks(BaseSDK):
         self,
         id: str,
         *,
-        body: Union[
-            webhooks_pingwebhookrequest.PingWebhookRequest,
-            webhooks_pingwebhookrequest.PingWebhookRequestParam,
-        ],
         api_version: Optional[str] = None,
+        body: Optional[
+            Union[
+                webhooks_pingwebhookrequest.PingWebhookRequest,
+                webhooks_pingwebhookrequest.PingWebhookRequestParam,
+            ]
+        ] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -883,8 +885,8 @@ class Webhooks(BaseSDK):
         r"""Sends a ping event to a Webhook.
 
         :param id: Required. The ID of the webhook to ping.
-        :param body: Required. The request body.
         :param api_version: API version for request routing.
+        :param body: The request body.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -907,7 +909,7 @@ class Webhooks(BaseSDK):
         request = models.PingWebhookRequest(
             api_version=api_version,
             id=id,
-            body=utils.get_pydantic_model(body, webhooks.PingWebhookRequest),
+            body=utils.get_pydantic_model(body, Optional[webhooks.PingWebhookRequest]),
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -919,7 +921,7 @@ class Webhooks(BaseSDK):
             base_url=base_url,
             url_variables=url_variables,
             request=request,
-            request_body_required=True,
+            request_body_required=False,
             request_has_path_params=True,
             request_has_query_params=True,
             user_agent_header="user-agent",
@@ -931,11 +933,11 @@ class Webhooks(BaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body,
+                request.body if request is not None else None,
                 False,
-                False,
+                True,
                 "json",
-                webhooks.PingWebhookRequest,
+                Optional[webhooks.PingWebhookRequest],
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -2100,11 +2102,13 @@ class AsyncWebhooks(AsyncBaseSDK):
         self,
         id: str,
         *,
-        body: Union[
-            webhooks_pingwebhookrequest.PingWebhookRequest,
-            webhooks_pingwebhookrequest.PingWebhookRequestParam,
-        ],
         api_version: Optional[str] = None,
+        body: Optional[
+            Union[
+                webhooks_pingwebhookrequest.PingWebhookRequest,
+                webhooks_pingwebhookrequest.PingWebhookRequestParam,
+            ]
+        ] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -2113,8 +2117,8 @@ class AsyncWebhooks(AsyncBaseSDK):
         r"""Sends a ping event to a Webhook.
 
         :param id: Required. The ID of the webhook to ping.
-        :param body: Required. The request body.
         :param api_version: API version for request routing.
+        :param body: The request body.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -2137,7 +2141,7 @@ class AsyncWebhooks(AsyncBaseSDK):
         request = models.PingWebhookRequest(
             api_version=api_version,
             id=id,
-            body=utils.get_pydantic_model(body, webhooks.PingWebhookRequest),
+            body=utils.get_pydantic_model(body, Optional[webhooks.PingWebhookRequest]),
         )
 
         _speakeasy_response_mode, http_headers = response_helpers.consume_response_mode(
@@ -2149,7 +2153,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             base_url=base_url,
             url_variables=url_variables,
             request=request,
-            request_body_required=True,
+            request_body_required=False,
             request_has_path_params=True,
             request_has_query_params=True,
             user_agent_header="user-agent",
@@ -2161,11 +2165,11 @@ class AsyncWebhooks(AsyncBaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body,
+                request.body if request is not None else None,
                 False,
-                False,
+                True,
                 "json",
-                webhooks.PingWebhookRequest,
+                Optional[webhooks.PingWebhookRequest],
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
