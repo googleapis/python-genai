@@ -48,6 +48,7 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
         r"""Creates a new interaction.
 
@@ -86,6 +87,7 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> interactions.Interaction:
         r"""Creates a new interaction.
 
@@ -149,6 +151,7 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
         r"""Creates a new interaction.
 
@@ -211,6 +214,7 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> interactions.Interaction:
         r"""Creates a new interaction.
 
@@ -272,6 +276,7 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> Stream[interactions.InteractionSSEEvent]:
         r"""Creates a new interaction.
 
@@ -319,6 +324,7 @@ class Interactions(BaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
         r"""Creates a new interaction.
@@ -1295,6 +1301,7 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
         r"""Creates a new interaction.
 
@@ -1333,6 +1340,7 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> interactions.Interaction:
         r"""Creates a new interaction.
 
@@ -1396,6 +1404,7 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
         r"""Creates a new interaction.
 
@@ -1458,6 +1467,7 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> interactions.Interaction:
         r"""Creates a new interaction.
 
@@ -1519,6 +1529,7 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
     ) -> AsyncStream[interactions.InteractionSSEEvent]:
         r"""Creates a new interaction.
 
@@ -1566,6 +1577,7 @@ class AsyncInteractions(AsyncBaseSDK):
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
         timeout: Optional[Union[float, httpx.Timeout]] = None,
+        automatic_continuation: Optional[bool] = None,
         **body_kwargs: Any,
     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
         r"""Creates a new interaction.

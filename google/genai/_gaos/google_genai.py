@@ -26,10 +26,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Mapping, Optional, TypeVar, Union, cast
 
+import functools
 import io
 import json
 import mimetypes
 import os
+import warnings
 
 import httpx
 
@@ -262,46 +264,150 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             extra_query: Optional[Mapping[str, Any]] = None,
             extra_body: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
+            automatic_continuation: Optional[bool] = None,
             **body: Any,
         ) -> Union[
             interactions.Interaction,
             eventstreaming.Stream[interactions.InteractionSSEEvent],
         ]:
+            """Creates a new interaction.
+
+            :param request: Optional request object (`CreateInteractionRequest`).
+            :param api_version: API version for request routing.
+            :param extra_headers: Additional headers to set or replace on requests.
+            :param extra_query: Additional query parameters to append to requests.
+            :param extra_body: Additional JSON object fields to merge into request bodies.
+            :param timeout: Override the default request timeout configuration
+                for this method in seconds. When `automatic_continuation=True`,
+                `timeout` (as well as `http_options.timeout` and
+                `http_options.retry_options`) applies per continuation request
+                (hop).
+            :param automatic_continuation: When `True`, automatically resumes
+                decoding across multiple continuation hops whenever a response
+                or stream stops at the per-request decode token limit
+                (`status='continuation_required'` with a `continuation_token`)
+                until the interaction completes, reaches `incomplete` (e.g.
+                `max_output_tokens`), requires action, or fails.
+                - For `stream=True`, events from all continuation hops are
+                  yielded sequentially on the returned `Stream`.
+                - For `stream=False`, the final continued `Interaction` returned
+                  by the server contains the full interaction with concatenated
+                  steps and accumulated token usage.
+                - Timeout & retry settings (`timeout`, `http_options.timeout`,
+                  and `http_options.retry_options`) apply per continuation
+                  request (hop). Transient errors on a continuation hop retry
+                  that hop using the latest `continuation_token` without
+                  restarting from the initial request.
+                - Billing note: With `background=False`, each continuation hop
+                  re-prefills the conversation and generated prefix, so input
+                  tokens are billed on every hop (and summed in
+                  `usage.total_input_tokens`). If an unrecoverable error occurs
+                  after one or more hops have completed, those completed hops
+                  are still billed. For server-managed continuation without
+                  client-side hop loops, use `background=True` (with
+                  `store=True`).
+            """
             if request is not None:
                 if body:
                     raise TypeError(_REQUEST_AND_BODY_ERROR)
+                is_background = _request_background(request)
+                is_store_false = _request_store_false(request)
                 stream = _request_stream(request)
-                response = wrap_sdk_call(
-                    super().create,
-                    request=request,
-                    api_version=api_version,
-                    extra_headers=extra_headers,
-                    extra_query=extra_query,
-                    extra_body=extra_body,
-                    timeout=timeout,
+                has_caller_token = _request_has_continuation_token(request)
+                if automatic_continuation is None:
+                    req_auto = _get_value(request, 'automatic_continuation')
+                    if req_auto is None:
+                        req_auto = _get_value(
+                            _get_value(request, 'body'),
+                            'automatic_continuation',
+                        )
+                    automatic_continuation = req_auto
+            else:
+                is_background = bool(
+                    _optional_bool(body.get('background'), default=False)
                 )
-                if stream:
-                    if is_stream(response):
-                        return wrap_stream_errors(response)
-                    return response
-                return _add_output_properties_if_interaction(response)
+                is_store_false = _optional_bool(body.get('store')) is False
+                stream = _optional_bool(body.get('stream'), default=False)
+                body = _normalize_create_body(body)
+                has_caller_token = bool(body.get('continuation_token'))
 
-            stream = _optional_bool(body.get('stream'), default=False)
-            body = _normalize_create_body(body)
-            response = wrap_sdk_call(
-                super().create,
-                api_version=api_version,
-                **cast(Any, body),
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
+            if is_background and automatic_continuation is False:
+                raise ValueError(_AUTO_CONTINUE_AND_BACKGROUND_ERROR)
+
+            auto_continue = bool(
+                _optional_bool(automatic_continuation, default=False)
             )
+
+            if is_store_false and not stream and auto_continue:
+                raise ValueError(_AUTO_CONTINUE_AND_STORE_FALSE_ERROR)
+
+            call_kwargs = {
+                'api_version': api_version,
+                'extra_headers': extra_headers,
+                'extra_query': extra_query,
+                'extra_body': extra_body,
+                'timeout': timeout,
+            }
+            send_once = functools.partial(
+                self._send_create_once, request, body, call_kwargs
+            )
+
+            response = send_once()
             if stream:
-                if is_stream(response):
-                    return wrap_stream_errors(response)
-                return response
-            return _add_output_properties_if_interaction(response)
+                if not is_stream(response):
+                    return response
+
+                wrapped_stream = wrap_stream_errors(response)
+                if not auto_continue:
+                    if not has_caller_token:
+                        return _wrap_stream_incomplete_warning(
+                            wrapped_stream,
+                        )
+                    return wrapped_stream
+
+                return _wrap_stream_continuation(
+                    wrapped_stream,
+                    send_once,
+                )
+
+            if auto_continue:
+                return _continue_unary_interaction(
+                    response,
+                    send_once,
+                )
+            result = _add_output_properties_if_interaction(response)
+            if not has_caller_token:
+                _warn_if_incomplete_unary(result)
+            return result
+
+        def _send_create_once(
+            self,
+            request: Any,
+            body: Mapping[str, Any],
+            call_kwargs: Mapping[str, Any],
+            token: Optional[str] = None,
+        ) -> Any:
+            if request is not None:
+                req = (
+                    request
+                    if token is None
+                    else _with_request_continuation_token(request, token)
+                )
+                return wrap_sdk_call(
+                    super().create,
+                    request=req,
+                    **call_kwargs,
+                )
+            req_body = (
+                body
+                if token is None
+                else {**body, 'continuation_token': token}
+            )
+            return wrap_sdk_call(
+                super().create,
+                **cast(Any, req_body),
+                **call_kwargs,
+            )
 
 
     if not TYPE_CHECKING:
@@ -414,46 +520,150 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             extra_query: Optional[Mapping[str, Any]] = None,
             extra_body: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
+            automatic_continuation: Optional[bool] = None,
             **body: Any,
         ) -> Union[
             interactions.Interaction,
             eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
         ]:
+            """Creates a new interaction asynchronously.
+
+            :param request: Optional request object (`CreateInteractionRequest`).
+            :param api_version: API version for request routing.
+            :param extra_headers: Additional headers to set or replace on requests.
+            :param extra_query: Additional query parameters to append to requests.
+            :param extra_body: Additional JSON object fields to merge into request bodies.
+            :param timeout: Override the default request timeout configuration
+                for this method in seconds. When `automatic_continuation=True`,
+                `timeout` (as well as `http_options.timeout` and
+                `http_options.retry_options`) applies per continuation request
+                (hop).
+            :param automatic_continuation: When `True`, automatically resumes
+                decoding across multiple continuation hops whenever a response
+                or stream stops at the per-request decode token limit
+                (`status='continuation_required'` with a `continuation_token`)
+                until the interaction completes, reaches `incomplete` (e.g.
+                `max_output_tokens`), requires action, or fails.
+                - For `stream=True`, events from all continuation hops are
+                  yielded sequentially on the returned `AsyncStream`.
+                - For `stream=False`, the final continued `Interaction` returned
+                  by the server contains the full interaction with concatenated
+                  steps and accumulated token usage.
+                - Timeout & retry settings (`timeout`, `http_options.timeout`,
+                  and `http_options.retry_options`) apply per continuation
+                  request (hop). Transient errors on a continuation hop retry
+                  that hop using the latest `continuation_token` without
+                  restarting from the initial request.
+                - Billing note: With `background=False`, each continuation hop
+                  re-prefills the conversation and generated prefix, so input
+                  tokens are billed on every hop (and summed in
+                  `usage.total_input_tokens`). If an unrecoverable error occurs
+                  after one or more hops have completed, those completed hops
+                  are still billed. For server-managed continuation without
+                  client-side hop loops, use `background=True` (with
+                  `store=True`).
+            """
             if request is not None:
                 if body:
                     raise TypeError(_REQUEST_AND_BODY_ERROR)
+                is_background = _request_background(request)
+                is_store_false = _request_store_false(request)
                 stream = _request_stream(request)
-                response = await async_wrap_sdk_call(
-                    super().create,
-                    request=request,
-                    api_version=api_version,
-                    extra_headers=extra_headers,
-                    extra_query=extra_query,
-                    extra_body=extra_body,
-                    timeout=timeout,
+                has_caller_token = _request_has_continuation_token(request)
+                if automatic_continuation is None:
+                    req_auto = _get_value(request, 'automatic_continuation')
+                    if req_auto is None:
+                        req_auto = _get_value(
+                            _get_value(request, 'body'),
+                            'automatic_continuation',
+                        )
+                    automatic_continuation = req_auto
+            else:
+                is_background = bool(
+                    _optional_bool(body.get('background'), default=False)
                 )
-                if stream:
-                    if is_stream(response):
-                        return wrap_async_stream_errors(response)
-                    return response
-                return _add_output_properties_if_interaction(response)
+                is_store_false = _optional_bool(body.get('store')) is False
+                stream = _optional_bool(body.get('stream'), default=False)
+                body = _normalize_create_body(body)
+                has_caller_token = bool(body.get('continuation_token'))
 
-            stream = _optional_bool(body.get('stream'), default=False)
-            body = _normalize_create_body(body)
-            response = await async_wrap_sdk_call(
-                super().create,
-                api_version=api_version,
-                **cast(Any, body),
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
+            if is_background and automatic_continuation is False:
+                raise ValueError(_AUTO_CONTINUE_AND_BACKGROUND_ERROR)
+
+            auto_continue = bool(
+                _optional_bool(automatic_continuation, default=False)
             )
+
+            if is_store_false and not stream and auto_continue:
+                raise ValueError(_AUTO_CONTINUE_AND_STORE_FALSE_ERROR)
+
+            call_kwargs = {
+                'api_version': api_version,
+                'extra_headers': extra_headers,
+                'extra_query': extra_query,
+                'extra_body': extra_body,
+                'timeout': timeout,
+            }
+            send_once = functools.partial(
+                self._send_create_once, request, body, call_kwargs
+            )
+
+            response = await send_once()
             if stream:
-                if is_stream(response):
-                    return wrap_async_stream_errors(response)
-                return response
-            return _add_output_properties_if_interaction(response)
+                if not is_stream(response):
+                    return response
+
+                wrapped_stream = wrap_async_stream_errors(response)
+                if not auto_continue:
+                    if not has_caller_token:
+                        return _wrap_async_stream_incomplete_warning(
+                            wrapped_stream
+                        )
+                    return wrapped_stream
+
+                return _wrap_async_stream_continuation(
+                    wrapped_stream,
+                    send_once,
+                )
+
+            if auto_continue:
+                return await _continue_async_unary_interaction(
+                    response,
+                    send_once,
+                )
+            result = _add_output_properties_if_interaction(response)
+            if not has_caller_token:
+                _warn_if_incomplete_unary(result)
+            return result
+
+        async def _send_create_once(
+            self,
+            request: Any,
+            body: Mapping[str, Any],
+            call_kwargs: Mapping[str, Any],
+            token: Optional[str] = None,
+        ) -> Any:
+            if request is not None:
+                req = (
+                    request
+                    if token is None
+                    else _with_request_continuation_token(request, token)
+                )
+                return await async_wrap_sdk_call(
+                    super().create,
+                    request=req,
+                    **call_kwargs,
+                )
+            req_body = (
+                body
+                if token is None
+                else {**body, 'continuation_token': token}
+            )
+            return await async_wrap_sdk_call(
+                super().create,
+                **cast(Any, req_body),
+                **call_kwargs,
+            )
 
 
     if not TYPE_CHECKING:
@@ -1338,16 +1548,9 @@ def _add_output_properties_if_interaction(value: Any) -> Any:
     steps = _get_value(normalized, 'steps')
     updates = _output_properties_from_steps(steps)
     if not updates:
-        return value
+        return normalized
 
-    if hasattr(normalized, 'model_copy'):
-        return normalized.model_copy(update=updates)
-    if isinstance(normalized, dict):
-        return {**normalized, **updates}
-
-    for name, output_value in updates.items():
-        setattr(normalized, name, output_value)
-    return normalized
+    return _set_or_copy(normalized, updates)
 
 
 def _normalize_interaction_shape(value: Any) -> Optional[Any]:
@@ -1398,13 +1601,15 @@ def _output_properties_from_steps(steps: list[Any]) -> dict[str, Any]:
 
         should_stop = False
         for item in reversed(content):
-            if _get_value(item, 'type') == 'text':
-                collecting = True
-                text = _get_value(item, 'text')
-                text_parts.append(text if isinstance(text, str) else '')
-            elif collecting:
-                should_stop = True
-                break
+            item_type = _get_value(item, 'type')
+            if item_type != 'text':
+                if collecting:
+                    should_stop = True
+                    break
+                continue
+            collecting = True
+            text = _get_value(item, 'text')
+            text_parts.append(text if isinstance(text, str) else '')
         if should_stop:
             break
 
@@ -1447,7 +1652,7 @@ def _output_properties_from_steps(steps: list[Any]) -> dict[str, Any]:
 
 
 def _get_value(value: Any, name: str) -> Any:
-    if isinstance(value, dict):
+    if isinstance(value, Mapping):
         return value.get(name)
     return getattr(value, name, None)
 
@@ -1547,14 +1752,391 @@ def _optional_str(value: Any) -> Optional[str]:
 
 
 def _request_stream(request: Any) -> bool:
-    body = (
-        request.get('body')
-        if isinstance(request, Mapping)
-        else getattr(request, 'body', None)
-    )
-    stream = (
-        body.get('stream')
-        if isinstance(body, Mapping)
-        else getattr(body, 'stream', None)
-    )
+    stream = _get_value(_get_value(request, 'body'), 'stream')
     return bool(_optional_bool(stream, default=False))
+
+
+_AUTO_CONTINUE_AND_BACKGROUND_ERROR = (
+    'automatic_continuation=False cannot be used with background=True.'
+)
+
+_AUTO_CONTINUE_AND_STORE_FALSE_ERROR = (
+    'automatic_continuation=True cannot be used with store=False in unary mode.'
+    ' Use store=True, stream=True, or background=True for automatic'
+    ' continuation to work.'
+)
+
+
+def _request_background(request: Any) -> bool:
+    background = _get_value(_get_value(request, 'body'), 'background')
+    return bool(_optional_bool(background, default=False))
+
+
+def _request_store_false(request: Any) -> bool:
+    store = _get_value(_get_value(request, 'body'), 'store')
+    return _optional_bool(store) is False
+
+
+def _with_request_continuation_token(request: Any, token: str) -> Any:
+    body = _get_value(request, 'body')
+    if isinstance(body, Mapping):
+        new_body = {**body, 'continuation_token': token}
+    elif hasattr(body, 'model_copy'):
+        new_body = body.model_copy(update={'continuation_token': token})
+    else:
+        new_body = body
+
+    if isinstance(request, Mapping):
+        return {**request, 'body': new_body}
+    if hasattr(request, 'model_copy'):
+        return request.model_copy(update={'body': new_body})
+    return request
+
+
+def _request_has_continuation_token(request: Any) -> bool:
+    token = _get_value(_get_value(request, 'body'), 'continuation_token')
+    return bool(isinstance(token, str) and token)
+
+
+def _extract_hop_continuation_state(
+    event: Any,
+    hop_status: Optional[str],
+    hop_continuation_token: Optional[str],
+) -> tuple[Optional[str], Optional[str]]:
+    if _get_value(event, 'event_type') == 'error':
+        return 'error', None
+
+    interaction = _get_value(event, 'interaction')
+    if interaction is not None:
+        status = _get_value(interaction, 'status')
+        if isinstance(status, str) and status:
+            hop_status = status
+        token = _get_value(interaction, 'continuation_token')
+        if isinstance(token, str) and token:
+            hop_continuation_token = token
+
+    direct_status = _get_value(event, 'status')
+    if isinstance(direct_status, str) and direct_status:
+        hop_status = direct_status
+    direct_token = _get_value(event, 'continuation_token')
+    if isinstance(direct_token, str) and direct_token:
+        hop_continuation_token = direct_token
+
+    return hop_status, hop_continuation_token
+
+
+_RESUMABLE_STREAM_HOP_STATUSES = frozenset({
+    None,
+    'in_progress',
+    'continuation_required',
+})
+
+
+def _can_resume_stream_hop(
+    hop_status: Optional[str],
+    hop_continuation_token: Optional[str],
+) -> bool:
+    return bool(
+        hop_continuation_token
+        and hop_status in _RESUMABLE_STREAM_HOP_STATUSES
+    )
+
+
+_INCOMPLETE_CONTINUATION_WARNING = (
+    "Interaction stopped before completion (status='continuation_required') "
+    "with a continuation_token because the per-request decode token limit was "
+    "reached. To resume decoding automatically, pass "
+    "automatic_continuation=True (note: each continuation hop re-prefills and "
+    "bills input tokens), or use background=True (the most cost-efficient "
+    "option for server-managed continuation), or pass continuation_token to "
+    "interactions.create()."
+)
+
+_incomplete_continuation_warned = False
+
+
+def _warn_incomplete_continuation(*, stacklevel: int = 3) -> None:
+    global _incomplete_continuation_warned
+    if not _incomplete_continuation_warned:
+        _incomplete_continuation_warned = True
+        warnings.warn(
+            _INCOMPLETE_CONTINUATION_WARNING,
+            category=UserWarning,
+            stacklevel=stacklevel,
+        )
+
+
+def _warn_if_incomplete_unary(interaction: Any) -> None:
+    if _should_continue_unary(interaction):
+        _warn_incomplete_continuation(stacklevel=4)
+
+
+def _wrap_stream_incomplete_warning(stream: Any) -> Any:
+    current_gen = stream.generator
+
+    def _warning_gen():
+        hop_status: Optional[str] = None
+        hop_continuation_token: Optional[str] = None
+        try:
+            for event in current_gen:
+                hop_status, hop_continuation_token = (
+                    _extract_hop_continuation_state(
+                        event,
+                        hop_status,
+                        hop_continuation_token,
+                    )
+                )
+                yield event
+            if (
+                hop_status == 'continuation_required'
+                and hop_continuation_token
+            ):
+                _warn_incomplete_continuation(stacklevel=3)
+        finally:
+            if hasattr(current_gen, 'close'):
+                current_gen.close()
+
+    warning_gen = _warning_gen()
+    stream.generator = warning_gen
+
+    orig_close = stream.close
+
+    def _close() -> None:
+        try:
+            warning_gen.close()
+        finally:
+            orig_close()
+
+    stream.close = _close
+    return stream
+
+
+def _wrap_async_stream_incomplete_warning(stream: Any) -> Any:
+    current_gen = stream.generator
+
+    async def _warning_agen():
+        hop_status: Optional[str] = None
+        hop_continuation_token: Optional[str] = None
+        try:
+            async for event in current_gen:
+                hop_status, hop_continuation_token = (
+                    _extract_hop_continuation_state(
+                        event,
+                        hop_status,
+                        hop_continuation_token,
+                    )
+                )
+                yield event
+            if (
+                hop_status == 'continuation_required'
+                and hop_continuation_token
+            ):
+                _warn_incomplete_continuation(stacklevel=3)
+        finally:
+            if hasattr(current_gen, 'aclose'):
+                await current_gen.aclose()
+
+    warning_agen = _warning_agen()
+    stream.generator = warning_agen
+
+    orig_close = stream.close
+
+    async def _close() -> None:
+        try:
+            await warning_agen.aclose()
+        finally:
+            await orig_close()
+
+    stream.close = _close
+    return stream
+
+
+def _wrap_stream_continuation(
+    stream: Any,
+    create_next_stream: Any,
+) -> Any:
+    current_gen = stream.generator
+    current_stream = stream
+
+    def _continuation_gen():
+        nonlocal current_gen, current_stream
+        try:
+            while True:
+                hop_status: Optional[str] = None
+                hop_continuation_token: Optional[str] = None
+                it = iter(current_gen)
+                while True:
+                    try:
+                        event = next(it)
+                    except StopIteration:
+                        break
+                    except Exception:
+                        if not _can_resume_stream_hop(
+                            hop_status, hop_continuation_token
+                        ):
+                            raise
+                        break
+                    hop_status, hop_continuation_token = (
+                        _extract_hop_continuation_state(
+                            event,
+                            hop_status,
+                            hop_continuation_token,
+                        )
+                    )
+                    yield event
+
+                if not _can_resume_stream_hop(
+                    hop_status, hop_continuation_token
+                ):
+                    break
+
+                if hasattr(current_stream, 'response'):
+                    current_stream.response.close()
+
+                next_stream = create_next_stream(hop_continuation_token)
+                if not is_stream(next_stream):
+                    break
+                next_stream = wrap_stream_errors(next_stream)
+                current_stream = next_stream
+                current_gen = next_stream.generator
+                if hasattr(stream, 'response') and hasattr(
+                    next_stream, 'response'
+                ):
+                    stream.response = next_stream.response
+        finally:
+            if hasattr(current_gen, 'close'):
+                current_gen.close()
+            if current_stream is not stream and hasattr(
+                current_stream, 'close'
+            ):
+                current_stream.close()
+
+    continuation_gen = _continuation_gen()
+    stream.generator = continuation_gen
+
+    orig_close = stream.close
+
+    def _close() -> None:
+        try:
+            continuation_gen.close()
+        finally:
+            orig_close()
+
+    stream.close = _close
+    return stream
+
+
+def _wrap_async_stream_continuation(
+    stream: Any,
+    create_next_stream: Any,
+) -> Any:
+    current_gen = stream.generator
+    current_stream = stream
+
+    async def _continuation_agen():
+        nonlocal current_gen, current_stream
+        try:
+            while True:
+                hop_status: Optional[str] = None
+                hop_continuation_token: Optional[str] = None
+                it = current_gen.__aiter__()
+                while True:
+                    try:
+                        event = await it.__anext__()
+                    except StopAsyncIteration:
+                        break
+                    except Exception:
+                        if not _can_resume_stream_hop(
+                            hop_status, hop_continuation_token
+                        ):
+                            raise
+                        break
+                    hop_status, hop_continuation_token = (
+                        _extract_hop_continuation_state(
+                            event,
+                            hop_status,
+                            hop_continuation_token,
+                        )
+                    )
+                    yield event
+
+                if not _can_resume_stream_hop(
+                    hop_status, hop_continuation_token
+                ):
+                    break
+
+                if hasattr(current_stream, 'response'):
+                    await current_stream.response.aclose()
+
+                next_stream = await create_next_stream(hop_continuation_token)
+                if not is_stream(next_stream):
+                    break
+                next_stream = wrap_async_stream_errors(next_stream)
+                current_stream = next_stream
+                current_gen = next_stream.generator
+                if hasattr(stream, 'response') and hasattr(
+                    next_stream, 'response'
+                ):
+                    stream.response = next_stream.response
+        finally:
+            if hasattr(current_gen, 'aclose'):
+                await current_gen.aclose()
+            if current_stream is not stream:
+                await current_stream.close()
+
+    continuation_agen = _continuation_agen()
+    stream.generator = continuation_agen
+
+    orig_close = stream.close
+
+    async def _close() -> None:
+        try:
+            await continuation_agen.aclose()
+        finally:
+            await orig_close()
+
+    stream.close = _close
+    return stream
+
+
+def _set_or_copy(target: Any, updates: dict[str, Any]) -> Any:
+    if hasattr(target, 'model_copy'):
+        return target.model_copy(update=updates)
+    if isinstance(target, dict):
+        return {**target, **updates}
+    for name, value in updates.items():
+        setattr(target, name, value)
+    return target
+
+
+def _should_continue_unary(interaction: Any) -> Optional[str]:
+    if _get_value(interaction, 'status') != 'continuation_required':
+        return None
+    token = _get_value(interaction, 'continuation_token')
+    if not isinstance(token, str) or not token:
+        return None
+    return token
+
+
+def _continue_unary_interaction(
+    initial_response: Any,
+    create_next: Any,
+) -> Any:
+    current = initial_response
+    while True:
+        token = _should_continue_unary(current)
+        if not token:
+            return _add_output_properties_if_interaction(current)
+        current = create_next(token)
+
+
+async def _continue_async_unary_interaction(
+    initial_response: Any,
+    create_next: Any,
+) -> Any:
+    current = initial_response
+    while True:
+        token = _should_continue_unary(current)
+        if not token:
+            return _add_output_properties_if_interaction(current)
+        current = await create_next(token)
