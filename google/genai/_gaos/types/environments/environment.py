@@ -31,7 +31,7 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
-EnvironmentNetworkEnum = Literal["disabled",]
+EnvironmentNetworkEnum = Union[Literal["disabled",], UnrecognizedStr]
 
 
 EnvironmentNetworkUnionTypedDict = TypeAliasType(
