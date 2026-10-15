@@ -5931,6 +5931,37 @@ class ImageConfigDict(TypedDict, total=False):
 ImageConfigOrDict = Union[ImageConfig, ImageConfigDict]
 
 
+class GenerationOutputConfig(_common.BaseModel):
+  """Configuration for persisting output assets to external storage."""
+
+  output_uri_prefix: Optional[str] = Field(
+      default=None,
+      description="""Optional. The Cloud Storage URI prefix or directory where
+      generated media assets should be written (e.g. "gs://my-bucket/prefix/").
+      Supported URI schemes: "gs://". When set, media bytes are written directly
+      to this location and returned as FileData with a file_uri instead of raw
+      inline bytes.
+      """,
+  )
+
+
+class GenerationOutputConfigDict(TypedDict, total=False):
+  """Configuration for persisting output assets to external storage."""
+
+  output_uri_prefix: Optional[str]
+  """Optional. The Cloud Storage URI prefix or directory where
+      generated media assets should be written (e.g. "gs://my-bucket/prefix/").
+      Supported URI schemes: "gs://". When set, media bytes are written directly
+      to this location and returned as FileData with a file_uri instead of raw
+      inline bytes.
+      """
+
+
+GenerationOutputConfigOrDict = Union[
+    GenerationOutputConfig, GenerationOutputConfigDict
+]
+
+
 class FileStatus(_common.BaseModel):
   """Status of a File that uses a common error model."""
 
@@ -6755,6 +6786,12 @@ class GenerateContentConfig(_common.BaseModel):
       billing apply to each request. Set to false to turn this off.
       """,
   )
+  generation_output_config: Optional[GenerationOutputConfig] = Field(
+      default=None,
+      description="""Optional. Configuration for persisting output assets to external
+      storage.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -6987,6 +7024,11 @@ class GenerateContentConfigDict(TypedDict, total=False):
       `CONTINUATION`, the SDK sends the same request again with the response's
       continuation token until the model finishes. Timeouts, retries and
       billing apply to each request. Set to false to turn this off.
+      """
+
+  generation_output_config: Optional[GenerationOutputConfigDict]
+  """Optional. Configuration for persisting output assets to external
+      storage.
       """
 
 
