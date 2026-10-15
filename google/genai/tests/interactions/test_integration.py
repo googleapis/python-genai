@@ -153,7 +153,6 @@ async def test_async_client_genai_default_timeout():
   assert async_sdk_client.timeout != httpx.Timeout(5.0)
 
 
-
 @pytest.mark.filterwarnings("error")
 def test_unrecognized_model_serialization():
   from ..._gaos.types.interactions.createmodelinteraction import CreateModelInteraction
@@ -340,3 +339,21 @@ def test_output_text_across_steps(steps, expected):
 
   wrapped = gaos_google_genai._add_output_properties_if_interaction(payload)  # pylint: disable=protected-access
   assert wrapped["output_text"] == expected
+
+
+def test_sdk_init_hook_defaults_and_preserves_api_version():
+  """Tests SDKInitHook default and explicit api_version behavior."""
+  from ..._gaos import sdk as gaos_sdk  # pylint: disable=g-import-not-at-top
+
+  default_sync = gaos_sdk.GenAI()
+  assert default_sync.sdk_configuration.globals.api_version == "v1beta"
+
+  explicit_sync = gaos_sdk.GenAI(api_version="v1alpha")
+  assert explicit_sync.sdk_configuration.globals.api_version == "v1alpha"
+
+  default_async = gaos_sdk.AsyncGenAI()
+  assert default_async.sdk_configuration.globals.api_version == "v1beta"
+
+  explicit_async = gaos_sdk.AsyncGenAI(api_version="v1alpha")
+  assert explicit_async.sdk_configuration.globals.api_version == "v1alpha"
+
