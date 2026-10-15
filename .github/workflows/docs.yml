@@ -1,13 +1,20 @@
 # Builds the API reference (https://googleapis.github.io/python-genai/) with the
-# pinned Sphinx in docs/requirements.txt and publishes it to GitHub Pages.
+# pinned Sphinx in docs/requirements.txt and publishes it to GitHub Pages,
+# whenever a release is published. Each release also gets the built site as a
+# zip, and a failed publish opens a "Docs workflow failed" issue that the next
+# successful one closes.
 #
-# Run by hand from the Actions tab for now, from main: the github-pages
-# environment only accepts deployments from main. Publishing also needs the
-# repository's Pages source set to "GitHub Actions"; until then, leave "deploy"
-# unchecked to build the site and download it as an artifact.
+# Run it by hand from the Actions tab, from main, to rebuild a tag; leave
+# "deploy" unchecked to only build the site and download it as an artifact.
 name: Docs
+# Publishing runs are named "Docs <tag> (publish)"; release tooling finds the
+# run for a release by this name, so keep the format.
+run-name: >-
+  Docs ${{ inputs.ref || github.event.release.tag_name }}${{ inputs.deploy && ' (publish)' || '' }}
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       ref:
@@ -23,7 +30,27 @@ permissions:
   contents: read
 
 jobs:
+  # The github-pages environment only accepts deployments from main, and a
+  # release run's ref is its tag. So a release starts a run of this workflow on
+  # main that builds and publishes the tag.
+  dispatch:
+    if: >-
+      github.event_name == 'release' && !github.event.release.prerelease &&
+      github.repository == 'googleapis/python-genai'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Start a run on main for the release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh workflow run docs.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f ref="$TAG" -f deploy=true
+
   build:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -45,18 +72,56 @@ jobs:
         # The docs import `genai` from the checkout, as build_and_copy_docs.sh
         # does from its copy in docs/google. custom.css is copied in first, as
         # that script does. The doctree cache goes outside the site, so it is
-        # not published.
+        # not published. `shell: bash` adds pipefail, so tee keeps
+        # sphinx-build's exit code.
+        shell: bash
         env:
           PYTHONPATH: ${{ github.workspace }}/google
         run: |
           mkdir -p _site/_static/css
           cp docs/source/custom.css _site/_static/css/custom.css
-          sphinx-build -b html -d "$RUNNER_TEMP/doctrees" docs/source _site
+          sphinx-build -b html -d "$RUNNER_TEMP/doctrees" docs/source _site \
+            2>&1 | tee "$RUNNER_TEMP/sphinx.log"
+
+      - name: Check the site
+        # Sphinx exits 0 when autodoc cannot import a module, leaving a page
+        # without the API in it, and other Sphinx versions have dropped the
+        # pydantic JSON schemas. A full build has a ~30 MB genai.html with
+        # about 400 schemas.
+        run: |
+          python - "$RUNNER_TEMP/sphinx.log" <<'EOF'
+          import pathlib, re, sys
+          problems = []
+          failed = re.findall(r"^.*autodoc: failed to import.*$",
+                              pathlib.Path(sys.argv[1]).read_text(), re.M)
+          if failed:
+            problems.append("autodoc could not import:\n  " + "\n  ".join(failed[:5]))
+          genai = pathlib.Path("_site/genai.html")
+          html = genai.read_text(errors="replace") if genai.exists() else ""
+          if len(html) < 10_000_000:
+            problems.append(f"genai.html is {len(html):,} characters, not ~30 MB")
+          schemas = html.count("Show JSON schema")
+          if schemas < 300:
+            problems.append(f"genai.html has {schemas} JSON schemas, not ~400")
+          if problems:
+            sys.exit("The site looks broken; not publishing it.\n" + "\n".join(problems))
+          print(f"genai.html: {len(html):,} characters, {schemas} JSON schemas")
+          EOF
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
+      - name: Zip the site
+        run: cd _site && zip -qr "$RUNNER_TEMP/site.zip" .
+
+      - name: Upload the zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-zip
+          path: ${{ runner.temp }}/site.zip
+          retention-days: 1
 
   deploy:
     if: inputs.deploy
@@ -76,3 +141,67 @@ jobs:
       - name: Publish to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Pages serves only the latest site, so each release keeps its own copy.
+  archive:
+    if: inputs.deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download the zip
+        uses: actions/download-artifact@v4
+        with:
+          name: site-zip
+
+      - name: Attach it to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ inputs.ref }}
+        run: |
+          if ! gh release view "$REF" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "No release named $REF; the site is not attached anywhere."
+            exit 0
+          fi
+          mv site.zip "python-genai-docs-$REF.zip"
+          gh release upload "$REF" "python-genai-docs-$REF.zip" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+  # Nobody watches a release's run, so a failure opens an issue (or comments on
+  # the open one), and the next successful publish closes it.
+  report:
+    if: >-
+      always() && github.repository == 'googleapis/python-genai' &&
+      (github.event_name == 'release' || inputs.deploy)
+    needs: [dispatch, build, deploy, archive]
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or close the failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILED: >-
+            ${{ contains(needs.*.result, 'failure') ||
+            contains(needs.*.result, 'cancelled') }}
+          REF: ${{ inputs.ref || github.event.release.tag_name }}
+          RUN: >-
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TITLE: Docs workflow failed
+        run: |
+          open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "\"$TITLE\" in:title" --json number,title \
+            --jq ".[] | select(.title == \"$TITLE\") | .number" | head -n 1)
+          if [ "$FAILED" = true ]; then
+            body="The API reference for $REF was not published. See $RUN"
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --repo "$GITHUB_REPOSITORY" --body "$body"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$body"
+            fi
+          elif [ -n "$open" ] && [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            # A release run only starts the publishing run; that one closes it.
+            gh issue close "$open" --repo "$GITHUB_REPOSITORY" \
+              --comment "Published $REF. See $RUN"
+          fi
