@@ -303,13 +303,21 @@ def _parse_schema_from_parameter(  # type: ignore[return]
     schema.type = _py_builtin_type_to_schema_type[dict]
     schema.properties = {}
     for field_name, field_info in param.annotation.model_fields.items():
+      field_param = inspect.Parameter(
+          field_name,
+          inspect.Parameter.POSITIONAL_OR_KEYWORD,
+          annotation=field_info.annotation,
+      )
+      # Forward the field's default so fields with a default are not marked
+      # required. Without this the sub-schema default stays unset and every
+      # non-Optional field is treated as required.
+      if not field_info.is_required():
+        field_param = field_param.replace(
+            default=field_info.get_default(call_default_factory=True)
+        )
       schema.properties[field_name] = _parse_schema_from_parameter(
           api_option,
-          inspect.Parameter(
-              field_name,
-              inspect.Parameter.POSITIONAL_OR_KEYWORD,
-              annotation=field_info.annotation,
-          ),
+          field_param,
           func_name,
       )
     schema.required = _get_required_fields(schema)
