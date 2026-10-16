@@ -114,6 +114,8 @@ class AsyncSession:
     self.session_id = session_id
     self.setup_complete = setup_complete
 
+  # Note: `send` is deprecated. Do not add options here; use specific
+  # `send_*` methods instead.
   async def send(
       self,
       *,
@@ -444,6 +446,70 @@ class AsyncSession:
           raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
 
     await self._ws.send(json.dumps({'tool_response': tool_response_dict}))
+
+  async def send_context_update(
+      self,
+      *,
+      system_instruction: Optional[types.ContentUnion] = None,
+      tools: Optional[types.ToolListUnion] = None,
+  ) -> None:
+    """Send in-session context updates to the model.
+
+    Updates to the context of the current session. Only fields that are set will
+    be updated. Updates are guaranteed to be processed *in order* with the rest of
+    the inputs.
+
+    Note:
+      `system_instruction` and `tools` are part of the model preamble, so updating
+      them invalidates the prefix cache. Update them only when strictly necessary
+      as it might have a performance impact on model generation.
+
+    Args:
+      system_instruction: Updated system instruction for the model.
+      tools: An updated list of tools the model may use to generate subsequent
+        responses. Pass an empty list `[]` to clear all tools.
+
+    Example:
+
+    .. code-block:: python
+
+      # Update instructions:
+      await session.send_context_update(
+          system_instruction="You are now a technical expert. Be concise."
+      )
+
+      # Update tools:
+      await session.send_context_update(tools=[my_func])
+
+      # Clear tools:
+      await session.send_context_update(tools=[])
+    """
+    if system_instruction is None and tools is None:
+      raise ValueError(
+          'At least one of `system_instruction` or `tools` must be set.'
+      )
+
+    tools_wrapper: Optional[types.LiveClientContextUpdateTools] = None
+    if tools is not None:
+      tools_wrapper = types.LiveClientContextUpdateTools(tools=tools)
+
+    update = types.LiveClientContextUpdate(
+        system_instruction=system_instruction,
+        tools=tools_wrapper,
+    )
+
+    client_message = types.LiveClientMessage(context_update=update)
+    if self._api_client.vertexai:
+      message_dict = live_converters._LiveClientMessage_to_vertex(
+          self._api_client, client_message
+      )
+    else:
+      message_dict = live_converters._LiveClientMessage_to_mldev(
+          self._api_client, client_message
+      )
+    message_dict = _common.convert_to_dict(message_dict)
+    message_dict = _common.encode_unserializable_types(message_dict)
+    await self._ws.send(json.dumps(message_dict))
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
@@ -890,7 +956,6 @@ class AsyncSession:
               function_responses=function_response_list
           )
       )
-
     else:
       raise ValueError(
           f'Unsupported input type "{type(input)}" or input content "{input}"'
