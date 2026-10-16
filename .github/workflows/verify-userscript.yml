@@ -1,0 +1,30 @@
+name: Verify AI Studio Userscript
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate-userscript:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check JavaScript Syntax
+        run: |
+          node --check userscript/google-aistudio-top-p.user.js
+          echo "✅ Sintaxis JavaScript correcta sin errores"
+
+      - name: Verify Top P 0.95 Presence
+        run: |
+          grep -q "0.95" userscript/google-aistudio-top-p.user.js
+          echo "✅ Parámetro de oro top_p=0.95 verificado en el código del script"
