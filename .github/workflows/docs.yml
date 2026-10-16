@@ -1,0 +1,78 @@
+# Builds the API reference (https://googleapis.github.io/python-genai/) with the
+# pinned Sphinx in docs/requirements.txt and publishes it to GitHub Pages.
+#
+# Run by hand from the Actions tab for now, from main: the github-pages
+# environment only accepts deployments from main. Publishing also needs the
+# repository's Pages source set to "GitHub Actions"; until then, leave "deploy"
+# unchecked to build the site and download it as an artifact.
+name: Docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Tag or branch to build. Tags from before this workflow have no docs/source.
+        required: true
+        default: main
+      deploy:
+        description: Publish to GitHub Pages
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r docs/requirements.txt
+
+      - name: Build
+        # The docs import `genai` from the checkout, as build_and_copy_docs.sh
+        # does from its copy in docs/google. custom.css is copied in first, as
+        # that script does. The doctree cache goes outside the site, so it is
+        # not published.
+        env:
+          PYTHONPATH: ${{ github.workspace }}/google
+        run: |
+          mkdir -p _site/_static/css
+          cp docs/source/custom.css _site/_static/css/custom.css
+          sphinx-build -b html -d "$RUNNER_TEMP/doctrees" docs/source _site
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: inputs.deploy
+    needs: build
+    runs-on: ubuntu-latest
+    # One deployment at a time; builds can run side by side.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
