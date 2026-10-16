@@ -18,112 +18,16 @@
 from functools import partial
 import json
 import logging
-from typing import Any, Optional, Union
+from typing import Optional
 from urllib.parse import urlencode
 
 from . import _api_module
 from . import _common
+from . import _converters
 from . import types
-from ._common import get_value_by_path as getv
-from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
 logger = logging.getLogger('google_genai.documents')
-
-
-def _DeleteDocumentConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['force']) is not None:
-    setv(parent_object, ['_query', 'force'], getv(from_object, ['force']))
-
-  return to_object
-
-
-def _DeleteDocumentParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['config']) is not None:
-    _DeleteDocumentConfig_to_mldev(getv(from_object, ['config']), to_object)
-
-  return to_object
-
-
-def _GetDocumentParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _ListDocumentsConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  return to_object
-
-
-def _ListDocumentsParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['parent']) is not None:
-    setv(to_object, ['_url', 'parent'], getv(from_object, ['parent']))
-
-  if getv(from_object, ['config']) is not None:
-    _ListDocumentsConfig_to_mldev(getv(from_object, ['config']), to_object)
-
-  return to_object
-
-
-def _ListDocumentsResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['documents']) is not None:
-    setv(
-        to_object,
-        ['documents'],
-        [item for item in getv(from_object, ['documents'])],
-    )
-
-  return to_object
 
 
 class Documents(_api_module.BaseModule):
@@ -154,7 +58,9 @@ class Documents(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _GetDocumentParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetDocumentParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -232,7 +138,9 @@ class Documents(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _DeleteDocumentParameters_to_mldev(parameter_model)
+      request_dict = _converters._DeleteDocumentParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -275,7 +183,9 @@ class Documents(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ListDocumentsParameters_to_mldev(parameter_model)
+      request_dict = _converters._ListDocumentsParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{parent}/documents'.format_map(request_url_dict)
@@ -303,7 +213,9 @@ class Documents(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListDocumentsResponse_from_mldev(response_dict)
+      response_dict = _converters._ListDocumentsResponse_from_mldev(
+          response_dict
+      )
 
     return_value = types.ListDocumentsResponse._from_response(
         response=response_dict,
@@ -385,7 +297,9 @@ class AsyncDocuments(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _GetDocumentParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetDocumentParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -465,7 +379,9 @@ class AsyncDocuments(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _DeleteDocumentParameters_to_mldev(parameter_model)
+      request_dict = _converters._DeleteDocumentParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -510,7 +426,9 @@ class AsyncDocuments(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ListDocumentsParameters_to_mldev(parameter_model)
+      request_dict = _converters._ListDocumentsParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{parent}/documents'.format_map(request_url_dict)
@@ -540,7 +458,9 @@ class AsyncDocuments(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListDocumentsResponse_from_mldev(response_dict)
+      response_dict = _converters._ListDocumentsResponse_from_mldev(
+          response_dict
+      )
 
     return_value = types.ListDocumentsResponse._from_response(
         response=response_dict,

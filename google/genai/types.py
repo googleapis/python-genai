@@ -30,12 +30,6 @@ import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, WrapValidator, model_validator
 from typing_extensions import Self, TypedDict
 from . import _common
-from ._operations_converters import (
-    _GenerateVideosOperation_from_mldev,
-    _GenerateVideosOperation_from_vertex,
-    _ImportFileOperation_from_mldev,
-    _UploadToFileSearchStoreOperation_from_mldev,
-)
 
 if sys.version_info >= (3, 10):
   # Supports both Union[t1, t2] and t1 | t2
@@ -12552,9 +12546,13 @@ class GenerateVideosOperation(_common.BaseModel, Operation):
     """Instantiates a GenerateVideosOperation from an API response."""
 
     if is_vertex_ai:
-      response_dict = _GenerateVideosOperation_from_vertex(api_response)
+      response_dict = _converters._GenerateVideosOperation_from_vertex(
+          api_response
+      )
     else:
-      response_dict = _GenerateVideosOperation_from_mldev(api_response)
+      response_dict = _converters._GenerateVideosOperation_from_mldev(
+          api_response
+      )
 
     return cls._from_response(response=response_dict, kwargs={})
 
@@ -18005,7 +18003,7 @@ class ImportFileOperation(_common.BaseModel, Operation):
   ) -> Self:
     """Instantiates a ImportFileOperation from an API response."""
 
-    response_dict = _ImportFileOperation_from_mldev(api_response)
+    response_dict = _converters._ImportFileOperation_from_mldev(api_response)
     return cls._from_response(response=response_dict, kwargs={})
 
 
@@ -23554,7 +23552,9 @@ class UploadToFileSearchStoreOperation(_common.BaseModel, Operation):
   ) -> Self:
     """Instantiates a UploadToFileSearchStoreOperation from an API response."""
 
-    response_dict = _UploadToFileSearchStoreOperation_from_mldev(api_response)
+    response_dict = _converters._UploadToFileSearchStoreOperation_from_mldev(
+        api_response
+    )
     return cls._from_response(response=response_dict, kwargs={})
 
 
@@ -23574,3 +23574,6 @@ class DownloadMediaConfigDict(TypedDict, total=False):
 
 
 DownloadMediaConfigOrDict = Union[DownloadMediaConfig, DownloadMediaConfigDict]
+
+
+from . import _converters  # pylint: disable=g-import-not-at-top

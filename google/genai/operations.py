@@ -17,77 +17,15 @@
 
 import json
 import logging
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, Optional, TypeVar
 from urllib.parse import urlencode
 
 from . import _api_module
 from . import _common
+from . import _converters
 from . import types
-from ._common import get_value_by_path as getv
-from ._common import set_value_by_path as setv
 
 logger = logging.getLogger('google_genai.operations')
-
-
-def _FetchPredictOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(to_object, ['operationName'], getv(from_object, ['operation_name']))
-
-  if getv(from_object, ['resource_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'resourceName'],
-        getv(from_object, ['resource_name']),
-    )
-
-  return to_object
-
-
-def _GetOperationParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  return to_object
-
-
-def _GetOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  return to_object
-
-
-def _GetProjectOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_id']) is not None:
-    setv(
-        to_object, ['_url', 'operation_id'], getv(from_object, ['operation_id'])
-    )
-
-  return to_object
 
 
 class Operations(_api_module.BaseModule):
@@ -106,14 +44,18 @@ class Operations(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _GetOperationParameters_to_vertex(parameter_model)
+      request_dict = _converters._GetOperationParameters_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
       else:
         path = '{operationName}'
     else:
-      request_dict = _GetOperationParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetOperationParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
@@ -161,7 +103,9 @@ class Operations(_api_module.BaseModule):
           ' mode, not in Gemini Developer API mode.'
       )
     else:
-      request_dict = _FetchPredictOperationParameters_to_vertex(parameter_model)
+      request_dict = _converters._FetchPredictOperationParameters_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{resourceName}:fetchPredictOperation'.format_map(
@@ -212,7 +156,9 @@ class Operations(_api_module.BaseModule):
           ' mode, not in Gemini Developer API mode.'
       )
     else:
-      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_dict = _converters._GetProjectOperationParameters_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'operations/{operation_id}'.format_map(request_url_dict)
@@ -361,14 +307,18 @@ class AsyncOperations(_api_module.BaseModule):
     request_url_dict: Optional[dict[str, str]]
 
     if self._api_client.vertexai:
-      request_dict = _GetOperationParameters_to_vertex(parameter_model)
+      request_dict = _converters._GetOperationParameters_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
       else:
         path = '{operationName}'
     else:
-      request_dict = _GetOperationParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetOperationParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{operationName}'.format_map(request_url_dict)
@@ -418,7 +368,9 @@ class AsyncOperations(_api_module.BaseModule):
           ' mode, not in Gemini Developer API mode.'
       )
     else:
-      request_dict = _FetchPredictOperationParameters_to_vertex(parameter_model)
+      request_dict = _converters._FetchPredictOperationParameters_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{resourceName}:fetchPredictOperation'.format_map(
@@ -469,7 +421,9 @@ class AsyncOperations(_api_module.BaseModule):
           ' mode, not in Gemini Developer API mode.'
       )
     else:
-      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_dict = _converters._GetProjectOperationParameters_to_vertex(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'operations/{operation_id}'.format_map(request_url_dict)

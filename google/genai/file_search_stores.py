@@ -25,301 +25,14 @@ from urllib.parse import urlencode
 
 from . import _api_module
 from . import _common
+from . import _converters
 from . import _extra_utils
-from . import _transformers as t
 from . import types
-from ._api_client import BaseApiClient
 from ._common import get_value_by_path as getv
-from ._common import set_value_by_path as setv
-from ._operations_converters import _UploadToFileSearchStoreOperation_from_mldev
 from .documents import AsyncDocuments, Documents
 from .pagers import AsyncPager, Pager
 
 logger = logging.getLogger('google_genai.filesearchstores')
-
-
-def _CreateFileSearchStoreConfig_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['embedding_model']) is not None:
-    setv(
-        parent_object,
-        ['embeddingModel'],
-        t.t_model(api_client, getv(from_object, ['embedding_model'])),
-    )
-
-  return to_object
-
-
-def _CreateFileSearchStoreParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    _CreateFileSearchStoreConfig_to_mldev(
-        api_client, getv(from_object, ['config']), to_object
-    )
-
-  return to_object
-
-
-def _DeleteFileSearchStoreConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['force']) is not None:
-    setv(parent_object, ['_query', 'force'], getv(from_object, ['force']))
-
-  return to_object
-
-
-def _DeleteFileSearchStoreParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['config']) is not None:
-    _DeleteFileSearchStoreConfig_to_mldev(
-        getv(from_object, ['config']), to_object
-    )
-
-  return to_object
-
-
-def _GetFileSearchStoreParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['_url', 'name'], getv(from_object, ['name']))
-
-  return to_object
-
-
-def _ImportFileConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['custom_metadata']) is not None:
-    setv(
-        parent_object,
-        ['customMetadata'],
-        [item for item in getv(from_object, ['custom_metadata'])],
-    )
-
-  if getv(from_object, ['chunking_config']) is not None:
-    setv(
-        parent_object,
-        ['chunkingConfig'],
-        getv(from_object, ['chunking_config']),
-    )
-
-  return to_object
-
-
-def _ImportFileOperation_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  if getv(from_object, ['response']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _ImportFileResponse_from_mldev(
-            getv(from_object, ['response']), to_object
-        ),
-    )
-
-  return to_object
-
-
-def _ImportFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['file_search_store_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'file_search_store_name'],
-        getv(from_object, ['file_search_store_name']),
-    )
-
-  if getv(from_object, ['file_name']) is not None:
-    setv(to_object, ['fileName'], getv(from_object, ['file_name']))
-
-  if getv(from_object, ['config']) is not None:
-    _ImportFileConfig_to_mldev(getv(from_object, ['config']), to_object)
-
-  return to_object
-
-
-def _ImportFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['parent']) is not None:
-    setv(to_object, ['parent'], getv(from_object, ['parent']))
-
-  if getv(from_object, ['documentName']) is not None:
-    setv(to_object, ['document_name'], getv(from_object, ['documentName']))
-
-  return to_object
-
-
-def _ListFileSearchStoresConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  return to_object
-
-
-def _ListFileSearchStoresParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    _ListFileSearchStoresConfig_to_mldev(
-        getv(from_object, ['config']), to_object
-    )
-
-  return to_object
-
-
-def _ListFileSearchStoresResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['fileSearchStores']) is not None:
-    setv(
-        to_object,
-        ['file_search_stores'],
-        [item for item in getv(from_object, ['fileSearchStores'])],
-    )
-
-  return to_object
-
-
-def _UploadToFileSearchStoreConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(parent_object, ['mimeType'], getv(from_object, ['mime_type']))
-
-  if getv(from_object, ['display_name']) is not None:
-    setv(parent_object, ['displayName'], getv(from_object, ['display_name']))
-
-  if getv(from_object, ['custom_metadata']) is not None:
-    setv(
-        parent_object,
-        ['customMetadata'],
-        [item for item in getv(from_object, ['custom_metadata'])],
-    )
-
-  if getv(from_object, ['chunking_config']) is not None:
-    setv(
-        parent_object,
-        ['chunkingConfig'],
-        getv(from_object, ['chunking_config']),
-    )
-
-  return to_object
-
-
-def _UploadToFileSearchStoreParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['file_search_store_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'file_search_store_name'],
-        getv(from_object, ['file_search_store_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    _UploadToFileSearchStoreConfig_to_mldev(
-        getv(from_object, ['config']), to_object
-    )
-
-  return to_object
-
-
-def _UploadToFileSearchStoreResumableResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  return to_object
 
 
 class FileSearchStores(_api_module.BaseModule):
@@ -352,7 +65,7 @@ class FileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _CreateFileSearchStoreParameters_to_mldev(
+      request_dict = _converters._CreateFileSearchStoreParameters_to_mldev(
           self._api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
@@ -435,7 +148,9 @@ class FileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _GetFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetFileSearchStoreParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -514,7 +229,9 @@ class FileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _DeleteFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _converters._DeleteFileSearchStoreParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -553,7 +270,9 @@ class FileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ListFileSearchStoresParameters_to_mldev(parameter_model)
+      request_dict = _converters._ListFileSearchStoresParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'fileSearchStores'.format_map(request_url_dict)
@@ -581,7 +300,9 @@ class FileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListFileSearchStoresResponse_from_mldev(response_dict)
+      response_dict = _converters._ListFileSearchStoresResponse_from_mldev(
+          response_dict
+      )
 
     return_value = types.ListFileSearchStoresResponse._from_response(
         response=response_dict,
@@ -623,7 +344,7 @@ class FileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _UploadToFileSearchStoreParameters_to_mldev(
+      request_dict = _converters._UploadToFileSearchStoreParameters_to_mldev(
           parameter_model
       )
       request_url_dict = request_dict.get('_url')
@@ -667,8 +388,10 @@ class FileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _UploadToFileSearchStoreResumableResponse_from_mldev(
-          response_dict
+      response_dict = (
+          _converters._UploadToFileSearchStoreResumableResponse_from_mldev(
+              response_dict
+          )
       )
 
     return_value = (
@@ -730,7 +453,7 @@ class FileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ImportFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._ImportFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{file_search_store_name}:importFile'.format_map(
@@ -762,7 +485,7 @@ class FileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ImportFileOperation_from_mldev(response_dict)
+      response_dict = _converters._ImportFileOperation_from_mldev(response_dict)
 
     return_value = types.ImportFileOperation._from_response(
         response=response_dict,
@@ -856,7 +579,7 @@ class FileSearchStores(_api_module.BaseModule):
       upload_response = self._api_client.upload_file(
           fs_path, upload_url, size_bytes, http_options=http_options
       )
-    response_dict = _UploadToFileSearchStoreOperation_from_mldev(
+    response_dict = _converters._UploadToFileSearchStoreOperation_from_mldev(
         upload_response.json
     )
     return types.UploadToFileSearchStoreOperation._from_response(
@@ -976,7 +699,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _CreateFileSearchStoreParameters_to_mldev(
+      request_dict = _converters._CreateFileSearchStoreParameters_to_mldev(
           self._api_client, parameter_model
       )
       request_url_dict = request_dict.get('_url')
@@ -1059,7 +782,9 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _GetFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetFileSearchStoreParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1140,7 +865,9 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _DeleteFileSearchStoreParameters_to_mldev(parameter_model)
+      request_dict = _converters._DeleteFileSearchStoreParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{name}'.format_map(request_url_dict)
@@ -1181,7 +908,9 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ListFileSearchStoresParameters_to_mldev(parameter_model)
+      request_dict = _converters._ListFileSearchStoresParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'fileSearchStores'.format_map(request_url_dict)
@@ -1211,7 +940,9 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListFileSearchStoresResponse_from_mldev(response_dict)
+      response_dict = _converters._ListFileSearchStoresResponse_from_mldev(
+          response_dict
+      )
 
     return_value = types.ListFileSearchStoresResponse._from_response(
         response=response_dict,
@@ -1253,7 +984,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _UploadToFileSearchStoreParameters_to_mldev(
+      request_dict = _converters._UploadToFileSearchStoreParameters_to_mldev(
           parameter_model
       )
       request_url_dict = request_dict.get('_url')
@@ -1297,8 +1028,10 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _UploadToFileSearchStoreResumableResponse_from_mldev(
-          response_dict
+      response_dict = (
+          _converters._UploadToFileSearchStoreResumableResponse_from_mldev(
+              response_dict
+          )
       )
 
     return_value = (
@@ -1360,7 +1093,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ImportFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._ImportFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = '{file_search_store_name}:importFile'.format_map(
@@ -1392,7 +1125,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ImportFileOperation_from_mldev(response_dict)
+      response_dict = _converters._ImportFileOperation_from_mldev(response_dict)
 
     return_value = types.ImportFileOperation._from_response(
         response=response_dict,
@@ -1485,7 +1218,7 @@ class AsyncFileSearchStores(_api_module.BaseModule):
       upload_response = await self._api_client.async_upload_file(
           fs_path, upload_url, size_bytes, http_options=http_options
       )
-    response_dict = _UploadToFileSearchStoreOperation_from_mldev(
+    response_dict = _converters._UploadToFileSearchStoreOperation_from_mldev(
         upload_response.json
     )
     return types.UploadToFileSearchStoreOperation._from_response(
