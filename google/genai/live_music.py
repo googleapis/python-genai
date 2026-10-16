@@ -15,6 +15,8 @@
 
 """[Experimental] Live Music API client."""
 
+# pylint: disable=protected-access
+
 import contextlib
 import json
 import logging
@@ -23,7 +25,7 @@ import websockets
 
 from . import _api_module
 from . import _common
-from . import _live_converters as live_converters
+from . import _converters
 from . import _transformers as t
 from . import errors
 from . import types
@@ -182,7 +184,7 @@ class AsyncLiveMusic(_api_module.BaseModule):
 
       # Only mldev supported
       request_dict = _common.convert_to_dict(
-          live_converters._LiveMusicConnectParameters_to_mldev(
+          _converters._LiveMusicConnectParameters_to_mldev(
               from_object=types.LiveMusicConnectParameters(
                 model=transformed_model,
               ).model_dump(exclude_none=True)
