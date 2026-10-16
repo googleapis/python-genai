@@ -20,7 +20,7 @@ import io
 import json
 import logging
 import os
-from typing import Any, Optional, Union, overload
+from typing import Optional, Union, overload
 from urllib.parse import urlencode
 
 import google.auth
@@ -28,155 +28,14 @@ import google.auth
 from . import _api_client
 from . import _api_module
 from . import _common
+from . import _converters
 from . import _extra_utils
 from . import _transformers as t
 from . import types
 from ._common import get_value_by_path as getv
-from ._common import set_value_by_path as setv
 from .pagers import AsyncPager, Pager
 
 logger = logging.getLogger('google_genai.files')
-
-
-def _CreateFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['file']) is not None:
-    setv(to_object, ['file'], getv(from_object, ['file']))
-
-  return to_object
-
-
-def _CreateFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  return to_object
-
-
-def _DeleteFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
-    )
-
-  return to_object
-
-
-def _DeleteFileResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  return to_object
-
-
-def _GetFileParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(
-        to_object, ['_url', 'file'], t.t_file_name(getv(from_object, ['name']))
-    )
-
-  return to_object
-
-
-def _InternalRegisterFilesParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uris']) is not None:
-    setv(to_object, ['uris'], getv(from_object, ['uris']))
-
-  return to_object
-
-
-def _ListFilesConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['page_size']) is not None:
-    setv(
-        parent_object, ['_query', 'pageSize'], getv(from_object, ['page_size'])
-    )
-
-  if getv(from_object, ['page_token']) is not None:
-    setv(
-        parent_object,
-        ['_query', 'pageToken'],
-        getv(from_object, ['page_token']),
-    )
-
-  return to_object
-
-
-def _ListFilesParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['config']) is not None:
-    _ListFilesConfig_to_mldev(getv(from_object, ['config']), to_object)
-
-  return to_object
-
-
-def _ListFilesResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['nextPageToken']) is not None:
-    setv(to_object, ['next_page_token'], getv(from_object, ['nextPageToken']))
-
-  if getv(from_object, ['files']) is not None:
-    setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
-
-  return to_object
-
-
-def _RegisterFilesResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['sdkHttpResponse']) is not None:
-    setv(
-        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
-    )
-
-  if getv(from_object, ['files']) is not None:
-    setv(to_object, ['files'], [item for item in getv(from_object, ['files'])])
-
-  return to_object
 
 
 class Files(_api_module.BaseModule):
@@ -195,7 +54,7 @@ class Files(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ListFilesParameters_to_mldev(parameter_model)
+      request_dict = _converters._ListFilesParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files'.format_map(request_url_dict)
@@ -223,7 +82,7 @@ class Files(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListFilesResponse_from_mldev(response_dict)
+      response_dict = _converters._ListFilesResponse_from_mldev(response_dict)
 
     return_value = types.ListFilesResponse._from_response(
         response=response_dict,
@@ -267,7 +126,7 @@ class Files(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _CreateFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._CreateFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'upload/v1beta/files'.format_map(request_url_dict)
@@ -304,7 +163,7 @@ class Files(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _CreateFileResponse_from_mldev(response_dict)
+      response_dict = _converters._CreateFileResponse_from_mldev(response_dict)
 
     return_value = types.CreateFileResponse._from_response(
         response=response_dict,
@@ -360,7 +219,7 @@ class Files(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _GetFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -440,7 +299,7 @@ class Files(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _DeleteFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._DeleteFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -470,7 +329,7 @@ class Files(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _DeleteFileResponse_from_mldev(response_dict)
+      response_dict = _converters._DeleteFileResponse_from_mldev(response_dict)
 
     return_value = types.DeleteFileResponse._from_response(
         response=response_dict,
@@ -514,7 +373,9 @@ class Files(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
+      request_dict = _converters._InternalRegisterFilesParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files:register'.format_map(request_url_dict)
@@ -551,7 +412,9 @@ class Files(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _RegisterFilesResponse_from_mldev(response_dict)
+      response_dict = _converters._RegisterFilesResponse_from_mldev(
+          response_dict
+      )
 
     return_value = types.RegisterFilesResponse._from_response(
         response=response_dict,
@@ -842,7 +705,7 @@ class AsyncFiles(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _ListFilesParameters_to_mldev(parameter_model)
+      request_dict = _converters._ListFilesParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files'.format_map(request_url_dict)
@@ -872,7 +735,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _ListFilesResponse_from_mldev(response_dict)
+      response_dict = _converters._ListFilesResponse_from_mldev(response_dict)
 
     return_value = types.ListFilesResponse._from_response(
         response=response_dict,
@@ -916,7 +779,7 @@ class AsyncFiles(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _CreateFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._CreateFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'upload/v1beta/files'.format_map(request_url_dict)
@@ -953,7 +816,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _CreateFileResponse_from_mldev(response_dict)
+      response_dict = _converters._CreateFileResponse_from_mldev(response_dict)
 
     return_value = types.CreateFileResponse._from_response(
         response=response_dict,
@@ -1009,7 +872,7 @@ class AsyncFiles(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _GetFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._GetFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -1091,7 +954,7 @@ class AsyncFiles(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _DeleteFileParameters_to_mldev(parameter_model)
+      request_dict = _converters._DeleteFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files/{file}'.format_map(request_url_dict)
@@ -1121,7 +984,7 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _DeleteFileResponse_from_mldev(response_dict)
+      response_dict = _converters._DeleteFileResponse_from_mldev(response_dict)
 
     return_value = types.DeleteFileResponse._from_response(
         response=response_dict,
@@ -1165,7 +1028,9 @@ class AsyncFiles(_api_module.BaseModule):
           ' Gemini Enterprise Agent Platform mode.'
       )
     else:
-      request_dict = _InternalRegisterFilesParameters_to_mldev(parameter_model)
+      request_dict = _converters._InternalRegisterFilesParameters_to_mldev(
+          parameter_model
+      )
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
         path = 'files:register'.format_map(request_url_dict)
@@ -1202,7 +1067,9 @@ class AsyncFiles(_api_module.BaseModule):
     response_dict = {} if not response.body else json.loads(response.body)
 
     if not self._api_client.vertexai:
-      response_dict = _RegisterFilesResponse_from_mldev(response_dict)
+      response_dict = _converters._RegisterFilesResponse_from_mldev(
+          response_dict
+      )
 
     return_value = types.RegisterFilesResponse._from_response(
         response=response_dict,

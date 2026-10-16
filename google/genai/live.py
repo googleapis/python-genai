@@ -15,6 +15,8 @@
 
 """[Preview] Live API client."""
 
+# pylint: disable=protected-access
+
 import asyncio
 import base64
 import contextlib
@@ -31,7 +33,7 @@ import websockets
 
 from . import _api_module
 from . import _common
-from . import _live_converters as live_converters
+from . import _converters
 from . import _mcp_utils
 from . import _transformers as t
 from . import errors
@@ -42,7 +44,6 @@ from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 from ._mcp_utils import mcp_to_gemini_tool
 from .live_music import AsyncLiveMusic
-from .models import _Content_to_mldev
 
 ConnectionClosed = websockets.ConnectionClosed
 
@@ -249,7 +250,7 @@ class AsyncSession:
           client_content, convert_keys=True
       )
     else:
-      client_content_dict = live_converters._LiveClientContent_to_mldev(
+      client_content_dict = _converters._LiveClientContent_to_mldev(
           from_object=client_content
       )
 
@@ -344,13 +345,13 @@ class AsyncSession:
 
     if self._api_client.vertexai:
       realtime_input_dict = (
-          live_converters._LiveSendRealtimeInputParameters_to_vertex(
+          _converters._LiveSendRealtimeInputParameters_to_vertex(
               from_object=realtime_input
           )
       )
     else:
       realtime_input_dict = (
-          live_converters._LiveSendRealtimeInputParameters_to_mldev(
+          _converters._LiveSendRealtimeInputParameters_to_mldev(
               from_object=realtime_input
           )
       )
@@ -569,9 +570,9 @@ class AsyncSession:
       response = {}
 
     if self._api_client.vertexai:
-      response_dict = live_converters._LiveServerMessage_from_vertex(response)
+      response_dict = _converters._LiveServerMessage_from_vertex(response)
     else:
-      response_dict = live_converters._LiveServerMessage_from_mldev(response)
+      response_dict = _converters._LiveServerMessage_from_mldev(response)
 
     if not response_dict and response:
       # Error handling.
@@ -693,7 +694,7 @@ class AsyncSession:
         ]
       else:
         contents = [
-            _Content_to_mldev(item, to_object)
+            _converters._Content_to_mldev(item, to_object)
             for item in t.t_contents(content_input_parts)
         ]
 
@@ -996,7 +997,7 @@ class AsyncLive(_api_module.BaseModule):
       uri = f'{base_url}/ws/google.ai.generativelanguage.{version}.GenerativeService.{method}'
 
       request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_mldev(
+          _converters._LiveConnectParameters_to_mldev(
               api_client=self._api_client,
               from_object=types.LiveConnectParameters(
                   model=transformed_model,
@@ -1019,7 +1020,7 @@ class AsyncLive(_api_module.BaseModule):
       headers = original_headers.copy() if original_headers is not None else {}
 
       request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_vertex(
+          _converters._LiveConnectParameters_to_vertex(
               api_client=self._api_client,
               from_object=types.LiveConnectParameters(
                   model=transformed_model,
@@ -1083,7 +1084,7 @@ class AsyncLive(_api_module.BaseModule):
             f'projects/{project}/locations/{location}/' + transformed_model
         )
       request_dict = _common.convert_to_dict(
-          live_converters._LiveConnectParameters_to_vertex(
+          _converters._LiveConnectParameters_to_vertex(
               api_client=self._api_client,
               from_object=types.LiveConnectParameters(
                   model=transformed_model,
@@ -1140,7 +1141,7 @@ class AsyncLive(_api_module.BaseModule):
         response = {}
 
       if self._api_client.vertexai:
-        response_dict = live_converters._LiveServerMessage_from_vertex(response)
+        response_dict = _converters._LiveServerMessage_from_vertex(response)
       else:
         response_dict = response
 
