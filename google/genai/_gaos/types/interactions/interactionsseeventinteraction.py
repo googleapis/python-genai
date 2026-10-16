@@ -35,6 +35,8 @@ InteractionSseEventInteractionStatus = Union[
         "failed",
         "cancelled",
         "incomplete",
+        "budget_exceeded",
+        "queued",
     ],
     UnrecognizedStr,
 ]
