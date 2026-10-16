@@ -17,7 +17,7 @@
 """Test convert_if_exist_pydantic_model."""
 
 import inspect
-from typing import Optional, Union
+from typing import Any, Dict, List, Optional, Union
 import pydantic
 import pytest
 import sys
@@ -43,7 +43,13 @@ def test_builtin_types():
       [1], list, 'param_name', 'func_name'
   ) == [1]
   assert convert_if_exist_pydantic_model(
+      [1, 2], List, 'param_name', 'func_name'
+  ) == [1, 2]
+  assert convert_if_exist_pydantic_model(
       {'key1': 1}, dict, 'param_name', 'func_name'
+  ) == {'key1': 1}
+  assert convert_if_exist_pydantic_model(
+      {'key1': 1}, Dict, 'param_name', 'func_name'
   ) == {'key1': 1}
   assert convert_if_exist_pydantic_model(
       {'key1': 1, 'key2': 2}, dict[str, int], 'param_name', 'func_name'
