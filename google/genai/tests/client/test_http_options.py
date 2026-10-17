@@ -211,3 +211,40 @@ def test_setting_30m_timeout_populates_header_and_request_timeout():
   )
   assert request.headers['X-Server-Timeout'] == '1800'
   assert request.timeout == 1800.0
+
+
+def test_build_request_does_not_mutate_client_http_options_headers():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+      http_options=types.HttpOptions(timeout=10000),
+  )
+  client_headers_before = dict(api_client._http_options.headers)
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  # Request has the timeout header computed from client timeout
+  assert request.headers['X-Server-Timeout'] == '10'
+  # The client's own headers dict must not have been mutated
+  assert api_client._http_options.headers == client_headers_before
+  assert 'X-Server-Timeout' not in api_client._http_options.headers
+
+  # Modifying request headers (e.g. adding auth during request dispatch)
+  # must not leak back into the client options
+  request.headers['Authorization'] = 'Bearer fake-token'
+  request.headers['x-goog-user-project'] = 'fake-quota-project'
+  assert 'Authorization' not in api_client._http_options.headers
+  assert 'x-goog-user-project' not in api_client._http_options.headers
+
+  # A subsequent request with different per-request timeout gets its own header
+  request2 = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+      http_options=types.HttpOptions(timeout=5000),
+  )
+  assert request2.headers['X-Server-Timeout'] == '5'
+  assert 'X-Server-Timeout' not in api_client._http_options.headers
+
