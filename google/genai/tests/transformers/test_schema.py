@@ -185,6 +185,29 @@ def test_schema_with_no_null_fields_is_unchanged():
     assert schema_before == schema
 
 
+def test_handle_null_fields_anyof_null_member_with_extra_keys():
+  """A null member of anyOf may carry extra keys (e.g. a 'title').
+
+  It must still be detected and removed instead of raising
+  ValueError: list.remove(x): x not in list. Such schemas are common from
+  JSON-Schema-based tools (e.g. MCP) rather than plain pydantic.
+  """
+  schema = {
+      'anyOf': [
+          {'type': 'integer'},
+          {'type': 'null', 'title': 'N'},
+      ],
+      'title': 'Total Area Sq Mi',
+  }
+
+  _transformers.handle_null_fields(schema)
+
+  assert schema['nullable'] is True
+  # Only the integer type remains, so anyOf is flattened away.
+  assert 'anyOf' not in schema
+  assert schema['type'] == 'integer'
+
+
 @pytest.mark.parametrize('use_vertex', [True, False])
 def test_schema_with_default_value(client):
 
