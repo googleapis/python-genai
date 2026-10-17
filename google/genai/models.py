@@ -6254,6 +6254,12 @@ class Models(_api_module.BaseModule):
           model=model, contents=contents, config=parsed_config
       )
 
+    function_map = _extra_utils.get_function_map(parsed_config)
+    if not function_map:
+      return self._generate_content(
+          model=model, contents=contents, config=parsed_config
+      )
+
     remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
         parsed_config
     )
@@ -6433,6 +6439,13 @@ class Models(_api_module.BaseModule):
           config, incompatible_tools_indexes
       )
       yield from self._generate_content_stream_with_continuation(
+          model=model, contents=contents, config=parsed_config
+      )
+      return
+
+    function_map = _extra_utils.get_function_map(parsed_config)
+    if not function_map:
+      yield from self._generate_content_stream(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -8508,6 +8521,16 @@ class AsyncModels(_api_module.BaseModule):
             model=model, contents=contents, config=final_parsed_config
         )
 
+      function_map = _extra_utils.get_function_map(
+          final_parsed_config,
+          mcp_to_genai_tool_adapters,
+          is_caller_method_async=True,
+      )
+      if not function_map:
+        return await self._generate_content(
+            model=model, contents=contents, config=final_parsed_config
+        )
+
       remaining_remote_calls_afc = _extra_utils.get_max_remote_calls_afc(
           final_parsed_config
       )
@@ -8756,6 +8779,19 @@ class AsyncModels(_api_module.BaseModule):
               config, incompatible_tools_indexes
           )
           response = self._generate_content_stream_with_continuation(
+              model=model, contents=contents, config=final_parsed_config
+          )
+          async for chunk in response:  # type: ignore[attr-defined]
+            yield chunk
+          return
+
+        function_map = _extra_utils.get_function_map(
+            final_parsed_config,
+            mcp_to_genai_tool_adapters,
+            is_caller_method_async=True,
+        )
+        if not function_map:
+          response = await self._generate_content_stream(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
