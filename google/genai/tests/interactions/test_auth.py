@@ -484,3 +484,109 @@ async def test_async_interactions_vertex_extra_headers_override():
         headers = mock_send.call_args[0][0].headers
         assert headers['x-goog-api-key'] == 'manual-key'
         assert 'authorization' not in headers
+
+
+def test_interactions_vertex_fresh_token_after_models_call():
+    import httpx
+    import google.oauth2.credentials
+    from ... import types
+
+    gen_response = {
+        'candidates': [{
+            'content': {'role': 'model', 'parts': [{'text': 'ok'}]},
+            'finishReason': 'STOP',
+        }]
+    }
+    interaction_response = {
+        'id': 'abc',
+        'status': 'completed',
+        'outputs': [],
+        'object': 'interaction',
+        'created': '2026-01-01T00:00:00Z',
+        'updated': '2026-01-01T00:00:00Z',
+    }
+    sent = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+      kind = 'interactions' if '/interactions' in request.url.path else 'models'
+      sent.append((kind, request.headers.get('authorization')))
+      return httpx.Response(
+          200,
+          json=interaction_response if kind == 'interactions' else gen_response,
+      )
+
+    creds = google.oauth2.credentials.Credentials(token='token-1')
+    client = Client(
+        vertexai=True,
+        project='p',
+        location='us-central1',
+        credentials=creds,
+        http_options=types.HttpOptions(
+            httpx_client=httpx.Client(transport=httpx.MockTransport(handler))
+        ),
+    )
+
+    client.models.generate_content(model='gemini-2.5-flash', contents='hi')
+    assert sent[-1] == ('models', 'Bearer token-1')
+    assert 'Authorization' not in client._api_client._http_options.headers
+
+    creds.token = 'token-2'
+    client.interactions.get(id='abc')
+    assert sent[-1] == ('interactions', 'Bearer token-2')
+    assert 'Authorization' not in client._api_client._http_options.headers
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_vertex_fresh_token_after_async_models_call():
+    import httpx
+    import google.oauth2.credentials
+    from ... import types
+
+    gen_response = {
+        'candidates': [{
+            'content': {'role': 'model', 'parts': [{'text': 'ok'}]},
+            'finishReason': 'STOP',
+        }]
+    }
+    interaction_response = {
+        'id': 'abc',
+        'status': 'completed',
+        'outputs': [],
+        'object': 'interaction',
+        'created': '2026-01-01T00:00:00Z',
+        'updated': '2026-01-01T00:00:00Z',
+    }
+    sent = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+      kind = 'interactions' if '/interactions' in request.url.path else 'models'
+      sent.append((kind, request.headers.get('authorization')))
+      return httpx.Response(
+          200,
+          json=interaction_response if kind == 'interactions' else gen_response,
+      )
+
+    creds = google.oauth2.credentials.Credentials(token='token-1')
+    client = Client(
+        vertexai=True,
+        project='p',
+        location='us-central1',
+        credentials=creds,
+        http_options=types.HttpOptions(
+            httpx_async_client=httpx.AsyncClient(
+                transport=httpx.MockTransport(handler)
+            )
+        ),
+    )
+
+    await client.aio.models.generate_content(
+        model='gemini-2.5-flash', contents='hi'
+    )
+    assert sent[-1] == ('models', 'Bearer token-1')
+    assert 'Authorization' not in client._api_client._http_options.headers
+
+    creds.token = 'token-2'
+    await client.aio.interactions.get(id='abc')
+    assert sent[-1] == ('interactions', 'Bearer token-2')
+    assert 'Authorization' not in client._api_client._http_options.headers
+
