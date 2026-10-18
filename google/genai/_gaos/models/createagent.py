@@ -28,7 +28,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class CreateAgentGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateAgentGlobals(BaseModel):
@@ -36,7 +36,7 @@ class CreateAgentGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -57,9 +57,9 @@ class CreateAgentGlobals(BaseModel):
 
 class CreateAgentRequestParam(TypedDict):
     body: agents_agent.AgentParam
-    r"""The request body."""
+    r"""Required. The request body."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateAgentRequest(BaseModel):
@@ -67,13 +67,13 @@ class CreateAgentRequest(BaseModel):
         agents_agent.Agent,
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ]
-    r"""The request body."""
+    r"""Required. The request body."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

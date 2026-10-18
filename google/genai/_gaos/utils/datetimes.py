@@ -42,7 +42,7 @@ def parse_datetime(datetime_string: str) -> datetime:
     return datetime.fromisoformat(datetime_string)
 
 
-_DURATION_ADAPTER = TypeAdapter(timedelta)
+_DURATION_ADAPTER: TypeAdapter[timedelta] = TypeAdapter(timedelta)
 
 
 def parse_duration(duration_string: str) -> timedelta:
@@ -52,3 +52,7 @@ def parse_duration(duration_string: str) -> timedelta:
     pydantic, which is already a runtime dependency of the SDK.
     """
     return _DURATION_ADAPTER.validate_python(duration_string)
+
+
+def format_duration(duration: timedelta) -> str:
+    return _DURATION_ADAPTER.dump_python(duration, mode="json")

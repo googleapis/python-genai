@@ -28,7 +28,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListTriggersGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListTriggersGlobals(BaseModel):
@@ -36,7 +36,7 @@ class ListTriggersGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -57,7 +57,7 @@ class ListTriggersGlobals(BaseModel):
 
 class ListTriggersRequestParam(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
     filter_: NotRequired[str]
     r"""Optional. Filter expression (e.g., by state)."""
     page_size: NotRequired[int]
@@ -71,7 +71,7 @@ class ListTriggersRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     filter_: Annotated[
         Optional[str],

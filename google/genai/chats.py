@@ -19,7 +19,6 @@ import logging
 import sys
 from typing import Any, AsyncIterator, Optional, Union, get_args
 
-
 from . import _extra_utils
 from . import _mcp_utils
 from . import _transformers as t
@@ -35,6 +34,7 @@ else:
   from typing_extensions import TypeGuard
 
 logger = logging.getLogger("google_genai.chats")
+
 
 def _validate_content(content: Content) -> bool:
   if not content.parts:
@@ -225,6 +225,14 @@ class Chat(_BaseChat):
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns the model's response.
 
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
+
     Args:
       message: The message to send to the model.
       config:  Optional config to override the default Chat config for this
@@ -237,7 +245,7 @@ class Chat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-2.0-flash')
+      chat = client.chats.create(model='gemini-flash-latest')
       response = chat.send_message('tell me a story')
     """
 
@@ -389,6 +397,15 @@ class Chat(_BaseChat):
   ) -> Iterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
+
     Args:
       message: The message to send to the model.
       config: Optional config to override the default Chat config for this
@@ -401,7 +418,7 @@ class Chat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-2.0-flash')
+      chat = client.chats.create(model='gemini-flash-latest')
       for chunk in chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
@@ -549,7 +566,7 @@ class Chat(_BaseChat):
           self.record_history(
               user_input=user_input,
               model_output=model_output,
-              is_valid=is_valid,
+              is_valid=is_valid and finish_reason is not None,
           )
           user_input = func_response_content
 
@@ -620,6 +637,14 @@ class AsyncChat(_BaseChat):
   ) -> GenerateContentResponse:
     """Sends the conversation history with the additional message and returns model's response.
 
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
+
     Args:
       message: The message to send to the model.
       config: Optional config to override the default Chat config for this
@@ -632,7 +657,7 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.aio.chats.create(model='gemini-2.0-flash')
+      chat = client.aio.chats.create(model='gemini-flash-latest')
       response = await chat.send_message('tell me a story')
     """
     method_config = config if config else self._config
@@ -867,6 +892,15 @@ class AsyncChat(_BaseChat):
   ) -> AsyncIterator[GenerateContentResponse]:
     """Sends the conversation history with the additional message and yields the model's response in chunks.
 
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
+
     Args:
       message: The message to send to the model.
       config: Optional config to override the default Chat config for this
@@ -879,7 +913,7 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.aio.chats.create(model='gemini-2.0-flash')
+      chat = client.aio.chats.create(model='gemini-flash-latest')
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
@@ -927,7 +961,7 @@ class AsyncChat(_BaseChat):
         finish_reason = None
         is_valid = True
         chunk = None
-        async for chunk in await self._modules.generate_content_stream(  # type: ignore[attr-defined]
+        async for chunk in await self._modules.generate_content_stream(
             model=self._model,
             contents=contents_to_model,  # type: ignore[arg-type]
             config=parsed_config,
@@ -1106,7 +1140,7 @@ class AsyncChat(_BaseChat):
           self.record_history(
               user_input=user_input,
               model_output=model_output,
-              is_valid=is_valid,
+              is_valid=is_valid and finish_reason is not None,
           )
           user_input = func_response_content
 

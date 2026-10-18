@@ -20,6 +20,7 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..utils import FieldMetadata, PathParamMetadata
+import pydantic
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -27,7 +28,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GetAgentGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetAgentGlobals(BaseModel):
@@ -35,7 +36,7 @@ class GetAgentGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,20 +57,24 @@ class GetAgentGlobals(BaseModel):
 
 class GetAgentRequestParam(TypedDict):
     id: str
+    r"""Required. The name of the agent to retrieve."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetAgentRequest(BaseModel):
     id: Annotated[
-        str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
+        str,
+        pydantic.Field(alias="agentsId"),
+        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ]
+    r"""Required. The name of the agent to retrieve."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

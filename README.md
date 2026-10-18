@@ -95,7 +95,7 @@ Below is an example `generate_content()` call using `Part` from the `types` modu
 
 ```python
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents=types.Part.from_text(text='Why is the sky blue?')
 )
 ```
@@ -105,7 +105,7 @@ types:
 
 ```python
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents={'text': 'Why is the sky blue?'}
 )
 ```
@@ -333,7 +333,7 @@ See the 'Create a client' section above to initialize a client.
 
 ```python
 response = client.models.generate_content(
-    model='gemini-3.8-flash', contents='Why is the sky blue?'
+    model='gemini-flash-latest', contents='Why is the sky blue?'
 )
 print(response.text)
 ```
@@ -344,7 +344,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.1-flash-image',
+    model='gemini-3.1-flash-lite-image',
     contents='A cartoon infographic for flying sneakers',
     config=types.GenerateContentConfig(
         response_modalities=["IMAGE"],
@@ -360,6 +360,32 @@ for part in response.parts:
         generated_image.show()
 ```
 
+#### with text content input (audio / speech output)
+
+```python
+from google.genai import types
+
+response = client.models.generate_content(
+    model='gemini-3.8-flash-tts',
+    contents='Give me a cheerful greeting.',
+    config=types.GenerateContentConfig(
+        response_modalities=['AUDIO'],
+        speech_config=types.SpeechConfig(
+            voice_config=types.VoiceConfig(
+                prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                    voice_name='Aoede'
+                )
+            )
+        ),
+    ),
+)
+
+for part in response.parts:
+    if part.inline_data:
+        with open('greeting.wav', 'wb') as f:
+            f.write(part.inline_data.data)
+```
+
 #### with uploaded file (Gemini Developer API only)
 
 Download the file in console.
@@ -373,7 +399,7 @@ python code.
 ```python
 file = client.files.upload(file='a11.txt')
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents=['Could you summarize this file?', file]
 )
 print(response.text)
@@ -604,7 +630,7 @@ we use `GenerateContentConfig` to specify the desired behavior from the model.
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='high',
     config=types.GenerateContentConfig(
         system_instruction='I say high, you say low',
@@ -612,6 +638,45 @@ response = client.models.generate_content(
     ),
 )
 print(response.text)
+```
+
+### Automatic Continuation
+
+Automatic continuation is enabled by default. When a response stops with
+`finish_reason` set to `CONTINUATION` and returns a `continuation_token`, the
+SDK automatically sends follow-up requests with the token until generation
+completes and returns the merged response. To disable automatic continuation,
+set `automatic_continuation=False` in `GenerateContentConfig`.
+
+Streaming (`generate_content_stream`), async
+(`client.aio.models.generate_content` and
+`client.aio.models.generate_content_stream`), and chats (`chat.send_message`
+and `chat.send_message_stream`) work very similarly.
+
+```python
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    enterprise=True, project='your-project-id', location='global'
+)
+
+# Automatic continuation is enabled by default.
+response = client.models.generate_content(
+    model='gemini-flash-latest',
+    contents='Write a comprehensive multi-chapter guide on compiler design.',
+)
+print(response.text)
+
+# Set automatic_continuation=False to disable automatic continuation.
+single_hop_response = client.models.generate_content(
+    model='gemini-flash-latest',
+    contents='Write a comprehensive multi-chapter guide on compiler design.',
+    config=types.GenerateContentConfig(
+        automatic_continuation=False,
+    ),
+)
+print(single_hop_response.text)
 ```
 
 ### List Base Models
@@ -652,7 +717,7 @@ print(async_pager[0])
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='Say something bad.',
     config=types.GenerateContentConfig(
         safety_settings=[
@@ -686,7 +751,7 @@ def get_current_weather(location: str) -> str:
 
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[get_current_weather]),
 )
@@ -704,7 +769,7 @@ as follows:
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -751,7 +816,7 @@ function = types.FunctionDeclaration(
 tool = types.Tool(function_declarations=[function])
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[tool]),
 )
@@ -795,7 +860,7 @@ function_response_content = types.Content(
 )
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents=[
         user_prompt_content,
         function_call_content,
@@ -830,7 +895,7 @@ def get_current_weather(location: str) -> str:
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-3.8-flash",
+    model="gemini-flash-latest",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -860,7 +925,7 @@ def get_current_weather(location: str) -> str:
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-3.8-flash",
+    model="gemini-flash-latest",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -911,7 +976,7 @@ async def run():
 
             # Send request to the model with MCP function declarations
             response = await client.aio.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-flash-latest",
                 contents=prompt,
                 config=genai.types.GenerateContentConfig(
                     tools=[session],  # uses the session, will automatically call the tool using automatic function calling
@@ -946,7 +1011,7 @@ client = genai.Client(enterprise=True, project=PROJECT_ID, location=LOCATION)
 
 async def agent_platform_mcp():
     response = await client.aio.models.generate_content(
-        model="gemini-3.8-flash",
+        model="gemini-flash-latest",
         contents=f"List my endpoints in {LOCATION} for my {PROJECT_ID} project.",
         config = types.GenerateContentConfig(
             tools=[
@@ -1010,7 +1075,7 @@ user_profile = {
 }
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='Give me a random user profile.',
     config={
         'response_mime_type': 'application/json',
@@ -1040,7 +1105,7 @@ class CountryInfo(BaseModel):
 
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -1054,7 +1119,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -1093,7 +1158,7 @@ to you, rather than being returned as one chunk.
 
 ```python
 for chunk in client.models.generate_content_stream(
-    model='gemini-3.8-flash', contents='Tell me a story in 300 words.'
+    model='gemini-flash-latest', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1107,7 +1172,7 @@ you can use the `from_uri` class method to create a `Part` object.
 from google.genai import types
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents=[
         'What is this image about?',
         types.Part.from_uri(
@@ -1131,7 +1196,7 @@ with open(YOUR_IMAGE_PATH, 'rb') as f:
     image_bytes = f.read()
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents=[
         'What is this image about?',
         types.Part.from_bytes(data=image_bytes, mime_type=YOUR_IMAGE_MIME_TYPE),
@@ -1150,7 +1215,7 @@ of `client.models.generate_content`
 
 ```python
 response = await client.aio.models.generate_content(
-    model='gemini-3.8-flash', contents='Tell me a story in 300 words.'
+    model='gemini-flash-latest', contents='Tell me a story in 300 words.'
 )
 
 print(response.text)
@@ -1160,7 +1225,7 @@ print(response.text)
 
 ```python
 async for chunk in await client.aio.models.generate_content_stream(
-    model='gemini-3.8-flash', contents='Tell me a story in 300 words.'
+    model='gemini-flash-latest', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1169,7 +1234,7 @@ async for chunk in await client.aio.models.generate_content_stream(
 
 ```python
 response = client.models.count_tokens(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1181,7 +1246,7 @@ Compute tokens is only supported in Gemini Enterprise Agent Platform.
 
 ```python
 response = client.models.compute_tokens(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1191,7 +1256,7 @@ print(response)
 
 ```python
 response = await client.aio.models.count_tokens(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1202,7 +1267,7 @@ print(response)
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.8-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-flash-latest')
 result = tokenizer.count_tokens("What is your name?")
 ```
 
@@ -1211,7 +1276,7 @@ result = tokenizer.count_tokens("What is your name?")
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.8-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-flash-latest')
 result = tokenizer.compute_tokens("What is your name?")
 ```
 
@@ -1424,7 +1489,7 @@ that it can reflect on its previous responses (i.e., engage in an ongoing
 ### Send Message (Synchronous Non-Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-3.8-flash')
+chat = client.chats.create(model='gemini-flash-latest')
 response = chat.send_message('tell me a story')
 print(response.text)
 response = chat.send_message('summarize the story you told me in 1 sentence')
@@ -1434,7 +1499,7 @@ print(response.text)
 ### Send Message (Synchronous Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-3.8-flash')
+chat = client.chats.create(model='gemini-flash-latest')
 for chunk in chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1442,7 +1507,7 @@ for chunk in chat.send_message_stream('tell me a story'):
 ### Send Message (Asynchronous Non-Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-3.8-flash')
+chat = client.aio.chats.create(model='gemini-flash-latest')
 response = await chat.send_message('tell me a story')
 print(response.text)
 ```
@@ -1450,7 +1515,7 @@ print(response.text)
 ### Send Message (Asynchronous Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-3.8-flash')
+chat = client.aio.chats.create(model='gemini-flash-latest')
 async for chunk in await chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1509,7 +1574,7 @@ else:
     file_uris = [file1.uri, file2.uri]
 
 cached_content = client.caches.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     config=types.CreateCachedContentConfig(
         contents=[
             types.Content(
@@ -1544,7 +1609,7 @@ cached_content = client.caches.get(name=cached_content.name)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     contents='Summarize the pdfs',
     config=types.GenerateContentConfig(
         cached_content=cached_content.name,
@@ -1563,10 +1628,10 @@ See the [documentation site](https://ai.google.dev/gemini-api/docs/interactions)
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input='Tell me a short joke about programming.'
 )
-print(interaction.outputs[-1].text)
+print(interaction.output_text)
 
 ```
 
@@ -1577,18 +1642,18 @@ The Interactions API supports server-side state management. You can continue a c
 ```python
 # 1. First turn
 interaction1 = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input='Hi, my name is Amir.'
 )
-print(f"Model: {interaction1.outputs[-1].text}")
+print(f"Model: {interaction1.output_text}")
 
 # 2. Second turn (passing previous_interaction_id)
 interaction2 = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input='What is my name?',
     previous_interaction_id=interaction1.id
 )
-print(f"Model: {interaction2.outputs[-1].text}")
+print(f"Model: {interaction2.output_text}")
 
 ```
 
@@ -1613,7 +1678,7 @@ while True:
     print(f"Status: {interaction.status}")
 
     if interaction.status == "completed":
-        print("\nFinal Report:\n", interaction.outputs[-1].text)
+        print("\nFinal Report:\n", interaction.output_text)
         break
     elif interaction.status in ["failed", "cancelled"]:
         print(f"Failed with status: {interaction.status}")
@@ -1634,13 +1699,13 @@ import base64
 # base64_image = ...
 
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input=[
         {'type': 'text', 'text': 'Describe the image.'},
         {'type': 'image', 'data': base64_image, 'mime_type': 'image/png'}
     ]
 )
-print(interaction.outputs[-1].text)
+print(interaction.output_text)
 
 ```
 
@@ -1669,31 +1734,31 @@ weather_tool = {
 
 # 2. Send the request with tools
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input='What is the weather in Mountain View, CA?',
     tools=[weather_tool]
 )
 
 # 3. Handle the tool call
-for output in interaction.outputs:
-    if output.type == 'function_call':
-        print(f"Tool Call: {output.name}({output.arguments})")
+for step in (interaction.steps or []):
+    if step.type == 'function_call':
+        print(f"Tool Call: {step.name}({step.arguments})")
 
         # Execute your actual function here
-        result = get_weather(**output.arguments)
+        result = get_weather(**step.arguments)
 
         # Send result back to the model
         interaction = client.interactions.create(
-            model='gemini-3.8-flash',
+            model='gemini-flash-latest',
             previous_interaction_id=interaction.id,
             input=[{
                 'type': 'function_result',
-                'name': output.name,
-                'call_id': output.id,
+                'name': step.name,
+                'call_id': step.id,
                 'result': result
             }]
         )
-        print(f"Response: {interaction.outputs[-1].text}")
+        print(f"Response: {interaction.output_text}")
 
 ```
 
@@ -1704,15 +1769,11 @@ You can also use Google's built-in tools, such as **Google Search** or **Code Ex
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input='Who won the last Super Bowl?',
     tools=[{'type': 'google_search'}]
 )
-
-# Find the text output (not the GoogleSearchResultContent)
-text_output = next((o for o in interaction.outputs if o.type == 'text'), None)
-if text_output:
-    print(text_output.text)
+print(interaction.output_text)
 
 ```
 
@@ -1720,34 +1781,51 @@ if text_output:
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     input='Calculate the 50th Fibonacci number.',
     tools=[{'type': 'code_execution'}]
 )
-print(interaction.outputs[-1].text)
+print(interaction.output_text)
 
 ```
 
 ### Multimodal Output
 
-The Interactions API can generate multimodal outputs, such as images. You must specify the `response_modalities`.
+The Interactions API can generate multimodal outputs, such as images or audio. You must specify the `response_modalities`.
+
+#### Image Output
 
 ```python
 import base64
 
 interaction = client.interactions.create(
-    model='gemini-3-pro-image-preview',
+    model='gemini-3.1-flash-lite-image',
     input='Generate an image of a futuristic city.',
     response_modalities=['IMAGE']
 )
 
-for output in interaction.outputs:
-    if output.type == 'image':
-        print(f"Generated image with mime_type: {output.mime_type}")
-        # Save the image
-        with open("generated_city.png", "wb") as f:
-            f.write(base64.b64decode(output.data))
+if interaction.output_image:
+    print(f"Generated image with mime_type: {interaction.output_image.mime_type}")
+    with open("generated_city.png", "wb") as f:
+        f.write(base64.b64decode(interaction.output_image.data))
 
+```
+
+#### Audio Output
+
+```python
+import base64
+
+interaction = client.interactions.create(
+    model='gemini-3.8-flash-tts',
+    input='Say hello and give a one sentence motivational quote.',
+    response_modalities=['AUDIO']
+)
+
+if interaction.output_audio:
+    print(f"Generated audio with mime_type: {interaction.output_audio.mime_type}")
+    with open("greeting.wav", "wb") as f:
+        f.write(base64.b64decode(interaction.output_audio.data))
 ```
 
 ## Tunings
@@ -1763,7 +1841,7 @@ section above to initialize a client.
 ```python
 from google.genai import types
 
-model = 'gemini-3.5-flash'
+model = 'gemini-flash-latest'
 training_dataset = types.TuningDataset(
     # or gcs_uri=my_enterprise_multimodal_dataset
     gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
@@ -1917,7 +1995,7 @@ Gemini Enterprise Agent Platform:
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
-    model='gemini-3.8-flash',
+    model='gemini-flash-latest',
     src='bq://my-project.my-dataset.my-table',  # or "gs://path/to/input/data"
 )
 
@@ -1929,7 +2007,7 @@ Gemini Developer API:
 ```python
 # Create a batch job with inlined requests
 batch_job = client.batches.create(
-    model="gemini-3.8-flash",
+    model="gemini-flash-latest",
     src=[{
         "contents": [{
             "parts": [{
@@ -1964,7 +2042,7 @@ file = client.files.upload(
 
 # Create a batch job with file name
 batch_job = client.batches.create(
-    model="gemini-3.8-flash",
+    model="gemini-flash-latest",
     src="files/test-json",
 )
 ```
@@ -2066,7 +2144,7 @@ The structure of the dictionary must match the backend API's request structure.
 
 ```python
 response = client.models.generate_content(
-    model="gemini-2.5-pro",
+    model="gemini-flash-latest",
     contents="What is the weather in Boston? and how about Sunnyvale?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],

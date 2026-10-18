@@ -16,6 +16,7 @@
 """Extra utils depending on types that are shared between sync and async modules."""
 
 import asyncio
+import dataclasses
 import inspect
 import io
 import logging
@@ -166,7 +167,6 @@ def log_afc_incompatible_tools_warning(
         'function declaration and MCP server in the tool list.',
         indices_str,
     )
-
 
 
 def get_function_map(
@@ -777,3 +777,560 @@ def get_usage_header(
 
   http_options.headers = existing_headers
   return config_model
+
+
+def should_enable_automatic_continuation(
+    config: Optional[types.GenerateContentConfigOrDict],
+    *,
+    default_enabled: bool = True,
+) -> bool:
+  """Returns whether automatic continuation token resumption is enabled."""
+  if config is None:
+    return default_enabled
+  if isinstance(config, dict):
+    automatic_continuation = config.get('automatic_continuation')
+  else:
+    automatic_continuation = getattr(config, 'automatic_continuation', None)
+  if automatic_continuation is None:
+    return default_enabled
+  return bool(automatic_continuation)
+
+
+def is_resumable_finish_reason(
+    finish_reason: Optional[types.FinishReason],
+) -> bool:
+  """Returns True if finish_reason is eligible for automatic continuation.
+
+  A completed generation always ends with finish_reason != CONTINUATION. If the
+  last received response has finish_reason == None (e.g. mid-stream checkpoint
+  before a stream cutoff/error) or FinishReason.CONTINUATION, it can be resumed
+  when a continuation_token is present.
+  """
+  return (
+      finish_reason is None or finish_reason == types.FinishReason.CONTINUATION
+  )
+
+
+def can_resume_stream(
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+    finish_reason: Optional[types.FinishReason],
+    has_prompt_feedback: bool = False,
+) -> bool:
+  """Returns True if a streaming hop should auto-resume with continuation_token."""
+  return bool(
+      enable_continuation
+      and continuation_token
+      and not has_prompt_feedback
+      and is_resumable_finish_reason(finish_reason)
+  )
+
+
+# Maximum number of consecutive streaming reconnects that do not receive a new
+# checkpoint continuation_token before the error is surfaced to the caller.
+MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS = 3
+
+
+def clear_intermediate_finish_reason(
+    chunk: types.GenerateContentResponse,
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+) -> types.GenerateContentResponse:
+  """Clears finish_reason on candidates[0] when the stream will auto-continue."""
+  if not chunk.candidates:
+    return chunk
+  candidate = chunk.candidates[0]
+  if candidate.finish_reason and can_resume_stream(
+      enable_continuation, continuation_token, candidate.finish_reason
+  ):
+    updated_candidates = list(chunk.candidates)
+    updated_candidates[0] = candidate.model_copy(
+        update={'finish_reason': None}
+    )
+    return chunk.model_copy(update={'candidates': updated_candidates})
+  return chunk
+
+
+@dataclasses.dataclass
+class _StreamHop:
+  """What was observed during one hop (HTTP request) of a continuation stream."""
+
+  # The continuation_token the hop was requested with (None for the initial
+  # request).
+  start_token: Optional[bytes] = None
+  # The latest continuation_token received during the hop.
+  token: Optional[bytes] = None
+  # The finish_reason received during the hop, or None if the stream ended (or
+  # failed) without one.
+  finish_reason: Optional[types.FinishReason] = None
+  has_prompt_feedback: bool = False
+  # Whether the hop already yielded candidate content parts.
+  has_yielded_content: bool = False
+  # Whether the hop received any chunk (i.e. the server accepted the request
+  # and started streaming).
+  received_any_chunk: bool = False
+  # Usage for the whole stream so far: the usage of all previous hops plus
+  # this hop's latest usage_metadata. Within a hop, each chunk's
+  # usage_metadata is the server's running total for the hop, so it replaces
+  # the previous value (it is not summed); a chunk without usage_metadata
+  # leaves it unchanged.
+  usage: Optional[types.GenerateContentResponseUsageMetadata] = None
+
+
+class StreamContinuation:
+  """State of a generate_content_stream call with automatic continuation.
+
+  A stream is made of one or more hops (HTTP requests). Each hop after the first
+  resumes from a continuation_token. The caller drives the loop:
+
+    state = StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error = None
+      try:
+        for chunk in <stream request with call_config>:
+          yield state.observe(chunk)
+      except Exception as e:
+        error = e
+      if not state.end_hop(error):
+        return
+
+  Per-hop state lives in a `_StreamHop` that is replaced by `start_hop()`, so it
+  is always reset between hops. Loop state (usage accumulated across hops, the
+  token to resume from, and the reconnect count) carries across hops.
+
+  Usage metadata: within a hop, each chunk's usage_metadata is the server's
+  running total for that hop, so the latest one is the hop's usage (chunks are
+  not summed). Across hops, the hops' usage is summed, since each hop is a
+  separate request. Each yielded chunk that has usage_metadata carries the
+  usage of all previous hops plus its own.
+  """
+
+  def __init__(self, config: Optional[types.GenerateContentConfigOrDict]):
+    self._config = config
+    self.enable_continuation = should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    # Usage of all finished hops, summed. Each hop is a separate request whose
+    # usage the server reports independently, so hop totals are added (unlike
+    # chunks within a hop; see _StreamHop.usage).
+    self._accumulated_usage_across_hops: Optional[
+        types.GenerateContentResponseUsageMetadata
+    ] = None
+    # Token the next hop resumes from (None for the initial request).
+    self._resume_token: Optional[bytes] = None
+    # Number of consecutive hops that ended without a new continuation_token.
+    self._reconnects_without_progress = 0
+    # The most recent error raised by a hop since the stream last made
+    # progress. Raised if the stream gives up, so that an error is not hidden
+    # by a later retry that ends cleanly without progress.
+    self._last_error: Optional[Exception] = None
+    self._hop = _StreamHop()
+
+  def start_hop(self) -> Optional[types.GenerateContentConfigOrDict]:
+    """Starts a new hop and returns the config to request it with."""
+    self._hop = _StreamHop(start_token=self._resume_token)
+    return prepare_continuation_config(self._config, self._resume_token)
+
+  def observe(
+      self, chunk: types.GenerateContentResponse
+  ) -> types.GenerateContentResponse:
+    """Records one streamed chunk and returns the chunk to yield.
+
+    The returned chunk has its intermediate finish_reason cleared when the
+    stream will auto-continue, and its usage_metadata (if any) set to this
+    hop's latest usage plus the usage of all previous hops.
+    """
+    hop = self._hop
+    hop.received_any_chunk = True
+    if chunk.prompt_feedback is not None:
+      hop.has_prompt_feedback = True
+    if chunk.candidates:
+      candidate = chunk.candidates[0]
+      if candidate.content and candidate.content.parts:
+        hop.has_yielded_content = True
+      if candidate.finish_reason:
+        hop.finish_reason = candidate.finish_reason
+      if candidate.continuation_token:
+        hop.token = candidate.continuation_token
+      elif candidate.finish_reason and not is_resumable_finish_reason(
+          candidate.finish_reason
+      ):
+        hop.token = None
+      chunk = clear_intermediate_finish_reason(
+          chunk, self.enable_continuation, hop.token
+      )
+    if chunk.usage_metadata is not None:
+      if self._accumulated_usage_across_hops is not None:
+        merged_usage = merge_pydantic_models(
+            self._accumulated_usage_across_hops, chunk.usage_metadata
+        )
+        chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
+        hop.usage = merged_usage
+      else:
+        hop.usage = chunk.usage_metadata
+    return chunk
+
+  def end_hop(self, error: Optional[Exception] = None) -> bool:
+    """Ends the current hop. Returns True if another hop should be started.
+
+    If the stream fails or ends without a terminal finish_reason, the next hop
+    resumes from the latest checkpoint token. If the hop failed before emitting
+    a checkpoint of its own and before yielding content, it is retried from the
+    token it started with.
+
+    Only failures of an accepted stream are retried here (a dropped connection,
+    or a stream that ends early). A request the server rejected before streaming
+    anything (an HTTP error status, or an error as the first event) is raised
+    immediately: retrying rejected requests, with backoff, is the job of
+    `HttpOptions.retry_options`.
+
+    When the stream gives up, the latest error raised since the stream last made
+    progress is re-raised, even if a later retry ended without an error. Errors
+    are never invented: a stream that only ever ended cleanly returns normally.
+
+    Args:
+      error: The exception raised while streaming the hop, if any.
+
+    Raises:
+      Exception: The hop's error, or the latest error since the stream last
+        made progress, if the stream can't be resumed.
+    """
+    hop = self._hop
+    if hop.usage is not None:
+      self._accumulated_usage_across_hops = hop.usage
+    if isinstance(error, errors.APIError) and not hop.received_any_chunk:
+      raise error
+    made_progress = hop.has_yielded_content or bool(
+        hop.token and hop.token != hop.start_token
+    )
+    if error is not None:
+      self._last_error = error
+    elif made_progress:
+      self._last_error = None
+    self._resume_token, self._reconnects_without_progress = (
+        self._next_resume_token()
+    )
+    if can_resume_stream(
+        self.enable_continuation,
+        self._resume_token,
+        hop.finish_reason,
+        hop.has_prompt_feedback,
+    ):
+      return True
+    if error is not None:
+      raise error
+    gave_up = hop.finish_reason is None and not hop.has_prompt_feedback
+    if gave_up and self._last_error is not None:
+      raise self._last_error
+    return False
+
+  def _next_resume_token(self) -> tuple[Optional[bytes], int]:
+    """Returns (token to resume from or None to stop, updated reconnect count).
+
+    Long-decode checkpoints are only emitted part way through each hop, so a
+    connection can drop during prefill before the hop has produced a checkpoint
+    of its own. In that case, if no candidate content has been yielded yet, the
+    hop can be retried from the token it was started with.
+    """
+    hop = self._hop
+    reconnects = self._reconnects_without_progress
+    if hop.finish_reason is not None or hop.has_prompt_feedback:
+      if (
+          hop.finish_reason == types.FinishReason.CONTINUATION
+          and not hop.has_prompt_feedback
+          and hop.token
+          and hop.token != hop.start_token
+      ):
+        return hop.token, 0
+      # The server ended the hop without a new token (or returned
+      # prompt_feedback); replaying the same token would only repeat the hop.
+      return None, 0
+    if hop.token and hop.token != hop.start_token:
+      return hop.token, 0
+    if (
+        hop.has_yielded_content
+        or reconnects >= MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+    ):
+      return None, reconnects
+    return hop.start_token, reconnects + 1
+
+
+def should_continue_generation(
+    response: Optional[types.GenerateContentResponse],
+) -> Optional[bytes]:
+  """Returns continuation_token if generation should auto-resume, else None."""
+  if not response or not response.candidates:
+    return None
+  candidate = response.candidates[0]
+  if not candidate.continuation_token:
+    return None
+  if is_resumable_finish_reason(candidate.finish_reason):
+    return candidate.continuation_token
+  return None
+
+
+def prepare_continuation_config(
+    base_config: Optional[types.GenerateContentConfigOrDict],
+    continuation_token: Optional[bytes],
+    *,
+    clear_automatic_continuation: bool = False,
+) -> Optional[types.GenerateContentConfig]:
+  """Returns a shallow copy of base_config with continuation_token set."""
+  has_auto_cont = (
+      base_config.get('automatic_continuation') is not None
+      if isinstance(base_config, dict)
+      else getattr(base_config, 'automatic_continuation', None) is not None
+  )
+  need_clear_auto_cont = clear_automatic_continuation and has_auto_cont
+  if (
+      not continuation_token
+      and not need_clear_auto_cont
+      and (
+          base_config is None
+          or isinstance(base_config, types.GenerateContentConfig)
+      )
+  ):
+    return base_config
+  if base_config is None:
+    return types.GenerateContentConfig(continuation_token=continuation_token)
+  if isinstance(base_config, dict):
+    copied_dict: dict[str, Any] = dict(base_config)
+    if continuation_token:
+      copied_dict['continuation_token'] = continuation_token
+    if need_clear_auto_cont:
+      copied_dict['automatic_continuation'] = None
+    return types.GenerateContentConfig(**copied_dict)
+  updates: dict[str, Any] = {}
+  if continuation_token:
+    updates['continuation_token'] = continuation_token
+  if need_clear_auto_cont:
+    updates['automatic_continuation'] = None
+  return base_config.model_copy(update=updates)
+
+
+def merge_modality_token_counts(
+    prev_list: list[types.ModalityTokenCount],
+    curr_list: list[types.ModalityTokenCount],
+) -> list[types.ModalityTokenCount]:
+  """Sums token_count per modality across two lists of ModalityTokenCount."""
+  counts_by_modality: dict[Any, int] = {}
+  order: list[Any] = []
+  for item in prev_list + curr_list:
+    if item.modality not in counts_by_modality:
+      counts_by_modality[item.modality] = 0
+      order.append(item.modality)
+    counts_by_modality[item.modality] += item.token_count or 0
+  return [
+      types.ModalityTokenCount(
+          modality=mod, token_count=counts_by_modality[mod]
+      )
+      for mod in order
+  ]
+
+
+def merge_safety_ratings(
+    prev_list: list[types.SafetyRating],
+    curr_list: list[types.SafetyRating],
+) -> list[types.SafetyRating]:
+  """Deduplicates safety ratings by category, keeping the latest hop's rating."""
+  by_category: dict[Any, types.SafetyRating] = {}
+  order: list[Any] = []
+  for rating in prev_list + curr_list:
+    if rating.category not in by_category:
+      order.append(rating.category)
+    by_category[rating.category] = rating
+  return [by_category[cat] for cat in order]
+
+
+def _shift_candidate_grounding_supports(
+    prev: types.Candidate,
+    curr: types.Candidate,
+) -> types.Candidate:
+  """Shifts curr's GroundingSupport chunk and part indices by prev's lengths."""
+  curr_gm = curr.grounding_metadata
+  if curr_gm is None or not curr_gm.grounding_supports:
+    return curr
+
+  part_offset = (
+      len(prev.content.parts)
+      if prev.content is not None and prev.content.parts
+      else 0
+  )
+  chunk_offset = (
+      len(prev.grounding_metadata.grounding_chunks)
+      if prev.grounding_metadata is not None
+      and prev.grounding_metadata.grounding_chunks
+      else 0
+  )
+  if part_offset == 0 and chunk_offset == 0:
+    return curr
+
+  shifted_supports: list[types.GroundingSupport] = []
+  for support in curr_gm.grounding_supports:
+    support_updates: dict[str, Any] = {}
+    if chunk_offset > 0 and support.grounding_chunk_indices:
+      support_updates['grounding_chunk_indices'] = [
+          idx + chunk_offset for idx in support.grounding_chunk_indices
+      ]
+    if part_offset > 0 and support.segment is not None:
+      prev_part_index = (
+          support.segment.part_index
+          if support.segment.part_index is not None
+          else 0
+      )
+      support_updates['segment'] = support.segment.model_copy(
+          update={'part_index': prev_part_index + part_offset}
+      )
+    if support_updates:
+      shifted_supports.append(support.model_copy(update=support_updates))
+    else:
+      shifted_supports.append(support)
+
+  return curr.model_copy(
+      update={
+          'grounding_metadata': curr_gm.model_copy(
+              update={'grounding_supports': shifted_supports}
+          )
+      }
+  )
+
+
+def merge_candidates(
+    prev_candidates: list[types.Candidate],
+    curr_candidates: list[types.Candidate],
+) -> list[types.Candidate]:
+  """Merges candidates element-wise across continuation hops."""
+  if not prev_candidates:
+    return curr_candidates
+  if not curr_candidates:
+    return [
+        merge_pydantic_models(prev_candidate, types.Candidate())
+        for prev_candidate in prev_candidates
+    ]
+  result: list[types.Candidate] = []
+  for prev_candidate, curr_candidate in zip(prev_candidates, curr_candidates):
+    merged_candidate = merge_pydantic_models(prev_candidate, curr_candidate)
+    result.append(merged_candidate)
+  result.extend(prev_candidates[len(curr_candidates) :])
+  result.extend(curr_candidates[len(prev_candidates) :])
+  return result
+
+
+def merge_pydantic_models(prev: C, curr: C) -> C:
+  """Recursively merges two Pydantic BaseModel instances across continuation hops."""
+  if isinstance(prev, types.Candidate) and isinstance(curr, types.Candidate):
+    curr = typing.cast(C, _shift_candidate_grounding_supports(prev, curr))
+  merged_data: dict[str, Any] = {}
+  for field_name in type(curr).model_fields:
+    prev_val = getattr(prev, field_name, None)
+    curr_val = getattr(curr, field_name, None)
+
+    # Terminal hop state on Candidate must reflect the final hop even if None
+    # e.g., continuation_token is None when the final hop finishes with STOP
+    if isinstance(curr, types.Candidate) and field_name in (
+        'continuation_token',
+        'finish_reason',
+        'finish_message',
+    ):
+      merged_data[field_name] = curr_val
+      continue
+
+    # Route candidates through merge_candidates even when curr.candidates is
+    # None so preserved candidates clear terminal continuation state.
+    if (
+        isinstance(curr, types.GenerateContentResponse)
+        and field_name == 'candidates'
+        and prev_val is not None
+    ):
+      merged_data[field_name] = merge_candidates(prev_val, curr_val or [])
+      continue
+
+    if curr_val is None:
+      merged_data[field_name] = prev_val
+    elif prev_val is None:
+      merged_data[field_name] = curr_val
+    elif isinstance(prev_val, _common.BaseModel) and isinstance(
+        curr_val, _common.BaseModel
+    ):
+      merged_data[field_name] = merge_pydantic_models(prev_val, curr_val)
+    elif (
+        isinstance(prev_val, (int, float))
+        and not isinstance(prev_val, bool)
+        and isinstance(curr_val, (int, float))
+        and not isinstance(curr_val, bool)
+        and (
+            field_name == 'token_count'
+            or field_name.endswith('_count')
+            or field_name.endswith('_sum')
+        )
+    ):
+      merged_data[field_name] = prev_val + curr_val
+    elif isinstance(prev_val, list) and isinstance(curr_val, list):
+      if prev_val and isinstance(prev_val[0], types.ModalityTokenCount):
+        merged_data[field_name] = merge_modality_token_counts(
+            prev_val, curr_val
+        )
+      elif curr_val and isinstance(curr_val[0], types.ModalityTokenCount):
+        merged_data[field_name] = merge_modality_token_counts(
+            prev_val, curr_val
+        )
+      elif field_name == 'safety_ratings':
+        merged_data[field_name] = merge_safety_ratings(prev_val, curr_val)
+      else:
+        # Concatenates Content.parts (keeping each hop's Part distinct and
+        # preserving empty placeholder Parts), GroundingChunks, Citations, etc.
+        merged_data[field_name] = prev_val + curr_val
+    else:
+      merged_data[field_name] = curr_val
+
+  merged = curr.model_copy(update=merged_data)
+  if (
+      isinstance(prev, types.GenerateContentResponseUsageMetadata)
+      and isinstance(curr, types.GenerateContentResponseUsageMetadata)
+      and isinstance(merged, types.GenerateContentResponseUsageMetadata)
+  ):
+    merged._initial_prompt_token_count = (
+        prev.initial_prompt_token_count
+        if prev.initial_prompt_token_count is not None
+        else curr.initial_prompt_token_count
+    )
+  return merged
+
+
+def merge_continuation_responses(
+    responses: list[types.GenerateContentResponse],
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> types.GenerateContentResponse:
+  """Merges a sequence of continuation hop responses into a single response."""
+  if not responses:
+    return types.GenerateContentResponse()
+  if len(responses) == 1:
+    return responses[0]
+  merged = responses[0]
+  for resp in responses[1:]:
+    merged = merge_pydantic_models(merged, resp)
+
+  if config is not None:
+    response_schema = (
+        config.get('response_schema')
+        if isinstance(config, dict)
+        else getattr(config, 'response_schema', None)
+    )
+    response_json_schema = (
+        config.get('response_json_schema')
+        if isinstance(config, dict)
+        else getattr(config, 'response_json_schema', None)
+    )
+    if response_schema is not None or response_json_schema is not None:
+      config_dict = {
+          'response_schema': response_schema,
+          'response_json_schema': response_json_schema,
+      }
+      reparsed = types.GenerateContentResponse._from_response(
+          response=merged.model_dump(exclude_none=True),
+          kwargs={'config': config_dict},
+      )
+      merged.parsed = reparsed.parsed
+
+  return merged

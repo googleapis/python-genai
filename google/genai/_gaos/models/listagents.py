@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class ListAgentsGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class ListAgentsGlobals(BaseModel):
@@ -35,7 +35,7 @@ class ListAgentsGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,10 +56,13 @@ class ListAgentsGlobals(BaseModel):
 
 class ListAgentsRequestParam(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
     page_size: NotRequired[int]
     page_token: NotRequired[str]
     parent: NotRequired[str]
+    r"""Required. The parent resource to list agents from.
+    Format: `projects/{project}/locations/{location}`
+    """
 
 
 class ListAgentsRequest(BaseModel):
@@ -67,7 +70,7 @@ class ListAgentsRequest(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     page_size: Annotated[
         Optional[int],
@@ -83,6 +86,9 @@ class ListAgentsRequest(BaseModel):
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
+    r"""Required. The parent resource to list agents from.
+    Format: `projects/{project}/locations/{location}`
+    """
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

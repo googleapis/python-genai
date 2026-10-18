@@ -68,7 +68,6 @@ from ...types.interactions.googlesearchcallstep import GoogleSearchCallStep
 from ...types.interactions.googlesearchresult import GoogleSearchResult
 from ...types.interactions.googlesearchresultstep import GoogleSearchResultStep
 from ...types.interactions.harmcategory import HarmCategory
-from ...types.interactions.imageconfig import ImageConfig
 from ...types.interactions.imagecontent import ImageContent
 from ...types.interactions.imageresponseformat import ImageResponseFormat
 from ...types.interactions.interaction import Interaction
@@ -115,6 +114,7 @@ from ...types.interactions.videocontent import VideoContent
 from ...types.interactions.videoresponseformat import VideoResponseFormat
 from ...types.interactions.webhookconfig import WebhookConfig
 from ...types.interactions.wordinfo import WordInfo
+from . import annotation
 from . import codeexecutioncallstep
 from . import codemenderagentconfig
 from . import environment
@@ -174,7 +174,6 @@ __all__ = [
     "GoogleSearchResult",
     "GoogleSearchResultStep",
     "HarmCategory",
-    "ImageConfig",
     "ImageContent",
     "ImageResponseFormat",
     "Interaction",
@@ -226,6 +225,7 @@ __all__ = [
     "VideoResponseFormat",
     "WebhookConfig",
     "WordInfo",
+    "annotation",
     "codeexecutioncallstep",
     "codemenderagentconfig",
     "environment",

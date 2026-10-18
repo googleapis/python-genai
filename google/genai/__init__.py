@@ -25,12 +25,29 @@ from .client import Client
 
 __version__ = version.__version__
 
-__all__ = ['Client', 'interactions', 'types']
+__all__ = [
+    'Client',
+    'agents',
+    'credentials',
+    'environments',
+    'interactions',
+    'triggers',
+    'types',
+    'voices',
+    'webhooks',
+]
 
 
 def __getattr__(name: str) -> Any:
-  if name == 'interactions':
-    module = importlib.import_module('.interactions', __name__)
+  if name in {
+      'agents',
+      'credentials',
+      'environments',
+      'interactions',
+      'triggers',
+      'webhooks',
+  }:
+    module = importlib.import_module(f'.{name}', __name__)
     globals()[name] = module
     return module
   raise AttributeError(f'module {__name__!r} has no attribute {name!r}')

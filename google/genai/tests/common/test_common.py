@@ -952,3 +952,30 @@ def test_check_field_type_mismatches_generic_type_no_error(caplog):
     TestModel.model_validate(data)
 
   assert len(caplog.records) == 0
+
+
+class _ForwardRefOuterModel(_common.BaseModel):
+  # Declared before the model it points at, the way the generated types
+  # sometimes are, so the annotation is a forward reference.
+  items: Optional[List["_ForwardRefInnerModel"]] = None
+
+
+class _ForwardRefInnerModel(_common.BaseModel):
+  value: Optional[str] = None
+
+
+def test_from_response_resolves_forward_references():
+  """Extra fields are pruned from nested models declared as forward references.
+
+  Models are built on first use, so until something builds the outer model its
+  `items` annotation holds an unresolved reference to `_ForwardRefInnerModel`
+  rather than the class, and the pruning walk has nothing to recurse into.
+  """
+  assert not _ForwardRefOuterModel.__pydantic_complete__
+
+  result = _ForwardRefOuterModel._from_response(
+      response={"items": [{"value": "a", "extraField": 1}]}, kwargs={}
+  )
+
+  assert result.items is not None
+  assert result.items[0].value == "a"

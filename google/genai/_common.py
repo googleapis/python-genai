@@ -332,6 +332,14 @@ def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
   Mutates the response in place.
   """
 
+  # Models are built on first use (`defer_build`), and an unbuilt model's field
+  # annotations still hold the forward references they were declared with, e.g.
+  # the string 'Part' rather than the `Part` class. Building the model resolves
+  # them, and costs nothing extra here because the caller validates against
+  # this model immediately afterwards.
+  if isinstance(model, type) and issubclass(model, pydantic.BaseModel):
+    model.model_rebuild(raise_errors=False)
+
   key_values = list(response.items())
 
   for key, value in key_values:

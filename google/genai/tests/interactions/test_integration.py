@@ -14,10 +14,13 @@
 
 from unittest import mock
 
-from ..._gaos import google_genai as gaos_google_genai
+import httpx
 import pytest
 
 from ... import client as client_lib
+from ..._gaos import google_genai as gaos_google_genai
+from ..._gaos.types.interactions import interaction as gaos_interaction
+from ..._gaos.utils import serializers as gaos_serializers
 
 
 pytest_plugins = ("pytest_asyncio",)
@@ -76,6 +79,81 @@ async def test_async_client_timeout():
     )
 
 
+def test_client_vertex_default_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha"},
+  )
+  sdk_client = client.interactions.sdk_configuration.client
+  assert sdk_client is not None
+  # Default on Vertex should match GenAI default (timeout=None, no 5s timeout)
+  assert sdk_client.timeout == httpx.Timeout(None)
+  assert sdk_client.timeout != httpx.Timeout(5.0)
+
+
+def test_client_vertex_explicit_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha", "timeout": 12000},
+  )
+  interactions_client = client.interactions
+  assert interactions_client.sdk_configuration.timeout_ms == 12000
+
+
+@pytest.mark.asyncio
+async def test_async_client_vertex_default_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha"},
+  )
+  async_sdk_client = client.aio.interactions.sdk_configuration.async_client
+  assert async_sdk_client is not None
+  assert async_sdk_client.timeout == httpx.Timeout(None)
+  assert async_sdk_client.timeout != httpx.Timeout(5.0)
+
+
+@pytest.mark.asyncio
+async def test_async_client_vertex_explicit_timeout():
+  client = client_lib.Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1alpha", "timeout": 15000},
+  )
+  async_interactions_client = client.aio.interactions
+  assert async_interactions_client.sdk_configuration.timeout_ms == 15000
+
+
+def test_client_genai_default_timeout():
+  client = client_lib.Client(
+      api_key="placeholder",
+      http_options={"api_version": "v1alpha"},
+  )
+  sdk_client = client.interactions.sdk_configuration.client
+  assert sdk_client is not None
+  assert sdk_client.timeout == httpx.Timeout(None)
+  assert sdk_client.timeout != httpx.Timeout(5.0)
+
+
+@pytest.mark.asyncio
+async def test_async_client_genai_default_timeout():
+  client = client_lib.Client(
+      api_key="placeholder",
+      http_options={"api_version": "v1alpha"},
+  )
+  async_sdk_client = client.aio.interactions.sdk_configuration.async_client
+  assert async_sdk_client is not None
+  assert async_sdk_client.timeout == httpx.Timeout(None)
+  assert async_sdk_client.timeout != httpx.Timeout(5.0)
+
+
+
 @pytest.mark.filterwarnings("error")
 def test_unrecognized_model_serialization():
   from ..._gaos.types.interactions.createmodelinteraction import CreateModelInteraction
@@ -123,3 +201,142 @@ def test_allowlist_entry_with_list_transform():
   # Serialization should preserve it as a list
   dumped = entry.model_dump()
   assert dumped["transform"] == [{"Authorization": "Bearer TOKEN"}]
+
+
+def test_interaction_model_construct():
+  """Tests Interaction.model_construct binding and legacy lyria coercion."""
+  interaction = gaos_interaction.Interaction.model_construct(id="x")
+  assert isinstance(interaction, gaos_interaction.Interaction)
+  assert interaction.id == "x"
+
+  lyria_interaction = gaos_interaction.Interaction.model_construct(
+      id="y",
+      model="lyria-3-pro-preview",
+      outputs=[{"type": "audio", "data": "abc"}],
+  )
+  assert isinstance(lyria_interaction, gaos_interaction.Interaction)
+  assert lyria_interaction.id == "y"
+  assert lyria_interaction.steps == [
+      {"type": "model_output", "content": [{"type": "audio", "data": "abc"}]}
+  ]
+
+
+def test_interaction_lenient_parsing():
+  """Tests lenient response parsing when required fields are omitted."""
+  # Payload missing required `status` field falls back to
+  # _construct_model_lenient, which calls Interaction.model_construct(...).
+  parsed = gaos_serializers.construct_unvalidated(
+      {"id": "x"}, gaos_interaction.Interaction
+  )
+  assert isinstance(parsed, gaos_interaction.Interaction)
+  assert parsed.id == "x"
+
+
+def test_interactions_default_timeout():
+  from ... import _interactions
+
+  assert _interactions.DEFAULT_TIMEOUT == httpx.Timeout(
+      timeout=None, connect=5.0
+  )
+
+
+def _thought(signature):
+  return {
+      "type": "thought",
+      "signature": signature,
+      "summary": [{"type": "text", "text": f"summary {signature}"}],
+  }
+
+
+def _text(value):
+  return {"type": "model_output", "content": [{"type": "text", "text": value}]}
+
+
+_FUNCTION_CALL = {
+    "type": "function_call",
+    "id": "call_1",
+    "name": "get_weather",
+    "arguments": {"city": "Mountain View"},
+}
+_FUNCTION_RESULT = {
+    "type": "function_result",
+    "call_id": "call_1",
+    "name": "get_weather",
+    "result": "Sunny",
+}
+
+
+@pytest.mark.parametrize(
+    "steps,expected",
+    [
+        pytest.param(
+            [
+                _thought("a"),
+                _text("First part. "),
+                _thought("b"),
+                _text("Second part. "),
+                {"type": "model_output"},
+                _text("Third part."),
+                _thought("c"),
+            ],
+            "First part. Second part. Third part.",
+            id="long_decode_multi_step",
+        ),
+        pytest.param(
+            [
+                _text("Before tool call. "),
+                _FUNCTION_CALL,
+                _FUNCTION_RESULT,
+                _thought("a"),
+                _text("Final part 1. "),
+                _thought("b"),
+                _text("Final part 2."),
+                {**_FUNCTION_CALL, "id": "call_trailing"},
+            ],
+            "Final part 1. Final part 2.",
+            id="tool_boundary",
+        ),
+        pytest.param(
+            [
+                _text("Previous turn. "),
+                {
+                    "type": "user_input",
+                    "content": [{"type": "text", "text": "Next question"}],
+                },
+                _thought("a"),
+                _text("A"),
+                _thought("b"),
+                _text("B"),
+            ],
+            "AB",
+            id="user_input_boundary",
+        ),
+        pytest.param(
+            [
+                {
+                    "type": "model_output",
+                    "content": [
+                        {"type": "text", "text": "X"},
+                        {
+                            "type": "image",
+                            "data": "aW1hZ2U=",
+                            "mime_type": "image/png",
+                        },
+                    ],
+                },
+                _thought("a"),
+                _text("Y"),
+            ],
+            "Y",
+            id="non_text_barrier",
+        ),
+    ],
+)
+def test_output_text_across_steps(steps, expected):
+  payload = {"id": "v1_123", "status": "completed", "steps": steps}
+
+  interaction = gaos_interaction.Interaction.model_validate(payload)
+  assert interaction.output_text == expected
+
+  wrapped = gaos_google_genai._add_output_properties_if_interaction(payload)  # pylint: disable=protected-access
+  assert wrapped["output_text"] == expected

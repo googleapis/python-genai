@@ -17,6 +17,7 @@
 """Tests for live.py."""
 
 import contextlib
+import inspect
 import json
 import os
 import ssl
@@ -2420,3 +2421,34 @@ async def test_bidi_setup_replicated_voice_config_with_consent(vertexai):
       replicated_sig['voice_consent_signature'].get('signature')
       == 'test_sig_abc123'
   )
+
+
+def test_live_client_message_fields_have_send_methods():
+  ignored_message_fields = {'setup'}
+  ignored_inner_fields = {
+      'realtime_input': {'media_chunks'},  # Exposed as `media`
+  }
+
+  for field_name, field_info in types.LiveClientMessage.model_fields.items():
+    if field_name in ignored_message_fields:
+      continue
+
+    method_name = f'send_{field_name}'
+    method = getattr(live.AsyncSession, method_name, None)
+    assert callable(method), (
+        f'AsyncSession is missing `{method_name}` for'
+        f' LiveClientMessage.{field_name}'
+    )
+
+    sig_params = set(inspect.signature(method).parameters.keys()) - {'self'}
+    inner_type = typing.get_args(field_info.annotation)[0]
+    expected_fields = set(
+        inner_type.model_fields.keys()
+    ) - ignored_inner_fields.get(field_name, set())
+
+    missing_params = expected_fields - sig_params
+    assert not missing_params, (
+        f'AsyncSession.{method_name} is missing parameters for'
+        f' {inner_type.__name__} fields: {sorted(missing_params)}'
+    )
+

@@ -28,7 +28,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
     user_project: NotRequired[str]
     r"""Quota project header to send with Google GenAI API requests."""
 
@@ -38,7 +38,7 @@ class Globals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     user_project: Annotated[
         Optional[str],

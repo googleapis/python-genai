@@ -16,6 +16,7 @@
 
 """Tests for client behavior when issuing requests."""
 
+import httpx
 import pytest
 
 from ... import _api_client
@@ -180,3 +181,33 @@ def test_base_url_resource_scope_not_set_by_default():
 def test_retry_options_not_set_by_default():
   options = types.HttpOptions()
   assert options.retry_options is None
+
+
+def test_default_timeout_is_none_for_httpx_and_request():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+  )
+  assert api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert api_client._async_httpx_client.timeout == httpx.Timeout(None)
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert request.timeout is None
+
+
+def test_setting_30m_timeout_populates_header_and_request_timeout():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+      http_options=types.HttpOptions(timeout=1800000),
+  )
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert request.headers['X-Server-Timeout'] == '1800'
+  assert request.timeout == 1800.0

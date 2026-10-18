@@ -30,7 +30,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class CreateEnvironmentGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateEnvironmentGlobals(BaseModel):
@@ -38,7 +38,7 @@ class CreateEnvironmentGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -59,9 +59,9 @@ class CreateEnvironmentGlobals(BaseModel):
 
 class CreateEnvironmentRequestParam(TypedDict):
     body: environments_createenvironmentrequest.CreateEnvironmentRequestParam
-    r"""Required. The environment to create."""
+    r"""Required. The request body."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateEnvironmentRequest(BaseModel):
@@ -69,13 +69,13 @@ class CreateEnvironmentRequest(BaseModel):
         environments_createenvironmentrequest.CreateEnvironmentRequest,
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ]
-    r"""Required. The environment to create."""
+    r"""Required. The request body."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

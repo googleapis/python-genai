@@ -28,7 +28,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class CreateWebhookGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateWebhookGlobals(BaseModel):
@@ -36,7 +36,7 @@ class CreateWebhookGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -57,9 +57,9 @@ class CreateWebhookGlobals(BaseModel):
 
 class CreateWebhookRequestParam(TypedDict):
     body: webhooks_webhook.WebhookInputParam
-    r"""Required. The webhook to create."""
+    r"""Required. The request body."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class CreateWebhookRequest(BaseModel):
@@ -67,13 +67,13 @@ class CreateWebhookRequest(BaseModel):
         webhooks_webhook.WebhookInput,
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ]
-    r"""Required. The webhook to create."""
+    r"""Required. The request body."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

@@ -20,6 +20,7 @@
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL
 from ..utils import FieldMetadata, PathParamMetadata
+import pydantic
 from pydantic import model_serializer
 from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -27,7 +28,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class DeleteInteractionGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteInteractionGlobals(BaseModel):
@@ -35,7 +36,7 @@ class DeleteInteractionGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,22 +57,24 @@ class DeleteInteractionGlobals(BaseModel):
 
 class DeleteInteractionRequestParam(TypedDict):
     id: str
-    r"""The unique identifier of the interaction to delete."""
+    r"""Required. The name of the interaction to delete."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class DeleteInteractionRequest(BaseModel):
     id: Annotated[
-        str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
+        str,
+        pydantic.Field(alias="interactionsId"),
+        FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ]
-    r"""The unique identifier of the interaction to delete."""
+    r"""Required. The name of the interaction to delete."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

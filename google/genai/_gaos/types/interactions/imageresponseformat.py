@@ -71,7 +71,7 @@ ImageResponseFormatImageSize = Union[
 r"""The size of the image output."""
 
 
-ImageResponseFormatMimeType = Literal["image/jpeg",]
+ImageResponseFormatMimeType = Union[Literal["image/jpeg",], UnrecognizedStr]
 r"""The MIME type of the image output."""
 
 

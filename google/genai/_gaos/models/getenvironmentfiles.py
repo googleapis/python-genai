@@ -27,7 +27,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class GetEnvironmentFilesGlobalsTypedDict(TypedDict):
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
 
 class GetEnvironmentFilesGlobals(BaseModel):
@@ -35,7 +35,7 @@ class GetEnvironmentFilesGlobals(BaseModel):
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
@@ -56,9 +56,11 @@ class GetEnvironmentFilesGlobals(BaseModel):
 
 class GetEnvironmentFilesRequestParam(TypedDict):
     environment: str
+    r"""The ID of the environment whose snapshot to read."""
     path: str
+    r"""Path of the file or directory inside the environment workspace, relative to its root (e.g. src)."""
     api_version: NotRequired[str]
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
     page_size: NotRequired[int]
     r"""Optional. Maximum number of entries to return per page (for directory listing)."""
     page_token: NotRequired[str]
@@ -71,16 +73,18 @@ class GetEnvironmentFilesRequest(BaseModel):
     environment: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
+    r"""The ID of the environment whose snapshot to read."""
 
     path: Annotated[
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
+    r"""Path of the file or directory inside the environment workspace, relative to its root (e.g. src)."""
 
     api_version: Annotated[
         Optional[str],
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
-    r"""Which version of the API to use."""
+    r"""API version for request routing."""
 
     page_size: Annotated[
         Optional[int],
