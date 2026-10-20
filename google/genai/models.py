@@ -1349,6 +1349,12 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['continuation_token']),
     )
 
+  if getv(from_object, ['generation_output_config']) is not None:
+    raise ValueError(
+        'generation_output_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
   return to_object
 
 
@@ -1551,6 +1557,13 @@ def _GenerateContentConfig_to_vertex(
         parent_object,
         ['continuationToken'],
         getv(from_object, ['continuation_token']),
+    )
+
+  if getv(from_object, ['generation_output_config']) is not None:
+    setv(
+        parent_object,
+        ['outputConfig'],
+        getv(from_object, ['generation_output_config']),
     )
 
   return to_object
