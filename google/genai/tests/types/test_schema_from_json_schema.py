@@ -13,7 +13,10 @@
 # limitations under the License.
 #
 
+import enum
 import logging
+import warnings
+
 import pydantic
 
 from ... import types
@@ -273,6 +276,70 @@ def test_union_like_type_conversion_suite2():
 
   assert actual_gemini_api_schema == expected_schema
   assert actual_vertex_ai_schema == expected_schema
+
+
+def test_integer_enum_conversion():
+  """Test that numeric JSONSchema.enum values become strings in Schema.enum."""
+  json_schema = types.JSONSchema(type='integer', enum=[1, 5, 10])
+  gemini_api_schema = types.Schema.from_json_schema(json_schema=json_schema)
+  vertex_ai_schema = types.Schema.from_json_schema(
+      json_schema=json_schema, api_option='VERTEX_AI'
+  )
+  expected_schema = types.Schema(type='INTEGER', enum=['1', '5', '10'])
+
+  assert gemini_api_schema == expected_schema
+  assert vertex_ai_schema == expected_schema
+  with warnings.catch_warnings():
+    warnings.simplefilter('error')
+    gemini_api_schema.model_dump(mode='json')
+
+
+def test_number_enum_conversion():
+  """Test that float and int enum values of a NUMBER schema become strings."""
+  json_schema = types.JSONSchema(type='number', enum=[1.5, 2])
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema == types.Schema(type='NUMBER', enum=['1.5', '2'])
+
+
+def test_nullable_integer_enum_conversion():
+  """Test that a nullable integer enum keeps nullable and gets string values."""
+  json_schema = types.JSONSchema(type=['integer', 'null'], enum=[1, 2])
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema == types.Schema(type='INTEGER', nullable=True, enum=['1', '2'])
+
+
+def test_union_like_type_integer_enum_conversion():
+  """Test that the enum copied into an any_of sub-schema becomes strings."""
+  json_schema = types.JSONSchema(
+      type=['integer', 'array'],
+      enum=[1, 2],
+      items=types.JSONSchema(type='integer'),
+  )
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema == types.Schema(
+      any_of=[
+          types.Schema(type='INTEGER', enum=['1', '2']),
+          types.Schema(type='ARRAY', items=types.Schema(type='INTEGER')),
+      ]
+  )
+
+
+def test_int_enum_member_enum_conversion():
+  """Test that IntEnum members convert to their value, not their name."""
+
+  class DaysEnum(enum.IntEnum):
+    ONE = 1
+    FIVE = 5
+
+  json_schema = types.JSONSchema(
+      type='integer', enum=[DaysEnum.ONE, DaysEnum.FIVE]
+  )
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema == types.Schema(type='INTEGER', enum=['1', '5'])
 
 
 def test_array_type_conversion():
