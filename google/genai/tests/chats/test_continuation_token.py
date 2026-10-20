@@ -1049,7 +1049,18 @@ def test_chat_send_message_stream_auto_resumes_across_hops(mock_api_client):
       assert call_kwargs['contents'] == first_call_kwargs['contents']
 
     curated = chat.get_history(curated=True)
-    assert len(curated) == 10  # 1 user + 9 model chunks
+    assert len(curated) == 2
+    assert [p.text for p in curated[1].parts] == [
+        '# ENGINEERING A MODERN PRODUCTION COMPILER\n',
+        '## CHAPTER 1: Lexical Analysis\n',
+        '',
+        '## CHAPTER 2: SSA Optimization Pipeline\n',
+        '',
+        '## CHAPTER 3: Register Allocation\n',
+        '',
+        '## CHAPTER 4: Code Generation\n',
+        'End of compiler textbook.',
+    ]
 
   # Test default AFC-enabled path in Chat.send_message_stream
   chat_default = chats_module.create(model='gemini-2.5-pro')
@@ -1976,9 +1987,9 @@ def test_chat_send_message_stream_recovers_from_midstream_checkpoint_error(
             'Chat resumed and completed.',
         ]
         history = chat.get_history(curated=True)
-        assert len(history) == 4
+        assert len(history) == 2
         assert history[0].role == 'user'
-        assert [h.parts[0].text for h in history[1:]] == [
+        assert [p.text for p in history[1].parts] == [
             'Chat Intro. ',
             'Chat Ckpt 35k. ',
             'Chat resumed and completed.',
@@ -2092,4 +2103,9 @@ async def test_async_chat_send_message_stream_recovers_from_midstream_checkpoint
             'Async Chat resumed.',
         ]
         history = chat.get_history(curated=True)
-        assert len(history) == 4
+        assert len(history) == 2
+        assert [p.text for p in history[1].parts] == [
+            'Async Chat Intro. ',
+            'Async Chat Ckpt 35k. ',
+            'Async Chat resumed.',
+        ]
