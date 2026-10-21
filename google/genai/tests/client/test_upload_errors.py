@@ -15,6 +15,8 @@
 
 """Tests for error handling in the client api client layer for uploads."""
 
+import asyncio
+import contextlib
 import io
 import json
 from unittest import mock
@@ -130,6 +132,47 @@ async def test_async_upload_url_rewrite_httpx(client: api_client.BaseApiClient):
       call_args["url"]
       == "https://my-proxy.company.com/upload/v1beta/files?uploadType=resumable"
   )
+
+
+@pytest.mark.asyncio
+async def test_async_upload_retry_does_not_block_event_loop_httpx(
+    client: api_client.BaseApiClient,
+):
+  """The HTTPX retry backoff yields so other tasks keep running."""
+  mock_async_httpx_client = mock.MagicMock(spec=httpx.AsyncClient)
+  mock_async_httpx_client.request = mock.AsyncMock(
+      side_effect=[
+          _httpx_response(200),  # No X-Goog-Upload-Status, so it retries.
+          _httpx_response(200, headers={"X-Goog-Upload-Status": "final"}),
+      ]
+  )
+  client._async_httpx_client = mock_async_httpx_client
+  ticks = 0
+
+  async def ticker():
+    nonlocal ticks
+    while True:
+      await asyncio.sleep(0.01)
+      ticks += 1
+
+  ticker_task = asyncio.create_task(ticker())
+  try:
+    with mock.patch.object(
+        client, "_use_aiohttp", return_value=False
+    ), mock.patch.object(api_client, "INITIAL_RETRY_DELAY", 0.2), io.BytesIO(
+        b"test"
+    ) as f:
+      await client._async_upload_fd(
+          f, "http://fake/upload", 4, http_options=types.HttpOptions()
+      )
+    ticks_during_upload = ticks
+  finally:
+    ticker_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+      await ticker_task
+
+  assert mock_async_httpx_client.request.call_count == 2
+  assert ticks_during_upload > 0
 
 
 @pytest.mark.asyncio
