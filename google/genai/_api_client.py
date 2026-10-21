@@ -70,10 +70,17 @@ except ModuleNotFoundError:
 
 
 has_aiohttp = False
+# aiohttp connection errors that HttpRetryOptions retries, like httpx.
+_AIOHTTP_TRANSIENT_EXC: tuple[type[Exception], ...] = ()
 try:
   import aiohttp
 
   has_aiohttp = True
+  _AIOHTTP_TRANSIENT_EXC = (
+      aiohttp.ClientConnectorError,
+      aiohttp.ClientOSError,
+      aiohttp.ServerDisconnectedError,
+  )
 except ImportError:
   pass
 
@@ -632,7 +639,8 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
-      or isinstance(e, _HTTPX_TRANSIENT_EXC),
+      or isinstance(e, _HTTPX_TRANSIENT_EXC)
+      or isinstance(e, _AIOHTTP_TRANSIENT_EXC),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=_delay_or_default(options.initial_delay, _RETRY_INITIAL_DELAY),
@@ -1637,7 +1645,11 @@ class BaseApiClient:
     return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
 
   async def _async_request_once(
-      self, http_request: HttpRequest, stream: bool = False
+      self,
+      http_request: HttpRequest,
+      stream: bool = False,
+      *,
+      implicit_retry: bool = True,
   ) -> HttpResponse:
     data: Optional[bytes] = None
 
@@ -1685,6 +1697,8 @@ class BaseApiClient:
             aiohttp.ServerDisconnectedError,
             auth_exceptions.TransportError,
         ) as e:
+          if not implicit_retry or self._http_options.retry_options:
+            raise  # HttpRetryOptions owns retries; tenacity decides.
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
           # Retrieve the SSL context from the session.
@@ -1763,6 +1777,8 @@ class BaseApiClient:
             aiohttp.ServerDisconnectedError,
             auth_exceptions.TransportError,
         ) as e:
+          if not implicit_retry or self._http_options.retry_options:
+            raise  # HttpRetryOptions owns retries; tenacity decides.
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
           # Retrieve the SSL context from the session.
@@ -1819,7 +1835,12 @@ class BaseApiClient:
       if parameter_model.retry_options:
         retry_kwargs = retry_args(parameter_model.retry_options)
         retry = tenacity.AsyncRetrying(**retry_kwargs)
-        return await retry(self._async_request_once, http_request, stream)  # type: ignore[no-any-return]
+        return await retry(  # type: ignore[no-any-return]
+            self._async_request_once,
+            http_request,
+            stream,
+            implicit_retry=False,
+        )
     return await self._async_retry(  # type: ignore[no-any-return]
         self._async_request_once, http_request, stream
     )
