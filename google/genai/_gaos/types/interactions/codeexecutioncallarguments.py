@@ -24,7 +24,13 @@ from typing import Literal, Optional, Union
 from typing_extensions import NotRequired, TypedDict
 
 
-Language = Union[Literal["python",], UnrecognizedStr]
+Language = Union[
+    Literal[
+        "python",
+        "bash",
+    ],
+    UnrecognizedStr,
+]
 r"""Programming language of the `code`."""
 
 
