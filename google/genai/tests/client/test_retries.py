@@ -187,6 +187,21 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
       assert not retry.predicate(e)
 
 
+def test_retry_args_explicit_zero_values_are_not_overridden():
+  # A field set to 0.0 is specified, so it must reach tenacity instead of
+  # falling back to the default.
+  options = types.HttpRetryOptions(
+      initial_delay=0.0, max_delay=0.0, exp_base=0.0, jitter=0.0
+  )
+
+  wait = api_client.retry_args(options)['wait']
+
+  assert wait.jitter == 0.0
+  assert wait.initial == 0.0
+  assert wait.max == 0.0
+  assert wait.exp_base == 0.0
+
+
 def test_retry_args_retries_httpx_transport_errors():
   # httpx transport errors (timeouts, connect errors) bypass APIError but are
   # transient infrastructure failures, so the predicate must still retry them

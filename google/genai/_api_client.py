@@ -609,6 +609,11 @@ _RETRY_HTTP_STATUS_CODES = (
 )
 
 
+def _delay_or_default(value: Optional[float], default: float) -> float:
+  """Returns the default only when the field is unset, so 0.0 is honored."""
+  return default if value is None else value
+
+
 def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """Returns the retry args for the given http retry options.
 
@@ -630,10 +635,10 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
       or isinstance(e, _HTTPX_TRANSIENT_EXC),
   )
   wait = tenacity.wait_exponential_jitter(
-      initial=options.initial_delay or _RETRY_INITIAL_DELAY,
-      max=options.max_delay or _RETRY_MAX_DELAY,
-      exp_base=options.exp_base or _RETRY_EXP_BASE,
-      jitter=options.jitter or _RETRY_JITTER,
+      initial=_delay_or_default(options.initial_delay, _RETRY_INITIAL_DELAY),
+      max=_delay_or_default(options.max_delay, _RETRY_MAX_DELAY),
+      exp_base=_delay_or_default(options.exp_base, _RETRY_EXP_BASE),
+      jitter=_delay_or_default(options.jitter, _RETRY_JITTER),
   )
   return {
       'stop': stop,
