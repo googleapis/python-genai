@@ -25,7 +25,7 @@ import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Sequence, Union
+from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
 import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, WrapValidator, model_validator
 from typing_extensions import Self, TypedDict
@@ -37,15 +37,14 @@ from ._operations_converters import (
     _UploadToFileSearchStoreOperation_from_mldev,
 )
 
-if sys.version_info >= (3, 14):
-  # Union[t1, t2] and t1 | t2 both create builtin_types.UnionType, and
-  # typing._UnionGenericAlias is deprecated.
-  VersionedUnionType = builtin_types.UnionType
+if sys.version_info >= (3, 10):
+  # Supports both Union[t1, t2] and t1 | t2
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
   _UNION_TYPES = (typing.Union, builtin_types.UnionType)
 else:
-  # Supports both Union[t1, t2] and t1 | t2
-  VersionedUnionType = Union[builtin_types.UnionType, typing._UnionGenericAlias]  # type: ignore
-  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
+  # Supports only Union[t1, t2]
+  VersionedUnionType = _UnionGenericAlias
+  _UNION_TYPES = (typing.Union,)
 
 _is_pillow_image_imported = False
 if typing.TYPE_CHECKING:
