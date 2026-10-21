@@ -1,5 +1,29 @@
 # Changelog
 
+## [2.32.0](https://github.com/googleapis/python-genai/compare/v2.31.0...v2.32.0) (2026-10-21)
+
+
+### Features
+
+* Add base_voice to PromptedVoice in GAOS SDK ([5488643](https://github.com/googleapis/python-genai/commit/548864370ee9c88de0bd839b619dc05bcb7085e7))
+* Add generation_output_config to GenerateContentConfig ([5c008e1](https://github.com/googleapis/python-genai/commit/5c008e14b9c9fdecbaf61eb53ad7c09f57fa5f8a))
+* Add Live API in-session context updates (`send_context_update`) and types across GenAI SDKs. ([364889a](https://github.com/googleapis/python-genai/commit/364889aafe40bfa8f3b9db847ba272d299f7d632))
+* **sdks:** Enable `fixes.openSingleValueEnumsOct2026` across all SDKs ([78f6d34](https://github.com/googleapis/python-genai/commit/78f6d3412caaaed44f99ce57be2d16d0b8c407cb))
+* Update discovery doc ([6cd176e](https://github.com/googleapis/python-genai/commit/6cd176e135a188bbb0d0f9afca520e7d6483823d))
+
+
+### Bug Fixes
+
+* Base64-encode inline bytes in Live send_tool_response ([a7bbff6](https://github.com/googleapis/python-genai/commit/a7bbff6e73fa9444802cd9a17e8c94e30341bf5d)), refs [#3022](https://github.com/googleapis/python-genai/issues/3022)
+* Don't crash parsing responses with JSON objects in `Any`-typed fields ([4c1abcc](https://github.com/googleapis/python-genai/commit/4c1abccf258c9247218e66610790043893cd6950))
+* **interactions:** Sync InteractionSseEventInteractionStatus enum with InteractionStatus ([ba854b2](https://github.com/googleapis/python-genai/commit/ba854b2d29a3ff0d4758da886edabb458726b210))
+
+
+### Documentation
+
+* Publish the API reference on each release ([1d12358](https://github.com/googleapis/python-genai/commit/1d12358a1398b9a510ae8ba25dd31e746d8e9be9))
+* Transition docs workflow to GitHub Actions ([3b1256a](https://github.com/googleapis/python-genai/commit/3b1256ac5f4b8c49a469ca307ca765185184774d))
+
 ## [2.31.0](https://github.com/googleapis/python-genai/compare/v2.30.1...v2.31.0) (2026-10-14)
 
 
