@@ -37,7 +37,12 @@ from ._operations_converters import (
     _UploadToFileSearchStoreOperation_from_mldev,
 )
 
-if sys.version_info >= (3, 14):
+if typing.TYPE_CHECKING:
+  # Type checkers have always seen this as Any, which lets SchemaUnion accept
+  # any schema (e.g. Optional[X]). Keep it that way.
+  VersionedUnionType = Any
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
+elif sys.version_info >= (3, 14):
   # Union[t1, t2] and t1 | t2 both create builtin_types.UnionType, and
   # typing._UnionGenericAlias is deprecated.
   VersionedUnionType = builtin_types.UnionType
