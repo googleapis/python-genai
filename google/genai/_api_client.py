@@ -47,6 +47,7 @@ from google.auth import exceptions as auth_exceptions
 import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport import mtls
+import httpx2
 from pydantic import BaseModel
 from pydantic import ValidationError
 import tenacity
@@ -86,60 +87,8 @@ except ImportError:
 
 if TYPE_CHECKING:
   from google.auth.transport.requests import AuthorizedSession  # pylint: disable=g-import-not-at-top
-  import httpx
-  import httpx2
   from multidict import CIMultiDictProxy
   from requests.structures import CaseInsensitiveDict  # pylint: disable=g-import-not-at-top
-
-  _HTTPX_RESPONSE_TYPES = (httpx.Response, httpx2.Response)
-  _HTTPX_HEADERS_TYPES = (httpx.Headers, httpx2.Headers)
-  _HTTPX_TRANSIENT_EXC = (
-      httpx.TimeoutException,
-      httpx.ConnectError,
-      httpx2.TimeoutException,
-      httpx2.ConnectError,
-  )
-else:
-  try:
-    import httpx
-  except ImportError:
-    httpx = None  # type: ignore[assignment]
-
-  try:
-    import httpx2
-  except ImportError:
-    httpx2 = None  # type: ignore[assignment]
-
-  # httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
-  # separate import namespace, so its classes are not instances of the httpx
-  # equivalents. Widen the runtime type checks to accept either when httpx or
-  # httpx2 is installed.
-  _HTTPX_RESPONSE_TYPES = tuple(
-      cls
-      for cls in (
-          getattr(httpx, 'Response', None),
-          getattr(httpx2, 'Response', None),
-      )
-      if cls is not None
-  )
-  _HTTPX_HEADERS_TYPES = tuple(
-      cls
-      for cls in (
-          getattr(httpx, 'Headers', None),
-          getattr(httpx2, 'Headers', None),
-      )
-      if cls is not None
-  )
-  _HTTPX_TRANSIENT_EXC = tuple(
-      cls
-      for cls in (
-          getattr(httpx, 'TimeoutException', None),
-          getattr(httpx, 'ConnectError', None),
-          getattr(httpx2, 'TimeoutException', None),
-          getattr(httpx2, 'ConnectError', None),
-      )
-      if cls is not None
-  )
 
 
 logger = logging.getLogger('google_genai._api_client')
@@ -368,8 +317,7 @@ class HttpResponse:
       self,
       headers: Union[
           dict[str, str],
-          'httpx.Headers',
-          'httpx2.Headers',
+          httpx2.Headers,
           'CIMultiDictProxy[str]',
           'CaseInsensitiveDict[Any]',
       ],
@@ -378,11 +326,9 @@ class HttpResponse:
   ):
     if isinstance(headers, dict):
       self.headers = headers
-    elif isinstance(headers, _HTTPX_HEADERS_TYPES) or hasattr(
-        headers, 'get_list'
-    ):
+    elif isinstance(headers, httpx2.Headers):
       self.headers = {
-          key: ', '.join(headers.get_list(key)) for key in headers.keys()  # type: ignore[attr-defined]
+          key: ', '.join(headers.get_list(key)) for key in headers.keys()
       }
     elif (
         requests_module := _common.loaded_requests()
@@ -469,22 +415,21 @@ class HttpResponse:
     """Iterates over chunks retrieved from the API."""
     requests_module = _common.loaded_requests()
     if not (
-        isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES)
+        isinstance(self.response_stream, httpx2.Response)
         or (
             requests_module is not None
             and isinstance(self.response_stream, requests_module.Response)
         )
     ):
       raise TypeError(
-          'Expected self.response_stream to be an httpx.Response or'
-          ' httpx2.Response object, '
+          'Expected self.response_stream to be an httpx2.Response object, '
           f'but got {type(self.response_stream).__name__}.'
       )
 
     chunk = ''
     balance = 0
     data_buffer: list[str] = []
-    if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
+    if isinstance(self.response_stream, httpx2.Response):
       response_stream = self.response_stream.iter_lines()
     else:
       response_stream = self.response_stream.iter_lines(decode_unicode=True)
@@ -524,22 +469,22 @@ class HttpResponse:
   async def _aiter_response_stream(self) -> AsyncIterator[str]:
     """Asynchronously iterates over chunks retrieved from the API."""
     is_valid_response = isinstance(
-        self.response_stream, _HTTPX_RESPONSE_TYPES
+        self.response_stream, httpx2.Response
     ) or (
         has_aiohttp and isinstance(self.response_stream, aiohttp.ClientResponse)
     )
     if not is_valid_response:
       raise TypeError(
-          'Expected self.response_stream to be an httpx.Response,'
-          ' httpx2.Response, or aiohttp.ClientResponse object, but got'
+          'Expected self.response_stream to be an httpx2.Response'
+          ' or aiohttp.ClientResponse object, but got'
           f' {type(self.response_stream).__name__}.'
       )
 
     chunk = ''
     balance = 0
     data_buffer: list[str] = []
-    # httpx.Response has a dedicated async line iterator.
-    if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
+    # httpx2.Response has a dedicated async line iterator.
+    if isinstance(self.response_stream, httpx2.Response):
       try:
         response_stream: Any = self.response_stream
         async for line in response_stream.aiter_lines():
@@ -682,7 +627,7 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
-      or isinstance(e, _HTTPX_TRANSIENT_EXC)
+      or isinstance(e, (httpx2.TimeoutException, httpx2.ConnectError))
       or isinstance(e, _AIOHTTP_TRANSIENT_EXC),
   )
   wait = tenacity.wait_exponential_jitter(
@@ -700,154 +645,45 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   }
 
 
-if TYPE_CHECKING:
+class SyncHttpxClient(httpx2.Client):
+  """Sync httpx client."""
 
-  class SyncHttpxClient(httpx.Client):
-    """Sync httpx client."""
+  def __init__(self, **kwargs: Any) -> None:
+    """Initializes the httpx client."""
+    kwargs.setdefault('follow_redirects', True)
+    super().__init__(**kwargs)
 
-  class AsyncHttpxClient(httpx.AsyncClient):
-    """Async httpx client."""
-
-  class SyncHttpx2Client(httpx2.Client):  # type: ignore[misc]
-    """Sync httpx2 client."""
-
-  class AsyncHttpx2Client(httpx2.AsyncClient):  # type: ignore[misc]
-    """Async httpx2 client."""
-
-else:
-  if httpx is not None:
-
-    class SyncHttpxClient(httpx.Client):
-      """Sync httpx client."""
-
-      def __init__(self, **kwargs: Any) -> None:
-        """Initializes the httpx client."""
-        kwargs.setdefault('follow_redirects', True)
-        super().__init__(**kwargs)
-
-      def __del__(self) -> None:
-        """Closes the httpx client."""
-        try:
-          if self.is_closed:
-            return
-        except Exception:
-          pass
-        try:
-          self.close()
-        except Exception:
-          pass
+  def __del__(self) -> None:
+    """Closes the httpx client."""
+    try:
+      if self.is_closed:
+        return
+    except Exception:
+      pass
+    try:
+      self.close()
+    except Exception:
+      pass
 
 
-    class AsyncHttpxClient(httpx.AsyncClient):
-      """Async httpx client."""
+class AsyncHttpxClient(httpx2.AsyncClient):
+  """Async httpx client."""
 
-      def __init__(self, **kwargs: Any) -> None:
-        """Initializes the httpx client."""
-        kwargs.setdefault('follow_redirects', True)
-        super().__init__(**kwargs)
+  def __init__(self, **kwargs: Any) -> None:
+    """Initializes the httpx client."""
+    kwargs.setdefault('follow_redirects', True)
+    super().__init__(**kwargs)
 
-      def __del__(self) -> None:
-        try:
-          if self.is_closed:
-            return
-        except Exception:
-          pass
-        try:
-          asyncio.get_running_loop().create_task(self.aclose())
-        except Exception:
-          pass
-
-  else:
-    SyncHttpxClient = None  # type: ignore[assignment,misc]
-    AsyncHttpxClient = None  # type: ignore[assignment,misc]
-
-
-  if httpx2 is not None:
-
-    class SyncHttpx2Client(httpx2.Client):
-      """Sync httpx2 client."""
-
-      def __init__(self, **kwargs: Any) -> None:
-        """Initializes the httpx2 client."""
-        kwargs.setdefault('follow_redirects', True)
-        super().__init__(**kwargs)
-
-      def __del__(self) -> None:
-        """Closes the httpx2 client."""
-        try:
-          if self.is_closed:
-            return
-        except Exception:
-          pass
-        try:
-          self.close()
-        except Exception:
-          pass
-
-
-    class AsyncHttpx2Client(httpx2.AsyncClient):
-      """Async httpx2 client."""
-
-      def __init__(self, **kwargs: Any) -> None:
-        """Initializes the httpx2 client."""
-        kwargs.setdefault('follow_redirects', True)
-        super().__init__(**kwargs)
-
-      def __del__(self) -> None:
-        try:
-          if self.is_closed:
-            return
-        except Exception:
-          pass
-        try:
-          asyncio.get_running_loop().create_task(self.aclose())
-        except Exception:
-          pass
-
-  else:
-    SyncHttpx2Client = None  # type: ignore[assignment,misc]
-    AsyncHttpx2Client = None  # type: ignore[assignment,misc]
-
-
-def _get_http_client_backend() -> str:
-  """Determines whether to use 'httpx' or 'httpx2' as the default HTTP client.
-
-  Can be controlled via the GOOGLE_GENAI_HTTP_CLIENT environment variable:
-    - 'httpx2': Use httpx2 (raises ImportError if not installed).
-    - 'httpx': Use httpx (raises ImportError if not installed).
-    - 'auto' or unset: Default to httpx if installed, otherwise fall back to httpx2.
-  """
-  env = os.environ.get('GOOGLE_GENAI_HTTP_CLIENT', '').lower().strip()
-  if env == 'httpx2':
-    if httpx2 is None:
-      raise ImportError(
-          'httpx2 is configured via GOOGLE_GENAI_HTTP_CLIENT=httpx2, '
-          'but httpx2 is not installed.'
-      )
-    return 'httpx2'
-  elif env == 'httpx':
-    if httpx is None:
-      raise ImportError(
-          'httpx is configured via GOOGLE_GENAI_HTTP_CLIENT=httpx, '
-          'but httpx is not installed.'
-      )
-    return 'httpx'
-  elif env and env != 'auto':
-    logger.warning(
-        'Unrecognized GOOGLE_GENAI_HTTP_CLIENT=%r; falling back to default.', env
-    )
-
-  if httpx is not None:
-    return 'httpx'
-  # httpx is a required dependency so it _should_ always be present in a
-  # standard install, but if a user has uninstalled httpx in an environment
-  # that only has httpx2 installed, fall back to httpx2 before raising
-  # ImportError.
-  if httpx2 is not None:
-    return 'httpx2'
-  raise ImportError(
-      'Neither httpx nor httpx2 is installed. Please install httpx2 or httpx.'
-  )
+  def __del__(self) -> None:
+    try:
+      if self.is_closed:
+        return
+    except Exception:
+      pass
+    try:
+      asyncio.get_running_loop().create_task(self.aclose())
+    except Exception:
+      pass
 
 
 class BaseApiClient:
@@ -1068,19 +904,9 @@ class BaseApiClient:
       if self._http_options.headers is not None:
         append_library_version_headers(self._http_options.headers)
 
-    backend = _get_http_client_backend()
-    if backend == 'httpx2':
-      sync_client_cls: type[Any] = SyncHttpx2Client
-      async_client_cls: type[Any] = AsyncHttpx2Client
-    else:
-      sync_client_cls = SyncHttpxClient
-      async_client_cls = AsyncHttpxClient
-
     client_args, async_client_args = self._ensure_httpx_ssl_ctx(
         self._http_options,
         vertexai=bool(self.vertexai),
-        client_cls=sync_client_cls,
-        async_client_cls=async_client_cls,
     )
     self._async_httpx_client_args = async_client_args
     self._authorized_session: Optional['AuthorizedSession'] = None
@@ -1088,14 +914,14 @@ class BaseApiClient:
     if self._http_options.httpx_client:
       self._httpx_client = self._http_options.httpx_client
     else:
-      self._httpx_client = sync_client_cls(**client_args)
+      self._httpx_client = SyncHttpxClient(**client_args)
 
     if self._use_google_auth_async():
       self._async_httpx_client = None
     elif self._http_options.httpx_async_client:
       self._async_httpx_client = self._http_options.httpx_async_client
     else:
-      self._async_httpx_client = async_client_cls(**async_client_args)
+      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
 
     # Initialize the aiohttp client sessions.
     self._aiohttp_sessions: dict[Any, Any] = {}
@@ -1349,8 +1175,6 @@ class BaseApiClient:
   def _ensure_httpx_ssl_ctx(
       options: HttpOptions,
       vertexai: bool = False,
-      client_cls: Optional[type[Any]] = None,
-      async_client_cls: Optional[type[Any]] = None,
   ) -> Tuple[_common.StringDict, _common.StringDict]:
     """Ensures the SSL context is present in the HTTPX client args.
 
@@ -1359,8 +1183,6 @@ class BaseApiClient:
     Args:
       options: The http options to check for SSL context.
       vertexai: Whether Vertex AI is enabled.
-      client_cls: The client class to inspect parameters for sync client args (default: httpx.Client or httpx2.Client).
-      async_client_cls: The client class to inspect parameters for async client args (default: httpx.AsyncClient or httpx2.AsyncClient).
 
     Returns:
       A tuple of sync/async httpx client args.
@@ -1378,74 +1200,63 @@ class BaseApiClient:
     )
 
     if ctx is None:
-      # Initialize the SSL context for the httpx client.
-      # Unlike requests, the httpx package does not automatically pull in the
-      # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
-      # enabled explicitly.
+      # Initialize the SSL context for the httpx2 client.
+      # When SSL_CERT_FILE or SSL_CERT_DIR is set, honour it via
+      # ssl.create_default_context; otherwise delegate to
+      # httpx2.create_ssl_context(), which uses truststore (OS native trust
+      # store).
       if vertexai:
         ctx = _get_client_cert_ssl_ctx()
 
       if ctx is None:
-        ctx = ssl.create_default_context(
-            cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
-            capath=os.environ.get('SSL_CERT_DIR'),
-        )
+        if os.environ.get('SSL_CERT_FILE') or os.environ.get('SSL_CERT_DIR'):
+          ctx = ssl.create_default_context(
+              cafile=os.environ.get('SSL_CERT_FILE'),
+              capath=os.environ.get('SSL_CERT_DIR'),
+          )
+        else:
+          ctx = httpx2.create_ssl_context()
 
     def _maybe_set(
-        raw_args: Optional[_common.StringDict],
+        args: Optional[_common.StringDict],
         ctx: ssl.SSLContext,
-        target_cls: Optional[type[Any]] = None,
+        is_async: bool = False,
     ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
       Does not override the SSL context if it is already set.
 
       Args:
-        raw_args: The client args to check for SSL context.
+        args: The client args to to check for SSL context.
         ctx: The SSL context to set.
-        target_cls: The client class whose __init__ parameters are allowed.
+        is_async: Whether the client is async or not.
 
       Returns:
         The client args with the SSL context included.
       """
-      args = (raw_args or {}).copy()
-      if not args.get(verify):
+      if not args or not args.get(verify):
+        args = (args or {}).copy()
         args[verify] = ctx
-      if 'timeout' not in args:
-        args['timeout'] = None
-      if target_cls is not None:
-        for cls in getattr(target_cls, '__mro__', [target_cls]):
-          if cls is object:
-            continue
-          try:
-            allowed_params = inspect.signature(cls.__init__).parameters
-          except (ValueError, TypeError):
-            continue
-          has_var_keyword = any(
-              p.kind == inspect.Parameter.VAR_KEYWORD
-              for p in allowed_params.values()
-          )
-          if not has_var_keyword:
-            for key in list(args.keys()):
-              if key not in allowed_params:
-                del args[key]
-            break
-      return args
+      # Drop the args that isn't in the httpx2.Client or httpx2.AsyncClient.
+      copied_args = args.copy()
+      if 'timeout' not in copied_args:
+        copied_args['timeout'] = None
+      for key in copied_args.copy():
+        if not is_async:
+          if key not in inspect.signature(httpx2.Client.__init__).parameters:
+            del copied_args[key]
+        else:
+          if (
+              key
+              not in inspect.signature(httpx2.AsyncClient.__init__).parameters
+          ):
+            del copied_args[key]
 
-    sync_cls = client_cls or (
-        SyncHttpxClient
-        if SyncHttpxClient is not None
-        else (httpx.Client if httpx is not None else None)
-    )
-    async_cls = async_client_cls or (
-        AsyncHttpxClient
-        if AsyncHttpxClient is not None
-        else (httpx.AsyncClient if httpx is not None else None)
-    )
+      return copied_args
 
     return (
-        _maybe_set(args, ctx, sync_cls),
-        _maybe_set(async_args, ctx, async_cls),
+        _maybe_set(args, ctx, is_async=False),
+        _maybe_set(async_args, ctx, is_async=True),
     )
 
   @staticmethod

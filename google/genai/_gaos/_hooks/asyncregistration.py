@@ -42,7 +42,7 @@ def init_async_hooks(hooks: AsyncHooks):
 
     Example:
         from .asynctypes import AsyncBeforeRequestHook, BeforeRequestContext
-        import httpx
+        import httpx2 as httpx
 
         class MyAsyncHook(AsyncBeforeRequestHook):
             async def before_request(self, hook_ctx: BeforeRequestContext, request: httpx.Request):

@@ -24,7 +24,7 @@ import time
 from unittest import mock
 from typing import Any
 import google.auth.transport.requests
-import httpx
+import httpx2 as httpx
 import pytest
 import requests
 from ... import _transformers as t

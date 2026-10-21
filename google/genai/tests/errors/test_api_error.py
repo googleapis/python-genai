@@ -21,7 +21,7 @@ End to end tests should be in models/test_generate_content.py.
 
 import pickle
 
-import httpx
+import httpx2 as httpx
 import pytest
 
 from ... import errors

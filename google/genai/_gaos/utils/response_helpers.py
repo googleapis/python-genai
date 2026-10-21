@@ -46,7 +46,7 @@ from typing import (
     overload,
 )
 
-import httpx
+import httpx2 as httpx
 from pydantic import BaseModel
 from typing_extensions import TypeAliasType
 

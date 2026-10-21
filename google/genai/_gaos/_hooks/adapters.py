@@ -34,7 +34,7 @@ from .types import (
     BeforeRequestHook,
 )
 import asyncio
-import httpx
+import httpx2 as httpx
 from typing import Optional, Tuple, Union
 
 # ============================================================================

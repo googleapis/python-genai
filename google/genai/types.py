@@ -108,36 +108,16 @@ if typing.TYPE_CHECKING:
 
 _is_httpx_imported = False
 if typing.TYPE_CHECKING:
-  import httpx
-  import httpx2
+  from httpx2 import AsyncClient as HttpxAsyncClient, Client as HttpxClient
 
-  HttpxClient = Union[httpx.Client, httpx2.Client]
-  HttpxAsyncClient = Union[httpx.AsyncClient, httpx2.AsyncClient]
   _is_httpx_imported = True
 else:
   HttpxClient: typing.Type = Any
   HttpxAsyncClient: typing.Type = Any
-
   try:
-    import httpx
+    from httpx2 import AsyncClient as HttpxAsyncClient, Client as HttpxClient
 
-    HttpxClient = httpx.Client
-    HttpxAsyncClient = httpx.AsyncClient
     _is_httpx_imported = True
-  except ImportError:
-    HttpxClient = None
-    HttpxAsyncClient = None
-
-  try:
-    import httpx2
-
-    if _is_httpx_imported:
-      HttpxClient = Union[httpx.Client, httpx2.Client]
-      HttpxAsyncClient = Union[httpx.AsyncClient, httpx2.AsyncClient]
-    else:
-      HttpxClient = httpx2.Client
-      HttpxAsyncClient = httpx2.AsyncClient
-      _is_httpx_imported = True
   except ImportError:
     pass
 

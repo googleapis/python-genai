@@ -22,10 +22,7 @@ from ... import _mcp_utils
 from ... import types
 from ..._api_client import BaseApiClient
 
-try:
-  import httpx2
-except ImportError:
-  httpx2 = None
+import httpx2
 
 try:
   from mcp import types as mcp_types
@@ -314,22 +311,17 @@ def test_agent_platform_preserves_unknown_fields():
     assert schema['some_new_future_field'] == 'value'
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason='httpx2 is not available'
-)
 @pytest.mark.asyncio
 @mock.patch('httpx2.AsyncClient')
 @mock.patch.object(_mcp_utils, 'streamable_http_client')
 @mock.patch.object(_mcp_utils, 'McpClientSession')
 @mock.patch('google.auth.default')
 async def test_connect_agent_platform_mcp_url_and_headers(
-    mock_auth_default, mock_session_cls, mock_streamable, mock_create_http, monkeypatch
+    mock_auth_default, mock_session_cls, mock_streamable, mock_create_http
 ):
     """Tests that _mcp_utils._connect_agent_platform_mcp builds the correct
     regional URL and injects auth headers.
     """
-    monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-
     mock_creds = mock.Mock()
     mock_creds.token = 'fake-oauth-token'
     mock_auth_default.return_value = (mock_creds, 'fake-project')

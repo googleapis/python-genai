@@ -31,7 +31,7 @@ import json
 import mimetypes
 import os
 
-import httpx
+import httpx2 as httpx
 
 from ._hooks.google_genai_auth import (
     GOOGLE_GENAI_API_REVISION as _GOOGLE_GENAI_API_REVISION,

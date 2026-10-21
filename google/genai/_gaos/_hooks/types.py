@@ -19,7 +19,7 @@
 
 from ..sdkconfiguration import SDKConfiguration
 from abc import ABC, abstractmethod
-import httpx
+import httpx2 as httpx
 from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 

@@ -15,15 +15,7 @@
 
 """Utils for working with MCP tools."""
 import contextlib
-try:
-  import httpx
-except ImportError:
-  httpx = None  # type: ignore[assignment]
-
-try:
-  import httpx2
-except ImportError:
-  httpx2 = None  # type: ignore[assignment]
+import httpx2
 import sys
 
 from importlib.metadata import PackageNotFoundError, version
@@ -32,7 +24,7 @@ from typing import Any
 
 from . import _common
 from . import types
-from ._api_client import _MULTI_REGIONAL_LOCATIONS, _get_http_client_backend
+from ._api_client import _MULTI_REGIONAL_LOCATIONS
 
 def _is_mcp_loaded() -> bool:
   return "mcp" in sys.modules
@@ -212,18 +204,8 @@ async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typ
 
   set_mcp_usage_header(headers)
 
-  http_client: Any
-  backend = _get_http_client_backend()
-  async_client = getattr(api_client, "_async_httpx_client", None)
-  is_httpx2_client = (
-      httpx2 is not None
-      and isinstance(getattr(httpx2, "AsyncClient", None), type)
-      and isinstance(async_client, httpx2.AsyncClient)
-  )
-  if (backend == "httpx2" or is_httpx2_client) and httpx2 is not None:
-    http_client = httpx2.AsyncClient(headers=headers, timeout=None)
-  else:
-    http_client = httpx.AsyncClient(headers=headers, timeout=None)
+  # `mcp` is typed against httpx (v1); httpx2's AsyncClient is API-compatible.
+  http_client: Any = httpx2.AsyncClient(headers=headers, timeout=None)
 
   try:
     async with http_client:

@@ -20,7 +20,7 @@ import json
 from unittest import mock
 import pytest
 
-import httpx
+import httpx2 as httpx
 
 from ... import _api_client as api_client
 from ... import errors
