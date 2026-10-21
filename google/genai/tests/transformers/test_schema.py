@@ -78,6 +78,12 @@ class CountryInfoWithAnyOf(pydantic.BaseModel):
   restaurants_per_capita: Union[int, float]
 
 
+class _Score(pydantic.BaseModel):
+  """A generic score container."""
+
+  point: int
+
+
 @pytest.fixture
 def client(use_vertex):
   if use_vertex:
@@ -167,7 +173,7 @@ def test_t_schema_for_null_fields(client):
   assert transformed_schema.properties['population'].nullable
 
 
-#@pytest.mark.parametrize('use_vertex', [True, False])
+# @pytest.mark.parametrize('use_vertex', [True, False])
 def test_schema_with_no_null_fields_is_unchanged():
   """Tests handle_null_fields() doesn't change anything when no null fields are present."""
   test_properties = {
@@ -693,3 +699,120 @@ def test_t_schema_sets_property_ordering_for_schema_type(client):
 
   transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering == ['name', 'population']
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_t_schema_keeps_field_descriptions_on_shared_nested_model(client):
+  """Each field that references a shared model keeps its own description."""
+
+  class Review(pydantic.BaseModel):
+    clarity: _Score = pydantic.Field(description='Rate clarity only.')
+    accuracy: _Score = pydantic.Field(description='Rate factual accuracy only.')
+
+  schema = _transformers.t_schema(client, Review)
+
+  assert schema.properties['clarity'].description == 'Rate clarity only.'
+  assert (
+      schema.properties['accuracy'].description == 'Rate factual accuracy only.'
+  )
+  assert schema.properties['clarity'].properties['point'].type == 'INTEGER'
+  assert schema.properties['accuracy'].properties['point'].type == 'INTEGER'
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_t_schema_keeps_field_description_on_optional_nested_model(client):
+  """An Optional nested-model field keeps its description when flattened."""
+
+  class Review(pydantic.BaseModel):
+    clarity: Union[_Score, None] = pydantic.Field(
+        default=None, description='Rate clarity only.'
+    )
+
+  schema = _transformers.t_schema(client, Review)
+
+  assert schema.properties['clarity'].description == 'Rate clarity only.'
+  assert schema.properties['clarity'].nullable
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_t_schema_keeps_field_title_on_nested_model(client):
+  """A nested-model field keeps its own title instead of the model name."""
+
+  class Review(pydantic.BaseModel):
+    clarity: _Score = pydantic.Field(title='Clarity')
+
+  schema = _transformers.t_schema(client, Review)
+
+  assert schema.properties['clarity'].title == 'Clarity'
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_t_schema_uses_model_docstring_without_field_description(client):
+  """Without field annotations, the model docstring and name still apply."""
+
+  class Review(pydantic.BaseModel):
+    clarity: _Score
+
+  schema = _transformers.t_schema(client, Review)
+
+  assert schema.properties['clarity'].description == (
+      'A generic score container.'
+  )
+  assert schema.properties['clarity'].title == '_Score'
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_t_schema_ignores_unsupported_siblings_of_ref(client):
+  """Unsupported '$ref' siblings are dropped while the description is kept."""
+
+  class Review(pydantic.BaseModel):
+    clarity: _Score = pydantic.Field(
+        description='Rate clarity only.', examples=[{'point': 3}]
+    )
+
+  schema = _transformers.t_schema(client, Review)
+
+  assert schema.properties['clarity'].description == 'Rate clarity only.'
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_keeps_ref_sibling_description(client):
+  """Each '$ref' property gets its own copy carrying its own description."""
+  schema = {
+      'type': 'OBJECT',
+      'properties': {
+          'clarity': {
+              '$ref': '#/$defs/Score',
+              'description': 'Rate clarity only.',
+          },
+          'accuracy': {
+              '$ref': '#/$defs/Score',
+              'description': 'Rate factual accuracy only.',
+          },
+      },
+      '$defs': {
+          'Score': {
+              'type': 'OBJECT',
+              'description': 'A generic score container.',
+              'properties': {'point': {'type': 'INTEGER'}},
+          }
+      },
+  }
+
+  _transformers.process_schema(schema, client, order_properties=False)
+
+  assert schema == {
+      'type': 'OBJECT',
+      'properties': {
+          'clarity': {
+              'type': 'OBJECT',
+              'description': 'Rate clarity only.',
+              'properties': {'point': {'type': 'INTEGER'}},
+          },
+          'accuracy': {
+              'type': 'OBJECT',
+              'description': 'Rate factual accuracy only.',
+              'properties': {'point': {'type': 'INTEGER'}},
+          },
+      },
+  }
