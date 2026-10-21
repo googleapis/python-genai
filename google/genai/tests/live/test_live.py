@@ -2320,6 +2320,100 @@ async def test_bidi_setup_to_api_with_api_key(mock_websocket, vertexai):
   assert 'BidiGenerateContent' in capture['uri']
 
 
+async def _connect_and_capture(client, config):
+  mock_ws = AsyncMock()
+  mock_ws.send = AsyncMock()
+  mock_ws.recv = AsyncMock(
+      return_value=b'{"setupComplete": {"sessionId": "test_session_id"}}'
+  )
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['uri'] = uri
+    capture['headers'] = additional_headers
+    yield mock_ws
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(
+        model='test_model', config=config
+    ):
+      pass
+  capture['request'] = json.loads(mock_ws.send.call_args.args[0])
+  return capture
+
+
+@pytest.mark.asyncio
+async def test_connect_with_request_level_http_options_mldev():
+  client = gl_client.BaseApiClient(api_key='TEST_API_KEY')
+  config = {
+      'response_modalities': ['TEXT'],
+      'http_options': {
+          'base_url': 'https://request-base-url.com/',
+          'api_version': 'v1alpha',
+          'headers': {'X-Custom-Header': 'custom'},
+          'extra_body': {'setup': {'extraField': 'extra'}},
+      },
+  }
+
+  capture = await _connect_and_capture(client, config)
+
+  assert capture['uri'] == (
+      'wss://request-base-url.com//ws/google.ai.generativelanguage.v1alpha'
+      '.GenerativeService.BidiGenerateContent'
+  )
+  assert capture['headers']['X-Custom-Header'] == 'custom'
+  assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
+  assert capture['request']['setup']['extraField'] == 'extra'
+  assert capture['request']['setup']['model'] == 'models/test_model'
+  # The client-level http options are not modified.
+  assert client._http_options.api_version == 'v1beta'
+  assert 'X-Custom-Header' not in client._http_options.headers
+
+
+@pytest.mark.asyncio
+async def test_connect_with_request_level_http_options_vertex():
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='us-central1',
+      credentials=Credentials(token='test_token'),
+  )
+  config = types.LiveConnectConfig(
+      http_options=types.HttpOptions(
+          api_version='v1',
+          headers={'X-Custom-Header': 'custom'},
+      )
+  )
+
+  capture = await _connect_and_capture(client, config)
+
+  assert capture['uri'].endswith(
+      '/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent'
+  )
+  assert capture['headers']['X-Custom-Header'] == 'custom'
+  assert capture['headers']['Authorization'] == 'Bearer test_token'
+
+
+@pytest.mark.asyncio
+async def test_connect_with_request_level_base_url_and_custom_base_url():
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      http_options={
+          'base_url': 'https://custom-base-url.com',
+          'headers': {'Authorization': 'Bearer custom_test_token'},
+      },
+  )
+  config = types.LiveConnectConfig(
+      http_options=types.HttpOptions(base_url='https://request-base-url.com')
+  )
+
+  capture = await _connect_and_capture(client, config)
+
+  assert capture['uri'] == 'https://request-base-url.com'
+  assert capture['headers']['Authorization'] == 'Bearer custom_test_token'
+
+
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
 async def test_async_session_setup_complete_with_voice_consent_signature(

@@ -29,6 +29,7 @@ import google.auth
 import pydantic
 import websockets
 
+from . import _api_client
 from . import _api_module
 from . import _common
 from . import _live_converters as live_converters
@@ -1017,17 +1018,18 @@ class AsyncLive(_api_module.BaseModule):
     Yields:
       An AsyncSession object.
     """
-    # TODO(b/404946570): Support per request http options.
     if isinstance(config, dict):
       config = types.LiveConnectConfig(**config)
     if config and config.http_options:
-      raise ValueError(
-          'google.genai.client.aio.live.connect() does not support'
-          ' http_options at request-level in LiveConnectConfig yet. Please use'
-          ' the client-level http_options configuration instead.'
+      # Only base_url, api_version, headers and extra_body apply to the
+      # websocket connection.
+      http_options = _api_client.patch_http_options(
+          self._api_client._http_options, config.http_options
       )
+    else:
+      http_options = self._api_client._http_options
 
-    base_url = self._api_client._websocket_base_url()
+    base_url = self._api_client._websocket_base_url(http_options)
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')
     transformed_model = t.t_model(self._api_client, model)  # type: ignore
@@ -1035,10 +1037,10 @@ class AsyncLive(_api_module.BaseModule):
     parameter_model = await _t_live_connect_config(self._api_client, config)
 
     if self._api_client.api_key and not self._api_client.vertexai:
-      version = self._api_client._http_options.api_version
+      version = http_options.api_version
       api_key = self._api_client.api_key
       method = 'BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
+      original_headers = http_options.headers
       headers = original_headers.copy() if original_headers is not None else {}
       if api_key.startswith('auth_tokens/'):
         warnings.warn(
@@ -1075,14 +1077,12 @@ class AsyncLive(_api_module.BaseModule):
       del request_dict['config']
       request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
     elif self._api_client.api_key and self._api_client.vertexai:
       # Headers already contains api key for express mode.
       api_key = self._api_client.api_key
-      version = self._api_client._http_options.api_version
+      version = http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
+      original_headers = http_options.headers
       headers = original_headers.copy() if original_headers is not None else {}
 
       request_dict = _common.convert_to_dict(
@@ -1097,21 +1097,19 @@ class AsyncLive(_api_module.BaseModule):
       del request_dict['config']
       request_dict = _common.encode_unserializable_types(request_dict)
       setv(request_dict, ['setup', 'model'], transformed_model)
-
-      request = json.dumps(request_dict)
     else:
-      version = self._api_client._http_options.api_version
+      version = http_options.api_version
       has_sufficient_auth = (
           self._api_client.project and self._api_client.location
       )
       if self._api_client.custom_base_url and not has_sufficient_auth:
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.
-        uri = self._api_client.custom_base_url
+        uri = base_url
         # Keep the model as is.
         transformed_model = model
         # Do not get credentials for custom url.
-        original_headers = self._api_client._http_options.headers
+        original_headers = http_options.headers
         headers = (
             original_headers.copy() if original_headers is not None else {}
         )
@@ -1136,7 +1134,7 @@ class AsyncLive(_api_module.BaseModule):
           creds.refresh(auth_req)  # type: ignore[no-untyped-call]
         bearer_token = creds.token
 
-        original_headers = self._api_client._http_options.headers
+        original_headers = http_options.headers
         headers = (
             original_headers.copy() if original_headers is not None else {}
         )
@@ -1172,7 +1170,9 @@ class AsyncLive(_api_module.BaseModule):
             ['AUDIO'],
         )
 
-      request = json.dumps(request_dict)
+    if http_options.extra_body:
+      _common.recursive_dict_update(request_dict, http_options.extra_body)
+    request = json.dumps(request_dict)
 
     if parameter_model.tools and _mcp_utils.has_mcp_tool_usage(
         parameter_model.tools
