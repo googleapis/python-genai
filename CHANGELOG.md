@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.33.0](https://github.com/googleapis/python-genai/compare/v2.32.0...v2.33.0) (2026-10-22)
+
+
+### Features
+
+* Add `store` to `GenerateContentConfig` (Gemini Developer API only) and `labels` to `LiveConnectConfig`. ([16a29c9](https://github.com/googleapis/python-genai/commit/16a29c9ea351041f92656e398becbfaa23d0c4f6))
+* Add support for Python 3.15. ([e1c4fc7](https://github.com/googleapis/python-genai/commit/e1c4fc78ee29d45db7bb3e10f173bafa15aeb634))
+* Add support for Python 3.15. ([1a64450](https://github.com/googleapis/python-genai/commit/1a644508462c4f9cc6ba2e2655b25909ca4b5546))
+* **client:** Support httpx2 with GOOGLE_GENAI_HTTP_CLIENT configuration ([87ddba1](https://github.com/googleapis/python-genai/commit/87ddba1efdaf40c7027ca8ff9734a4026c730069))
+* Include AudioContent, DocumentContent, and VideoContent in FunctionResultSubContent ([adbc79c](https://github.com/googleapis/python-genai/commit/adbc79c03a02ea2b991b8fae032d3afc5db98830))
+
+
+### Bug Fixes
+
+* **client:** Skip mTLS URL rewriting for multi-regional .rep.googleapis.com endpoints and honor GOOGLE_API_USE_MTLS_ENDPOINT in Google Auth sessions ([4e44c84](https://github.com/googleapis/python-genai/commit/4e44c848c3c26251c0316155032202d149eb331a))
+* Honor an explicit zero in HttpRetryOptions delay fields ([419dd89](https://github.com/googleapis/python-genai/commit/419dd89a826eba65504c45ff97a9a1faeb01b980)), refs [#2026](https://github.com/googleapis/python-genai/issues/2026)
+* Honor HttpRetryOptions for aiohttp connection errors in async requests ([ee639c6](https://github.com/googleapis/python-genai/commit/ee639c6392d910a3597036e8ac2c36d2e7ef3c0a)), refs [#3160](https://github.com/googleapis/python-genai/issues/3160)
+
+
+### Documentation
+
+* Update unenforced JSON Schema keywords on Interactions schema fields. ([c97ae02](https://github.com/googleapis/python-genai/commit/c97ae02ff87b5138bee29100b56c04c649233fed))
+
 ## [2.32.0](https://github.com/googleapis/python-genai/compare/v2.31.0...v2.32.0) (2026-10-21)
 
 
