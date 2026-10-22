@@ -35,7 +35,12 @@ class FunctionParam(TypedDict):
     name: NotRequired[str]
     r"""The name of the function."""
     parameters: NotRequired[Any]
-    r"""The JSON Schema for the function's parameters."""
+    r"""The JSON Schema for the function's parameters.
+
+    Supports a subset of JSON Schema. `minLength`, `maxLength`,
+    `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
+    `minContains`, and `maxContains` are ignored and not enforced.
+    """
     type: Literal["function"]
 
 
@@ -49,7 +54,12 @@ class Function(BaseModel):
     r"""The name of the function."""
 
     parameters: Optional[Any] = None
-    r"""The JSON Schema for the function's parameters."""
+    r"""The JSON Schema for the function's parameters.
+
+    Supports a subset of JSON Schema. `minLength`, `maxLength`,
+    `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
+    `minContains`, and `maxContains` are ignored and not enforced.
+    """
 
     type: Annotated[
         Annotated[Literal["function"], AfterValidator(validate_const("function"))],

@@ -45,6 +45,13 @@ class TextResponseFormatParam(TypedDict):
     schema_: NotRequired[Dict[str, Any]]
     r"""The JSON schema that the output should conform to. Only applicable when
     mime_type is application/json.
+
+    Supports a subset of JSON Schema. `minLength`, `maxLength`,
+    `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
+    `minContains`, and `maxContains` are ignored and not enforced; validate
+    these in your application. `minItems` and `maxItems` are enforced. Schemas
+    that are too complex to enforce (for example, large `maxItems` on nested
+    arrays) return a 400 INVALID_ARGUMENT error.
     """
     type: Literal["text"]
 
@@ -58,6 +65,13 @@ class TextResponseFormat(BaseModel):
     schema_: Annotated[Optional[Dict[str, Any]], pydantic.Field(alias="schema")] = None
     r"""The JSON schema that the output should conform to. Only applicable when
     mime_type is application/json.
+
+    Supports a subset of JSON Schema. `minLength`, `maxLength`,
+    `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
+    `minContains`, and `maxContains` are ignored and not enforced; validate
+    these in your application. `minItems` and `maxItems` are enforced. Schemas
+    that are too complex to enforce (for example, large `maxItems` on nested
+    arrays) return a 400 INVALID_ARGUMENT error.
     """
 
     type: Annotated[
