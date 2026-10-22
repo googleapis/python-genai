@@ -6793,6 +6793,13 @@ class GenerateContentConfig(_common.BaseModel):
       storage.
       """,
   )
+  store: Optional[bool] = Field(
+      default=None,
+      description="""Configures the logging behavior for a given request. If set, it
+      takes precedence over the project-level logging config. This field is not
+      supported in Gemini Enterprise Agent Platform.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -7030,6 +7037,12 @@ class GenerateContentConfigDict(TypedDict, total=False):
   generation_output_config: Optional[GenerationOutputConfigDict]
   """Optional. Configuration for persisting output assets to external
       storage.
+      """
+
+  store: Optional[bool]
+  """Configures the logging behavior for a given request. If set, it
+      takes precedence over the project-level logging config. This field is not
+      supported in Gemini Enterprise Agent Platform.
       """
 
 
@@ -21983,6 +21996,11 @@ If included the server will send SessionResumptionUpdate messages.""",
   translation_config: Optional[TranslationConfig] = Field(
       default=None, description="""Config for translation."""
   )
+  labels: Optional[dict[str, str]] = Field(
+      default=None,
+      description="""Labels with user-defined metadata for the session. In Gemini
+      Enterprise Agent Platform, they are used for billing and reporting.""",
+  )
 
 
 class LiveConnectConfigDict(TypedDict, total=False):
@@ -22103,6 +22121,10 @@ If included the server will send SessionResumptionUpdate messages."""
 
   translation_config: Optional[TranslationConfigDict]
   """Config for translation."""
+
+  labels: Optional[dict[str, str]]
+  """Labels with user-defined metadata for the session. In Gemini
+      Enterprise Agent Platform, they are used for billing and reporting."""
 
 
 LiveConnectConfigOrDict = Union[LiveConnectConfig, LiveConnectConfigDict]

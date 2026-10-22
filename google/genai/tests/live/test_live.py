@@ -1779,6 +1779,46 @@ async def test_bidi_setup_to_api_with_translation_config(vertexai):
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_labels(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+
+  if vertexai:
+    expected_result = {
+        'setup': {
+            'model': (
+                'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+            ),
+            'generationConfig': {'responseModalities': ['AUDIO']},
+            'labels': {'team': 'sdk'},
+        }
+    }
+  else:
+    expected_result = {
+        'setup': {
+            'model': 'models/test_model',
+            'labels': {'team': 'sdk'},
+        }
+    }
+
+  # Config defined using dict representation.
+  result = await get_connect_message(
+      api_client=api_client,
+      model='test_model',
+      config={'labels': {'team': 'sdk'}},
+  )
+  assert result == expected_result
+
+  # Config defined using types.LiveConnectConfig.
+  result = await get_connect_message(
+      api_client=api_client,
+      model='test_model',
+      config=types.LiveConnectConfig(labels={'team': 'sdk'}),
+  )
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_str( mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket

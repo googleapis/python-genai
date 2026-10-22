@@ -1355,6 +1355,9 @@ def _GenerateContentConfig_to_mldev(
         ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
+  if getv(from_object, ['store']) is not None:
+    setv(parent_object, ['store'], getv(from_object, ['store']))
+
   return to_object
 
 
@@ -1564,6 +1567,12 @@ def _GenerateContentConfig_to_vertex(
         parent_object,
         ['outputConfig'],
         getv(from_object, ['generation_output_config']),
+    )
+
+  if getv(from_object, ['store']) is not None:
+    raise ValueError(
+        'store parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
