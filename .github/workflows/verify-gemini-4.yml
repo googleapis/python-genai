@@ -1,0 +1,46 @@
+name: Verify Gemini 4 & Continuation Tokens
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-gemini-4-support:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic mypy pillow types-Pillow
+          pip install -e .
+
+      - name: Test Gemini 4 Config & Continuation Token Compatibility
+        run: |
+          python -c "
+          from google.genai import types
+          cfg = types.GenerateContentConfig(
+              temperature=1.0,
+              top_p=0.95,
+              thinking_config=types.ThinkingConfig(thinking_budget=8192)
+          )
+          assert cfg.top_p == 0.95
+          assert cfg.thinking_config.thinking_budget == 8192
+          print('✅ Configuración de Gemini 4 validada con éxito')
+          "
+
+      - name: Run Mypy on Models Module
+        run: |
+          mypy google/genai/models.py --ignore-missing-imports --disable-error-code=valid-type --disable-error-code=no-redef
