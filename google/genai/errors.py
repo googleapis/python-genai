@@ -168,7 +168,7 @@ class APIError(Exception):
             'status': response.reason,
         }
     else:
-      response_json = response.body_segments[0].get('error', {})
+      response_json = response.body_segments[0].get('error', {})  # type: ignore[union-attr]
 
     cls.raise_error(response.status_code, response_json, response)
 
@@ -234,7 +234,7 @@ class APIError(Exception):
     ):
       if response.status_code == 200:
         return
-      response_json = response.body_segments[0].get('error', {})
+      response_json = response.body_segments[0].get('error', {})  # type: ignore[union-attr]
       status_code = response.status_code
     else:
       try:
