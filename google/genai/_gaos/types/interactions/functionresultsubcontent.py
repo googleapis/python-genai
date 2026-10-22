@@ -22,6 +22,7 @@ from .. import BaseModel
 from ...utils.unions import parse_open_union
 from .imagecontent import ImageContent, ImageContentParam
 from .textcontent import TextContent, TextContentParam
+from .videocontent import VideoContent, VideoContentParam
 from functools import partial
 from pydantic import ConfigDict
 from pydantic.functional_validators import BeforeValidator
@@ -30,7 +31,8 @@ from typing_extensions import Annotated, TypeAliasType
 
 
 FunctionResultSubcontentParam = TypeAliasType(
-    "FunctionResultSubcontentParam", Union[TextContentParam, ImageContentParam]
+    "FunctionResultSubcontentParam",
+    Union[TextContentParam, ImageContentParam, VideoContentParam],
 )
 
 
@@ -47,11 +49,12 @@ class UnknownFunctionResultSubcontent(BaseModel):
 _FUNCTION_RESULT_SUBCONTENT_VARIANTS: dict[str, Any] = {
     "image": ImageContent,
     "text": TextContent,
+    "video": VideoContent,
 }
 
 
 FunctionResultSubcontent = Annotated[
-    Union[ImageContent, TextContent, UnknownFunctionResultSubcontent],
+    Union[ImageContent, TextContent, VideoContent, UnknownFunctionResultSubcontent],
     BeforeValidator(
         partial(
             parse_open_union,
