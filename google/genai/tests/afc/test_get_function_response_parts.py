@@ -215,7 +215,6 @@ async def test_mcp_tool():
   assert is_error == False
 
 
-
 @pytest.mark.asyncio
 async def test_mcp_tool_error():
   if not _is_mcp_imported:
@@ -270,3 +269,95 @@ async def test_mcp_tool_error():
       ),
   )
   assert is_error == True
+
+
+def _get_weather(city: str) -> str:
+  return {'Paris': 'rain', 'Rome': 'sun'}[city]
+
+
+def _fail(city: str) -> str:
+  raise ValueError('boom')
+
+
+def _response_with_calls(
+    *function_calls: FunctionCall,
+) -> GenerateContentResponse:
+  return GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[Part(function_call=fc) for fc in function_calls]
+              )
+          )
+      ]
+  )
+
+
+_PARALLEL_WEATHER_CALLS = _response_with_calls(
+    FunctionCall(id='call_1', name='get_weather', args={'city': 'Paris'}),
+    FunctionCall(id='call_2', name='get_weather', args={'city': 'Rome'}),
+)
+
+
+def test_function_call_id_propagated():
+  """Each response carries the id of the call it answers."""
+  parts = get_function_response_parts(
+      _PARALLEL_WEATHER_CALLS, {'get_weather': _get_weather}
+  )
+
+  assert [p.function_response.id for p in parts] == ['call_1', 'call_2']
+  assert [p.function_response.response for p in parts] == [
+      {'result': 'rain'},
+      {'result': 'sun'},
+  ]
+
+
+@pytest.mark.asyncio
+async def test_function_call_id_propagated_async():
+  """Each async response carries the id of the call it answers."""
+  parts = await get_function_response_parts_async(
+      _PARALLEL_WEATHER_CALLS, {'get_weather': _get_weather}
+  )
+
+  assert [p.function_response.id for p in parts] == ['call_1', 'call_2']
+  assert [p.function_response.response for p in parts] == [
+      {'result': 'rain'},
+      {'result': 'sun'},
+  ]
+
+
+def test_function_call_id_propagated_on_error():
+  """An error response from a failing tool still carries the call id."""
+  response = _response_with_calls(
+      FunctionCall(id='call_1', name='fail', args={'city': 'Paris'})
+  )
+
+  parts = get_function_response_parts(response, {'fail': _fail})
+
+  assert parts[0].function_response.id == 'call_1'
+  assert 'boom' in parts[0].function_response.response['error']
+
+
+@pytest.mark.asyncio
+async def test_function_call_id_propagated_on_error_async():
+  """An async error response from a failing tool still carries the call id."""
+  response = _response_with_calls(
+      FunctionCall(id='call_1', name='fail', args={'city': 'Paris'})
+  )
+
+  parts = await get_function_response_parts_async(response, {'fail': _fail})
+
+  assert parts[0].function_response.id == 'call_1'
+  assert 'boom' in parts[0].function_response.response['error']
+
+
+def test_function_call_id_absent():
+  """A call without an id yields a response with no id on the wire."""
+  response = _response_with_calls(
+      FunctionCall(name='get_weather', args={'city': 'Paris'})
+  )
+
+  parts = get_function_response_parts(response, {'get_weather': _get_weather})
+
+  assert parts[0].function_response.id is None
+  assert 'id' not in parts[0].model_dump(exclude_none=True)['function_response']

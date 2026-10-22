@@ -380,8 +380,12 @@ def get_function_response_parts(
             }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}
-        func_response_part = types.Part.from_function_response(
-            name=func_name, response=func_response
+        func_response_part = types.Part(
+            function_response=types.FunctionResponse(
+                id=part.function_call.id,
+                name=func_name,
+                response=func_response,
+            )
         )
         func_response_parts.append(func_response_part)
   return func_response_parts
@@ -437,8 +441,12 @@ async def get_function_response_parts_async(
             }
         except Exception as e:  # pylint: disable=broad-except
           func_response = {'error': str(e)}  # type: ignore[dict-item]
-        func_response_part = types.Part.from_function_response(
-            name=func_name, response=func_response
+        func_response_part = types.Part(
+            function_response=types.FunctionResponse(
+                id=part.function_call.id,
+                name=func_name,
+                response=func_response,
+            )
         )
         func_response_parts.append(func_response_part)
   return func_response_parts
