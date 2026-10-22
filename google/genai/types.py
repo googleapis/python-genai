@@ -7051,10 +7051,12 @@ GenerateContentConfigOrDict = Union[
 ]
 
 
-ContentListUnion = Union[ContentUnion, list[ContentUnion]]
+ContentListUnion = Union[ContentUnion, list[ContentUnion], list[Content]]
 
 
-ContentListUnionDict = Union[ContentUnionDict, list[ContentUnionDict]]
+ContentListUnionDict = Union[
+    ContentUnionDict, list[ContentUnionDict], list[Content], list[ContentDict]
+]
 
 
 class _GenerateContentParameters(_common.BaseModel):
