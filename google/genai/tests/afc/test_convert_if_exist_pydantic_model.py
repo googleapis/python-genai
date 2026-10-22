@@ -307,3 +307,19 @@ def test_incompatible_value_and_annotation():
         'param_name',
         'func_name',
     )
+
+
+def test_unsubscripted_typing_list_and_dict():
+  from typing import Dict, List
+  assert convert_if_exist_pydantic_model(
+      [1, 2], List, 'param_name', 'func_name'
+  ) == [1, 2]
+  assert convert_if_exist_pydantic_model(
+      {'a': 1}, Dict, 'param_name', 'func_name'
+  ) == {'a': 1}
+  assert convert_if_exist_pydantic_model(
+      [1, 2], Union[List, int], 'param_name', 'func_name'
+  ) == [1, 2]
+  assert convert_if_exist_pydantic_model(
+      {'a': 1}, Union[Dict, int], 'param_name', 'func_name'
+  ) == {'a': 1}
