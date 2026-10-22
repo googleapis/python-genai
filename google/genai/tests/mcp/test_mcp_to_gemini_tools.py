@@ -323,11 +323,12 @@ def test_agent_platform_preserves_unknown_fields():
 @mock.patch.object(_mcp_utils, 'McpClientSession')
 @mock.patch('google.auth.default')
 async def test_connect_agent_platform_mcp_url_and_headers(
-    mock_auth_default, mock_session_cls, mock_streamable, mock_create_http
+    mock_auth_default, mock_session_cls, mock_streamable, mock_create_http, monkeypatch
 ):
     """Tests that _mcp_utils._connect_agent_platform_mcp builds the correct
     regional URL and injects auth headers.
     """
+    monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
 
     mock_creds = mock.Mock()
     mock_creds.token = 'fake-oauth-token'
