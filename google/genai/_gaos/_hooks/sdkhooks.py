@@ -45,6 +45,7 @@ class SDKHooks(Hooks):
         self.after_error_hooks: List[AfterErrorHook] = []
         self.after_parse_error_hooks: List[AfterParseErrorHook] = []
         init_hooks(self)
+        self.register_sdk_init_hook(GoogleGenAIAuthHook())
         self.register_before_request_hook(GoogleGenAIAuthHook())
         self.register_after_error_hook(cast(AfterErrorHook, CompatErrorHook()))
         self.register_after_parse_error_hook(
