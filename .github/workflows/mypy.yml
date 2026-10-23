@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  SPEAKEASY_VERSION: v2.950.8
+  SPEAKEASY_VERSION: v2.950.11
 
 jobs:
   mypy:
