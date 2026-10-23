@@ -166,6 +166,7 @@ _response_executable_code_warning_logged = False
 _response_code_execution_warning_logged = False
 _live_server_text_warning_logged = False
 _live_server_data_warning_logged = False
+_from_callable_with_api_option_warning_logged = False
 
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
@@ -4914,6 +4915,16 @@ class FunctionDeclaration(_common.BaseModel):
           f'Unsupported api_option value: {api_option}. Supported api_option'
           f' value is one of: {supported_api_options}.'
       )
+    global _from_callable_with_api_option_warning_logged
+    if (
+        not use_json_schema
+        and not _from_callable_with_api_option_warning_logged
+    ):
+      logger.warning(
+          'use_json_schema is not True, which is not recommended. Parsing a'
+          ' callable into JSON schema is preferred.'
+      )
+      _from_callable_with_api_option_warning_logged = True
     from . import _automatic_function_calling_util
 
     if use_json_schema:
