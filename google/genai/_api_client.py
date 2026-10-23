@@ -1590,13 +1590,22 @@ class BaseApiClient:
     )
     return to_mtls_url(url) if use_mtls_endpoint else url
 
-  def _websocket_base_url(self) -> str:
+  def _websocket_base_url(
+      self, http_options: Optional[HttpOptions] = None
+  ) -> str:
+    """Returns the base URL for websocket connections.
+
+    Args:
+      http_options: The http options of the connection. Defaults to the
+        client's.
+    """
+    http_options = http_options or self._http_options
     has_sufficient_auth = (self.project and self.location) or self.api_key
     if self.custom_base_url and not has_sufficient_auth:
       # API gateway proxy can use the auth in custom headers, not url.
       # Enable custom url if auth is not sufficient.
-      return self.custom_base_url
-    url_parts = urlparse(self._http_options.base_url)
+      return http_options.base_url or self.custom_base_url
+    url_parts = urlparse(http_options.base_url)
     url = url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type]
     if self._websocket_use_mtls_endpoint:
       url = to_mtls_url(url)  # type: ignore[arg-type]
