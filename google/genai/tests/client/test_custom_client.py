@@ -18,7 +18,7 @@ import asyncio
 from unittest import mock
 
 from google.oauth2 import credentials
-import httpx
+import httpx2 as httpx
 import pytest
 
 from ... import _api_client as api_client

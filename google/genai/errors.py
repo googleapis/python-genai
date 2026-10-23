@@ -17,38 +17,13 @@
 
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import json
+import httpx2
 
 if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
   import aiohttp
   from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
-  import httpx
-  import httpx2
   import requests  # pylint: disable=g-import-not-at-top
-
-  _HTTPX_RESPONSE_TYPES = (httpx.Response, httpx2.Response)
-else:
-  try:
-    import httpx
-  except ImportError:
-    httpx = None  # type: ignore[assignment]
-
-  try:
-    import httpx2
-  except ImportError:
-    httpx2 = None  # type: ignore[assignment]
-
-  # httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
-  # separate import namespace, so its Response is not an instance of
-  # httpx.Response. Widen the runtime type checks to accept either when installed.
-  _HTTPX_RESPONSE_TYPES = tuple(
-      cls
-      for cls in (
-          getattr(httpx, 'Response', None),
-          getattr(httpx2, 'Response', None),
-      )
-      if cls is not None
-  )
 
 from . import _common
 
@@ -59,8 +34,7 @@ class APIError(Exception):
   response: Union[
       'requests.Response',
       'ReplayResponse',
-      'httpx.Response',
-      'httpx2.Response',
+      httpx2.Response,
       'AsyncAuthorizedSessionResponse',
   ]
 
@@ -75,8 +49,7 @@ class APIError(Exception):
           Union[
               'requests.Response',
               'ReplayResponse',
-              'httpx.Response',
-              'httpx2.Response',
+              httpx2.Response,
               'AsyncAuthorizedSessionResponse',
           ]
       ] = None,
@@ -151,13 +124,13 @@ class APIError(Exception):
   @classmethod
   def raise_for_response(
       cls,
-      response: Union['ReplayResponse', 'httpx.Response', 'httpx2.Response', 'requests.Response'],
+      response: Union['ReplayResponse', httpx2.Response, 'requests.Response'],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
       return
 
-    if isinstance(response, _HTTPX_RESPONSE_TYPES):
+    if isinstance(response, httpx2.Response):
       try:
         response.read()
         response_json = response.json()
@@ -194,7 +167,7 @@ class APIError(Exception):
       response: Optional[
           Union[
               'ReplayResponse',
-              'httpx.Response', 'httpx2.Response',
+              httpx2.Response,
               'requests.Response',
           ]
       ],
@@ -224,13 +197,13 @@ class APIError(Exception):
       cls,
       response: Union[
           'ReplayResponse',
-          'httpx.Response', 'httpx2.Response',
+          httpx2.Response,
           'aiohttp.ClientResponse',
           'AsyncAuthorizedSessionResponse',
       ],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    if isinstance(response, _HTTPX_RESPONSE_TYPES):
+    if isinstance(response, httpx2.Response):
       if response.status_code == 200:
         return
       try:
@@ -281,7 +254,7 @@ class APIError(Exception):
   @classmethod
   async def raise_error_async(
       cls, status_code: int, response_json: Any, response: Optional[
-          Union['ReplayResponse', 'httpx.Response', 'httpx2.Response', 'aiohttp.ClientResponse']
+          Union['ReplayResponse', httpx2.Response, 'aiohttp.ClientResponse']
       ]
   ) -> None:
     """Raises an appropriate APIError subclass based on the status code.

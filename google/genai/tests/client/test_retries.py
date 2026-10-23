@@ -36,7 +36,7 @@ except ImportError:
   AsyncAuthorizedSession = mock.MagicMock()
 
 from google.oauth2 import credentials
-import httpx
+import httpx2 as httpx
 import tenacity
 
 from ... import _api_client as api_client

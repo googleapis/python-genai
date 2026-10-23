@@ -29,18 +29,9 @@ injected `httpx2` client (see issue #2680):
 import io
 import ssl
 
-import httpx
+import httpx2
 import pytest
-
-try:
-  import httpx2
-except ImportError:
-  httpx2 = None
-
-# Mark all tests in this module to be skipped if httpx2 is not available
-pytestmark = pytest.mark.skipif(
-    httpx2 is None, reason='httpx2 is not available'
-)
+import truststore
 
 from ... import _api_client as api_client
 from ... import Client
@@ -166,99 +157,21 @@ def test_httpx2_response_flows_through_sync_stream():
   assert chunks == ['{"first": 1}', '{"second": 2}']
 
 
-def test_default_client_uses_httpx(monkeypatch):
-  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpxClient
-  )
-  assert isinstance(client._api_client._async_httpx_client, httpx.AsyncClient)
-  assert isinstance(
-      client._api_client._async_httpx_client, target_api_client.AsyncHttpxClient
-  )
-
-
-def test_env_var_override_to_httpx(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpxClient
-  )
-  assert isinstance(client._api_client._async_httpx_client, httpx.AsyncClient)
-  assert isinstance(
-      client._api_client._async_httpx_client, target_api_client.AsyncHttpxClient
-  )
-
-
-def test_env_var_override_to_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_default_client_uses_httpx2():
   target_api_client = getattr(api_client, 'public_api_client', api_client)
   client = Client(api_key='fake_api_key')
   assert isinstance(client._api_client._httpx_client, httpx2.Client)
   assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpx2Client
+      client._api_client._httpx_client, target_api_client.SyncHttpxClient
   )
   assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
   assert isinstance(
-      client._api_client._async_httpx_client, target_api_client.AsyncHttpx2Client
-  )
-
-
-def test_env_var_auto(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'auto')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-
-
-def test_env_var_unrecognized_falls_back_to_default(monkeypatch, caplog):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'unknown_client')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  with caplog.at_level('WARNING'):
-    client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-  assert 'Unrecognized GOOGLE_GENAI_HTTP_CLIENT' in caplog.text
-
-
-def test_env_var_httpx2_missing_raises(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  monkeypatch.setattr(target_api_client, 'httpx2', None)
-  with pytest.raises(ImportError, match='httpx2 is configured'):
-    Client(api_key='fake_api_key')
-
-
-def test_env_var_httpx_missing_raises(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  monkeypatch.setattr(target_api_client, 'httpx', None)
-  with pytest.raises(ImportError, match='httpx is configured'):
-    Client(api_key='fake_api_key')
-
-
-def test_default_falls_back_to_httpx2_when_httpx_missing(monkeypatch):
-  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  monkeypatch.setattr(target_api_client, 'httpx', None)
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx2.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpx2Client
-  )
-  assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
-  assert isinstance(
-      client._api_client._async_httpx_client, target_api_client.AsyncHttpx2Client
+      client._api_client._async_httpx_client, target_api_client.AsyncHttpxClient
   )
 
 
 # High-level feature tests: end-to-end generate_content and streaming with httpx2
-def test_generate_content_sync_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-
+def test_generate_content_sync_with_httpx2():
   def handler(request: httpx2.Request) -> httpx2.Response:
     return httpx2.Response(
         status_code=200,
@@ -288,9 +201,7 @@ def test_generate_content_sync_with_httpx2(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_generate_content_async_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-
+async def test_generate_content_async_with_httpx2():
   def handler(request: httpx2.Request) -> httpx2.Response:
     return httpx2.Response(
         status_code=200,
@@ -319,9 +230,7 @@ async def test_generate_content_async_with_httpx2(monkeypatch):
   assert response.text == 'Hello from httpx2 async!'
 
 
-def test_generate_content_stream_sync_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-
+def test_generate_content_stream_sync_with_httpx2():
   def handler(request: httpx2.Request) -> httpx2.Response:
     stream_content = (
         b'data: {"candidates": [{"content": {"parts": [{"text": "Hello "}], "role": "model"}}]}\n\n'
@@ -352,9 +261,7 @@ def test_generate_content_stream_sync_with_httpx2(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_generate_content_stream_async_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-
+async def test_generate_content_stream_async_with_httpx2():
   def handler(request: httpx2.Request) -> httpx2.Response:
     stream_content = (
         b'data: {"candidates": [{"content": {"parts": [{"text": "Hello "}], "role": "model"}}]}\n\n'
@@ -427,8 +334,7 @@ def test_retry_on_httpx2_transient_exceptions():
   assert predicate(httpx2.ReadTimeout('read timeout', request=req))
 
 
-def test_retries_with_httpx2_client(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_retries_with_httpx2_client():
   attempts = 0
 
   def handler(request: httpx2.Request) -> httpx2.Response:
@@ -466,7 +372,6 @@ def test_retries_with_httpx2_client(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_async_download_file_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
   target_api_client = getattr(api_client, 'public_api_client', api_client)
   monkeypatch.setattr(target_api_client, 'has_aiohttp', False)
 
@@ -483,8 +388,7 @@ async def test_async_download_file_with_httpx2(monkeypatch):
   assert downloaded == b'file bytes content'
 
 
-def test_httpx2_filters_invalid_client_args(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_httpx2_filters_invalid_client_args():
   client = Client(
       api_key='fake_api_key',
       http_options=HttpOptions(
@@ -497,23 +401,8 @@ def test_httpx2_filters_invalid_client_args(monkeypatch):
   assert 'unsupported_dummy_arg' not in client._api_client._async_httpx_client_args
 
 
-def test_httpx_filters_invalid_client_args(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
-  client = Client(
-      api_key='fake_api_key',
-      http_options=HttpOptions(
-          client_args={'unsupported_dummy_arg': 123},
-          async_client_args={'unsupported_dummy_arg': 123},
-      ),
-  )
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-  assert isinstance(client._api_client._async_httpx_client, httpx.AsyncClient)
-  assert 'unsupported_dummy_arg' not in client._api_client._async_httpx_client_args
-
-
 @pytest.mark.asyncio
-async def test_httpx2_client_close(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+async def test_httpx2_client_close():
   client = Client(api_key='fake_api_key')
   sync_client = client._api_client._httpx_client
   async_client = client._api_client._async_httpx_client
@@ -528,16 +417,14 @@ async def test_httpx2_client_close(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_aclose_when_async_httpx_client_is_none(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+async def test_aclose_when_async_httpx_client_is_none():
   client = Client(api_key='fake_api_key')
   client._api_client._async_httpx_client = None
   # Should not raise AttributeError when _async_httpx_client is None
   await client.aio.aclose()
 
 
-def test_vertexai_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_vertexai_with_httpx2():
   client = Client(
       vertexai=True,
       project='fake-project',
@@ -546,23 +433,6 @@ def test_vertexai_with_httpx2(monkeypatch):
   )
   assert isinstance(client._api_client._httpx_client, httpx2.Client)
   assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
-
-
-def test_env_var_case_insensitivity_and_whitespace(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', '  HTTPX2  ')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx2.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpx2Client
-  )
-
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', '  HttPx  ')
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpxClient
-  )
 
 
 def test_raise_for_response_with_httpx2_json_error():
@@ -608,9 +478,7 @@ async def test_raise_for_async_response_with_httpx2():
   assert exc_info.value.response is response
 
 
-def test_generate_content_api_error_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
-
+def test_generate_content_api_error_with_httpx2():
   def handler(request: httpx2.Request) -> httpx2.Response:
     return httpx2.Response(
         status_code=400,
@@ -634,7 +502,7 @@ def test_generate_content_api_error_with_httpx2(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_mcp_utils_respects_backend(monkeypatch):
+async def test_mcp_utils_uses_httpx2(monkeypatch):
   from ... import _mcp_utils
   from unittest import mock
   import contextlib
@@ -662,8 +530,6 @@ async def test_mcp_utils_respects_backend(monkeypatch):
   monkeypatch.setattr(_mcp_utils, 'streamable_http_client', fake_streamable)
   monkeypatch.setattr(_mcp_utils, 'McpClientSession', mock_session_ctx)
 
-  # Test httpx2 backend
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
   client_httpx2 = Client(api_key='fake_key')
   monkeypatch.setattr(
       client_httpx2._api_client,
@@ -676,40 +542,8 @@ async def test_mcp_utils_respects_backend(monkeypatch):
     pass
   assert isinstance(captured_client, httpx2.AsyncClient)
 
-  # Test httpx backend
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
-  client_httpx = Client(api_key='fake_key')
-  monkeypatch.setattr(
-      client_httpx._api_client,
-      '_async_access_token',
-      mock.AsyncMock(return_value='fake-token'),
-  )
-  async with _mcp_utils._connect_agent_platform_mcp(
-      client_httpx._api_client, 'endpoints'
-  ):
-    pass
-  assert isinstance(captured_client, httpx.AsyncClient)
 
-  # Test when httpx is None (auto-fallback to httpx2)
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
-  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
-  monkeypatch.setattr(_mcp_utils, 'httpx', None)
-  monkeypatch.setattr(target_api_client, 'httpx', None)
-  client_fallback = Client(api_key='fake_key')
-  monkeypatch.setattr(
-      client_fallback._api_client,
-      '_async_access_token',
-      mock.AsyncMock(return_value='fake-token'),
-  )
-  async with _mcp_utils._connect_agent_platform_mcp(
-      client_fallback._api_client, 'endpoints'
-  ):
-    pass
-  assert isinstance(captured_client, httpx2.AsyncClient)
-
-
-def test_sync_upload_file_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_sync_upload_file_with_httpx2():
   recorded_requests = []
 
   def handler(request: httpx2.Request) -> httpx2.Response:
@@ -744,7 +578,6 @@ def test_sync_upload_file_with_httpx2(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_async_upload_file_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
   target_api_client = getattr(api_client, 'public_api_client', api_client)
   monkeypatch.setattr(target_api_client, 'has_aiohttp', False)
   recorded_requests = []
@@ -780,8 +613,7 @@ async def test_async_upload_file_with_httpx2(monkeypatch):
   assert response.response_stream == ['{"name": "files/async-test-file"}']
 
 
-def test_retries_on_http_status_codes_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_retries_on_http_status_codes_with_httpx2():
   attempts = 0
 
   def handler(request: httpx2.Request) -> httpx2.Response:
@@ -826,8 +658,7 @@ def test_retries_on_http_status_codes_with_httpx2(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_async_retries_on_http_status_codes_with_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+async def test_async_retries_on_http_status_codes_with_httpx2():
   attempts = 0
 
   def handler(request: httpx2.Request) -> httpx2.Response:
@@ -866,6 +697,19 @@ async def test_async_retries_on_http_status_codes_with_httpx2(monkeypatch):
   assert attempts == 2
 
 
+def test_ensure_httpx2_ssl_ctx_default_uses_truststore(monkeypatch):
+  monkeypatch.delenv('SSL_CERT_FILE', raising=False)
+  monkeypatch.delenv('SSL_CERT_DIR', raising=False)
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(
+          HttpOptions(),
+          vertexai=False,
+      )
+  )
+  assert isinstance(client_args['verify'], truststore.SSLContext)
+  assert isinstance(async_client_args['verify'], truststore.SSLContext)
+
+
 def test_ensure_httpx2_ssl_ctx_custom_verify():
   custom_ctx = ssl.create_default_context()
   client_args, async_client_args = (
@@ -875,8 +719,6 @@ def test_ensure_httpx2_ssl_ctx_custom_verify():
               async_client_args={'verify': custom_ctx},
           ),
           vertexai=False,
-          client_cls=api_client.SyncHttpx2Client,
-          async_client_cls=api_client.AsyncHttpx2Client,
       )
   )
   assert client_args['verify'] is custom_ctx
@@ -892,8 +734,6 @@ def test_ensure_httpx2_ssl_ctx_filters_unsupported_params():
               async_client_args={'unsupported_dummy_key': 'foo'},
           ),
           vertexai=False,
-          client_cls=api_client.SyncHttpx2Client,
-          async_client_cls=api_client.AsyncHttpx2Client,
       )
   )
   assert 'unsupported_dummy_key' not in client_args
@@ -901,8 +741,7 @@ def test_ensure_httpx2_ssl_ctx_filters_unsupported_params():
   assert isinstance(client_args['verify'], ssl.SSLContext)
 
 
-def test_client_init_with_custom_ssl_context_httpx2(monkeypatch):
-  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+def test_client_init_with_custom_ssl_context_httpx2():
   custom_ctx = ssl.create_default_context()
   client = Client(
       api_key='fake_api_key',

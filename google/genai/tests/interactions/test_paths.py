@@ -19,9 +19,9 @@
 
 from unittest import mock
 import pytest
-from httpx import Request, Response
+from httpx2 import Request, Response
 from ..._api_client import AsyncHttpxClient
-from httpx import Client as HTTPClient
+from httpx2 import Client as HTTPClient
 from .. import pytest_helper
 import google.auth
 

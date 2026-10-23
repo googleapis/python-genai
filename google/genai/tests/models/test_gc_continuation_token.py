@@ -19,7 +19,7 @@ import base64
 import json
 from unittest import mock
 
-import httpx
+import httpx2 as httpx
 import pydantic
 import pytest
 

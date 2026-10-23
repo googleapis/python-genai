@@ -16,7 +16,7 @@
 
 """Tests for client behavior when issuing requests."""
 
-import httpx
+import httpx2 as httpx
 import pytest
 
 from ... import _api_client

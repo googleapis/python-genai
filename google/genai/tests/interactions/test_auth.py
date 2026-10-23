@@ -20,9 +20,9 @@ from ... import Client
 from ... import _base_url
 from unittest import mock
 import pytest
-from httpx import Request, Response
+from httpx2 import Request, Response
 from ..._api_client import AsyncHttpxClient, BaseApiClient
-from httpx import Client as HTTPClient
+from httpx2 import Client as HTTPClient
 import os
 
 ENV_VARS = [
@@ -102,7 +102,7 @@ def test_interactions_gemini_extra_headers(monkeypatch):
 
 def test_interactions_vertex_auth_header():
   from ..._api_client import BaseApiClient
-  from httpx import Client as HTTPClient
+  from httpx2 import Client as HTTPClient
 
   creds = mock.Mock()
   creds.quota_project_id = "test-quota-project"
@@ -136,7 +136,7 @@ def test_interactions_vertex_auth_header():
 
 def test_interactions_vertex_key_no_auth_header():
   from ..._api_client import BaseApiClient
-  from httpx import Client as HTTPClient
+  from httpx2 import Client as HTTPClient
 
   creds = mock.Mock()
   client = Client(vertexai=True, api_key='test-api-key')
@@ -171,7 +171,7 @@ def test_interactions_vertex_url():
 
     with (
         mock.patch.object(BaseApiClient, "_access_token", return_value="fake-token") as mock_access_token,
-        mock.patch("httpx.Client.send") as mock_send,
+        mock.patch("httpx2.Client.send") as mock_send,
     ):
         mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.create(
@@ -184,7 +184,7 @@ def test_interactions_vertex_url():
 
 def test_interactions_vertex_auth_refresh_on_retry():
     from ..._api_client import BaseApiClient
-    from httpx import Client as HTTPClient
+    from httpx2 import Client as HTTPClient
 
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"
@@ -224,7 +224,7 @@ def test_interactions_vertex_auth_refresh_on_retry():
 
 def test_interactions_vertex_extra_headers_override():
     from ..._api_client import BaseApiClient
-    from httpx import Client as HTTPClient
+    from httpx2 import Client as HTTPClient
 
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"

@@ -12,15 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for httpx and httpx2 compatibility across the GAOS client."""
+"""Tests for httpx2 across the GAOS client."""
 
-import httpx
+import httpx2
 import pytest
-
-try:
-  import httpx2
-except ImportError:
-  httpx2 = None
 
 from ... import client as client_lib
 from ..._gaos.basesdk import AsyncBaseSDK, BaseSDK
@@ -29,96 +24,6 @@ from ..._gaos.lib import compat_errors
 from ..._gaos.utils import eventstreaming, retries
 
 
-# --- Standard httpx tests ---
-
-
-def test_error_wrapping_httpx_errors():
-  req = httpx.Request("GET", "https://example.com")
-  err = httpx.ConnectError("failed to connect", request=req)
-  wrapped = compat_errors.wrap_sdk_error(err)
-  assert isinstance(wrapped, compat_errors.APIConnectionError)
-  assert wrapped.__cause__ is err
-
-  timeout_err = httpx.TimeoutException("timed out", request=req)
-  wrapped_timeout = compat_errors.wrap_sdk_error(timeout_err)
-  assert isinstance(wrapped_timeout, compat_errors.APITimeoutError)
-  assert wrapped_timeout.__cause__ is timeout_err
-
-
-def test_base_sdk_timeout_coercion():
-  sdk = BaseSDK.__new__(BaseSDK)
-
-  assert sdk._coerce_timeout_ms(None) is None
-  assert sdk._coerce_timeout_ms(5) == 5000
-  assert sdk._coerce_timeout_ms(2.5) == 2500
-  assert (
-      sdk._coerce_timeout_ms(
-          httpx.Timeout(connect=1.0, read=4.0, write=2.0, pool=None)
-      )
-      == 4000
-  )
-
-  with pytest.raises(
-      TypeError, match="timeout must be a float, int, httpx.Timeout, or None"
-  ):
-    sdk._coerce_timeout_ms("invalid_timeout")
-
-
-def test_injected_client_passed_to_gaos():
-  http_client = httpx.Client()
-  try:
-    client = client_lib.Client(
-        api_key="fake-key",
-        http_options={"httpx_client": http_client},
-    )
-
-    assert client._api_client._httpx_client is http_client
-    interactions_client = client.interactions
-    assert interactions_client.sdk_configuration.client is http_client
-  finally:
-    http_client.close()
-
-
-def test_stream_error_wrapping_httpx_errors():
-  def failing_gen():
-    yield "chunk1"
-    raise httpx.ConnectError("stream network broken")
-
-  stream = eventstreaming.Stream.__new__(eventstreaming.Stream)
-  stream.generator = failing_gen()
-  wrapped_stream = compat_errors.wrap_stream_errors(stream)
-
-  gen = wrapped_stream.generator
-  assert next(gen) == "chunk1"
-  with pytest.raises(compat_errors.APIConnectionError) as exc_info:
-    next(gen)
-  assert "stream network broken" in str(exc_info.value)
-
-
-@pytest.mark.asyncio
-async def test_async_stream_error_wrapping_httpx_errors():
-  async def failing_agen():
-    yield "async_chunk1"
-    raise httpx.ConnectError("async stream network broken")
-
-  stream = eventstreaming.AsyncStream.__new__(eventstreaming.AsyncStream)
-  stream.generator = failing_agen()
-  wrapped_stream = compat_errors.wrap_async_stream_errors(stream)
-
-  agen = wrapped_stream.generator
-  chunk = await agen.__anext__()
-  assert chunk == "async_chunk1"
-  with pytest.raises(compat_errors.APIConnectionError) as exc_info:
-    await agen.__anext__()
-  assert "async stream network broken" in str(exc_info.value)
-
-
-# --- httpx2 tests (run in CI when httpx2 is installed) ---
-
-
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 def test_httpx2_error_wrapping():
   req = httpx2.Request("GET", "https://example.com")
   err = httpx2.ConnectError("failed to connect", request=req)
@@ -132,29 +37,28 @@ def test_httpx2_error_wrapping():
   assert wrapped_timeout.__cause__ is timeout_err
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 def test_httpx2_timeout_coercion():
   sdk = BaseSDK.__new__(BaseSDK)
+  assert sdk._coerce_timeout_ms(None) is None
+  assert sdk._coerce_timeout_ms(5) == 5000
+  assert sdk._coerce_timeout_ms(2.5) == 2500
   timeout = httpx2.Timeout(connect=1.0, read=4.0, write=2.0, pool=None)
   assert sdk._coerce_timeout_ms(timeout) == 4000
 
   async_sdk = AsyncBaseSDK.__new__(AsyncBaseSDK)
   assert async_sdk._coerce_timeout_ms(timeout) == 4000
 
+  with pytest.raises(
+      TypeError, match="timeout must be a float, int, httpx.Timeout, or None"
+  ):
+    sdk._coerce_timeout_ms("invalid_timeout")
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
+
 def test_httpx2_client_protocols():
   assert issubclass(httpx2.Client, HttpClient)
   assert issubclass(httpx2.AsyncClient, AsyncHttpClient)
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 def test_injected_httpx2_client_passed_to_gaos():
   http_client = httpx2.Client()
   try:
@@ -171,11 +75,7 @@ def test_injected_httpx2_client_passed_to_gaos():
     http_client.close()
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
-def test_env_var_httpx2_passed_to_gaos(monkeypatch):
-  monkeypatch.setenv("GOOGLE_GENAI_HTTP_CLIENT", "httpx2")
+def test_default_httpx2_passed_to_gaos():
   client = client_lib.Client(api_key="fake-key")
   assert isinstance(client._api_client._httpx_client, httpx2.Client)
   interactions_client = client.interactions
@@ -183,9 +83,6 @@ def test_env_var_httpx2_passed_to_gaos(monkeypatch):
   assert isinstance(interactions_client.sdk_configuration.client, httpx2.Client)
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 @pytest.mark.asyncio
 async def test_injected_httpx2_async_client_passed_to_gaos():
   http_async_client = httpx2.AsyncClient()
@@ -203,11 +100,7 @@ async def test_injected_httpx2_async_client_passed_to_gaos():
     await http_async_client.aclose()
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
-def test_env_var_httpx2_async_passed_to_gaos(monkeypatch):
-  monkeypatch.setenv("GOOGLE_GENAI_HTTP_CLIENT", "httpx2")
+def test_default_httpx2_async_passed_to_gaos():
   client = client_lib.Client(api_key="fake-key")
   assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
   interactions_client = client.aio.interactions
@@ -215,9 +108,6 @@ def test_env_var_httpx2_async_passed_to_gaos(monkeypatch):
   assert isinstance(interactions_client.sdk_configuration.async_client, httpx2.AsyncClient)
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 def test_httpx2_retries():
   attempts = 0
 
@@ -244,9 +134,6 @@ def test_httpx2_retries():
   assert attempts == 3
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 @pytest.mark.asyncio
 async def test_httpx2_async_retries():
   attempts = 0
@@ -276,9 +163,6 @@ async def test_httpx2_async_retries():
   assert attempts == 3
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 def test_httpx2_stream_error_wrapping():
   def failing_gen():
     yield "chunk1"
@@ -295,9 +179,6 @@ def test_httpx2_stream_error_wrapping():
   assert "stream network broken" in str(exc_info.value)
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 @pytest.mark.asyncio
 async def test_httpx2_async_stream_error_wrapping():
   async def failing_agen():
@@ -316,9 +197,6 @@ async def test_httpx2_async_stream_error_wrapping():
   assert "async stream network broken" in str(exc_info.value)
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 def test_interactions_create_with_httpx2_mock_transport():
   recorded_requests = []
 
@@ -348,9 +226,6 @@ def test_interactions_create_with_httpx2_mock_transport():
     http_client.close()
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
 @pytest.mark.asyncio
 async def test_async_interactions_create_with_httpx2_mock_transport():
   recorded_requests = []
@@ -383,11 +258,7 @@ async def test_async_interactions_create_with_httpx2_mock_transport():
     await http_async_client.aclose()
 
 
-@pytest.mark.skipif(
-    httpx2 is None, reason="httpx2 not installed in this environment"
-)
-def test_interactions_create_env_var_httpx2_mock_transport(monkeypatch):
-  monkeypatch.setenv("GOOGLE_GENAI_HTTP_CLIENT", "httpx2")
+def test_interactions_create_client_args_httpx2_mock_transport():
   recorded_requests = []
 
   def handler(request: httpx2.Request) -> httpx2.Response:
@@ -404,8 +275,204 @@ def test_interactions_create_env_var_httpx2_mock_transport(monkeypatch):
   )
   result = client.interactions.create(
       model="gemini-1.5-flash",
-      input="Hello from env var httpx2",
+      input="Hello from httpx2",
   )
   assert len(recorded_requests) == 1
   assert isinstance(recorded_requests[0], httpx2.Request)
   assert result.status == "completed"
+
+
+def test_interactions_api_error_handling_with_httpx2():
+  def handler(request: httpx2.Request) -> httpx2.Response:
+    return httpx2.Response(
+        404,
+        headers={"content-type": "application/json"},
+        content=b'{"error": {"code": 404, "message": "Interaction not found"}}',
+    )
+
+  http_client = httpx2.Client(transport=httpx2.MockTransport(handler))
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_client": http_client},
+    )
+    with pytest.raises(compat_errors.NotFoundError) as exc_info:
+      client.interactions.create(
+          model="gemini-1.5-flash",
+          input="Hello",
+      )
+    assert exc_info.value.status_code == 404
+    assert isinstance(exc_info.value.response, httpx2.Response)
+    assert isinstance(exc_info.value.request, httpx2.Request)
+    assert exc_info.value.response.status_code == 404
+  finally:
+    http_client.close()
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_api_error_handling_with_httpx2():
+  def handler(request: httpx2.Request) -> httpx2.Response:
+    return httpx2.Response(
+        400,
+        headers={"content-type": "application/json"},
+        content=b'{"error": {"code": 400, "message": "Invalid request"}}',
+    )
+
+  http_async_client = httpx2.AsyncClient(
+      transport=httpx2.MockTransport(handler)
+  )
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_async_client": http_async_client},
+    )
+    with pytest.raises(compat_errors.BadRequestError) as exc_info:
+      await client.aio.interactions.create(
+          model="gemini-1.5-flash",
+          input="Hello",
+      )
+    assert exc_info.value.status_code == 400
+    assert isinstance(exc_info.value.response, httpx2.Response)
+    assert isinstance(exc_info.value.request, httpx2.Request)
+  finally:
+    await http_async_client.aclose()
+
+
+def test_interactions_with_raw_response_httpx2():
+  def handler(request: httpx2.Request) -> httpx2.Response:
+    return httpx2.Response(
+        200,
+        headers={"content-type": "application/json"},
+        content=b'{"id": "raw-interaction-id", "status": "completed"}',
+    )
+
+  http_client = httpx2.Client(transport=httpx2.MockTransport(handler))
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_client": http_client},
+    )
+    raw = client.interactions.with_raw_response.create(
+        model="gemini-1.5-flash",
+        input="Hello",
+    )
+    assert isinstance(raw.http_response, httpx2.Response)
+    assert raw.http_response.status_code == 200
+    parsed = raw.parse()
+    assert parsed.id == "raw-interaction-id"
+    assert parsed.status == "completed"
+  finally:
+    http_client.close()
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_with_raw_response_httpx2():
+  def handler(request: httpx2.Request) -> httpx2.Response:
+    return httpx2.Response(
+        200,
+        headers={"content-type": "application/json"},
+        content=b'{"id": "async-raw-id", "status": "completed"}',
+    )
+
+  http_async_client = httpx2.AsyncClient(
+      transport=httpx2.MockTransport(handler)
+  )
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_async_client": http_async_client},
+    )
+    raw = await client.aio.interactions.with_raw_response.create(
+        model="gemini-1.5-flash",
+        input="Hello",
+    )
+    assert isinstance(raw.http_response, httpx2.Response)
+    assert raw.http_response.status_code == 200
+    parsed = await raw.parse()
+    assert parsed.id == "async-raw-id"
+    assert parsed.status == "completed"
+  finally:
+    await http_async_client.aclose()
+
+
+def test_interactions_streaming_events_with_httpx2():
+  def handler(request: httpx2.Request) -> httpx2.Response:
+    sse_content = (
+        b'data: {"event_id": "e1", "interaction": {"id": "int-1", "status": "in_progress"}}\n\n'
+        b'data: [DONE]\n\n'
+    )
+    return httpx2.Response(
+        200,
+        headers={"content-type": "text/event-stream"},
+        content=sse_content,
+    )
+
+  http_client = httpx2.Client(transport=httpx2.MockTransport(handler))
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_client": http_client},
+    )
+    stream = client.interactions.create(
+        model="gemini-1.5-flash",
+        input="Hello",
+        stream=True,
+    )
+    events = list(stream)
+    assert len(events) == 1
+    assert events[0].event_id == "e1"
+    assert events[0].interaction["id"] == "int-1"
+  finally:
+    http_client.close()
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_streaming_events_with_httpx2():
+  def handler(request: httpx2.Request) -> httpx2.Response:
+    sse_content = (
+        b'data: {"event_id": "e1", "interaction": {"id": "int-async-1", "status": "in_progress"}}\n\n'
+        b'data: [DONE]\n\n'
+    )
+    return httpx2.Response(
+        200,
+        headers={"content-type": "text/event-stream"},
+        content=sse_content,
+    )
+
+  http_async_client = httpx2.AsyncClient(
+      transport=httpx2.MockTransport(handler)
+  )
+  try:
+    client = client_lib.Client(
+        api_key="fake-key",
+        http_options={"httpx_async_client": http_async_client},
+    )
+    stream = await client.aio.interactions.create(
+        model="gemini-1.5-flash",
+        input="Hello",
+        stream=True,
+    )
+    events = [event async for event in stream]
+    assert len(events) == 1
+    assert events[0].event_id == "e1"
+    assert events[0].interaction["id"] == "int-async-1"
+  finally:
+    await http_async_client.aclose()
+
+
+def test_genaierror_raw_response_typing_httpx2():
+  from ..._gaos.errors.genaierror import GenAiError
+
+  resp = httpx2.Response(
+      400,
+      headers={"x-test-header": "test-val"},
+      content=b'{"error": "bad request"}',
+  )
+  err = GenAiError("bad request error", raw_response=resp)
+  assert isinstance(err.raw_response, httpx2.Response)
+  assert isinstance(err.headers, httpx2.Headers)
+  assert err.status_code == 400
+  assert err.body == '{"error": "bad request"}'
+  assert err.headers.get("x-test-header") == "test-val"
+
+

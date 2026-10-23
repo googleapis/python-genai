@@ -24,7 +24,7 @@ from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import List, Optional
 
-import httpx
+import httpx2 as httpx
 
 
 class BackoffStrategy:

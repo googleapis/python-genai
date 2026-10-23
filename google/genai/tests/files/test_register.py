@@ -20,7 +20,7 @@ import json
 from unittest import mock
 
 from google.auth import credentials
-import httpx
+import httpx2 as httpx
 import pytest
 
 from ... import _api_client
