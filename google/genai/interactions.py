@@ -20,12 +20,57 @@ from typing import Union
 
 from typing_extensions import Literal, Required, TypedDict
 
-# Import triggers before interactions so that interactions.Interaction (the
-# resource class) overrides triggers.Interaction (the TypeAliasType representing
-# nested interactions inside triggers) in the exported namespace, resolving
-# the name collision.
-from ._gaos.types.triggers import *  # noqa: F401,F403
-from ._gaos.types.triggers import __all__ as _triggers_all
+# Trigger create-params define nested `Interaction` / `InteractionParam`
+# TypeAliasTypes that share names with the interactions resource class.
+# Star-importing those aliases into this module makes mypy keep the first
+# binding (the TypeAliasType), while runtime last-binding-wins to the resource
+# class — see https://github.com/googleapis/python-genai/issues/2732.
+# Exclude the colliding names here; they remain available from
+# `google.genai._gaos.types.triggers`.
+from ._gaos.types.triggers import __all__ as _triggers_all_raw
+
+_TRIGGERS_NAMES_EXCLUDED_FROM_INTERACTIONS = frozenset({
+    'Interaction',
+    'InteractionParam',
+})
+
+_triggers_all = [
+    name
+    for name in _triggers_all_raw
+    if name not in _TRIGGERS_NAMES_EXCLUDED_FROM_INTERACTIONS
+]
+
+# Explicit imports so type checkers never bind the colliding TypeAliasTypes.
+# Keep this list aligned with triggers.__all__ minus the excluded names; the
+# assertion below fails if Speakeasy adds a new trigger export.
+from ._gaos.types.triggers import (  # noqa: F401
+    ListTriggerExecutionsResponse,
+    ListTriggerExecutionsResponseTypedDict,
+    ListTriggersResponse,
+    ListTriggersResponseTypedDict,
+    Trigger,
+    TriggerCreateParams,
+    TriggerCreateParamsParam,
+    TriggerExecution,
+    TriggerExecutionStatus,
+    TriggerExecutionTypedDict,
+    TriggerStatus,
+    TriggerTypedDict,
+    TriggerUpdate,
+    TriggerUpdateParam,
+    TriggerUpdateStatus,
+)
+
+_missing_trigger_exports = [
+    name for name in _triggers_all if name not in globals()
+]
+if _missing_trigger_exports:
+    raise ImportError(
+        'google.genai.interactions is missing trigger exports after excluding '
+        f'colliding Interaction aliases: {_missing_trigger_exports}. Update the '
+        'explicit triggers import list in google/genai/interactions.py.'
+    )
+
 from ._gaos.types.environments import *  # noqa: F401,F403
 from ._gaos.types.environments import __all__ as _environments_all
 from ._gaos.types.interactions import *  # noqa: F401,F403
@@ -137,6 +182,12 @@ __all__ = [
     "WebhookRotateSigningSecretParams",
     "WebhookUpdateParams",
 ]
-# Ensure _interactions_all is appended last so interactions.Interaction wins
-# when doing wildcard imports from this module.
-__all__ = __all__ + list(_triggers_all) + list(_resources_all) + list(_environments_all) + list(_interactions_all)
+# Append interactions exports last so `Interaction` is the resource class for
+# wildcard imports. Trigger Interaction aliases are intentionally omitted above.
+__all__ = (
+    __all__
+    + list(_triggers_all)
+    + list(_resources_all)
+    + list(_environments_all)
+    + list(_interactions_all)
+)
