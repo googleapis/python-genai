@@ -17,7 +17,9 @@
 """Conftest for google.genai tests."""
 
 import datetime
+import inspect
 import os
+import unittest
 from unittest import mock
 import uuid
 import pytest
@@ -240,3 +242,23 @@ def image_png():
   image_path = os.path.join(os.path.dirname(__file__), 'data', 'google.png')
   with PIL.Image.open(image_path) as img:
     yield img
+
+
+def pytest_runtest_setup(item):
+  """Errors on `async def` tests that a plain `unittest.TestCase` won't await.
+
+  `unittest.TestCase` calls an `async def` test method, gets back a coroutine,
+  and reports the test as passed without ever running its body. Only
+  `unittest.IsolatedAsyncioTestCase` awaits them.
+  """
+  cls = getattr(item, 'cls', None)
+  if (
+      cls is not None
+      and issubclass(cls, unittest.TestCase)
+      and not issubclass(cls, unittest.IsolatedAsyncioTestCase)
+      and inspect.iscoroutinefunction(getattr(item, 'obj', None))
+  ):
+    raise TypeError(
+        f'{item.nodeid} is `async def` on a plain unittest.TestCase, so it'
+        ' would never be awaited. Use unittest.IsolatedAsyncioTestCase.'
+    )
