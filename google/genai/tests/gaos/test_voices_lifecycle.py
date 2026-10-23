@@ -53,8 +53,8 @@ def _voices_handler(
     unused_server: conftest.MockGaosServer,
 ) -> dict[str, Any]:
   if req["method"] == "GET" and (
-      req["path"] == "/v1beta/voices"
-      or req["path"].startswith("/v1beta/voices?")
+      req["path"] == "/v1/voices"
+      or req["path"].startswith("/v1/voices?")
   ):
     return VOICE_LIST_BODY
   if req["method"] == "DELETE":
@@ -98,10 +98,10 @@ def test_python_voices_lifecycle_routes_through_google_genai_client(
   client.voices.delete(id="voice_abc123")
 
   assert mock_gaos_server.captured == [
-      "POST /v1beta/voices",
-      "GET /v1beta/voices?language_code=en-US",
-      "GET /v1beta/voices/voice_abc123",
-      "DELETE /v1beta/voices/voice_abc123",
+      "POST /v1/voices",
+      "GET /v1/voices?language_code=en-US",
+      "GET /v1/voices/voice_abc123",
+      "DELETE /v1/voices/voice_abc123",
   ]
   assert mock_gaos_server.captured_bodies[0] == {
       "store": True,
@@ -143,10 +143,10 @@ async def test_python_voices_async_lifecycle(
   assert list_res.voices is not None
   assert len(list_res.voices) == 2
   assert mock_gaos_server.captured == [
-      "POST /v1beta/voices",
-      "GET /v1beta/voices",
-      "GET /v1beta/voices/voice_abc123",
-      "DELETE /v1beta/voices/voice_abc123",
+      "POST /v1/voices",
+      "GET /v1/voices",
+      "GET /v1/voices/voice_abc123",
+      "DELETE /v1/voices/voice_abc123",
   ]
 
 

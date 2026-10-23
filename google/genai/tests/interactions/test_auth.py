@@ -50,7 +50,7 @@ def test_interactions_gemini_url(monkeypatch):
         )
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url).endswith('/v1beta/interactions')
+        assert str(request.url).endswith('/v1/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
 
 
@@ -273,7 +273,7 @@ async def test_async_interactions_gemini_url(monkeypatch):
         )
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url).endswith('/v1beta/interactions')
+        assert str(request.url).endswith('/v1/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
 
 @pytest.mark.asyncio

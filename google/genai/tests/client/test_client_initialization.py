@@ -28,6 +28,7 @@ from unittest import mock
 import certifi
 import google.auth
 from google.auth import credentials
+import google.auth.transport.requests
 import httpx
 import pytest
 import requests
@@ -2484,3 +2485,30 @@ async def test_google_auth_async_respects_mtls_endpoint_env_override(
   assert mock_session.request.call_args.kwargs["url"].startswith(
       "https://us-central1-aiplatform.googleapis.com/"
   )
+
+
+def test_client_init_with_api_version():
+  client = Client(api_key="test-api-key", api_version="v1beta")
+  assert client._api_client._http_options.api_version == "v1beta"
+
+
+def test_client_init_with_api_version_and_http_options():
+  client = Client(
+      api_key="test-api-key",
+      api_version="v1alpha",
+      http_options={"headers": {"custom": "header"}},
+  )
+  assert client._api_client._http_options.api_version == "v1alpha"
+  assert client._api_client._http_options.headers.get("custom") == "header"
+
+
+def test_client_init_with_api_version_conflict():
+  with pytest.raises(
+      ValueError,
+      match="api_version is set in both client constructor and http_options",
+  ):
+    Client(
+        api_key="test-api-key",
+        api_version="v1beta",
+        http_options={"api_version": "v1"},
+    )
