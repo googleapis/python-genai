@@ -347,7 +347,7 @@ def parse_function_declaration_json_schema(
     behavior: Optional[types.Behavior]
     ) -> types.FunctionDeclaration:
   """Parse function declaration JSON schema from a callable."""
-  annotation_under_future = typing.get_type_hints(callable)
+  annotation_under_future = typing.get_type_hints(callable, include_extras=True)
   parameters_properties_json_schema = {}
   root_defs = {}
 
