@@ -31,6 +31,7 @@ import warnings
 
 import certifi
 from google.oauth2.credentials import Credentials
+import httpx
 import pytest
 from websockets import client
 
@@ -2286,6 +2287,78 @@ async def test_connect_with_default_credentials(mock_websocket):
     assert capture['headers']['Authorization'] == 'Bearer default_test_token'
 
   await _test_connect()
+
+
+@pytest.mark.asyncio
+async def test_connect_uses_current_token_after_rest_call(mock_websocket):
+  # A REST call must not pin its bearer token for later Live connections.
+  credentials = Credentials(token='token-1')
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='us-central1',
+      credentials=credentials,
+  )
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch.object(
+      httpx.Client,
+      'send',
+      return_value=httpx.Response(
+          200, request=httpx.Request('POST', ''), json={}
+      ),
+  ):
+    client.request('post', 'sample/path', {})
+  credentials.token = 'token-2'
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(model='test-model'):
+      pass
+
+  assert capture['headers']['Authorization'] == 'Bearer token-2'
+
+
+@pytest.mark.asyncio
+async def test_connect_sets_user_project_from_credentials(mock_websocket):
+  # Live sends the credentials' quota project, as REST requests do.
+  credentials = Credentials(token='t', quota_project_id='test-quota-project')
+  client = mock_api_client(vertexai=True, credentials=credentials)
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(model='test-model'):
+      pass
+
+  assert capture['headers']['x-goog-user-project'] == 'test-quota-project'
+
+
+@pytest.mark.asyncio
+async def test_connect_no_user_project_without_quota_project(mock_websocket):
+  # Without a quota project on the credentials, Live omits the header.
+  credentials = Credentials(token='t')
+  client = mock_api_client(vertexai=True, credentials=credentials)
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(model='test-model'):
+      pass
+
+  assert 'x-goog-user-project' not in capture['headers']
 
 
 @pytest.mark.asyncio

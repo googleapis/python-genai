@@ -1148,6 +1148,8 @@ class AsyncLive(_api_module.BaseModule):
         )
         if not headers.get('Authorization'):
           headers['Authorization'] = f'Bearer {bearer_token}'
+        if creds.quota_project_id and not headers.get('x-goog-user-project'):
+          headers['x-goog-user-project'] = creds.quota_project_id
 
       location = self._api_client.location
       project = self._api_client.project

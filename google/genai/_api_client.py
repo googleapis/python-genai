@@ -1757,13 +1757,13 @@ class BaseApiClient:
 
     if patched_http_options.headers is None:
       raise ValueError('Request headers must be set.')
-    populate_server_timeout_header(
-        patched_http_options.headers, timeout_in_seconds
-    )
+    # Copy so per-request headers do not become client defaults.
+    headers = dict(patched_http_options.headers)
+    populate_server_timeout_header(headers, timeout_in_seconds)
     return HttpRequest(
         method=http_method,
         url=url,
-        headers=patched_http_options.headers,
+        headers=headers,
         data=request_dict,
         timeout=timeout_in_seconds,
     )
