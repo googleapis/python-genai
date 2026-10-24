@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.34.0](https://github.com/googleapis/python-genai/compare/v2.33.0...v2.34.0) (2026-10-24)
+
+
+### Features
+
+* Add support for Python 3.15. ([cb1408b](https://github.com/googleapis/python-genai/commit/cb1408b06c573060f1593023ca320fde9a4fb5f6))
+* Support base_url, api_version and headers in LiveConnectConfig.http_options ([c0e9c54](https://github.com/googleapis/python-genai/commit/c0e9c54915970948258226e565bde6ef6d5c0b94))
+
+
+### Bug Fixes
+
+* Resolve PEP 563 string annotations when invoking AFC tools ([4650ea1](https://github.com/googleapis/python-genai/commit/4650ea156e9908c916050391de37ed12fc1297e9)), refs [#3156](https://github.com/googleapis/python-genai/issues/3156)
+* Stop per-request Authorization and X-Server-Timeout from leaking into client default headers ([0584c96](https://github.com/googleapis/python-genai/commit/0584c96031e1cea876781afb48564d86ad2fc6e2)), refs [#3158](https://github.com/googleapis/python-genai/issues/3158)
+
 ## [2.33.0](https://github.com/googleapis/python-genai/compare/v2.32.0...v2.33.0) (2026-10-22)
 
 
