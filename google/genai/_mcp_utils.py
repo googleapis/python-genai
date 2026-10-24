@@ -148,8 +148,8 @@ def _filter_to_supported_schema(
       "additionalProperties", "anyOf", "oneOf", "$defs", "$ref"
   ])
 
-  schema_field_names = (
-      "items",
+  schema_field_names = ("items",)
+  bool_or_schema_field_names = (
       "additionalProperties",
       "additional_properties",
   )
@@ -159,7 +159,15 @@ def _filter_to_supported_schema(
   filtered_schema: dict[str, Any] = {}
   for field_name, field_value in schema.items():
     if field_name in schema_field_names:
-      filtered_schema[field_name] = _filter_to_supported_schema(field_value)
+      if isinstance(field_value, dict):
+        filtered_schema[field_name] = _filter_to_supported_schema(field_value)
+    elif field_name in bool_or_schema_field_names:
+      # It is legal to set 'additionalProperties' to a bool:
+      # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
+      if isinstance(field_value, dict):
+        filtered_schema[field_name] = _filter_to_supported_schema(field_value)
+      else:
+        filtered_schema[field_name] = field_value
     elif field_name in list_schema_field_names:
       filtered_schema[field_name] = [
           _filter_to_supported_schema(value) for value in field_value
