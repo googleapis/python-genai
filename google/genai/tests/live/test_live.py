@@ -2261,6 +2261,59 @@ async def test_connect_with_provided_credentials(mock_websocket):
 
 
 @pytest.mark.asyncio
+async def test_connect_with_fresh_token_and_quota_project_after_models_call(mock_websocket):
+  import httpx
+
+  gen_response = {
+      'candidates': [{
+          'content': {'role': 'model', 'parts': [{'text': 'ok'}]},
+          'finishReason': 'STOP',
+      }]
+  }
+
+  def handler(request: httpx.Request) -> httpx.Response:
+    return httpx.Response(200, json=gen_response)
+
+  credentials = Credentials(token='token-1', quota_project_id='test-quota-project')
+
+  client_instance = Client(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=credentials,
+      http_options=types.HttpOptions(
+          httpx_client=httpx.Client(transport=httpx.MockTransport(handler))
+      ),
+  )
+
+  # Make a REST call first
+  client_instance.models.generate_content(
+      model='gemini-2.5-flash', contents='hi'
+  )
+  assert 'Authorization' not in client_instance._api_client._http_options.headers
+  assert 'x-goog-user-project' not in client_instance._api_client._http_options.headers
+
+  # Token refreshes
+  credentials.token = 'token-2'
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  @patch.object(live, 'ws_connect', new=mock_connect)
+  async def _test_connect():
+    async with client_instance.aio.live.connect(model='gemini-2.0-flash-exp'):
+      pass
+
+  await _test_connect()
+
+  assert capture['headers']['Authorization'] == 'Bearer token-2'
+  assert capture['headers']['x-goog-user-project'] == 'test-quota-project'
+
+
+@pytest.mark.asyncio
 async def test_connect_with_default_credentials(mock_websocket):
   # mock api client
   client = mock_api_client(vertexai=True, credentials=None)
