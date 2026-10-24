@@ -473,6 +473,8 @@ def t_contents(
         Union[types.ContentListUnion, types.ContentListUnionDict, types.Content]
     ],
 ) -> list[types.Content]:
+  if hasattr(contents, '__iter__') and not isinstance(contents, (list, str, dict, bytes)) and not hasattr(contents, 'role'):
+    contents = list(contents)
   if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
   if not isinstance(contents, list):
@@ -1397,3 +1399,4 @@ def t_is_vertex_embed_content_model(model: str) -> bool:
 
 def t_json_schema(origin: Any) -> Any:
   return origin
+
