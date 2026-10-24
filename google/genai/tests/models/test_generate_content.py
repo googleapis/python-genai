@@ -2663,3 +2663,191 @@ def test_audio_wav_input(client):
       ),
   )
   assert response.text is not None
+
+
+@pytest.mark.parametrize(
+    'model, expected',
+    [
+        ('gemini-3.6-flash', True),
+        ('publishers/google/models/gemini-3.6-pro', True),
+        ('models/gemini-3.6-flash', True),
+        ('GEMINI-3.6-PRO', True),
+        ('gemini-3.6', True),
+        ('gemini-3.8-flash', True),
+        ('gemini-3.1-pro', False),
+        ('gemini-3.5-flash', False),
+        ('gemini-3-flash', False),
+        ('gemini-2.5-flash', False),
+        ('gemini-flash-latest', False),
+        (None, False),
+        ('', False),
+    ],
+)
+def test_is_gemini_3_6_or_newer(client, model, expected):
+  from ... import _extra_utils
+
+  del client
+  assert _extra_utils.is_gemini_3_6_or_newer(model) is expected
+
+
+def test_unsupported_parameters_warning_once(client, monkeypatch, caplog):
+  from unittest import mock
+  from ... import _extra_utils
+  from ... import client as client_lib
+  from ... import models
+
+  del client
+  monkeypatch.setattr(_extra_utils, '_logged_temperature_warning', False)
+  monkeypatch.setattr(_extra_utils, '_logged_top_p_warning', False)
+  monkeypatch.setattr(_extra_utils, '_logged_top_k_warning', False)
+  monkeypatch.setattr(_extra_utils, '_logged_thinking_budget_warning', False)
+
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+
+  mock_api_client = mock.MagicMock(spec=client_lib.BaseApiClient)
+  mock_api_client.vertexai = False
+  models_module = models.Models(mock_api_client)
+
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_with_continuation',
+      return_value=types.GenerateContentResponse(),
+  ):
+    # Older models should not trigger warnings
+    for older_model in ('gemini-2.5-flash', 'gemini-3.1-pro', 'gemini-3-flash'):
+      models_module.generate_content(
+          model=older_model,
+          contents='Hello',
+          config=types.GenerateContentConfig(
+              temperature=0.7,
+              top_p=0.9,
+              top_k=40,
+              thinking_config=types.ThinkingConfig(thinking_budget=1024),
+          ),
+      )
+    assert len(caplog.records) == 0
+
+    # First call on Gemini 3.6+ logs warnings for each unsupported parameter
+    models_module.generate_content(
+        model='gemini-3.6-flash',
+        contents='Hello',
+        config=types.GenerateContentConfig(
+            temperature=0.7,
+            top_p=0.9,
+            top_k=40,
+            thinking_config=types.ThinkingConfig(thinking_budget=1024),
+        ),
+    )
+    messages = [record.message for record in caplog.records]
+    assert messages == [
+        (
+            'temperature is not supported on Gemini 3.6 and newer models and is'
+            ' ignored.'
+        ),
+        'top_p is not supported on Gemini 3.6 and newer models and is ignored.',
+        'top_k is not supported on Gemini 3.6 and newer models and is ignored.',
+        (
+            'thinking_budget is not supported on Gemini 3.6 and newer models'
+            ' and is ignored. Please use thinking_level instead.'
+        ),
+    ]
+
+    # Second call on Gemini 3.6+ should not log again
+    caplog.clear()
+    models_module.generate_content(
+        model='publishers/google/models/gemini-3.6-pro',
+        contents='Hello again',
+        config={
+            'temperature': 0.5,
+            'top_p': 0.8,
+            'top_k': 20,
+            'thinking_config': {'thinking_budget': 512},
+        },
+    )
+    assert len(caplog.records) == 0
+
+
+@pytest.mark.asyncio
+async def test_unsupported_parameters_warning_stream_and_async(
+    client, monkeypatch, caplog
+):
+  from unittest import mock
+  from ... import _extra_utils
+  from ... import client as client_lib
+  from ... import models
+
+  del client
+
+  monkeypatch.setattr(_extra_utils, '_logged_temperature_warning', False)
+  monkeypatch.setattr(_extra_utils, '_logged_top_p_warning', False)
+  monkeypatch.setattr(_extra_utils, '_logged_top_k_warning', False)
+  monkeypatch.setattr(_extra_utils, '_logged_thinking_budget_warning', False)
+
+  caplog.set_level(logging.WARNING, logger='google_genai.models')
+
+  mock_api_client = mock.MagicMock(spec=client_lib.BaseApiClient)
+  mock_api_client.vertexai = False
+  models_module = models.Models(mock_api_client)
+  async_models_module = models.AsyncModels(mock_api_client)
+
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_stream_with_continuation',
+      return_value=iter([types.GenerateContentResponse()]),
+  ):
+    list(
+        models_module.generate_content_stream(
+            model='gemini-3.6-flash',
+            contents='Hello',
+            config={'temperature': 0.7, 'top_p': 0.9},
+        )
+    )
+    assert [r.message for r in caplog.records] == [
+        (
+            'temperature is not supported on Gemini 3.6 and newer models and is'
+            ' ignored.'
+        ),
+        'top_p is not supported on Gemini 3.6 and newer models and is ignored.',
+    ]
+
+  caplog.clear()
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_with_continuation',
+      new_callable=mock.AsyncMock,
+      return_value=types.GenerateContentResponse(),
+  ):
+    await async_models_module.generate_content(
+        model='gemini-3.6-pro',
+        contents='Hello',
+        config={'temperature': 0.7, 'top_k': 40},
+    )
+    # temperature already logged; only top_k should log now
+    assert [r.message for r in caplog.records] == [
+        'top_k is not supported on Gemini 3.6 and newer models and is ignored.',
+    ]
+
+  caplog.clear()
+
+  async def _empty_stream(*args, **kwargs):
+    if False:  # pylint: disable=using-constant-test
+      yield types.GenerateContentResponse()
+
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream_with_continuation',
+      side_effect=_empty_stream,
+  ):
+    stream = await async_models_module.generate_content_stream(
+        model='gemini-3.8-flash',
+        contents='Hello',
+        config={'thinking_config': {'thinking_budget': 256}},
+    )
+    async for _ in stream:
+      pass
+    assert [r.message for r in caplog.records] == [
+        (
+            'thinking_budget is not supported on Gemini 3.6 and newer models'
+            ' and is ignored. Please use thinking_level instead.'
+        ),
+    ]

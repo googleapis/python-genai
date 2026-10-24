@@ -19,6 +19,9 @@
 
 from __future__ import annotations
 
+import json
+import logging
+import re
 from typing import Any, Callable, Mapping, Optional, Union, cast
 
 import httpx
@@ -29,6 +32,75 @@ from .types import BeforeRequestContext, BeforeRequestHook
 
 GOOGLE_GENAI_API_REVISION = "2026-05-20"
 _MANAGED_BEARER_AUTH = "google_genai_managed_bearer_auth"
+_GEMINI_VERSION_PATTERN = re.compile(r"^gemini-(\d+)(?:\.(\d+))?(?:-|$)")
+_logged_temperature_warning = False
+_logged_top_p_warning = False
+_logged_top_k_warning = False
+_logger = logging.getLogger("google_genai.interactions")
+
+
+def _is_gemini_3_6_or_newer(model: Optional[str]) -> bool:
+    if not model:
+        return False
+    model_id = model.rsplit("/", 1)[-1].lower()
+    match = _GEMINI_VERSION_PATTERN.match(model_id)
+    if not match:
+        return False
+    major = int(match.group(1))
+    minor = int(match.group(2)) if match.group(2) is not None else 0
+    return major > 3 or (major == 3 and minor >= 6)
+
+
+def _warn_unsupported_interaction_parameters(
+    hook_ctx: BeforeRequestContext, request: httpx.Request
+) -> None:
+    global _logged_temperature_warning
+    global _logged_top_p_warning
+    global _logged_top_k_warning
+    if hook_ctx.operation_id != "CreateInteraction":
+        return
+    try:
+        content = request.content
+        if not content:
+            return
+        body = json.loads(content)
+    except Exception:
+        return
+    if not isinstance(body, Mapping):
+        return
+    model = body.get("model")
+    if not isinstance(model, str) or not _is_gemini_3_6_or_newer(model):
+        return
+    generation_config = body.get("generation_config")
+    if not isinstance(generation_config, Mapping):
+        return
+    if (
+        generation_config.get("temperature") is not None
+        and not _logged_temperature_warning
+    ):
+        _logged_temperature_warning = True
+        _logger.warning(
+            "temperature is not supported on Gemini 3.6 and newer models and is"
+            " ignored."
+        )
+    if (
+        generation_config.get("top_p") is not None
+        and not _logged_top_p_warning
+    ):
+        _logged_top_p_warning = True
+        _logger.warning(
+            "top_p is not supported on Gemini 3.6 and newer models and is"
+            " ignored."
+        )
+    if (
+        generation_config.get("top_k") is not None
+        and not _logged_top_k_warning
+    ):
+        _logged_top_k_warning = True
+        _logger.warning(
+            "top_k is not supported on Gemini 3.6 and newer models and is"
+            " ignored."
+        )
 
 
 class GoogleGenAISecurityProvider:
@@ -65,6 +137,7 @@ class GoogleGenAIAuthHook(BeforeRequestHook):
         hook_ctx: BeforeRequestContext,
         request: httpx.Request,
     ) -> Union[httpx.Request, Exception]:
+        _warn_unsupported_interaction_parameters(hook_ctx, request)
         security = _resolve_security(hook_ctx.security_source)
 
         _apply_default_headers(security, request)
