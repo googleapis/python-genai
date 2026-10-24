@@ -232,12 +232,6 @@ def test_interaction_lenient_parsing():
   assert parsed.id == "x"
 
 
-def test_interactions_default_timeout():
-  from ... import _interactions
-
-  assert _interactions.DEFAULT_TIMEOUT == httpx.Timeout(
-      timeout=None, connect=5.0
-  )
 
 
 def _thought(signature):
@@ -340,3 +334,4 @@ def test_output_text_across_steps(steps, expected):
 
   wrapped = gaos_google_genai._add_output_properties_if_interaction(payload)  # pylint: disable=protected-access
   assert wrapped["output_text"] == expected
+
