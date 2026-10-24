@@ -362,6 +362,46 @@ class HttpRequest:
   timeout: Optional[float] = None
 
 
+class _RawJsonLineBuffer:
+  """Buffers raw JSON lines until their braces balance outside strings."""
+
+  def __init__(self) -> None:
+    self._lines: list[str] = []
+    self._depth = 0
+    self._in_string = False
+    self._escaped = False
+
+  def add_line(self, line: str) -> Optional[str]:
+    """Adds a line and returns the buffered chunk once it is complete."""
+    for c in line:
+      if self._in_string:
+        if self._escaped:
+          self._escaped = False
+        elif c == '\\':
+          self._escaped = True
+        elif c == '"':
+          self._in_string = False
+      elif c == '"':
+        self._in_string = True
+      elif c == '{':
+        self._depth += 1
+      elif c == '}':
+        self._depth -= 1
+    self._lines.append(line)
+    if self._depth == 0:
+      return self.flush()
+    return None
+
+  def flush(self) -> str:
+    """Returns all buffered lines and resets the buffer."""
+    chunk = ''.join(self._lines)
+    self._lines = []
+    self._depth = 0
+    self._in_string = False
+    self._escaped = False
+    return chunk
+
+
 class HttpResponse:
 
   def __init__(
@@ -481,8 +521,7 @@ class HttpResponse:
           f'but got {type(self.response_stream).__name__}.'
       )
 
-    chunk = ''
-    balance = 0
+    raw_buffer = _RawJsonLineBuffer()
     data_buffer: list[str] = []
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       response_stream = self.response_stream.iter_lines()
@@ -503,21 +542,15 @@ class HttpResponse:
 
       # When API returns an error message, it comes line by line. So we buffer
       # the lines until a complete JSON string is read. A complete JSON string
-      # is found when the balance is 0.
-      for c in line:
-        if c == '{':
-          balance += 1
-        elif c == '}':
-          balance -= 1
-
-      chunk += line
-      if balance == 0:
+      # is found when the braces balance, ignoring braces inside strings.
+      chunk = raw_buffer.add_line(line)
+      if chunk is not None:
         yield chunk
-        chunk = ''
 
     # If there is any remaining chunk, yield it.
-    if chunk:
-      yield chunk
+    remaining = raw_buffer.flush()
+    if remaining:
+      yield remaining
     if data_buffer:
       yield '\n'.join(data_buffer)
 
@@ -535,8 +568,7 @@ class HttpResponse:
           f' {type(self.response_stream).__name__}.'
       )
 
-    chunk = ''
-    balance = 0
+    raw_buffer = _RawJsonLineBuffer()
     data_buffer: list[str] = []
     # httpx.Response has a dedicated async line iterator.
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
@@ -556,20 +588,14 @@ class HttpResponse:
 
           # When API returns an error message, it comes line by line. So we buffer
           # the lines until a complete JSON string is read. A complete JSON string
-          # is found when the balance is 0.
-          for c in line:
-            if c == '{':
-              balance += 1
-            elif c == '}':
-              balance -= 1
-
-          chunk += line
-          if balance == 0:
+          # is found when the braces balance, ignoring braces inside strings.
+          chunk = raw_buffer.add_line(line)
+          if chunk is not None:
             yield chunk
-            chunk = ''
         # If there is any remaining chunk, yield it.
-        if chunk:
-          yield chunk
+        remaining = raw_buffer.flush()
+        if remaining:
+          yield remaining
         if data_buffer:
           yield '\n'.join(data_buffer)
       finally:
@@ -609,20 +635,15 @@ class HttpResponse:
 
           # When API returns an error message, it comes line by line. So we
           # buffer the lines until a complete JSON string is read. A complete
-          # JSON strings found when the balance is 0.
-          for c in line:
-            if c == '{':
-              balance += 1
-            elif c == '}':
-              balance -= 1
-
-          chunk += line
-          if balance == 0:
+          # JSON string is found when the braces balance, ignoring braces
+          # inside strings.
+          chunk = raw_buffer.add_line(line)
+          if chunk is not None:
             yield chunk
-            chunk = ''
         # If there is any remaining chunk, yield it.
-        if chunk:
-          yield chunk
+        remaining = raw_buffer.flush()
+        if remaining:
+          yield remaining
         if data_buffer:
           yield '\n'.join(data_buffer)
       finally:
