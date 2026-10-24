@@ -259,13 +259,21 @@ def convert_if_exist_pydantic_model(
           f' {annotation}, due to error {e}'
       )
   if isinstance(value, list) and get_origin(annotation) == list:
-    item_type = get_args(annotation)[0]
+    args = get_args(annotation)
+    # Unsubscripted typing.List has no item type.
+    if not args:
+      return value
+    item_type = args[0]
     return [
         convert_if_exist_pydantic_model(item, item_type, param_name, func_name)
         for item in value
     ]
   if isinstance(value, dict) and get_origin(annotation) == dict:
-    _, value_type = get_args(annotation)
+    args = get_args(annotation)
+    # Unsubscripted typing.Dict has no key and value types.
+    if len(args) != 2:
+      return value
+    _, value_type = args
     return {
         k: convert_if_exist_pydantic_model(v, value_type, param_name, func_name)
         for k, v in value.items()

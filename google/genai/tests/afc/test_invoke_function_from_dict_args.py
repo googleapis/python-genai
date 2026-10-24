@@ -16,10 +16,11 @@
 
 """Test invoke_function_from_dict_args."""
 
+import sys
+import typing
 from typing import Union
 import pydantic
 import pytest
-import sys
 from ... import errors
 from ..._extra_utils import invoke_function_from_dict_args
 
@@ -239,3 +240,17 @@ def test_function_invocation_error():
 
   with pytest.raises(errors.FunctionInvocationError):
     invoke_function_from_dict_args({'x': 1}, func_under_test)
+
+
+def test_unsubscripted_typing_list_and_dict():
+  """A function with bare typing.List and typing.Dict params is invoked."""
+
+  def func_under_test(x: typing.List, y: typing.Dict):  # pylint: disable=g-bare-generic
+    return len(x) + len(y)
+
+  assert (
+      invoke_function_from_dict_args(
+          {'x': [1, 2], 'y': {'key1': 1}}, func_under_test
+      )
+      == 3
+  )
