@@ -43,6 +43,10 @@ httpx2 = ["httpx2>=2.0.0, <3.0.0"]
 local-tokenizer = [
     "sentencepiece>=0.2.0",
     "protobuf",
+]
+local-tokenizer-transformers = [
+    "sentencepiece>=0.2.0",
+    "protobuf",
     "pillow",
     "torch",
     "torchvision",

@@ -1291,6 +1291,15 @@ print(response)
 
 #### Local Count Tokens
 
+The local tokenizer needs an extra. SentencePiece models such as
+`gemini-2.5-flash` need only the light one. Gemma 4 models such as
+`gemini-3.5-flash` also need Transformers and PyTorch.
+
+```sh
+pip install "google-genai[local-tokenizer]"
+pip install "google-genai[local-tokenizer-transformers]"
+```
+
 ```python
 from google.genai import local_tokenizer
 
