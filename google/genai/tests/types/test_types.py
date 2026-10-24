@@ -1514,6 +1514,55 @@ def test_pydantic_model_in_list_type():
   assert actual_schema_vertex == expected_schema
 
 
+def test_pydantic_model_with_default_fields():
+  class MyPydanticModel(pydantic.BaseModel):
+    a: int
+    b: int = 5
+    c: str = 'hello'
+    d: list[int] = pydantic.Field(default_factory=list)
+
+  def func_under_test(
+      a: MyPydanticModel,
+  ):
+    """test pydantic model with default fields."""
+    pass
+
+  expected_schema = types.FunctionDeclaration(
+      name='func_under_test',
+      parameters=types.Schema(
+          type='OBJECT',
+          properties={
+              'a': types.Schema(
+                  type='OBJECT',
+                  properties={
+                      'a': types.Schema(type='INTEGER'),
+                      'b': types.Schema(type='INTEGER', default=5),
+                      'c': types.Schema(type='STRING', default='hello'),
+                      'd': types.Schema(
+                          type='ARRAY',
+                          default=[],
+                          items=types.Schema(type='INTEGER'),
+                      ),
+                  },
+                  required=['a'],
+              ),
+          },
+          required=['a'],
+      ),
+      description='test pydantic model with default fields.',
+  )
+
+  actual_schema_mldev = types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  actual_schema_vertex = types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
+
+  assert actual_schema_mldev == expected_schema
+  assert actual_schema_vertex == expected_schema
+
+
 @pytest.mark.skip(
     reason=(
         'AFC is in progress of refactoring, this test is failing python 3.14'
