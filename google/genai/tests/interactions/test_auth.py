@@ -20,6 +20,7 @@ from ... import Client
 from ... import _base_url
 from unittest import mock
 import pytest
+import httpx
 from httpx import Request, Response
 from ..._api_client import AsyncHttpxClient, BaseApiClient
 from httpx import Client as HTTPClient
@@ -52,6 +53,16 @@ def test_interactions_gemini_url(monkeypatch):
         request = mock_send.call_args[0][0]
         assert str(request.url).endswith('/v1beta/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
+
+
+def test_interactions_default_headers_have_single_user_agent(monkeypatch):
+    monkeypatch.setenv('GOOGLE_API_KEY', 'test-api-key')
+    client = Client()
+
+    headers = httpx.Headers(client.aio.interactions._client.default_headers)
+
+    assert len(headers.get_list('user-agent')) == 1
+    assert 'google-genai-sdk/' in headers['user-agent']
 
 
 def test_interactions_gemini_no_vertex_auth(monkeypatch):
