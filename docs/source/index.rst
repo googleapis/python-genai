@@ -1468,7 +1468,7 @@ Currently, only Gemini Enterprise Agent Platform supports Video to Video generat
     from google.genai import types
 
     # Read local video (uses mimetypes.guess_type to infer mime type)
-    video = types.Video.from_file("local/path/video.mp4")
+    video = types.Video.from_file(location="local/path/video.mp4")
 
     # Create operation
     operation = client.models.generate_videos(
