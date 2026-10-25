@@ -1190,7 +1190,7 @@ def t_resolve_operation(
           http_method='GET', path=name, request_dict={}
       )
       time.sleep(delay_seconds)
-      total_seconds += total_seconds
+      total_seconds += delay_seconds
       # Exponential backoff
       delay_seconds = min(
           delay_seconds * LRO_POLLING_MULTIPLIER,
