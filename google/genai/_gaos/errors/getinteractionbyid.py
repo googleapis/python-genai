@@ -22,7 +22,10 @@ from . import GenAiError
 from ..types import BaseModel
 from ..types.interactions import error as interactions_error
 from dataclasses import dataclass, field
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 from typing import Optional
 
 

@@ -250,37 +250,37 @@ client = genai.Client(
 )
 ```
 
-### HTTP client option: httpx2
+### HTTP client option: httpx
 
-By default, the SDK uses `httpx` for its HTTP transport. You can opt in to
-[`httpx2`](https://github.com/pydantic/httpx2) by installing `google-genai[httpx2]`
+By default, the SDK uses [`httpx2`](https://github.com/pydantic/httpx2) for its HTTP transport. You can opt in to
+legacy `httpx` by installing `google-genai[httpx]`
 and setting the `GOOGLE_GENAI_HTTP_CLIENT` environment variable:
 
 ```bash
-export GOOGLE_GENAI_HTTP_CLIENT=httpx2
+export GOOGLE_GENAI_HTTP_CLIENT=httpx
 ```
 
-Alternatively, you can directly inject an `httpx2.Client` or `httpx2.AsyncClient`
+Alternatively, you can directly inject an `httpx.Client` or `httpx.AsyncClient`
 via `HttpOptions`:
 
 ```python
-import httpx2
+import httpx
 from google import genai
 from google.genai import types
 
 client = genai.Client(
     http_options=types.HttpOptions(
-        httpx_client=httpx2.Client(),
-        httpx_async_client=httpx2.AsyncClient(),
+        httpx_client=httpx.Client(),
+        httpx_async_client=httpx.AsyncClient(),
     )
 )
 ```
 
 ### Faster async client option: Aiohttp
 
-By default we use httpx for both sync and async client implementations. In order
+By default we use httpx2 for both sync and async client implementations. In order
 to have faster performance, you may install `google-genai[aiohttp]`. In Gen AI
-SDK we configure `trust_env=True` to match with the default behavior of httpx.
+SDK we configure `trust_env=True` to match with the default behavior of httpx2.
 Additional args of `aiohttp.ClientSession.request()` ([see `_RequestOptions` args](https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170)) can be passed
 through the following way:
 
@@ -295,7 +295,7 @@ client=Client(..., http_options=http_options)
 
 ### Proxy
 
-Both httpx and aiohttp libraries use `urllib.request.getproxies` from
+Both httpx2 and aiohttp libraries use `urllib.request.getproxies` from
 environment variables. Before client initialization, you may set proxy (and
 optional `SSL_CERT_FILE`) by setting the environment variables:
 
@@ -304,8 +304,8 @@ export HTTPS_PROXY='http://username:password@proxy_uri:port'
 export SSL_CERT_FILE='client.pem'
 ```
 
-If you need `socks5` proxy, httpx [supports](https://www.python-httpx.org/advanced/proxies/#socks) `socks5` proxy if you pass it via
-args to `httpx.Client()`. You may install `httpx[socks]` to use it.
+If you need `socks5` proxy, httpx2 [supports](https://www.python-httpx.org/advanced/proxies/#socks) `socks5` proxy if you pass it via
+args to `httpx2.Client()`. You may install `httpx2[socks]` to use it.
 Then, you can pass it through the following way:
 
 ```python

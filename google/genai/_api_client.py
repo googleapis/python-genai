@@ -809,13 +809,19 @@ else:
     AsyncHttpx2Client = None  # type: ignore[assignment,misc]
 
 
+# The HTTP client backend used when GOOGLE_GENAI_HTTP_CLIENT is unset or 'auto'.
+# If it is not installed, the other backend is used instead.
+_DEFAULT_HTTP_CLIENT_BACKEND = 'httpx2'
+
+
 def _get_http_client_backend() -> str:
   """Determines whether to use 'httpx' or 'httpx2' as the default HTTP client.
 
   Can be controlled via the GOOGLE_GENAI_HTTP_CLIENT environment variable:
     - 'httpx2': Use httpx2 (raises ImportError if not installed).
     - 'httpx': Use httpx (raises ImportError if not installed).
-    - 'auto' or unset: Default to httpx if installed, otherwise fall back to httpx2.
+    - 'auto' or unset: Use `_DEFAULT_HTTP_CLIENT_BACKEND` if installed,
+      otherwise fall back to the other backend.
   """
   env = os.environ.get('GOOGLE_GENAI_HTTP_CLIENT', '').lower().strip()
   if env == 'httpx2':
@@ -837,14 +843,14 @@ def _get_http_client_backend() -> str:
         'Unrecognized GOOGLE_GENAI_HTTP_CLIENT=%r; falling back to default.', env
     )
 
-  if httpx is not None:
-    return 'httpx'
-  # httpx is a required dependency so it _should_ always be present in a
-  # standard install, but if a user has uninstalled httpx in an environment
-  # that only has httpx2 installed, fall back to httpx2 before raising
+  installed = {'httpx': httpx is not None, 'httpx2': httpx2 is not None}
+  fallback = 'httpx' if _DEFAULT_HTTP_CLIENT_BACKEND == 'httpx2' else 'httpx2'
+  # Either backend may be missing (httpx2 is an optional extra, and a user may
+  # have uninstalled httpx), so fall back to the other one before raising
   # ImportError.
-  if httpx2 is not None:
-    return 'httpx2'
+  for backend in (_DEFAULT_HTTP_CLIENT_BACKEND, fallback):
+    if installed[backend]:
+      return backend
   raise ImportError(
       'Neither httpx nor httpx2 is installed. Please install httpx2 or httpx.'
   )
@@ -1377,19 +1383,70 @@ class BaseApiClient:
         else None
     )
 
+    default_backend = (
+        _get_http_client_backend()
+        if (client_cls is None or async_client_cls is None)
+        else None
+    )
+    if client_cls is not None:
+      sync_cls = client_cls
+    elif default_backend == 'httpx2' and SyncHttpx2Client is not None:
+      sync_cls = SyncHttpx2Client
+    else:
+      sync_cls = (
+          SyncHttpxClient
+          if SyncHttpxClient is not None
+          else (httpx.Client if httpx is not None else None)
+      )
+
+    if async_client_cls is not None:
+      async_cls = async_client_cls
+    elif default_backend == 'httpx2' and AsyncHttpx2Client is not None:
+      async_cls = AsyncHttpx2Client
+    else:
+      async_cls = (
+          AsyncHttpxClient
+          if AsyncHttpxClient is not None
+          else (httpx.AsyncClient if httpx is not None else None)
+      )
+
+    use_httpx2 = httpx2 is not None and (
+        (
+            sync_cls is not None
+            and isinstance(getattr(httpx2, 'Client', None), type)
+            and issubclass(sync_cls, httpx2.Client)
+        )
+        or (
+            async_cls is not None
+            and isinstance(getattr(httpx2, 'AsyncClient', None), type)
+            and issubclass(async_cls, httpx2.AsyncClient)
+        )
+    )
+
     if ctx is None:
-      # Initialize the SSL context for the httpx client.
+      # Initialize the SSL context for the httpx/httpx2 client.
       # Unlike requests, the httpx package does not automatically pull in the
       # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
-      # enabled explicitly.
+      # enabled explicitly. When using httpx2 without SSL_CERT_FILE or
+      # SSL_CERT_DIR, delegate to httpx2.create_ssl_context(), which uses
+      # truststore (OS native trust store).
       if vertexai:
         ctx = _get_client_cert_ssl_ctx()
 
       if ctx is None:
-        ctx = ssl.create_default_context(
-            cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
-            capath=os.environ.get('SSL_CERT_DIR'),
-        )
+        if use_httpx2:
+          if os.environ.get('SSL_CERT_FILE') or os.environ.get('SSL_CERT_DIR'):
+            ctx = ssl.create_default_context(
+                cafile=os.environ.get('SSL_CERT_FILE'),
+                capath=os.environ.get('SSL_CERT_DIR'),
+            )
+          else:
+            ctx = httpx2.create_ssl_context()
+        else:
+          ctx = ssl.create_default_context(
+              cafile=os.environ.get('SSL_CERT_FILE', certifi.where()),
+              capath=os.environ.get('SSL_CERT_DIR'),
+          )
 
     def _maybe_set(
         raw_args: Optional[_common.StringDict],
@@ -1431,17 +1488,6 @@ class BaseApiClient:
                 del args[key]
             break
       return args
-
-    sync_cls = client_cls or (
-        SyncHttpxClient
-        if SyncHttpxClient is not None
-        else (httpx.Client if httpx is not None else None)
-    )
-    async_cls = async_client_cls or (
-        AsyncHttpxClient
-        if AsyncHttpxClient is not None
-        else (httpx.AsyncClient if httpx is not None else None)
-    )
 
     return (
         _maybe_set(args, ctx, sync_cls),

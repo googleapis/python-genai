@@ -32,7 +32,10 @@ import json
 import mimetypes
 import os
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 
 from .. import _interactions_continuation
 from ._hooks.google_genai_auth import (

@@ -218,9 +218,9 @@ To set the API version to `v1alpha` for the Gemini Developer API:
 Faster async client option: Aiohttp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default we use httpx for both sync and async client implementations. In order
+By default we use httpx2 for both sync and async client implementations. In order
 to have faster performance, you may install `google-genai[aiohttp]`. In Gen AI
-SDK we configure `trust_env=True` to match with the default behavior of httpx.
+SDK we configure `trust_env=True` to match with the default behavior of httpx2.
 Additional args of `aiohttp.ClientSession.request()`
 (`see _RequestOptions args <https://github.com/aio-libs/aiohttp/blob/v3.12.13/aiohttp/client.py#L170>`_)
 can be passed through the following way:
@@ -237,7 +237,7 @@ can be passed through the following way:
 Proxy
 ^^^^^^^
 
-Both httpx and aiohttp libraries use `urllib.request.getproxies` from
+Both httpx2 and aiohttp libraries use `urllib.request.getproxies` from
 environment variables. Before client initialization, you may set proxy (and
 optional SSL_CERT_FILE) by setting the environment variables:
 
@@ -248,9 +248,9 @@ optional SSL_CERT_FILE) by setting the environment variables:
     export SSL_CERT_FILE='client.pem'
 
 
-If you need `socks5` proxy, httpx `supports <https://www.python-httpx.org/advanced/proxies/#socks>`_
-`socks5` proxy if you pass it via args to httpx.Client(). You may install
-`httpx[socks]` to use it. Then you can pass it through the following way:
+If you need `socks5` proxy, httpx2 `supports <https://www.python-httpx.org/advanced/proxies/#socks>`_
+`socks5` proxy if you pass it via args to httpx2.Client(). You may install
+`httpx2[socks]` to use it. Then you can pass it through the following way:
 
 .. code:: python
 
