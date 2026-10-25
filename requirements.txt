@@ -23,7 +23,7 @@ pydantic==2.14.1; python_version >= '3.15'
 pydantic_core==2.41.1; python_version < '3.15'
 pydantic_core==2.50.1; python_version >= '3.15'
 pyopenssl==24.2.1
-pytest==8.3.4
+pytest==9.0.3
 pytest-asyncio==0.25.0
 pytest-cov==6.0.0
 pytest-xdist==3.8.0
