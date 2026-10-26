@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from unittest import mock
 
 import httpx
@@ -19,6 +20,10 @@ import pytest
 
 from ... import client as client_lib
 from ..._gaos import google_genai as gaos_google_genai
+from ..._gaos.types import basemodel as gaos_basemodel
+from ..._gaos.types.interactions import documentcontent as gaos_documentcontent
+from ..._gaos.types.interactions import dynamicagentconfig as gaos_dynamicagentconfig
+from ..._gaos.types.interactions import generationconfig as gaos_generationconfig
 from ..._gaos.types.interactions import interaction as gaos_interaction
 from ..._gaos.utils import serializers as gaos_serializers
 
@@ -340,3 +345,219 @@ def test_output_text_across_steps(steps, expected):
 
   wrapped = gaos_google_genai._add_output_properties_if_interaction(payload)  # pylint: disable=protected-access
   assert wrapped["output_text"] == expected
+
+
+def test_extra_fields_preserved_in_model_serialization():
+  nested = gaos_generationconfig.GenerationConfig(
+      temperature=0.25,
+      inner_extra="kept",
+  )
+  doc = gaos_documentcontent.DocumentContent(
+      type="document",
+      data="aGVsbG8=",
+      mime_type="application/pdf",
+      resolution="low",
+      null_extra=None,
+      unset_extra=gaos_basemodel.UNSET,
+      nested_extra=nested,
+  )
+
+  marshaled = json.loads(
+      gaos_serializers.marshal_json(doc, gaos_documentcontent.DocumentContent)
+  )
+  assert marshaled == {
+      "type": "document",
+      "data": "aGVsbG8=",
+      "mime_type": "application/pdf",
+      "resolution": "low",
+      "nested_extra": {"temperature": 0.25, "inner_extra": "kept"},
+  }
+
+  assert doc.model_dump(mode="json", exclude_none=True) == marshaled
+  assert doc.model_dump(mode="json") == {**marshaled, "null_extra": None}
+  assert doc.model_dump(include={"type"}) == {"type": "document"}
+  assert "resolution" not in doc.model_dump(exclude={"resolution"})
+  assert doc.to_dict(mode="json", exclude_none=True) == marshaled
+
+  constructed = gaos_documentcontent.DocumentContent.model_construct(
+      type="document",
+      data="aGVsbG8=",
+      resolution="low",
+  )
+  assert constructed.to_dict() == {
+      "type": "document",
+      "data": "aGVsbG8=",
+      "resolution": "low",
+  }
+
+
+def test_interactions_create_preserves_nested_extra_fields_on_wire():
+  captured_requests: list[httpx.Request] = []
+
+  def fake_send(
+      unused_self: httpx.Client, request: httpx.Request, **unused_kwargs
+  ) -> httpx.Response:
+    captured_requests.append(request)
+    return httpx.Response(
+        200,
+        json={"id": "v1_123", "status": "completed", "steps": []},
+        headers={"content-type": "application/json"},
+        request=request,
+    )
+
+  client = client_lib.Client(api_key="placeholder")
+  with mock.patch.object(httpx.Client, "send", autospec=True, side_effect=fake_send):
+    client.interactions.create(
+        model="gemini-2.5-flash",
+        input=[
+            {
+                "type": "document",
+                "data": "aGVsbG8=",
+                "mime_type": "application/pdf",
+                "resolution": "low",
+            }
+        ],
+        generation_config={"temperature": 0.5, "extra_knob": 42},
+    )
+
+  assert len(captured_requests) == 1
+  payload = json.loads(captured_requests[0].content)
+  assert payload == {
+      "model": "gemini-2.5-flash",
+      "input": [
+          {
+              "type": "user_input",
+              "content": [
+                  {
+                      "type": "document",
+                      "data": "aGVsbG8=",
+                      "mime_type": "application/pdf",
+                      "resolution": "low",
+                  }
+              ],
+          }
+      ],
+      "generation_config": {"temperature": 0.5, "extra_knob": 42},
+  }
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_create_preserves_nested_extra_fields_on_wire():
+  captured_requests: list[httpx.Request] = []
+
+  async def fake_send(
+      unused_self: httpx.AsyncClient, request: httpx.Request, **unused_kwargs
+  ) -> httpx.Response:
+    captured_requests.append(request)
+    return httpx.Response(
+        200,
+        json={"id": "v1_123", "status": "completed", "steps": []},
+        headers={"content-type": "application/json"},
+        request=request,
+    )
+
+  client = client_lib.Client(api_key="placeholder")
+  with mock.patch.object(
+      httpx.AsyncClient, "send", autospec=True, side_effect=fake_send
+  ):
+    await client.aio.interactions.create(
+        model="gemini-2.5-flash",
+        input=[
+            {
+                "type": "document",
+                "data": "aGVsbG8=",
+                "mime_type": "application/pdf",
+                "resolution": "low",
+            }
+        ],
+        generation_config={"temperature": 0.5, "extra_knob": 42},
+    )
+
+  assert len(captured_requests) == 1
+  payload = json.loads(captured_requests[0].content)
+  assert payload == {
+      "model": "gemini-2.5-flash",
+      "input": [
+          {
+              "type": "user_input",
+              "content": [
+                  {
+                      "type": "document",
+                      "data": "aGVsbG8=",
+                      "mime_type": "application/pdf",
+                      "resolution": "low",
+                  }
+              ],
+          }
+      ],
+      "generation_config": {"temperature": 0.5, "extra_knob": 42},
+  }
+
+
+def test_dynamic_agent_config_extra_fields_preserved():
+  cfg = gaos_dynamicagentconfig.DynamicAgentConfig(
+      type="dynamic",
+      custom_flag=True,
+  )
+  assert json.loads(
+      gaos_serializers.marshal_json(
+          cfg, gaos_dynamicagentconfig.DynamicAgentConfig
+      )
+  ) == {"type": "dynamic", "custom_flag": True}
+
+  cfg2 = gaos_dynamicagentconfig.DynamicAgentConfig()
+  cfg2.additional_properties = {"via_setter": "value"}
+  assert cfg2.to_dict() == {"via_setter": "value"}
+  assert json.loads(
+      gaos_serializers.marshal_json(
+          cfg2, gaos_dynamicagentconfig.DynamicAgentConfig
+      )
+  ) == {"type": "dynamic", "via_setter": "value"}
+
+
+def test_response_unmarshal_preserves_unknown_fields():
+  raw_json = json.dumps({
+      "id": "v1_999",
+      "status": "completed",
+      "future_top_level": "abc",
+      "steps": [
+          {
+              "type": "model_output",
+              "future_step_field": 7,
+              "content": [
+                  {
+                      "type": "document",
+                      "data": "aGVsbG8=",
+                      "mime_type": "application/pdf",
+                      "resolution": "low",
+                  }
+              ],
+          }
+      ],
+  })
+
+  parsed = gaos_serializers.unmarshal_json(raw_json, gaos_interaction.Interaction)
+  dumped = parsed.to_dict(mode="json", exclude_none=True)
+  assert dumped["future_top_level"] == "abc"
+  assert dumped["steps"][0]["future_step_field"] == 7
+  assert dumped["steps"][0]["content"][0]["resolution"] == "low"
+
+  # Also verify lenient fallback when required `status` is omitted.
+  lenient = gaos_serializers.construct_unvalidated(
+      {
+          "id": "v1_lenient",
+          "future_top_level": "xyz",
+          "steps": [
+              {
+                  "type": "model_output",
+                  "future_step_field": 9,
+                  "content": [{"type": "document", "resolution": "high"}],
+              }
+          ],
+      },
+      gaos_interaction.Interaction,
+  )
+  lenient_dumped = lenient.to_dict(mode="json", exclude_none=True)
+  assert lenient_dumped["future_top_level"] == "xyz"
+  assert lenient_dumped["steps"][0]["future_step_field"] == 9
+  assert lenient_dumped["steps"][0]["content"][0]["resolution"] == "high"
