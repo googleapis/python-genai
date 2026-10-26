@@ -475,7 +475,9 @@ def t_contents(
 ) -> list[types.Content]:
   if contents is None or (isinstance(contents, list) and not contents):
     raise ValueError('contents are required.')
-  if not isinstance(contents, list):
+  if isinstance(contents, tuple):
+    contents = list(contents)
+  elif not isinstance(contents, list):
     return [t_content(contents)]
 
   result: list[types.Content] = []
