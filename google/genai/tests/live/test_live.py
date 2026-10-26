@@ -17,6 +17,7 @@
 """Tests for live.py."""
 
 import contextlib
+import inspect
 import json
 import os
 import ssl
@@ -30,6 +31,7 @@ import warnings
 
 import certifi
 from google.oauth2.credentials import Credentials
+import httpx
 import pytest
 from websockets import client
 
@@ -251,6 +253,40 @@ def test_websocket_base_url_no_auth_with_custom_base_url():
 
   # Fully pass the custom base url if no API key or project/location.
   assert api_client._websocket_base_url() == base_url
+
+
+def test_websocket_base_url_with_http_options():
+  api_client = gl_client.BaseApiClient(
+      api_key='google_api_key',
+      http_options={'base_url': 'https://test.com'},
+  )
+  assert (
+      api_client._websocket_base_url(
+          types.HttpOptions(base_url='https://session-test.com')
+      )
+      == 'wss://session-test.com'
+  )
+
+
+def test_websocket_base_url_no_auth_with_http_options():
+  api_client = gl_client.BaseApiClient(
+      vertexai=True,
+      http_options={
+          'base_url': 'https://test-api-gateway-proxy.com',
+          'headers': {'Authorization': 'Bearer test_token'},
+      },
+  )
+  api_client.project = None
+  api_client.location = None
+
+  # The base url of the given http options is passed as is, like the client's.
+  session_base_url = 'https://session-api-gateway-proxy.com'
+  assert (
+      api_client._websocket_base_url(
+          types.HttpOptions(base_url=session_base_url)
+      )
+      == session_base_url
+  )
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
@@ -1778,6 +1814,46 @@ async def test_bidi_setup_to_api_with_translation_config(vertexai):
 
 
 @pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_bidi_setup_to_api_with_labels(vertexai):
+  api_client = mock_api_client(vertexai=vertexai)
+
+  if vertexai:
+    expected_result = {
+        'setup': {
+            'model': (
+                'projects/test_project/locations/us-central1/publishers/google/models/test_model'
+            ),
+            'generationConfig': {'responseModalities': ['AUDIO']},
+            'labels': {'team': 'sdk'},
+        }
+    }
+  else:
+    expected_result = {
+        'setup': {
+            'model': 'models/test_model',
+            'labels': {'team': 'sdk'},
+        }
+    }
+
+  # Config defined using dict representation.
+  result = await get_connect_message(
+      api_client=api_client,
+      model='test_model',
+      config={'labels': {'team': 'sdk'}},
+  )
+  assert result == expected_result
+
+  # Config defined using types.LiveConnectConfig.
+  result = await get_connect_message(
+      api_client=api_client,
+      model='test_model',
+      config=types.LiveConnectConfig(labels={'team': 'sdk'}),
+  )
+  assert result == expected_result
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
 def test_parse_client_message_str( mock_websocket, vertexai):
   session = live.AsyncSession(
       api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
@@ -2214,6 +2290,78 @@ async def test_connect_with_default_credentials(mock_websocket):
 
 
 @pytest.mark.asyncio
+async def test_connect_uses_current_token_after_rest_call(mock_websocket):
+  # A REST call must not pin its bearer token for later Live connections.
+  credentials = Credentials(token='token-1')
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='us-central1',
+      credentials=credentials,
+  )
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch.object(
+      httpx.Client,
+      'send',
+      return_value=httpx.Response(
+          200, request=httpx.Request('POST', ''), json={}
+      ),
+  ):
+    client.request('post', 'sample/path', {})
+  credentials.token = 'token-2'
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(model='test-model'):
+      pass
+
+  assert capture['headers']['Authorization'] == 'Bearer token-2'
+
+
+@pytest.mark.asyncio
+async def test_connect_sets_user_project_from_credentials(mock_websocket):
+  # Live sends the credentials' quota project, as REST requests do.
+  credentials = Credentials(token='t', quota_project_id='test-quota-project')
+  client = mock_api_client(vertexai=True, credentials=credentials)
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(model='test-model'):
+      pass
+
+  assert capture['headers']['x-goog-user-project'] == 'test-quota-project'
+
+
+@pytest.mark.asyncio
+async def test_connect_no_user_project_without_quota_project(mock_websocket):
+  # Without a quota project on the credentials, Live omits the header.
+  credentials = Credentials(token='t')
+  client = mock_api_client(vertexai=True, credentials=credentials)
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['headers'] = additional_headers
+    yield mock_websocket
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(client).connect(model='test-model'):
+      pass
+
+  assert 'x-goog-user-project' not in capture['headers']
+
+
+@pytest.mark.asyncio
 async def test_connect_with_custom_base_url(mock_websocket):
   # mock api client
   client = gl_client.BaseApiClient(
@@ -2243,6 +2391,165 @@ async def test_connect_with_custom_base_url(mock_websocket):
     assert capture['uri'] == 'https://custom-base-url.com'
 
   await _test_connect()
+
+
+async def _capture_connect(api_client, config):
+  """Connects through a mock websocket and returns what reached it."""
+  mock_ws = AsyncMock()
+  mock_ws.recv = AsyncMock(
+      return_value=b'{"setupComplete": {"sessionId": "test_session_id"}}'
+  )
+  capture = {}
+
+  @contextlib.asynccontextmanager
+  async def mock_connect(uri, additional_headers=None, **kwargs):
+    capture['uri'] = uri
+    capture['headers'] = additional_headers
+    yield mock_ws
+
+  with patch.object(live, 'ws_connect', new=mock_connect):
+    async with live.AsyncLive(api_client).connect(
+        model='test-model', config=config
+    ):
+      pass
+  capture['request'] = mock_ws.send.call_args[0][0]
+  return capture
+
+
+@pytest.mark.asyncio
+async def test_connect_with_session_http_options():
+  client = gl_client.BaseApiClient(
+      vertexai=False,
+      api_key='TEST_API_KEY',
+      http_options={'headers': {'x-client-header': 'client-value'}},
+  )
+  config = types.LiveConnectConfig(
+      http_options=types.HttpOptions(
+          base_url='https://session-base-url.com',
+          api_version='v1alpha',
+          headers={
+              'x-client-header': 'session-value',
+              'x-session-header': 'session-value',
+          },
+      )
+  )
+
+  capture = await _capture_connect(client, config)
+
+  assert capture['uri'] == (
+      'wss://session-base-url.com/ws/google.ai.generativelanguage.v1alpha'
+      '.GenerativeService.BidiGenerateContent'
+  )
+  assert capture['headers']['x-goog-api-key'] == 'TEST_API_KEY'
+  assert capture['headers']['x-client-header'] == 'session-value'
+  assert capture['headers']['x-session-header'] == 'session-value'
+  # The session-level options apply to this session only.
+  assert client._http_options.headers['x-client-header'] == 'client-value'
+  assert 'x-session-header' not in client._http_options.headers
+  # They configure the connection and are not sent in the setup message.
+  assert 'x-session-header' not in capture['request']
+
+
+@pytest.mark.asyncio
+async def test_connect_keeps_client_base_url():
+  client = gl_client.BaseApiClient(
+      vertexai=False,
+      api_key='TEST_API_KEY',
+      http_options={'base_url': 'https://client-base-url.com'},
+  )
+  config = types.LiveConnectConfig(
+      http_options=types.HttpOptions(
+          headers={'x-session-header': 'session-value'}
+      )
+  )
+
+  capture = await _capture_connect(client, config)
+
+  # Without a session-level base url, the client's is used.
+  assert capture['uri'] == (
+      'wss://client-base-url.com/ws/google.ai.generativelanguage.v1beta'
+      '.GenerativeService.BidiGenerateContent'
+  )
+
+
+@pytest.mark.asyncio
+async def test_connect_with_session_http_options_and_credentials():
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=Credentials(token='provided_fake_token'),
+      http_options={'base_url': 'https://client-base-url.com'},
+  )
+  config = types.LiveConnectConfig(
+      http_options=types.HttpOptions(
+          api_version='v1',
+          headers={'x-session-header': 'session-value'},
+      )
+  )
+
+  capture = await _capture_connect(client, config)
+
+  # The client's base url is kept, the api version is overridden.
+  assert capture['uri'] == (
+      'wss://client-base-url.com/ws/google.cloud.aiplatform.v1'
+      '.LlmBidiService/BidiGenerateContent'
+  )
+  assert capture['headers']['Authorization'] == 'Bearer provided_fake_token'
+  assert capture['headers']['x-session-header'] == 'session-value'
+
+
+@pytest.mark.asyncio
+async def test_connect_with_session_http_options_and_custom_base_url(
+    monkeypatch,
+):
+  for env_var in (
+      'GOOGLE_CLOUD_PROJECT',
+      'GOOGLE_CLOUD_LOCATION',
+      'GOOGLE_API_KEY',
+      'GEMINI_API_KEY',
+  ):
+    monkeypatch.delenv(env_var, raising=False)
+  client = gl_client.BaseApiClient(
+      vertexai=True,
+      http_options={
+          'base_url': 'https://custom-base-url.com',
+          'headers': {'Authorization': 'Bearer custom_test_token'},
+      },
+  )
+  config = types.LiveConnectConfig(
+      http_options=types.HttpOptions(
+          base_url='https://session-base-url.com',
+          headers={'Authorization': 'Bearer session_test_token'},
+      )
+  )
+
+  capture = await _capture_connect(client, config)
+
+  assert capture['uri'] == 'https://session-base-url.com'
+  assert capture['headers']['Authorization'] == 'Bearer session_test_token'
+
+
+@pytest.mark.parametrize(
+    'field, value',
+    [
+        ('timeout', 1000),
+        ('extra_body', {'setup': {}}),
+        ('retry_options', {'attempts': 1}),
+        ('async_client_args', {'open_timeout': 5}),
+    ],
+)
+@pytest.mark.asyncio
+async def test_connect_with_unsupported_session_http_options(field, value):
+  config = {'http_options': {'headers': {'x-header': 'value'}, field: value}}
+
+  with patch.object(live, 'ws_connect') as mock_ws_connect:
+    with pytest.raises(ValueError, match=field):
+      async with live.AsyncLive(mock_api_client()).connect(
+          model='test-model', config=config
+      ):
+        pass
+  mock_ws_connect.assert_not_called()
 
 
 @pytest.mark.parametrize('vertexai', [False])
@@ -2420,3 +2727,34 @@ async def test_bidi_setup_replicated_voice_config_with_consent(vertexai):
       replicated_sig['voice_consent_signature'].get('signature')
       == 'test_sig_abc123'
   )
+
+
+def test_live_client_message_fields_have_send_methods():
+  ignored_message_fields = {'setup'}
+  ignored_inner_fields = {
+      'realtime_input': {'media_chunks'},  # Exposed as `media`
+  }
+
+  for field_name, field_info in types.LiveClientMessage.model_fields.items():
+    if field_name in ignored_message_fields:
+      continue
+
+    method_name = f'send_{field_name}'
+    method = getattr(live.AsyncSession, method_name, None)
+    assert callable(method), (
+        f'AsyncSession is missing `{method_name}` for'
+        f' LiveClientMessage.{field_name}'
+    )
+
+    sig_params = set(inspect.signature(method).parameters.keys()) - {'self'}
+    inner_type = typing.get_args(field_info.annotation)[0]
+    expected_fields = set(
+        inner_type.model_fields.keys()
+    ) - ignored_inner_fields.get(field_name, set())
+
+    missing_params = expected_fields - sig_params
+    assert not missing_params, (
+        f'AsyncSession.{method_name} is missing parameters for'
+        f' {inner_type.__name__} fields: {sorted(missing_params)}'
+    )
+

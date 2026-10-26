@@ -63,12 +63,12 @@ class UpdateWebhookGlobals(BaseModel):
 class UpdateWebhookRequestParam(TypedDict):
     id: str
     r"""Required. The ID of the webhook to update."""
+    body: webhooks_webhookupdate.WebhookUpdateParam
+    r"""Required. The request body."""
     api_version: NotRequired[str]
     r"""API version for request routing."""
     update_mask: NotRequired[str]
     r"""Optional list of fields to update."""
-    body: NotRequired[webhooks_webhookupdate.WebhookUpdateParam]
-    r"""Required. The request body."""
 
 
 class UpdateWebhookRequest(BaseModel):
@@ -76,6 +76,12 @@ class UpdateWebhookRequest(BaseModel):
         str, FieldMetadata(path=PathParamMetadata(style="simple", explode=False))
     ]
     r"""Required. The ID of the webhook to update."""
+
+    body: Annotated[
+        webhooks_webhookupdate.WebhookUpdate,
+        FieldMetadata(request=RequestMetadata(media_type="application/json")),
+    ]
+    r"""Required. The request body."""
 
     api_version: Annotated[
         Optional[str],
@@ -89,15 +95,9 @@ class UpdateWebhookRequest(BaseModel):
     ] = None
     r"""Optional list of fields to update."""
 
-    body: Annotated[
-        Optional[webhooks_webhookupdate.WebhookUpdate],
-        FieldMetadata(request=RequestMetadata(media_type="application/json")),
-    ] = None
-    r"""Required. The request body."""
-
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "update_mask", "body"])
+        optional_fields = set(["api_version", "update_mask"])
         serialized = handler(self)
         m = {}
 

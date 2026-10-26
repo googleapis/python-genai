@@ -77,6 +77,50 @@ def test_function(client):
 
 
 @pytest.mark.usefixtures('client')
+def test_function_with_optional_and_union_types(client):
+  def test_func(
+      query: str | int,
+      start_line: int | None = None,
+  ) -> str | None:
+    del query, start_line
+    return None
+
+  assert t.t_tool(client, test_func) == types.Tool(
+      function_declarations=[
+          types.FunctionDeclaration(
+              name='test_func',
+              description='',
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'query': {
+                          'anyOf': [
+                              {'type': 'string'},
+                              {'type': 'integer'},
+                          ],
+                      },
+                      'start_line': {
+                          'anyOf': [
+                              {'type': 'integer'},
+                              {'type': 'null'},
+                          ],
+                          'default': None,
+                      },
+                  },
+                  'required': ['query'],
+              },
+              response_json_schema={
+                  'anyOf': [
+                      {'type': 'string'},
+                      {'type': 'null'},
+                  ],
+              },
+          )
+      ]
+  )
+
+
+@pytest.mark.usefixtures('client')
 def test_dictionary(client):
   assert t.t_tool(
       client,

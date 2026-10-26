@@ -431,6 +431,9 @@ def _LiveConnectConfig_to_mldev(
         ),
     )
 
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['setup', 'labels'], getv(from_object, ['labels']))
+
   return to_object
 
 

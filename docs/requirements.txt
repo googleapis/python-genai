@@ -1,0 +1,6 @@
+absl-py==2.1.0
+autodoc_pydantic==2.2.0
+furo==2025.09.25
+myst-parser==4.0.1
+sphinx==8.2.3
+sphinx-autodoc-typehints==3.2.0

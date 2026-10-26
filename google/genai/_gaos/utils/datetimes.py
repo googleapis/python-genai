@@ -42,7 +42,7 @@ def parse_datetime(datetime_string: str) -> datetime:
     return datetime.fromisoformat(datetime_string)
 
 
-_DURATION_ADAPTER = TypeAdapter(timedelta)
+_DURATION_ADAPTER: TypeAdapter[timedelta] = TypeAdapter(timedelta)
 
 
 def parse_duration(duration_string: str) -> timedelta:

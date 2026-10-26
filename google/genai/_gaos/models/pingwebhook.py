@@ -61,7 +61,7 @@ class PingWebhookRequestParam(TypedDict):
     api_version: NotRequired[str]
     r"""API version for request routing."""
     body: NotRequired[webhooks_pingwebhookrequest.PingWebhookRequestParam]
-    r"""Required. The request body."""
+    r"""The request body."""
 
 
 class PingWebhookRequest(BaseModel):
@@ -80,7 +80,7 @@ class PingWebhookRequest(BaseModel):
         Optional[webhooks_pingwebhookrequest.PingWebhookRequest],
         FieldMetadata(request=RequestMetadata(media_type="application/json")),
     ] = None
-    r"""Required. The request body."""
+    r"""The request body."""
 
     @model_serializer(mode="wrap")
     def serialize_model(self, handler):

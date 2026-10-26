@@ -38,15 +38,15 @@ from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple,
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 import warnings
+import weakref
 
 import anyio
 import certifi
 import google.auth
+from google.auth import exceptions as auth_exceptions
 import google.auth.credentials
 from google.auth.credentials import Credentials
 from google.auth.transport import mtls
-from google.auth import exceptions as auth_exceptions
-import httpx
 from pydantic import BaseModel
 from pydantic import ValidationError
 import tenacity
@@ -69,24 +69,77 @@ except ModuleNotFoundError:
 
 
 has_aiohttp = False
+# aiohttp connection errors that HttpRetryOptions retries, like httpx.
+_AIOHTTP_TRANSIENT_EXC: tuple[type[Exception], ...] = ()
 try:
   import aiohttp
 
   has_aiohttp = True
+  _AIOHTTP_TRANSIENT_EXC = (
+      aiohttp.ClientConnectorError,
+      aiohttp.ClientOSError,
+      aiohttp.ServerDisconnectedError,
+  )
 except ImportError:
   pass
 
 
-try:
-  import httpx2
-except ImportError:
-  httpx2 = None  # type: ignore[assignment]
-
-
 if TYPE_CHECKING:
   from google.auth.transport.requests import AuthorizedSession  # pylint: disable=g-import-not-at-top
+  import httpx
+  import httpx2
   from multidict import CIMultiDictProxy
   from requests.structures import CaseInsensitiveDict  # pylint: disable=g-import-not-at-top
+
+  _HTTPX_RESPONSE_TYPES = (httpx.Response, httpx2.Response)
+  _HTTPX_HEADERS_TYPES = (httpx.Headers, httpx2.Headers)
+  _HTTPX_TRANSIENT_EXC = (
+      httpx.TimeoutException,
+      httpx.ConnectError,
+      httpx2.TimeoutException,
+      httpx2.ConnectError,
+  )
+else:
+  try:
+    import httpx
+  except ImportError:
+    httpx = None  # type: ignore[assignment]
+
+  try:
+    import httpx2
+  except ImportError:
+    httpx2 = None  # type: ignore[assignment]
+
+  # httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
+  # separate import namespace, so its classes are not instances of the httpx
+  # equivalents. Widen the runtime type checks to accept either when httpx or
+  # httpx2 is installed.
+  _HTTPX_RESPONSE_TYPES = tuple(
+      cls
+      for cls in (
+          getattr(httpx, 'Response', None),
+          getattr(httpx2, 'Response', None),
+      )
+      if cls is not None
+  )
+  _HTTPX_HEADERS_TYPES = tuple(
+      cls
+      for cls in (
+          getattr(httpx, 'Headers', None),
+          getattr(httpx2, 'Headers', None),
+      )
+      if cls is not None
+  )
+  _HTTPX_TRANSIENT_EXC = tuple(
+      cls
+      for cls in (
+          getattr(httpx, 'TimeoutException', None),
+          getattr(httpx, 'ConnectError', None),
+          getattr(httpx2, 'TimeoutException', None),
+          getattr(httpx2, 'ConnectError', None),
+      )
+      if cls is not None
+  )
 
 
 logger = logging.getLogger('google_genai._api_client')
@@ -97,27 +150,6 @@ INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
 
 _MULTI_REGIONAL_LOCATIONS = {'us', 'eu'}
-
-# httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
-# separate import namespace, so its classes are not instances of the httpx
-# equivalents. Widen the runtime type checks to accept either when httpx2 is
-# installed.
-_HTTPX_RESPONSE_TYPES = (
-    (httpx.Response,) if httpx2 is None else (httpx.Response, httpx2.Response)
-)
-_HTTPX_HEADERS_TYPES = (
-    (httpx.Headers,) if httpx2 is None else (httpx.Headers, httpx2.Headers)
-)
-_HTTPX_TRANSIENT_EXC = (
-    (httpx.TimeoutException, httpx.ConnectError)
-    if httpx2 is None
-    else (
-        httpx.TimeoutException,
-        httpx.ConnectError,
-        httpx2.TimeoutException,
-        httpx2.ConnectError,
-    )
-)
 
 
 class EphemeralTokenAPIKeyError(ValueError):
@@ -222,23 +254,67 @@ def join_url_path(base_url: str, path: str) -> str:
   return urlunparse(parsed_base._replace(path=base_path + '/' + path))
 
 
+_MULTI_REGIONAL_REP_SUFFIXES = tuple(
+    f'.{loc}.rep.{domain}'
+    for loc in _MULTI_REGIONAL_LOCATIONS
+    for domain in ('sandbox.googleapis.com', 'googleapis.com')
+)
+
+
 def to_mtls_url(url: str) -> str:
   """Rewrites a googleapis.com URL to its mTLS endpoint.
 
   For example, `aiplatform.googleapis.com` becomes
   `aiplatform.mtls.googleapis.com` and `foo.sandbox.googleapis.com` becomes
-  `foo.mtls.sandbox.googleapis.com`. URLs on other hosts, and URLs that already
-  point at an mTLS endpoint, are returned unchanged.
+  `foo.mtls.sandbox.googleapis.com`. URLs on other hosts, URLs that already
+  point at an mTLS endpoint, and multi-regional `.rep.googleapis.com` endpoints
+  (which do not publish `.rep.mtls.googleapis.com` DNS records) are returned
+  unchanged.
   """
   parsed = urlparse(url)
   netloc = parsed.netloc
-  if netloc.endswith(('.mtls.googleapis.com', '.mtls.sandbox.googleapis.com')):
+  hostname = parsed.hostname or ''
+  if hostname.endswith(
+      ('.mtls.googleapis.com', '.mtls.sandbox.googleapis.com')
+  ):
+    return url
+  if hostname.endswith(_MULTI_REGIONAL_REP_SUFFIXES):
     return url
   for domain in ('sandbox.googleapis.com', 'googleapis.com'):
     if netloc.endswith('.' + domain):
       netloc = netloc[: -len(domain)] + 'mtls.' + domain
       return urlunparse(parsed._replace(netloc=netloc))
   return url
+
+
+# SSL contexts that google-auth loaded the default client certificate into. A
+# transport switches to the mTLS endpoint only when the SSL context it actually
+# uses is one of these.
+_client_cert_ssl_contexts: 'weakref.WeakSet[ssl.SSLContext]' = weakref.WeakSet()
+
+
+def _get_client_cert_ssl_ctx() -> Optional[ssl.SSLContext]:
+  """Returns an SSL context with the default client certificate loaded.
+
+  Returns None if no client certificate is configured, or if google-auth fails
+  to load it.
+  """
+  get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
+  if get_ctx_fn is None:
+    return None
+  try:
+    ctx = get_ctx_fn()
+  except Exception as e:  # pylint: disable=broad-except
+    logger.warning('Failed to get default SSL context from google-auth: %s', e)
+    return None
+  if ctx is not None:
+    _client_cert_ssl_contexts.add(ctx)
+  return ctx  # type: ignore[no-any-return]
+
+
+def _has_client_cert(ctx: Any) -> bool:
+  """Returns whether `ctx` is an SSL context from `_get_client_cert_ssl_ctx`."""
+  return isinstance(ctx, ssl.SSLContext) and ctx in _client_cert_ssl_contexts
 
 
 def load_auth(*, project: Union[str, None]) -> Tuple[Credentials, str]:
@@ -292,16 +368,19 @@ class HttpResponse:
       self,
       headers: Union[
           dict[str, str],
-          httpx.Headers,
+          'httpx.Headers',
+          'httpx2.Headers',
           'CIMultiDictProxy[str]',
-          'CaseInsensitiveDict',  # type: ignore[type-arg]
+          'CaseInsensitiveDict[Any]',
       ],
       response_stream: Union[Any, str] = None,
       byte_stream: Union[Any, bytes] = None,
   ):
     if isinstance(headers, dict):
       self.headers = headers
-    elif isinstance(headers, _HTTPX_HEADERS_TYPES):
+    elif isinstance(headers, _HTTPX_HEADERS_TYPES) or hasattr(
+        headers, 'get_list'
+    ):
       self.headers = {
           key: ', '.join(headers.get_list(key)) for key in headers.keys()  # type: ignore[attr-defined]
       }
@@ -313,7 +392,8 @@ class HttpResponse:
       self.headers = {key: value for key, value in headers.items()}
     elif type(headers).__name__ == 'CIMultiDictProxy':
       self.headers = {
-          key: ', '.join(headers.getall(key)) for key in headers.keys()  # type: ignore[union-attr]
+          key: ', '.join(headers.getall(key))  # type: ignore[union-attr]
+          for key in headers.keys()  # type: ignore[union-attr]
       }
 
     self.status_code: int = 200
@@ -396,7 +476,8 @@ class HttpResponse:
         )
     ):
       raise TypeError(
-          'Expected self.response_stream to be an httpx.Response object, '
+          'Expected self.response_stream to be an httpx.Response or'
+          ' httpx2.Response object, '
           f'but got {type(self.response_stream).__name__}.'
       )
 
@@ -406,7 +487,7 @@ class HttpResponse:
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       response_stream = self.response_stream.iter_lines()
     else:
-      response_stream = self.response_stream.iter_lines(decode_unicode=True)  # type: ignore[call-arg]
+      response_stream = self.response_stream.iter_lines(decode_unicode=True)
     for line in response_stream:
       if not line:
         if data_buffer:
@@ -449,8 +530,8 @@ class HttpResponse:
     )
     if not is_valid_response:
       raise TypeError(
-          'Expected self.response_stream to be an httpx.Response or'
-          ' aiohttp.ClientResponse object, but got'
+          'Expected self.response_stream to be an httpx.Response,'
+          ' httpx2.Response, or aiohttp.ClientResponse object, but got'
           f' {type(self.response_stream).__name__}.'
       )
 
@@ -504,7 +585,7 @@ class HttpResponse:
           # Read a line from the stream. This returns bytes.
           try:
             line_bytes = await self.response_stream.content.readline(
-                max_line_length=READ_BUFFER_SIZE
+                max_line_length=READ_BUFFER_SIZE  # type: ignore[call-arg]
             )
           except TypeError:
             # Ensure backwards compatibility with older versions of
@@ -578,6 +659,11 @@ _RETRY_HTTP_STATUS_CODES = (
 )
 
 
+def _delay_or_default(value: Optional[float], default: float) -> float:
+  """Returns the default only when the field is unset, so 0.0 is honored."""
+  return default if value is None else value
+
+
 def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """Returns the retry args for the given http retry options.
 
@@ -596,13 +682,14 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
-      or isinstance(e, _HTTPX_TRANSIENT_EXC),
+      or isinstance(e, _HTTPX_TRANSIENT_EXC)
+      or isinstance(e, _AIOHTTP_TRANSIENT_EXC),
   )
   wait = tenacity.wait_exponential_jitter(
-      initial=options.initial_delay or _RETRY_INITIAL_DELAY,
-      max=options.max_delay or _RETRY_MAX_DELAY,
-      exp_base=options.exp_base or _RETRY_EXP_BASE,
-      jitter=options.jitter or _RETRY_JITTER,
+      initial=_delay_or_default(options.initial_delay, _RETRY_INITIAL_DELAY),
+      max=_delay_or_default(options.max_delay, _RETRY_MAX_DELAY),
+      exp_base=_delay_or_default(options.exp_base, _RETRY_EXP_BASE),
+      jitter=_delay_or_default(options.jitter, _RETRY_JITTER),
   )
   return {
       'stop': stop,
@@ -613,45 +700,154 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   }
 
 
-class SyncHttpxClient(httpx.Client):
-  """Sync httpx client."""
+if TYPE_CHECKING:
 
-  def __init__(self, **kwargs: Any) -> None:
-    """Initializes the httpx client."""
-    kwargs.setdefault('follow_redirects', True)
-    super().__init__(**kwargs)
+  class SyncHttpxClient(httpx.Client):
+    """Sync httpx client."""
 
-  def __del__(self) -> None:
-    """Closes the httpx client."""
-    try:
-      if self.is_closed:
-        return
-    except Exception:
-      pass
-    try:
-      self.close()
-    except Exception:
-      pass
+  class AsyncHttpxClient(httpx.AsyncClient):
+    """Async httpx client."""
+
+  class SyncHttpx2Client(httpx2.Client):  # type: ignore[misc]
+    """Sync httpx2 client."""
+
+  class AsyncHttpx2Client(httpx2.AsyncClient):  # type: ignore[misc]
+    """Async httpx2 client."""
+
+else:
+  if httpx is not None:
+
+    class SyncHttpxClient(httpx.Client):
+      """Sync httpx client."""
+
+      def __init__(self, **kwargs: Any) -> None:
+        """Initializes the httpx client."""
+        kwargs.setdefault('follow_redirects', True)
+        super().__init__(**kwargs)
+
+      def __del__(self) -> None:
+        """Closes the httpx client."""
+        try:
+          if self.is_closed:
+            return
+        except Exception:
+          pass
+        try:
+          self.close()
+        except Exception:
+          pass
 
 
-class AsyncHttpxClient(httpx.AsyncClient):
-  """Async httpx client."""
+    class AsyncHttpxClient(httpx.AsyncClient):
+      """Async httpx client."""
 
-  def __init__(self, **kwargs: Any) -> None:
-    """Initializes the httpx client."""
-    kwargs.setdefault('follow_redirects', True)
-    super().__init__(**kwargs)
+      def __init__(self, **kwargs: Any) -> None:
+        """Initializes the httpx client."""
+        kwargs.setdefault('follow_redirects', True)
+        super().__init__(**kwargs)
 
-  def __del__(self) -> None:
-    try:
-      if self.is_closed:
-        return
-    except Exception:
-      pass
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
+      def __del__(self) -> None:
+        try:
+          if self.is_closed:
+            return
+        except Exception:
+          pass
+        try:
+          asyncio.get_running_loop().create_task(self.aclose())
+        except Exception:
+          pass
+
+  else:
+    SyncHttpxClient = None  # type: ignore[assignment,misc]
+    AsyncHttpxClient = None  # type: ignore[assignment,misc]
+
+
+  if httpx2 is not None:
+
+    class SyncHttpx2Client(httpx2.Client):
+      """Sync httpx2 client."""
+
+      def __init__(self, **kwargs: Any) -> None:
+        """Initializes the httpx2 client."""
+        kwargs.setdefault('follow_redirects', True)
+        super().__init__(**kwargs)
+
+      def __del__(self) -> None:
+        """Closes the httpx2 client."""
+        try:
+          if self.is_closed:
+            return
+        except Exception:
+          pass
+        try:
+          self.close()
+        except Exception:
+          pass
+
+
+    class AsyncHttpx2Client(httpx2.AsyncClient):
+      """Async httpx2 client."""
+
+      def __init__(self, **kwargs: Any) -> None:
+        """Initializes the httpx2 client."""
+        kwargs.setdefault('follow_redirects', True)
+        super().__init__(**kwargs)
+
+      def __del__(self) -> None:
+        try:
+          if self.is_closed:
+            return
+        except Exception:
+          pass
+        try:
+          asyncio.get_running_loop().create_task(self.aclose())
+        except Exception:
+          pass
+
+  else:
+    SyncHttpx2Client = None  # type: ignore[assignment,misc]
+    AsyncHttpx2Client = None  # type: ignore[assignment,misc]
+
+
+def _get_http_client_backend() -> str:
+  """Determines whether to use 'httpx' or 'httpx2' as the default HTTP client.
+
+  Can be controlled via the GOOGLE_GENAI_HTTP_CLIENT environment variable:
+    - 'httpx2': Use httpx2 (raises ImportError if not installed).
+    - 'httpx': Use httpx (raises ImportError if not installed).
+    - 'auto' or unset: Default to httpx if installed, otherwise fall back to httpx2.
+  """
+  env = os.environ.get('GOOGLE_GENAI_HTTP_CLIENT', '').lower().strip()
+  if env == 'httpx2':
+    if httpx2 is None:
+      raise ImportError(
+          'httpx2 is configured via GOOGLE_GENAI_HTTP_CLIENT=httpx2, '
+          'but httpx2 is not installed.'
+      )
+    return 'httpx2'
+  elif env == 'httpx':
+    if httpx is None:
+      raise ImportError(
+          'httpx is configured via GOOGLE_GENAI_HTTP_CLIENT=httpx, '
+          'but httpx is not installed.'
+      )
+    return 'httpx'
+  elif env and env != 'auto':
+    logger.warning(
+        'Unrecognized GOOGLE_GENAI_HTTP_CLIENT=%r; falling back to default.', env
+    )
+
+  if httpx is not None:
+    return 'httpx'
+  # httpx is a required dependency so it _should_ always be present in a
+  # standard install, but if a user has uninstalled httpx in an environment
+  # that only has httpx2 installed, fall back to httpx2 before raising
+  # ImportError.
+  if httpx2 is not None:
+    return 'httpx2'
+  raise ImportError(
+      'Neither httpx nor httpx2 is installed. Please install httpx2 or httpx.'
+  )
 
 
 class BaseApiClient:
@@ -872,9 +1068,19 @@ class BaseApiClient:
       if self._http_options.headers is not None:
         append_library_version_headers(self._http_options.headers)
 
+    backend = _get_http_client_backend()
+    if backend == 'httpx2':
+      sync_client_cls: type[Any] = SyncHttpx2Client
+      async_client_cls: type[Any] = AsyncHttpx2Client
+    else:
+      sync_client_cls = SyncHttpxClient
+      async_client_cls = AsyncHttpxClient
+
     client_args, async_client_args = self._ensure_httpx_ssl_ctx(
         self._http_options,
         vertexai=bool(self.vertexai),
+        client_cls=sync_client_cls,
+        async_client_cls=async_client_cls,
     )
     self._async_httpx_client_args = async_client_args
     self._authorized_session: Optional['AuthorizedSession'] = None
@@ -882,12 +1088,14 @@ class BaseApiClient:
     if self._http_options.httpx_client:
       self._httpx_client = self._http_options.httpx_client
     else:
-      self._httpx_client = SyncHttpxClient(**client_args)
+      self._httpx_client = sync_client_cls(**client_args)
 
-    if self._http_options.httpx_async_client:
+    if self._use_google_auth_async():
+      self._async_httpx_client = None
+    elif self._http_options.httpx_async_client:
       self._async_httpx_client = self._http_options.httpx_async_client
     else:
-      self._async_httpx_client = AsyncHttpxClient(**async_client_args)
+      self._async_httpx_client = async_client_cls(**async_client_args)
 
     # Initialize the aiohttp client sessions.
     self._aiohttp_sessions: dict[Any, Any] = {}
@@ -917,25 +1125,25 @@ class BaseApiClient:
         self._http_options,
         vertexai=bool(self.vertexai),
     )
-    # The httpx and websocket transports present the default client certificate
-    # only through the SSL context the SDK creates, so when the caller supplies
-    # their own client or SSL context, only GOOGLE_API_USE_MTLS_ENDPOINT=always
-    # switches them to the mTLS endpoint.
-    client_args = self._http_options.client_args or {}
-    async_client_args = self._http_options.async_client_args or {}
-    custom_httpx_verify = bool(
-        client_args.get('verify') or async_client_args.get('verify')
-    )
+    # Each transport switches to the mTLS endpoint only when its own SSL
+    # context carries the default client certificate, unless overridden by
+    # GOOGLE_API_USE_MTLS_ENDPOINT. A caller-supplied aiohttp_client still uses
+    # the per-request `ssl` argument, so it does not opt out.
     self._httpx_use_mtls_endpoint = self._use_mtls_endpoint(
-        sdk_ssl_ctx=not (self._http_options.httpx_client or custom_httpx_verify)
+        client_cert_loaded=not self._http_options.httpx_client
+        and _has_client_cert(client_args.get('verify'))
     )
     self._async_httpx_use_mtls_endpoint = self._use_mtls_endpoint(
-        sdk_ssl_ctx=not (
-            self._http_options.httpx_async_client or custom_httpx_verify
+        client_cert_loaded=not self._http_options.httpx_async_client
+        and _has_client_cert(async_client_args.get('verify'))
+    )
+    self._aiohttp_use_mtls_endpoint = self._use_mtls_endpoint(
+        client_cert_loaded=_has_client_cert(
+            getattr(self, '_async_client_session_request_args', {}).get('ssl')
         )
     )
     self._websocket_use_mtls_endpoint = self._use_mtls_endpoint(
-        sdk_ssl_ctx=not async_client_args.get('ssl')
+        client_cert_loaded=_has_client_cert(self._websocket_ssl_ctx.get('ssl'))
     )
     self._retry = tenacity.Retrying(**retry_kwargs)
     self._async_retry = tenacity.AsyncRetrying(**retry_kwargs)
@@ -952,7 +1160,7 @@ class BaseApiClient:
         )
     )
 
-  def _use_mtls_endpoint(self, sdk_ssl_ctx: bool) -> bool:
+  def _use_mtls_endpoint(self, client_cert_loaded: bool) -> bool:
     """Returns whether a transport should send requests to the mTLS endpoint.
 
     Certificate-bound access tokens are only accepted on `mtls.googleapis.com`,
@@ -960,28 +1168,21 @@ class BaseApiClient:
     the mTLS endpoint.
 
     Args:
-      sdk_ssl_ctx: Whether the transport uses the SSL context created by the
-        SDK, which carries the default client certificate when one is
-        configured.
+      client_cert_loaded: Whether the transport's SSL context has the default
+        client certificate loaded.
     """
     if not self.vertexai:
       return False
-    client_cert_available = bool(
-        sdk_ssl_ctx
-        and hasattr(mtls, 'should_use_client_cert')
-        and mtls.should_use_client_cert()  # type: ignore[no-untyped-call]
-        and mtls.has_default_client_cert_source()  # type: ignore[no-untyped-call]
-    )
     should_use_mtls_endpoint = getattr(mtls, 'should_use_mtls_endpoint', None)
     if should_use_mtls_endpoint is None:
-      return client_cert_available
+      return client_cert_loaded
     try:
       return bool(
-          should_use_mtls_endpoint(client_cert_available=client_cert_available)
+          should_use_mtls_endpoint(client_cert_available=client_cert_loaded)
       )
     except auth_exceptions.MutualTLSChannelError as e:
       logger.warning('Failed to determine whether to use mTLS endpoint: %s', e)
-      return client_cert_available
+      return client_cert_loaded
 
   def _use_google_auth_async(self) -> bool:
     try:
@@ -1001,6 +1202,8 @@ class BaseApiClient:
         and mtls.should_use_client_cert()  # type: ignore[no-untyped-call]
         and mtls.has_default_client_cert_source()  # type: ignore[no-untyped-call]
         and not self._http_options.httpx_async_client
+        and not self._http_options.aiohttp_client
+        and not (self._http_options.async_client_args or {}).get('ssl')
     )
 
   def _is_session_closed(self, session: Any) -> bool:
@@ -1146,6 +1349,8 @@ class BaseApiClient:
   def _ensure_httpx_ssl_ctx(
       options: HttpOptions,
       vertexai: bool = False,
+      client_cls: Optional[type[Any]] = None,
+      async_client_cls: Optional[type[Any]] = None,
   ) -> Tuple[_common.StringDict, _common.StringDict]:
     """Ensures the SSL context is present in the HTTPX client args.
 
@@ -1154,6 +1359,8 @@ class BaseApiClient:
     Args:
       options: The http options to check for SSL context.
       vertexai: Whether Vertex AI is enabled.
+      client_cls: The client class to inspect parameters for sync client args (default: httpx.Client or httpx2.Client).
+      async_client_cls: The client class to inspect parameters for async client args (default: httpx.AsyncClient or httpx2.AsyncClient).
 
     Returns:
       A tuple of sync/async httpx client args.
@@ -1176,12 +1383,7 @@ class BaseApiClient:
       # environment variables SSL_CERT_FILE or SSL_CERT_DIR. They need to be
       # enabled explicitly.
       if vertexai:
-        get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
-        if get_ctx_fn is not None:
-          try:
-            ctx = get_ctx_fn()
-          except Exception as e:  # pylint: disable=broad-except
-            logger.warning('Failed to get default SSL context from google-auth: %s', e)
+        ctx = _get_client_cert_ssl_ctx()
 
       if ctx is None:
         ctx = ssl.create_default_context(
@@ -1190,35 +1392,60 @@ class BaseApiClient:
         )
 
     def _maybe_set(
-        args: Optional[_common.StringDict],
+        raw_args: Optional[_common.StringDict],
         ctx: ssl.SSLContext,
+        target_cls: Optional[type[Any]] = None,
     ) -> _common.StringDict:
       """Sets the SSL context in the client args if not set.
 
       Does not override the SSL context if it is already set.
 
       Args:
-        args: The client args to to check for SSL context.
+        raw_args: The client args to check for SSL context.
         ctx: The SSL context to set.
+        target_cls: The client class whose __init__ parameters are allowed.
 
       Returns:
         The client args with the SSL context included.
       """
-      args = (args or {}).copy()
+      args = (raw_args or {}).copy()
       if not args.get(verify):
         args[verify] = ctx
       if 'timeout' not in args:
         args['timeout'] = None
-      # Drop the args that isn't used by the httpx client.
-      copied_args = args.copy()
-      for key in copied_args.copy():
-        if key not in inspect.signature(httpx.Client.__init__).parameters:
-          del copied_args[key]
-      return copied_args
+      if target_cls is not None:
+        for cls in getattr(target_cls, '__mro__', [target_cls]):
+          if cls is object:
+            continue
+          try:
+            allowed_params = inspect.signature(cls.__init__).parameters
+          except (ValueError, TypeError):
+            continue
+          has_var_keyword = any(
+              p.kind == inspect.Parameter.VAR_KEYWORD
+              for p in allowed_params.values()
+          )
+          if not has_var_keyword:
+            for key in list(args.keys()):
+              if key not in allowed_params:
+                del args[key]
+            break
+      return args
+
+    sync_cls = client_cls or (
+        SyncHttpxClient
+        if SyncHttpxClient is not None
+        else (httpx.Client if httpx is not None else None)
+    )
+    async_cls = async_client_cls or (
+        AsyncHttpxClient
+        if AsyncHttpxClient is not None
+        else (httpx.AsyncClient if httpx is not None else None)
+    )
 
     return (
-        _maybe_set(args, ctx),
-        _maybe_set(async_args, ctx),
+        _maybe_set(args, ctx, sync_cls),
+        _maybe_set(async_args, ctx, async_cls),
     )
 
   @staticmethod
@@ -1243,12 +1470,7 @@ class BaseApiClient:
 
     if ctx is None:
       if vertexai:
-        get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
-        if get_ctx_fn is not None:
-          try:
-            ctx = get_ctx_fn()
-          except Exception as e:  # pylint: disable=broad-except
-            logger.warning('Failed to get default SSL context from google-auth: %s', e)
+        ctx = _get_client_cert_ssl_ctx()
 
       if ctx is None:
         ctx = ssl.create_default_context(
@@ -1314,12 +1536,7 @@ class BaseApiClient:
       # enabled explicitly. Instead of 'verify' at client level in httpx,
       # aiohttp uses 'ssl' at request level.
       if vertexai:
-        get_ctx_fn = getattr(mtls, 'get_default_ssl_context', None)
-        if get_ctx_fn is not None:
-          try:
-            ctx = get_ctx_fn()
-          except Exception as e:  # pylint: disable=broad-except
-            logger.warning('Failed to get default SSL context from google-auth: %s', e)
+        ctx = _get_client_cert_ssl_ctx()
 
       if ctx is None:
         ctx = ssl.create_default_context(
@@ -1373,13 +1590,22 @@ class BaseApiClient:
     )
     return to_mtls_url(url) if use_mtls_endpoint else url
 
-  def _websocket_base_url(self) -> str:
+  def _websocket_base_url(
+      self, http_options: Optional[HttpOptions] = None
+  ) -> str:
+    """Returns the base URL for websocket connections.
+
+    Args:
+      http_options: The http options of the connection. Defaults to the
+        client's.
+    """
+    http_options = http_options or self._http_options
     has_sufficient_auth = (self.project and self.location) or self.api_key
     if self.custom_base_url and not has_sufficient_auth:
       # API gateway proxy can use the auth in custom headers, not url.
       # Enable custom url if auth is not sufficient.
-      return self.custom_base_url
-    url_parts = urlparse(self._http_options.base_url)
+      return http_options.base_url or self.custom_base_url
+    url_parts = urlparse(http_options.base_url)
     url = url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type]
     if self._websocket_use_mtls_endpoint:
       url = to_mtls_url(url)  # type: ignore[arg-type]
@@ -1531,13 +1757,13 @@ class BaseApiClient:
 
     if patched_http_options.headers is None:
       raise ValueError('Request headers must be set.')
-    populate_server_timeout_header(
-        patched_http_options.headers, timeout_in_seconds
-    )
+    # Copy so per-request headers do not become client defaults.
+    headers = dict(patched_http_options.headers)
+    populate_server_timeout_header(headers, timeout_in_seconds)
     return HttpRequest(
         method=http_method,
         url=url,
-        headers=patched_http_options.headers,
+        headers=headers,
         data=request_dict,
         timeout=timeout_in_seconds,
     )
@@ -1576,7 +1802,9 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls:
+      if self._use_mtls_endpoint(
+          client_cert_loaded=bool(self._authorized_session._is_mtls)
+      ):
         url = to_mtls_url(url)
       response = self._authorized_session.request(  # type: ignore[no-untyped-call]
           method=http_request.method.upper(),
@@ -1621,7 +1849,11 @@ class BaseApiClient:
     return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
 
   async def _async_request_once(
-      self, http_request: HttpRequest, stream: bool = False
+      self,
+      http_request: HttpRequest,
+      stream: bool = False,
+      *,
+      implicit_retry: bool = True,
   ) -> HttpResponse:
     data: Optional[bytes] = None
 
@@ -1649,8 +1881,12 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls:  # type: ignore[union-attr]
+          if self._use_mtls_endpoint(
+              client_cert_loaded=bool(session._is_mtls)  # type: ignore[union-attr]
+          ):
             url = to_mtls_url(url)
+        elif self._aiohttp_use_mtls_endpoint:
+          url = to_mtls_url(url)
         try:
           response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
@@ -1667,6 +1903,8 @@ class BaseApiClient:
             aiohttp.ServerDisconnectedError,
             auth_exceptions.TransportError,
         ) as e:
+          if not implicit_retry or self._http_options.retry_options:
+            raise  # HttpRetryOptions owns retries; tenacity decides.
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
           # Retrieve the SSL context from the session.
@@ -1717,8 +1955,12 @@ class BaseApiClient:
           await session.configure_mtls_channel(  # type: ignore[union-attr]
               client_cert_source
           )
-          if session._is_mtls:  # type: ignore[union-attr]
+          if self._use_mtls_endpoint(
+              client_cert_loaded=bool(session._is_mtls)  # type: ignore[union-attr]
+          ):
             url = to_mtls_url(url)
+        elif self._aiohttp_use_mtls_endpoint:
+          url = to_mtls_url(url)
         try:
           response = await session.request(  # type: ignore[union-attr]
               method=http_request.method,
@@ -1743,6 +1985,8 @@ class BaseApiClient:
             aiohttp.ServerDisconnectedError,
             auth_exceptions.TransportError,
         ) as e:
+          if not implicit_retry or self._http_options.retry_options:
+            raise  # HttpRetryOptions owns retries; tenacity decides.
           await asyncio.sleep(1 + random.randint(0, 9))
           logger.info('Retrying due to aiohttp error: %s' % e)
           # Retrieve the SSL context from the session.
@@ -1799,7 +2043,12 @@ class BaseApiClient:
       if parameter_model.retry_options:
         retry_kwargs = retry_args(parameter_model.retry_options)
         retry = tenacity.AsyncRetrying(**retry_kwargs)
-        return await retry(self._async_request_once, http_request, stream)  # type: ignore[no-any-return]
+        return await retry(  # type: ignore[no-any-return]
+            self._async_request_once,
+            http_request,
+            stream,
+            implicit_retry=False,
+        )
     return await self._async_retry(  # type: ignore[no-any-return]
         self._async_request_once, http_request, stream
     )
@@ -2121,7 +2370,9 @@ class BaseApiClient:
         self._authorized_session.configure_mtls_channel(
             client_cert_source
         )  # type: ignore[no-untyped-call]
-      if self._authorized_session._is_mtls:
+      if self._use_mtls_endpoint(
+          client_cert_loaded=bool(self._authorized_session._is_mtls)
+      ):
         url = to_mtls_url(url)
       if destination is not None:
         response = self._authorized_session.request(  # type: ignore[no-untyped-call]
@@ -2490,8 +2741,12 @@ class BaseApiClient:
         await session.configure_mtls_channel(  # type: ignore[union-attr]
             client_cert_source
         )
-        if session._is_mtls:  # type: ignore[union-attr]
+        if self._use_mtls_endpoint(
+            client_cert_loaded=bool(session._is_mtls)  # type: ignore[union-attr]
+        ):
           url = to_mtls_url(url)
+      elif self._aiohttp_use_mtls_endpoint:
+        url = to_mtls_url(url)
       response = await session.request(  # type: ignore[union-attr]
           method=http_request.method,
           url=url,
@@ -2569,8 +2824,8 @@ class BaseApiClient:
     """Closes the API async client."""
     # Let users close the custom client explicitly by themselves. Otherwise,
     # close the client when the object is garbage collected.
-    if not self._http_options.httpx_async_client:
-      await self._async_httpx_client.aclose()  # type: ignore[union-attr]
+    if not self._http_options.httpx_async_client and self._async_httpx_client:
+      await self._async_httpx_client.aclose()
     if self._aiohttp_sessions and not self._http_options.aiohttp_client:
       try:
         current_loop = asyncio.get_running_loop()

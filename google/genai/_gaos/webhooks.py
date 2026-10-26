@@ -753,7 +753,7 @@ class Webhooks(BaseSDK):
             base_url=base_url,
             url_variables=url_variables,
             request=request,
-            request_body_required=False,
+            request_body_required=True,
             request_has_path_params=True,
             request_has_query_params=True,
             user_agent_header="user-agent",
@@ -765,11 +765,11 @@ class Webhooks(BaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body if request is not None else None,
+                request.body,
                 False,
-                True,
+                False,
                 "json",
-                Optional[webhooks.WebhookUpdate],
+                webhooks.WebhookUpdate,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -886,7 +886,7 @@ class Webhooks(BaseSDK):
 
         :param id: Required. The ID of the webhook to ping.
         :param api_version: API version for request routing.
-        :param body: Required. The request body.
+        :param body: The request body.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1088,7 +1088,7 @@ class Webhooks(BaseSDK):
             base_url=base_url,
             url_variables=url_variables,
             request=request,
-            request_body_required=False,
+            request_body_required=True,
             request_has_path_params=True,
             request_has_query_params=True,
             user_agent_header="user-agent",
@@ -1100,11 +1100,11 @@ class Webhooks(BaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body if request is not None else None,
+                request.body,
                 False,
-                True,
+                False,
                 "json",
-                Optional[webhooks.RotateSigningSecretRequest],
+                webhooks.RotateSigningSecretRequest,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -1982,7 +1982,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             base_url=base_url,
             url_variables=url_variables,
             request=request,
-            request_body_required=False,
+            request_body_required=True,
             request_has_path_params=True,
             request_has_query_params=True,
             user_agent_header="user-agent",
@@ -1994,11 +1994,11 @@ class AsyncWebhooks(AsyncBaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body if request is not None else None,
+                request.body,
                 False,
-                True,
+                False,
                 "json",
-                Optional[webhooks.WebhookUpdate],
+                webhooks.WebhookUpdate,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,
@@ -2118,7 +2118,7 @@ class AsyncWebhooks(AsyncBaseSDK):
 
         :param id: Required. The ID of the webhook to ping.
         :param api_version: API version for request routing.
-        :param body: Required. The request body.
+        :param body: The request body.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -2323,7 +2323,7 @@ class AsyncWebhooks(AsyncBaseSDK):
             base_url=base_url,
             url_variables=url_variables,
             request=request,
-            request_body_required=False,
+            request_body_required=True,
             request_has_path_params=True,
             request_has_query_params=True,
             user_agent_header="user-agent",
@@ -2335,11 +2335,11 @@ class AsyncWebhooks(AsyncBaseSDK):
             ),
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request.body if request is not None else None,
+                request.body,
                 False,
-                True,
+                False,
                 "json",
-                Optional[webhooks.RotateSigningSecretRequest],
+                webhooks.RotateSigningSecretRequest,
                 extra_body=extra_body,
             ),
             allow_empty_value=None,

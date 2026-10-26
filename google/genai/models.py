@@ -1349,6 +1349,15 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['continuation_token']),
     )
 
+  if getv(from_object, ['generation_output_config']) is not None:
+    raise ValueError(
+        'generation_output_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['store']) is not None:
+    setv(parent_object, ['store'], getv(from_object, ['store']))
+
   return to_object
 
 
@@ -1551,6 +1560,19 @@ def _GenerateContentConfig_to_vertex(
         parent_object,
         ['continuationToken'],
         getv(from_object, ['continuation_token']),
+    )
+
+  if getv(from_object, ['generation_output_config']) is not None:
+    setv(
+        parent_object,
+        ['outputConfig'],
+        getv(from_object, ['generation_output_config']),
+    )
+
+  if getv(from_object, ['store']) is not None:
+    raise ValueError(
+        'store parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -6142,35 +6164,19 @@ class Models(_api_module.BaseModule):
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> Iterator[types.GenerateContentResponse]:
     """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
-    enable_continuation = _extra_utils.should_enable_automatic_continuation(
-        config, default_enabled=True
-    )
-    continuation_token: Optional[bytes] = None
-    hop_finish_reason: Optional[types.FinishReason] = None
-    is_first_hop = True
-
-    while is_first_hop or (
-        enable_continuation
-        and continuation_token
-        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
-    ):
-      is_first_hop = False
-      call_config = _extra_utils.prepare_continuation_config(
-          config, continuation_token
-      )
-      hop_finish_reason = None
-      continuation_token = None
-
-      for chunk in self._generate_content_stream(
-          model=model, contents=contents, config=call_config
-      ):
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+    state = _extra_utils.StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error: Optional[Exception] = None
+      try:
+        for chunk in self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        ):
+          yield state.observe(chunk)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        error = e
+      if not state.end_hop(error):
+        return
 
   def generate_content(
       self,
@@ -6382,9 +6388,10 @@ class Models(_api_module.BaseModule):
 
     Automatic continuation is enabled by default. When a stream hop ends with
     `finish_reason == FinishReason.CONTINUATION` and includes a
-    `continuation_token` on the first candidate, the SDK automatically starts
-    follow-up stream requests with the `continuation_token` and yields chunks
-    until `finish_reason` is no longer `CONTINUATION`. Set
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
     `config=types.GenerateContentConfig(automatic_continuation=False)` to
     disable this behavior.
 
@@ -8374,36 +8381,20 @@ class AsyncModels(_api_module.BaseModule):
       config: Optional[types.GenerateContentConfigOrDict] = None,
   ) -> AsyncIterator[types.GenerateContentResponse]:
     """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
-    enable_continuation = _extra_utils.should_enable_automatic_continuation(
-        config, default_enabled=True
-    )
-    continuation_token: Optional[bytes] = None
-    hop_finish_reason: Optional[types.FinishReason] = None
-    is_first_hop = True
-
-    while is_first_hop or (
-        enable_continuation
-        and continuation_token
-        and _extra_utils.is_resumable_finish_reason(hop_finish_reason)
-    ):
-      is_first_hop = False
-      call_config = _extra_utils.prepare_continuation_config(
-          config, continuation_token
-      )
-      hop_finish_reason = None
-      continuation_token = None
-
-      response_stream = await self._generate_content_stream(
-          model=model, contents=contents, config=call_config
-      )
-      async for chunk in response_stream:  # type: ignore[attr-defined]
-        if chunk.candidates:
-          candidate = chunk.candidates[0]
-          if candidate.finish_reason:
-            hop_finish_reason = candidate.finish_reason
-          if candidate.continuation_token:
-            continuation_token = candidate.continuation_token
-        yield chunk
+    state = _extra_utils.StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error: Optional[Exception] = None
+      try:
+        response_stream = await self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        )
+        async for chunk in response_stream:  # type: ignore[attr-defined]
+          yield state.observe(chunk)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        error = e
+      if not state.end_hop(error):
+        return
 
   async def generate_content(
       self,
@@ -8660,9 +8651,10 @@ class AsyncModels(_api_module.BaseModule):
 
     Automatic continuation is enabled by default. When a stream hop ends with
     `finish_reason == FinishReason.CONTINUATION` and includes a
-    `continuation_token` on the first candidate, the SDK automatically starts
-    follow-up stream requests with the `continuation_token` and yields chunks
-    until `finish_reason` is no longer `CONTINUATION`. Set
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
     `config=types.GenerateContentConfig(automatic_continuation=False)` to
     disable this behavior.
 

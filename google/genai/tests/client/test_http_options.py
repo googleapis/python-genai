@@ -16,6 +16,9 @@
 
 """Tests for client behavior when issuing requests."""
 
+from unittest import mock
+
+import httpx
 import pytest
 
 from ... import _api_client
@@ -180,3 +183,103 @@ def test_base_url_resource_scope_not_set_by_default():
 def test_retry_options_not_set_by_default():
   options = types.HttpOptions()
   assert options.retry_options is None
+
+
+def test_default_timeout_is_none_for_httpx_and_request():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+  )
+  assert api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert api_client._async_httpx_client.timeout == httpx.Timeout(None)
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert request.timeout is None
+
+
+def test_setting_30m_timeout_populates_header_and_request_timeout():
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+      http_options=types.HttpOptions(timeout=1800000),
+  )
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert request.headers['X-Server-Timeout'] == '1800'
+  assert request.timeout == 1800.0
+
+
+def test_build_request_does_not_mutate_client_headers():
+  # Per-request headers must not leak into the client's default headers.
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+      http_options=types.HttpOptions(timeout=10000),
+  )
+  headers_before = dict(api_client._http_options.headers)
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  assert request.headers['X-Server-Timeout'] == '10'
+  assert request.headers is not api_client._http_options.headers
+  assert api_client._http_options.headers == headers_before
+
+
+def test_per_request_timeout_not_overridden_by_earlier_request():
+  # A client-timeout request must not pin X-Server-Timeout for later ones.
+  api_client = _api_client.BaseApiClient(
+      vertexai=False,
+      api_key='test_api_key',
+      http_options=types.HttpOptions(timeout=10000),
+  )
+  api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+  )
+  request = api_client._build_request(
+      http_method='POST',
+      path='sample/path',
+      request_dict={},
+      http_options=types.HttpOptions(timeout=3000),
+  )
+  assert request.headers['X-Server-Timeout'] == '3'
+
+
+def test_request_does_not_leak_authorization_into_client_headers():
+  # The bearer token and quota project are set per request only.
+  creds = mock.Mock()
+  creds.quota_project_id = 'test-quota-project'
+  api_client = _api_client.BaseApiClient(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=creds,
+  )
+  with (
+      mock.patch.object(
+          _api_client.BaseApiClient, '_access_token', return_value='token-1'
+      ),
+      mock.patch.object(
+          httpx.Client,
+          'send',
+          return_value=httpx.Response(
+              200, request=httpx.Request('POST', ''), json={}
+          ),
+      ) as mock_send,
+  ):
+    api_client.request('post', 'sample/path', {})
+
+  sent_headers = mock_send.call_args[0][0].headers
+  assert sent_headers['authorization'] == 'Bearer token-1'
+  assert sent_headers['x-goog-user-project'] == 'test-quota-project'
+  assert 'Authorization' not in api_client._http_options.headers
+  assert 'x-goog-user-project' not in api_client._http_options.headers
