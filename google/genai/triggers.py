@@ -14,6 +14,8 @@
 #
 """Expose Google GenAI trigger types."""
 
+from ._gaos.types.triggers import *  # noqa: F401,F403
+from ._gaos.types.triggers import __all__ as _triggers_all
 from ._gaos.models.listtriggerexecutions import (
     ListTriggerExecutionsRequestParam as TriggerListExecutionsParams,
 )
@@ -71,3 +73,4 @@ __all__ = [
     "TriggerUpdateStatus",
     "UpdateTriggerRequestParam",
 ]
+__all__ = list(dict.fromkeys(__all__ + list(_triggers_all)))
