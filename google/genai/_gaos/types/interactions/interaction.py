@@ -149,6 +149,7 @@ InteractionStatus = Union[
         "incomplete",
         "budget_exceeded",
         "queued",
+        "requires_continuation",
     ],
     UnrecognizedStr,
 ]
@@ -166,6 +167,11 @@ class InteractionTypedDict(TypedDict):
     r"""Configuration parameters for the agent interaction."""
     cached_content: NotRequired[str]
     r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
+    continuation_token: NotRequired[str]
+    r"""Opaque token to resume a long decode. Output: set when status is
+    REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
+    token back unchanged in CreateInteraction to continue decoding.
+    """
     created: NotRequired[str]
     r"""Required. Output only. The time at which the response was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
@@ -256,6 +262,12 @@ class Interaction(BaseModel):
         ),
     ] = None
     r"""The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}"""
+
+    continuation_token: Optional[str] = None
+    r"""Opaque token to resume a long decode. Output: set when status is
+    REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
+    token back unchanged in CreateInteraction to continue decoding.
+    """
 
     created: Optional[str] = None
     r"""Required. Output only. The time at which the response was created in ISO 8601 format
@@ -368,6 +380,7 @@ class Interaction(BaseModel):
                 "agent",
                 "agent_config",
                 "cached_content",
+                "continuation_token",
                 "created",
                 "environment",
                 "environment_id",
