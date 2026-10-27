@@ -16,8 +16,13 @@
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-import sentencepiece as spm
-from sentencepiece import sentencepiece_model_pb2
+import pytest
+
+try:
+  import sentencepiece as spm
+  from sentencepiece import sentencepiece_model_pb2
+except ImportError:
+  pytest.skip("sentencepiece is not installed", allow_module_level=True)
 
 from ... import _local_tokenizer_loader as loader
 
@@ -242,5 +247,3 @@ class TestLoaderFunctions(unittest.TestCase):
 
     # Should only be loaded once due to lru_cache
     mock_get.assert_called_once()
-
-
