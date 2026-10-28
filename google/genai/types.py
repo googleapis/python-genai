@@ -9019,10 +9019,10 @@ class GenerateContentResponse(_common.BaseModel):
         result_text = result._get_text()
         if result_text is not None:
           result.parsed = response_schema.model_validate_json(result_text)
-      # may not be a valid json per stream response
-      except pydantic.ValidationError:
-        pass
-      except json.decoder.JSONDecodeError:
+      # may not be a valid json per stream response. ValueError covers
+      # pydantic.ValidationError, json.JSONDecodeError and ints over
+      # sys.get_int_max_str_digits().
+      except ValueError:
         pass
     elif (
         isinstance(response_schema, EnumMeta) and result._get_text() is not None
@@ -9054,9 +9054,7 @@ class GenerateContentResponse(_common.BaseModel):
           parsed = {'placeholder': json.loads(result_text)}
           placeholder = Placeholder.model_validate(parsed)
           result.parsed = placeholder.placeholder
-      except json.decoder.JSONDecodeError:
-        pass
-      except pydantic.ValidationError:
+      except ValueError:
         pass
 
     elif isinstance(response_schema, dict) or isinstance(
@@ -9070,7 +9068,7 @@ class GenerateContentResponse(_common.BaseModel):
         if result_text is not None:
           result.parsed = json.loads(result_text)
       # may not be a valid json per stream response
-      except json.decoder.JSONDecodeError:
+      except ValueError:
         pass
     elif typing.get_origin(response_schema) in _UNION_TYPES:
       # Union schema.
@@ -9087,9 +9085,7 @@ class GenerateContentResponse(_common.BaseModel):
               parsed = {'placeholder': json.loads(result_text)}
               placeholder = Placeholder.model_validate(parsed)
               result.parsed = placeholder.placeholder
-          except json.decoder.JSONDecodeError:
-            pass
-          except pydantic.ValidationError:
+          except ValueError:
             pass
         else:
           try:
@@ -9097,7 +9093,7 @@ class GenerateContentResponse(_common.BaseModel):
             if result_text is not None:
               result.parsed = json.loads(result_text)
           # may not be a valid json per stream response
-          except json.decoder.JSONDecodeError:
+          except ValueError:
             pass
 
     return result
