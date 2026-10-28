@@ -27,6 +27,10 @@ def test_none():
     t.t_content( None)
 
 
+def test_tuple():
+  assert t.t_content(('a', 'b')) == t.t_content(['a', 'b'])
+
+
 def test_content():
   assert t.t_content(
       types.Content(parts=[types.Part(text='test')])

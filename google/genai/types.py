@@ -6128,11 +6128,11 @@ else:
   PartUnionDict = Union[str, File, FileDict, Part, PartDict]  # type: ignore[misc]
 
 
-ContentUnion = Union[Content, PartUnion, list[PartUnion]]
+ContentUnion = Union[Content, PartUnion, Sequence[PartUnion]]
 
 
 ContentUnionDict = Union[
-    Content, ContentDict, PartUnionDict, list[PartUnionDict]
+    Content, ContentDict, PartUnionDict, Sequence[PartUnionDict]
 ]
 
 
@@ -7075,11 +7075,14 @@ GenerateContentConfigOrDict = Union[
 ]
 
 
-ContentListUnion = Union[ContentUnion, list[ContentUnion], list[Content]]
+ContentListUnion = Union[ContentUnion, Sequence[ContentUnion], list[Content]]
 
 
 ContentListUnionDict = Union[
-    ContentUnionDict, list[ContentUnionDict], list[Content], list[ContentDict]
+    ContentUnionDict,
+    Sequence[ContentUnionDict],
+    list[Content],
+    list[ContentDict],
 ]
 
 
