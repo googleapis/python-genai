@@ -32,6 +32,8 @@ AgentOption = Union[
         "deep-research-max-preview-04-2026",
         # Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
         "antigravity-preview-05-2026",
+        # Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
+        "antigravity-preview-09-2026",
     ],
     UnrecognizedStr,
 ]
