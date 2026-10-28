@@ -54,7 +54,13 @@ from . import _common
 
 
 class APIError(Exception):
-  """General errors raised by the GenAI API."""
+  """General errors raised by the GenAI API.
+
+  Interactions API status errors (`google.genai.interactions.APIStatusError`
+  and its subclasses) also inherit from this class. On those, `message` and
+  `str()` keep the interactions format (e.g. `Error code: 400 - {...}`); the
+  server-provided error message is available in `details`.
+  """
   code: int
   response: Union[
       'requests.Response',
@@ -380,3 +386,57 @@ class ContinuationInterruptedError(Exception):
 
 
 ExperimentalWarning = _common.ExperimentalWarning
+
+if TYPE_CHECKING:
+  from ._gaos.lib.compat_errors import (  # pylint: disable=g-import-not-at-top,g-multiple-import
+      APIConnectionError,
+      APIError as InteractionsAPIError,
+      APIResponseValidationError,
+      APIStatusError,
+      APITimeoutError,
+      AuthenticationError,
+      BadRequestError,
+      ConflictError,
+      GeminiNextGenAPIClientError,
+      InternalServerError,
+      NotFoundError,
+      PermissionDeniedError,
+      RateLimitError,
+      UnprocessableEntityError,
+  )
+
+_GAOS_COMPAT_ERROR_NAMES = (
+    'APIConnectionError',
+    'APIResponseValidationError',
+    'APIStatusError',
+    'APITimeoutError',
+    'AuthenticationError',
+    'BadRequestError',
+    'ConflictError',
+    'GeminiNextGenAPIClientError',
+    'InternalServerError',
+    'NotFoundError',
+    'PermissionDeniedError',
+    'RateLimitError',
+    'UnprocessableEntityError',
+)
+_GAOS_COMPAT_ERROR_MAP = {
+    **{name: name for name in _GAOS_COMPAT_ERROR_NAMES},
+    'InteractionsAPIError': 'APIError',
+}
+
+
+if not TYPE_CHECKING:
+
+  def __getattr__(name: str) -> Any:  # pylint: disable=invalid-name
+    target_name = _GAOS_COMPAT_ERROR_MAP.get(name)
+    if target_name is not None:
+      from ._gaos.lib import compat_errors as _compat_errors  # pylint: disable=g-import-not-at-top
+
+      value = getattr(_compat_errors, target_name)
+      globals()[name] = value
+      return value
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
+  def __dir__() -> list[str]:  # pylint: disable=invalid-name
+    return sorted(set(globals()).union(_GAOS_COMPAT_ERROR_MAP))

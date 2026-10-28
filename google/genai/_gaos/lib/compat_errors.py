@@ -47,6 +47,7 @@ _HTTPX_HTTP_ERRORS = (
     else (httpx.HTTPError, httpx2.HTTPError)
 )
 
+from ... import errors as _native_errors
 from ..errors.genaierror import GenAiError
 from ..errors.no_response_error import NoResponseError
 from ..errors.responsevalidationerror import ResponseValidationError
@@ -79,13 +80,19 @@ class APIError(GeminiNextGenAPIClientError):
         *,
         body: object,
     ) -> None:
-        super().__init__(message)
+        # Call Exception.__init__ directly so subclasses with multiple bases
+        # only initialize Exception with `message`.
+        Exception.__init__(self, message)
         self.request = request
         self.message = message
         self.body = body
 
     def __str__(self) -> str:
         return self.message
+
+    def __reduce__(self) -> tuple[Callable[..., "APIError"], tuple[Any, ...]]:
+        # Preserve the concrete error subclass across copy and pickle.
+        return (_rebuild_error, (type(self), self.args, self.__dict__.copy()))
 
     @classmethod
     def generate(
@@ -105,15 +112,23 @@ class APIError(GeminiNextGenAPIClientError):
                 )
             status_cls = cast(type[APIStatusError], target_cls)
             return status_cls(msg, response=response, body=body)
-        # Plain APIError fallback (status_code None or unexpected success
-        # status like 201). Attach status_code to the instance for callers
-        # that need to inspect it; not part of the Stainless contract for
-        # APIError but covers the unexpected-status path.
+        # Plain APIError fallback (status_code None or unexpected non-4xx/5xx
+        # status).
         request = response.request if response is not None else None
         err = target_cls(msg, request, body=body)  # type: ignore[arg-type]
         if status_code is not None:
             err.status_code = status_code
         return err
+
+
+def _rebuild_error(
+    cls: type[APIError], args: tuple[Any, ...], state: dict[str, Any]
+) -> APIError:
+    """Copy/unpickle helper for `APIError.__reduce__`."""
+    error = cls.__new__(cls)
+    Exception.__init__(error, *args)
+    error.__dict__.update(state)
+    return error
 
 
 class APIResponseValidationError(APIError):
@@ -135,7 +150,7 @@ class APIResponseValidationError(APIError):
         self.status_code = response.status_code
 
 
-class APIStatusError(APIError):
+class APIStatusError(APIError, _native_errors.APIError):  # type: ignore[misc]
     """Raised when an API response has a 4xx or 5xx status code."""
 
     response: httpx.Response
@@ -150,6 +165,21 @@ class APIStatusError(APIError):
         super().__init__(message, response.request, body=body)
         self.response = response
         self.status_code = response.status_code
+        self._set_native_fields(response)
+
+    def _set_native_fields(self, response: httpx.Response) -> None:
+        """Populate `code`, `status`, and `details` from the HTTP response."""
+        details = self.body
+        if isinstance(details, list) and len(details) == 1:
+            details = details[0]
+        if not isinstance(details, (dict, list)):
+            details = {
+                "message": details if isinstance(details, str) else "",
+                "status": response.reason_phrase,
+            }
+        self.code = response.status_code
+        self.status = _error_status(details)
+        self.details = details
 
 
 class APIConnectionError(APIError):
@@ -174,36 +204,40 @@ class APITimeoutError(APIConnectionError):
         )
 
 
-class BadRequestError(APIStatusError):
+class BadRequestError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 400  # type: ignore[assignment]
 
 
-class AuthenticationError(APIStatusError):
+class AuthenticationError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 401  # type: ignore[assignment]
 
 
-class PermissionDeniedError(APIStatusError):
+class PermissionDeniedError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 403  # type: ignore[assignment]
 
 
-class NotFoundError(APIStatusError):
+class NotFoundError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 404  # type: ignore[assignment]
 
 
-class ConflictError(APIStatusError):
+class ConflictError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 409  # type: ignore[assignment]
 
 
-class UnprocessableEntityError(APIStatusError):
+class UnprocessableEntityError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 422  # type: ignore[assignment]
 
 
-class RateLimitError(APIStatusError):
+class RateLimitError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
     status_code: int = 429  # type: ignore[assignment]
 
 
-class InternalServerError(APIStatusError):
+class InternalServerError(APIStatusError, _native_errors.ServerError):  # type: ignore[misc]
     pass
+
+
+class _ClientStatusError(APIStatusError, _native_errors.ClientError):  # type: ignore[misc]
+    """Fallback status error for 4xx responses without a dedicated subclass."""
 
 
 _STATUS_MAP = {
@@ -226,7 +260,7 @@ def _status_class(status_code: Optional[int]) -> type[APIError]:
     if 500 <= status_code < 600:
         return InternalServerError
     if 400 <= status_code < 500:
-        return APIStatusError
+        return _ClientStatusError
     return APIError
 
 
@@ -243,6 +277,18 @@ def _parse_body(body: Any) -> Any:
         return json.loads(text)
     except (ValueError, TypeError):
         return text
+
+
+def _error_status(body: Any) -> Optional[str]:
+    """Extract the API status string from a parsed error body."""
+    if not isinstance(body, dict):
+        return None
+    status = body.get("status")
+    if isinstance(status, str):
+        return status
+    error = body.get("error")
+    nested = error.get("status") if isinstance(error, dict) else None
+    return nested if isinstance(nested, str) else None
 
 
 def _compose_message(status_code: Optional[int], body: Any) -> str:
@@ -279,13 +325,10 @@ def _wrap_no_response_error(error: NoResponseError) -> APIConnectionError:
 
 
 def _wrap_httpx_error(error: BaseException) -> APIConnectionError:
-    """Translate an `httpx.HTTPError` into the compat connection-error class.
+    """Translate an `httpx.HTTPError` into `APIConnectionError` or `APITimeoutError`.
 
-    `httpx.HTTPError.request` is a descriptor that raises `RuntimeError` when
-    the request was never attached. Reads the underlying `_request` attribute
-    directly. May pass `None` if the error was raised before request
-    construction — type hint stays strict (mirrors Stainless) but runtime
-    tolerates the edge case rather than fabricating a misleading stand-in.
+    Reads `_request` directly since `httpx.HTTPError.request` raises
+    `RuntimeError` when no request is attached.
     """
     request = getattr(error, "_request", None)
     if isinstance(error, _HTTPX_TIMEOUT_ERRORS):
