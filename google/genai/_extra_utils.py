@@ -312,12 +312,20 @@ def convert_argument_from_function(
 ) -> _common.StringDict:
   signature = inspect.signature(function)
   func_name = function.__name__
+  # Without include_extras, Annotated[T, ...] unwraps to runtime type T.
+  try:
+    type_hints = typing.get_type_hints(function)
+  except (NameError, TypeError):
+    type_hints = {}
   converted_args = {}
   for param_name, param in signature.parameters.items():
     if param_name in args:
+      annotation = param.annotation
+      if isinstance(annotation, str) and param_name in type_hints:
+        annotation = type_hints[param_name]
       converted_args[param_name] = convert_if_exist_pydantic_model(
           args[param_name],
-          param.annotation,
+          annotation,
           param_name,
           func_name,
       )

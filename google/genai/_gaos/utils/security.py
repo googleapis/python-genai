@@ -180,6 +180,9 @@ def _parse_security_scheme_value(
     scheme_type = scheme_metadata.scheme_type
     sub_type = scheme_metadata.sub_type
 
+    if value == "":
+        return
+
     header_name = security_metadata.get_field_name(field_name)
 
     if scheme_type == "apiKey":

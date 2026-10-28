@@ -25,7 +25,7 @@ import logging
 import sys
 import types as builtin_types
 import typing
-from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Sequence, Union, _UnionGenericAlias  # type: ignore
+from typing import Annotated, Any, Callable, Dict, List, Literal, Optional, Sequence, Union
 import pydantic
 from pydantic import ConfigDict, Field, PrivateAttr, WrapValidator, model_validator
 from typing_extensions import Self, TypedDict
@@ -37,14 +37,20 @@ from ._operations_converters import (
     _UploadToFileSearchStoreOperation_from_mldev,
 )
 
-if sys.version_info >= (3, 10):
-  # Supports both Union[t1, t2] and t1 | t2
-  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+if typing.TYPE_CHECKING:
+  # Type checkers have always seen this as Any, which lets SchemaUnion accept
+  # any schema (e.g. Optional[X]). Keep it that way.
+  VersionedUnionType = Any
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
+elif sys.version_info >= (3, 14):
+  # Union[t1, t2] and t1 | t2 both create builtin_types.UnionType, and
+  # typing._UnionGenericAlias is deprecated.
+  VersionedUnionType = builtin_types.UnionType
   _UNION_TYPES = (typing.Union, builtin_types.UnionType)
 else:
-  # Supports only Union[t1, t2]
-  VersionedUnionType = _UnionGenericAlias
-  _UNION_TYPES = (typing.Union,)
+  # Supports both Union[t1, t2] and t1 | t2
+  VersionedUnionType = Union[builtin_types.UnionType, typing._UnionGenericAlias]  # type: ignore
+  _UNION_TYPES = (typing.Union, builtin_types.UnionType)
 
 _is_pillow_image_imported = False
 if typing.TYPE_CHECKING:
@@ -166,6 +172,7 @@ _response_executable_code_warning_logged = False
 _response_code_execution_warning_logged = False
 _live_server_text_warning_logged = False
 _live_server_data_warning_logged = False
+_from_callable_with_api_option_warning_logged = False
 
 
 T = typing.TypeVar('T', bound='GenerateContentResponse')
@@ -1889,7 +1896,7 @@ class FunctionResponseBlob(_common.BaseModel):
   )
   display_name: Optional[str] = Field(
       default=None,
-      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API.""",
+      description="""Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled.""",
   )
 
 
@@ -1906,7 +1913,7 @@ class FunctionResponseBlobDict(TypedDict, total=False):
   """Required. Raw bytes."""
 
   display_name: Optional[str]
-  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled. This field is not supported in Gemini API."""
+  """Optional. Display name of the blob. Used to provide a label or filename to distinguish blobs. This field is only returned in PromptMessage for prompt management. It is currently used in the Gemini GenerateContent calls only when server side tools (code_execution, google_search, and url_context) are enabled."""
 
 
 FunctionResponseBlobOrDict = Union[
@@ -1915,10 +1922,7 @@ FunctionResponseBlobOrDict = Union[
 
 
 class FunctionResponseFileData(_common.BaseModel):
-  """URI based data for function response.
-
-  This data type is not supported in Gemini API.
-  """
+  """URI based data for function response."""
 
   file_uri: Optional[str] = Field(
       default=None, description="""Required. URI."""
@@ -1934,10 +1938,7 @@ class FunctionResponseFileData(_common.BaseModel):
 
 
 class FunctionResponseFileDataDict(TypedDict, total=False):
-  """URI based data for function response.
-
-  This data type is not supported in Gemini API.
-  """
+  """URI based data for function response."""
 
   file_uri: Optional[str]
   """Required. URI."""
@@ -1968,8 +1969,11 @@ class FunctionResponsePart(_common.BaseModel):
       default=None, description="""Inline media bytes."""
   )
   file_data: Optional[FunctionResponseFileData] = Field(
+      default=None, description="""URI based data."""
+  )
+  media_processing: Optional[MediaProcessing] = Field(
       default=None,
-      description="""URI based data. This field is not supported in Gemini API.""",
+      description="""Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field. This field is not supported in Vertex AI.""",
   )
 
   @classmethod
@@ -2021,7 +2025,10 @@ class FunctionResponsePartDict(TypedDict, total=False):
   """Inline media bytes."""
 
   file_data: Optional[FunctionResponseFileDataDict]
-  """URI based data. This field is not supported in Gemini API."""
+  """URI based data."""
+
+  media_processing: Optional[MediaProcessing]
+  """Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field. This field is not supported in Vertex AI."""
 
 
 FunctionResponsePartOrDict = Union[
@@ -4914,6 +4921,16 @@ class FunctionDeclaration(_common.BaseModel):
           f'Unsupported api_option value: {api_option}. Supported api_option'
           f' value is one of: {supported_api_options}.'
       )
+    global _from_callable_with_api_option_warning_logged
+    if (
+        not use_json_schema
+        and not _from_callable_with_api_option_warning_logged
+    ):
+      logger.warning(
+          'use_json_schema is not True, which is not recommended. Parsing a'
+          ' callable into JSON schema is preferred.'
+      )
+      _from_callable_with_api_option_warning_logged = True
     from . import _automatic_function_calling_util
 
     if use_json_schema:
@@ -5250,7 +5267,7 @@ UrlContextOrDict = Union[UrlContext, UrlContextDict]
 class StreamableHttpTransport(_common.BaseModel):
   """A transport that can stream HTTP requests and responses.
 
-  Next ID: 6. This data type is not supported in Vertex AI.
+  This data type is not supported in Vertex AI.
   """
 
   headers: Optional[dict[str, str]] = Field(
@@ -5276,7 +5293,7 @@ class StreamableHttpTransport(_common.BaseModel):
 class StreamableHttpTransportDict(TypedDict, total=False):
   """A transport that can stream HTTP requests and responses.
 
-  Next ID: 6. This data type is not supported in Vertex AI.
+  This data type is not supported in Vertex AI.
   """
 
   headers: Optional[dict[str, str]]
@@ -5303,8 +5320,8 @@ StreamableHttpTransportOrDict = Union[
 class McpServer(_common.BaseModel):
   """A MCPServer is a server that can be called by the model to perform actions.
 
-  It is a server that implements the MCP protocol. Next ID: 7. This data type is
-  not supported in Vertex AI.
+  It is a server that implements the MCP protocol. This data type is not
+  supported in Vertex AI.
   """
 
   name: Optional[str] = Field(
@@ -5319,8 +5336,8 @@ class McpServer(_common.BaseModel):
 class McpServerDict(TypedDict, total=False):
   """A MCPServer is a server that can be called by the model to perform actions.
 
-  It is a server that implements the MCP protocol. Next ID: 7. This data type is
-  not supported in Vertex AI.
+  It is a server that implements the MCP protocol. This data type is not
+  supported in Vertex AI.
   """
 
   name: Optional[str]
