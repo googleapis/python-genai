@@ -764,6 +764,21 @@ def test_mldev_explicit_arg_precedence(monkeypatch, caplog):
   assert isinstance(client.models._api_client, api_client.BaseApiClient)
   assert (
       "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
+      not in caplog.text
+  )
+
+
+def test_mldev_empty_api_key_falls_back_to_env_key(monkeypatch, caplog):
+  """An empty api_key is not explicit, so the env lookup and warning remain."""
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
+  monkeypatch.setenv("GOOGLE_API_KEY", "google_env_api_key")
+  monkeypatch.setenv("GEMINI_API_KEY", "gemini_env_api_key")
+
+  client = Client(api_key="")
+
+  assert client.models._api_client.api_key == "google_env_api_key"
+  assert (
+      "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
       in caplog.text
   )
 
@@ -929,6 +944,25 @@ def test_vertexai_apikey_from_env_both_api_keys(monkeypatch, caplog):
   assert (
       "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
       in caplog.text
+  )
+
+
+def test_vertexai_explicit_api_key_skips_env_key_warning(monkeypatch, caplog):
+  """An explicit Vertex AI API key skips the env key lookup and its warning."""
+  caplog.set_level(logging.DEBUG, logger="google_genai._api_client")
+  monkeypatch.setenv("GOOGLE_API_KEY", "google_env_api_key")
+  monkeypatch.setenv("GEMINI_API_KEY", "gemini_env_api_key")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+
+  client = Client(vertexai=True, api_key="explicit_api_key")
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == "explicit_api_key"
+  assert "aiplatform" in client._api_client._http_options.base_url
+  assert (
+      "Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY."
+      not in caplog.text
   )
 
 

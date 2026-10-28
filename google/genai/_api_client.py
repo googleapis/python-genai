@@ -928,7 +928,8 @@ class BaseApiClient:
     # Retrieve implicitly set values from the environment.
     env_project = os.environ.get('GOOGLE_CLOUD_PROJECT', None)
     env_location = os.environ.get('GOOGLE_CLOUD_LOCATION', None)
-    env_api_key = get_env_api_key()
+    # Explicit api_key wins; skip env lookup and its warning.
+    env_api_key = None if api_key else get_env_api_key()
     self.project = project or env_project
     self.location = location or env_location
     self.api_key = api_key or env_api_key
