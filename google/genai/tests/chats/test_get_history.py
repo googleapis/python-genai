@@ -46,7 +46,7 @@ pytest_plugins = 'pytest_asyncio'
 
 @pytest.fixture
 def mock_api_client(vertexai=False):
-  api_client = mock.MagicMock(spec=client.ApiClient)
+  api_client = mock.MagicMock(spec=client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}  # Ensure headers exist
@@ -519,3 +519,164 @@ def test_chat_stream_with_empty_content(
   ]
   assert chat.get_history() == expected_comprehensive_history
   assert not chat.get_history(curated=True)
+
+
+_STREAM_PART_1 = types.Part(text='Thinking.', thought=True)
+_STREAM_PART_2 = types.Part(text='Hello ')
+_STREAM_PART_3 = types.Part(text='world.', thought_signature=b'sig')
+
+
+def _stream_chunks(
+    parts: list[types.Part],
+) -> list[types.GenerateContentResponse]:
+  """Builds one stream chunk per part; the last chunk ends with STOP."""
+  chunks = [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(content=types.Content(role='model', parts=[part]))
+          ]
+      )
+      for part in parts
+  ]
+  chunks[-1].candidates[0].finish_reason = types.FinishReason.STOP
+  return chunks
+
+
+def _stream_config(disable_afc: bool) -> types.GenerateContentConfig:
+  """Builds a config that reaches the AFC or the AFC-disabled branch."""
+  return types.GenerateContentConfig(
+      automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          disable=disable_afc
+      )
+  )
+
+
+@pytest.fixture
+def mock_generate_content_stream_multiple_chunks():
+  with mock.patch.object(
+      models.Models, 'generate_content_stream'
+  ) as mock_generate_content:
+    mock_generate_content.return_value = _stream_chunks(
+        [_STREAM_PART_1, _STREAM_PART_2, _STREAM_PART_3]
+    )
+    yield mock_generate_content
+
+
+@pytest.mark.usefixtures('mock_generate_content_stream_multiple_chunks')
+@pytest.mark.parametrize('disable_afc', [False, True])
+def test_chat_stream_records_single_model_turn(mock_api_client, disable_afc):
+  """A streamed response is recorded as one model turn holding every part."""
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash')
+
+  chunks = list(
+      chat.send_message_stream('Hello', config=_stream_config(disable_afc))
+  )
+
+  assert len(chunks) == 3
+  expected = [
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
+      types.Content(
+          role='model',
+          parts=[_STREAM_PART_1, _STREAM_PART_2, _STREAM_PART_3],
+      ),
+  ]
+  assert chat.get_history() == expected
+  assert chat.get_history(curated=True) == expected
+  assert [c.candidates[0].content.parts for c in chunks] == [
+      [_STREAM_PART_1],
+      [_STREAM_PART_2],
+      [_STREAM_PART_3],
+  ]
+
+
+def test_chat_stream_sends_single_model_turn_in_next_request(
+    mock_api_client,
+):
+  """The next request carries the previous streamed reply as one content."""
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash')
+  turn2_part = types.Part(text='Second reply.')
+
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      side_effect=[
+          _stream_chunks([_STREAM_PART_1, _STREAM_PART_2, _STREAM_PART_3]),
+          _stream_chunks([turn2_part]),
+      ],
+  ) as mock_stream:
+    list(chat.send_message_stream('Hello'))
+    list(chat.send_message_stream('Again'))
+
+  assert mock_stream.call_args_list[1].kwargs['contents'] == [
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
+      types.Content(
+          role='model',
+          parts=[_STREAM_PART_1, _STREAM_PART_2, _STREAM_PART_3],
+      ),
+      types.UserContent(parts=[types.Part.from_text(text='Again')]),
+  ]
+
+
+def test_chat_stream_invalid_chunk_excludes_merged_turn(mock_api_client):
+  """An invalid chunk keeps the merged turn out of the curated history."""
+  models_module = models.Models(mock_api_client)
+  chats_module = chats.Chats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash')
+
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      return_value=_stream_chunks([_STREAM_PART_2, types.Part()]),
+  ):
+    list(chat.send_message_stream('Hello'))
+
+  assert chat.get_history() == [
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
+      types.Content(role='model', parts=[_STREAM_PART_2, types.Part()]),
+  ]
+  assert not chat.get_history(curated=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('disable_afc', [False, True])
+async def test_async_chat_stream_records_single_model_turn(
+    mock_api_client, disable_afc
+):
+  """An async streamed response is recorded as one model turn."""
+  models_module = models.AsyncModels(mock_api_client)
+  chats_module = chats.AsyncChats(modules=models_module)
+  chat = chats_module.create(model='gemini-2.5-flash')
+
+  async def _async_stream():
+    for chunk in _stream_chunks(
+        [_STREAM_PART_1, _STREAM_PART_2, _STREAM_PART_3]
+    ):
+      yield chunk
+
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content_stream',
+      new_callable=mock.AsyncMock,
+      return_value=_async_stream(),
+  ):
+    chunks = [
+        chunk
+        async for chunk in await chat.send_message_stream(
+            'Hello', config=_stream_config(disable_afc)
+        )
+    ]
+
+  assert len(chunks) == 3
+  expected = [
+      types.UserContent(parts=[types.Part.from_text(text='Hello')]),
+      types.Content(
+          role='model',
+          parts=[_STREAM_PART_1, _STREAM_PART_2, _STREAM_PART_3],
+      ),
+  ]
+  assert chat.get_history() == expected
+  assert chat.get_history(curated=True) == expected
