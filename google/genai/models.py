@@ -6251,6 +6251,9 @@ class Models(_api_module.BaseModule):
       # The image shows a flat lay arrangement of freshly baked blueberry
       # scones.
     """
+    import collections.abc
+    if isinstance(contents, (collections.abc.Iterator, collections.abc.Generator)):
+      contents = list(contents)
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(config)
@@ -6431,6 +6434,9 @@ class Models(_api_module.BaseModule):
       # The image shows a flat lay arrangement of freshly baked blueberry
       # scones.
     """
+    import collections.abc
+    if isinstance(contents, (collections.abc.Iterator, collections.abc.Generator)):
+      contents = list(contents)
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(config)
@@ -8442,6 +8448,9 @@ class AsyncModels(_api_module.BaseModule):
       print(response.text)
       # J'aime les bagels.
     """
+    import collections.abc
+    if isinstance(contents, (collections.abc.Iterator, collections.abc.Generator)):
+      contents = list(contents)
     # Retrieve and cache any MCP sessions if provided.
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(
@@ -8694,6 +8703,9 @@ class AsyncModels(_api_module.BaseModule):
       # The image shows a flat lay arrangement of freshly baked blueberry
       # scones.
     """
+    import collections.abc
+    if isinstance(contents, (collections.abc.Iterator, collections.abc.Generator)):
+      contents = list(contents)
     if not config:
       parsed_config = None
     elif isinstance(config, dict):
