@@ -13,12 +13,15 @@
 # limitations under the License.
 #
 
+import asyncio
 import sys
 from typing import Any
+from unittest import mock
 import pytest
 from ... import _transformers as t
 from ... import errors
 from ... import types
+from ...models import AsyncModels
 from .. import pytest_helper
 
 try:
@@ -343,3 +346,103 @@ def test_mcp_session_synchronous_stream_call_raises_error(client):
   with pytest.raises(errors.UnsupportedFunctionError):
     for chunk in response:
       pass
+
+
+class _LiveMcpClientSession(McpClientSession):
+  """Holds an asyncio.Future, like a connected session, so deepcopy fails."""
+
+  def __init__(self):
+    self._read_stream = None
+    self._write_stream = None
+    self._pending_response = asyncio.get_running_loop().create_future()
+
+  async def list_tools(self):
+    return mcp_types.ListToolsResult(
+        tools=[
+            mcp_types.Tool(
+                name='get_weather',
+                description='Get the weather in a city.',
+                inputSchema={
+                    'type': 'object',
+                    'properties': {'location': {'type': 'string'}},
+                },
+            )
+        ]
+    )
+
+
+def _live_session_config(session):
+  return types.GenerateContentConfig(
+      temperature=0,
+      tools=[session],
+      http_options=types.HttpOptions(headers={'x-custom-header': 'value'}),
+      automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          disable=True
+      ),
+  )
+
+
+def _assert_session_converted_and_config_unchanged(
+    mock_generate, config, session
+):
+  """Checks the request got the session's tools and the config is intact."""
+  mock_generate.assert_called_once()
+  sent_tools = mock_generate.call_args.kwargs['config'].tools
+  assert len(sent_tools) == 1
+  assert [
+      declaration.name for declaration in sent_tools[0].function_declarations
+  ] == ['get_weather']
+  assert len(config.tools) == 1
+  assert config.tools[0] is session
+  assert config.http_options.headers == {'x-custom-header': 'value'}
+
+
+@pytest.mark.asyncio
+async def test_mcp_session_in_config_object_async(client):
+  """A live session in a GenerateContentConfig is converted, not deep-copied.
+
+  The caller's config keeps its tools and headers.
+  """
+  session = _LiveMcpClientSession()
+  config = _live_session_config(session)
+
+  with mock.patch.object(
+      AsyncModels,
+      '_generate_content',
+      return_value=types.GenerateContentResponse(),
+  ) as mock_generate:
+    await client.aio.models.generate_content(
+        model='gemini-2.5-flash',
+        contents='What is the weather in Boston?',
+        config=config,
+    )
+
+  _assert_session_converted_and_config_unchanged(mock_generate, config, session)
+
+
+@pytest.mark.asyncio
+async def test_mcp_session_in_config_object_stream_async(client):
+  """The streaming variant also converts a live session without deep-copying.
+
+  The caller's config keeps its tools and headers.
+  """
+  session = _LiveMcpClientSession()
+  config = _live_session_config(session)
+
+  async def mock_stream():
+    yield types.GenerateContentResponse()
+
+  with mock.patch.object(
+      AsyncModels, '_generate_content_stream', side_effect=[mock_stream()]
+  ) as mock_generate_stream:
+    response = await client.aio.models.generate_content_stream(
+        model='gemini-2.5-flash',
+        contents='What is the weather in Boston?',
+        config=config,
+    )
+    async for _ in response:
+      pass
+
+  _assert_session_converted_and_config_unchanged(
+      mock_generate_stream, config, session
+  )
