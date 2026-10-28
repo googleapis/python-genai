@@ -349,7 +349,7 @@ if TYPE_CHECKING:
         SmartTranscriptionModeParam,
     )
     from .source import Source, SourceParam, SourceType
-    from .speakerconfig import SpeakerConfig, SpeakerConfigParam
+    from .speakerconfig import SpeakerConfig, SpeakerConfigMode, SpeakerConfigParam
     from .speechannotation import SpeechAnnotation, SpeechAnnotationParam
     from .speechconfig import SpeechConfig, SpeechConfigParam
     from .staticmediaprocessing import StaticMediaProcessing, StaticMediaProcessingParam
@@ -740,6 +740,7 @@ __all__ = [
     "SourceParam",
     "SourceType",
     "SpeakerConfig",
+    "SpeakerConfigMode",
     "SpeakerConfigParam",
     "SpeechAnnotation",
     "SpeechAnnotationParam",
@@ -1158,6 +1159,7 @@ _dynamic_imports: dict[str, str] = {
     "SourceParam": ".source",
     "SourceType": ".source",
     "SpeakerConfig": ".speakerconfig",
+    "SpeakerConfigMode": ".speakerconfig",
     "SpeakerConfigParam": ".speakerconfig",
     "SpeechAnnotation": ".speechannotation",
     "SpeechAnnotationParam": ".speechannotation",
