@@ -334,4 +334,49 @@ class UnknownApiResponseError(ValueError):
   """Raised when the response from the API cannot be parsed as JSON."""
   pass
 
+
+class ContinuationInterruptedError(Exception):
+  """Raised when Interactions automatic continuation fails after progress.
+
+  `interactions.create()` with `automatic_continuation` enabled (the default)
+  may make several requests ("hops"), each one resuming the decode from the
+  previous hop's `continuation_token`. If a hop fails after the server already
+  produced (and billed) output in an earlier hop, or after a resumable
+  checkpoint was reached, this error is raised instead of the underlying
+  error so the work is not lost. The underlying error is `__cause__`.
+
+  To resume, pass `continuation_token` to `interactions.create()`: with `store`
+  enabled (the default), also pass `interaction_id` as `previous_interaction_id`
+  and no `input`; with `store=False`, resend the original `input`.
+
+  Attributes:
+    partial_interaction: For unary calls, the interaction merged from the hops
+      that completed (status `requires_continuation`, with the resumable
+      `continuation_token`), or None if no hop completed. Always None for
+      streams, whose events were already yielded.
+    continuation_token: The latest resumable `continuation_token`. For streams
+      this may be a mid-hop checkpoint: resuming from it re-generates any
+      output yielded after the checkpoint.
+    interaction_id: The id of the stored interaction that issued
+      `continuation_token` (the value to send as `previous_interaction_id` when
+      `store` is enabled), or None when `store=False` or unknown.
+    continuation_ids: The ids of every hop created during the call, in order.
+  """
+
+  def __init__(
+      self,
+      message: str,
+      *,
+      partial_interaction: Any = None,
+      continuation_token: Optional[str] = None,
+      interaction_id: Optional[str] = None,
+      continuation_ids: Optional[list[str]] = None,
+  ):
+    super().__init__(message)
+    self.partial_interaction = partial_interaction
+    self.continuation_token = continuation_token
+    self.interaction_id = interaction_id
+    self.continuation_ids = list(continuation_ids or [])
+
+
 ExperimentalWarning = _common.ExperimentalWarning
