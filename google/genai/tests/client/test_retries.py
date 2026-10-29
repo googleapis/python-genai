@@ -662,8 +662,8 @@ async def _aiohttp_async_response(status: int, streamable: bool = False):
   response.json.return_value = {}
   response.text.return_value = 'test'
   if streamable:
-    response.content = mock.Mock()
-    response.content.readline = mock.AsyncMock(return_value=b'')
+    response.content = mock.MagicMock()
+    response.content.iter_any.return_value.__aiter__.return_value = []
     response.release = mock.MagicMock()
   return response
 
