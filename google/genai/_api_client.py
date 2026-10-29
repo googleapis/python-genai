@@ -30,11 +30,13 @@ import logging
 import math
 import os
 import random
+import re
 import ssl
 import sys
 import threading
 import time
 from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
+from urllib.parse import unquote
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
 import warnings
@@ -378,6 +380,204 @@ def get_timeout_in_seconds(
   else:
     timeout_in_seconds = None
   return timeout_in_seconds
+
+
+_AGENT_MESSAGE_HEADER = 'agent-message'
+_AGENT_MESSAGE_PREFIX = '[Gemini API] '
+_AGENT_MESSAGE_TOKEN_RE = re.compile(
+    r"^[A-Za-z*][A-Za-z0-9!#$%&'*+.^_`|~:/-]*$"
+)
+_SEEN_AGENT_MESSAGES: set[str] = set()
+_SEEN_AGENT_MESSAGES_LOCK = threading.Lock()
+_GENAI_PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__)) + os.sep
+
+
+def _external_stacklevel() -> int:
+  """Returns a `warnings.warn` stacklevel pointing outside this package.
+
+  The level is relative to the function that calls this helper (which is
+  stacklevel=1 for its own `warnings.warn` call). Frames inside the google.genai
+  package (including the embedded Interactions SDK and its hooks) are skipped
+  so the warning is attributed to user code rather than SDK internals.
+  """
+  level = 1
+  frame = sys._getframe(1)  # pylint: disable=protected-access
+  while frame is not None and frame.f_code.co_filename.startswith(
+      _GENAI_PACKAGE_DIR
+  ):
+    frame = frame.f_back
+    level += 1
+  return level
+
+
+def _split_unquoted(text: str, delimiter: str) -> Optional[list[str]]:
+  """Splits text on delimiter outside double-quoted strings."""
+  parts: list[str] = []
+  start = 0
+  in_quotes = False
+  is_display_string = False
+  escaped = False
+
+  for i, ch in enumerate(text):
+    if in_quotes:
+      if not is_display_string:
+        if escaped:
+          escaped = False
+          continue
+        if ch == '\\':
+          escaped = True
+          continue
+      if ch == '"':
+        in_quotes = False
+        is_display_string = False
+    else:
+      if ch == '"':
+        in_quotes = True
+        is_display_string = i > 0 and text[i - 1] == '%'
+      elif ch == delimiter:
+        parts.append(text[start:i])
+        start = i + 1
+
+  if in_quotes:
+    return None
+  parts.append(text[start:])
+  return parts
+
+
+def _unescape_quoted_string(inner: str) -> Optional[str]:
+  """Unescapes RFC 9651 quoted-string inner content."""
+  out: list[str] = []
+  escaped = False
+  for ch in inner:
+    if escaped:
+      if ch not in ('"', '\\'):
+        return None
+      out.append(ch)
+      escaped = False
+    elif ch == '\\':
+      escaped = True
+    elif ch == '"':
+      return None
+    else:
+      out.append(ch)
+  if escaped:
+    return None
+  return ''.join(out)
+
+
+def _parse_structured_agent_message_item(raw_item: str) -> Optional[str]:
+  """Parses a single RFC 9651 parameterized item and returns its msg value."""
+  item = raw_item.strip()
+  if not item:
+    return None
+
+  parts = _split_unquoted(item, ';')
+  if not parts or len(parts) < 2:
+    return None
+
+  code = parts[0].strip()
+  if not _AGENT_MESSAGE_TOKEN_RE.match(code):
+    return None
+
+  msg_value: Optional[str] = None
+  for raw_param in parts[1:]:
+    param = raw_param.strip()
+    if not param:
+      return None
+    if '=' not in param:
+      if not _AGENT_MESSAGE_TOKEN_RE.match(param):
+        return None
+      continue
+
+    key, val = param.split('=', 1)
+    key = key.strip()
+    val = val.strip()
+    if not _AGENT_MESSAGE_TOKEN_RE.match(key) or not val:
+      return None
+
+    if key == 'msg':
+      if val.startswith('%"') and val.endswith('"') and len(val) >= 3:
+        inner = val[2:-1]
+        if '"' in inner:
+          return None
+        msg_value = unquote(inner, encoding='utf-8', errors='replace')
+      elif val.startswith('"') and val.endswith('"') and len(val) >= 2:
+        msg_value = _unescape_quoted_string(val[1:-1])
+        if msg_value is None:
+          return None
+      else:
+        return None
+
+  return msg_value if msg_value else None
+
+
+def parse_agent_message_header(header_value: str) -> list[str]:
+  """Parses an Agent-Message response header into warning strings."""
+  if not isinstance(header_value, str):
+    return []
+  stripped = header_value.strip()
+  if not stripped:
+    return []
+
+  # Plain-text fallback for headers that aren't RFC 9651 structured items.
+  if ';' not in stripped and '=' not in stripped and ' ' in stripped:
+    if not stripped.startswith('"') and not stripped.endswith('"'):
+      return [stripped]
+
+  items = _split_unquoted(stripped, ',')
+  if items is None:
+    return []
+
+  messages: list[str] = []
+  for raw_item in items:
+    msg = _parse_structured_agent_message_item(raw_item)
+    if msg:
+      messages.append(msg)
+  return messages
+
+
+def warn_from_agent_message_headers(headers: Any) -> None:
+  """Emits deduplicated UserWarnings from Agent-Message response headers."""
+  if not headers:
+    return
+  try:
+    values: list[str] = []
+    if isinstance(headers, dict):
+      for key, val in headers.items():
+        if isinstance(key, str) and key.lower() == _AGENT_MESSAGE_HEADER:
+          if isinstance(val, str):
+            values.append(val)
+          elif isinstance(val, (list, tuple)):
+            values.extend(v for v in val if isinstance(v, str))
+    elif hasattr(headers, 'get_list'):
+      for key in headers.keys():
+        if isinstance(key, str) and key.lower() == _AGENT_MESSAGE_HEADER:
+          values.extend(
+              v for v in headers.get_list(key) if isinstance(v, str)
+          )
+    elif hasattr(headers, 'getall'):
+      for key in headers.keys():
+        if isinstance(key, str) and key.lower() == _AGENT_MESSAGE_HEADER:
+          values.extend(v for v in headers.getall(key) if isinstance(v, str))
+    elif hasattr(headers, 'items'):
+      for key, val in headers.items():
+        if isinstance(key, str) and key.lower() == _AGENT_MESSAGE_HEADER:
+          if isinstance(val, str):
+            values.append(val)
+
+    for header_val in values:
+      for msg in parse_agent_message_header(header_val):
+        with _SEEN_AGENT_MESSAGES_LOCK:
+          if msg in _SEEN_AGENT_MESSAGES:
+            continue
+          _SEEN_AGENT_MESSAGES.add(msg)
+        warnings.warn(
+            f'{_AGENT_MESSAGE_PREFIX}{msg}',
+            UserWarning,
+            stacklevel=_external_stacklevel(),
+        )
+  except Exception:  # pylint: disable=broad-exception-caught
+    pass
 
 
 @dataclass

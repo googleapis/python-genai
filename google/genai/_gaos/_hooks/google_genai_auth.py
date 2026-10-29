@@ -15,11 +15,11 @@
 # pyformat: disable
 # pylint: skip-file
 
-"""Google GenAI authentication hooks for the embedded Speakeasy SDK."""
+"""Google GenAI authentication and response hooks for the embedded Speakeasy SDK."""
 
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping, Optional, Union, cast
+from typing import Any, Callable, Mapping, Optional, Tuple, Union, cast
 
 try:
     import httpx
@@ -27,7 +27,24 @@ except ImportError:
     import httpx2 as httpx
 
 from .. import types, utils
-from .types import BeforeRequestContext, BeforeRequestHook
+from .asynctypes import AsyncAfterErrorHook, AsyncAfterSuccessHook
+from .types import (
+    AfterErrorContext,
+    AfterErrorHook,
+    AfterSuccessContext,
+    AfterSuccessHook,
+    BeforeRequestContext,
+    BeforeRequestHook,
+)
+
+try:
+    # Resolves to google.genai._api_client once this SDK is embedded in
+    # google-genai, so Agent-Message parsing and per-process deduplication are
+    # shared with the GenerateContent client. In the standalone generated SDK
+    # this import fails and Agent-Message headers are ignored.
+    from ... import _api_client as _genai_api_client  # type: ignore[import-not-found]
+except ImportError:
+    _genai_api_client = None
 
 
 GOOGLE_GENAI_API_REVISION = "2026-05-20"
@@ -75,6 +92,61 @@ class GoogleGenAIAuthHook(BeforeRequestHook):
         _apply_auth(security, request)
 
         return request
+
+
+class GoogleGenAIAgentMessageHook(AfterSuccessHook, AfterErrorHook):
+    """Surfaces Agent-Message response headers as native warnings.
+
+    Runs on both successful and error responses; never alters either.
+    """
+
+    def after_success(
+        self,
+        hook_ctx: AfterSuccessContext,
+        response: httpx.Response,
+    ) -> Union[httpx.Response, Exception]:
+        _warn_from_agent_message_headers(response.headers)
+        return response
+
+    def after_error(
+        self,
+        hook_ctx: AfterErrorContext,
+        response: Optional[httpx.Response],
+        error: Optional[Exception],
+    ) -> Union[Tuple[Optional[httpx.Response], Optional[Exception]], Exception]:
+        if response is not None:
+            _warn_from_agent_message_headers(response.headers)
+        return response, error
+
+
+class GoogleGenAIAsyncAgentMessageHook(AsyncAfterSuccessHook, AsyncAfterErrorHook):
+    """Surfaces Agent-Message response headers as native warnings in async calls.
+
+    Runs on both successful and error responses; never alters either.
+    """
+
+    async def after_success(
+        self,
+        hook_ctx: AfterSuccessContext,
+        response: httpx.Response,
+    ) -> Union[httpx.Response, Exception]:
+        _warn_from_agent_message_headers(response.headers)
+        return response
+
+    async def after_error(
+        self,
+        hook_ctx: AfterErrorContext,
+        response: Optional[httpx.Response],
+        error: Optional[Exception],
+    ) -> Union[Tuple[Optional[httpx.Response], Optional[Exception]], Exception]:
+        if response is not None:
+            _warn_from_agent_message_headers(response.headers)
+        return response, error
+
+
+def _warn_from_agent_message_headers(headers: Any) -> None:
+    if _genai_api_client is not None:
+        _genai_api_client.warn_from_agent_message_headers(headers)
 
 
 def _resolve_security(security_source: Any) -> Optional[types.Security]:

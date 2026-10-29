@@ -21,7 +21,10 @@ from .adapters import (
     SyncToAsyncAfterParseErrorAdapter,
     SyncToAsyncBeforeRequestAdapter,
 )
-from .google_genai_auth import GoogleGenAIAuthHook
+from .google_genai_auth import (
+    GoogleGenAIAsyncAgentMessageHook,
+    GoogleGenAIAuthHook,
+)
 from ..lib.compat_errors import CompatErrorHook
 from typing import cast
 from .types import AfterErrorHook, AfterParseErrorHook
@@ -59,6 +62,8 @@ def init_async_hooks(hooks: AsyncHooks):
     hooks.register_before_request_hook(
         SyncToAsyncBeforeRequestAdapter(GoogleGenAIAuthHook())
     )
+    hooks.register_after_success_hook(GoogleGenAIAsyncAgentMessageHook())
+    hooks.register_after_error_hook(GoogleGenAIAsyncAgentMessageHook())
     hooks.register_after_error_hook(
         SyncToAsyncAfterErrorAdapter(cast(AfterErrorHook, CompatErrorHook()))
     )
