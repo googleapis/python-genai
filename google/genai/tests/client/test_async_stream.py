@@ -16,12 +16,15 @@
 """Tests for async stream."""
 
 import asyncio
-from typing import List
+import io
+import json
+from typing import Any, List
 from unittest import mock
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 from unittest.mock import patch
 import pytest
+import requests
 
 
 try:
@@ -51,15 +54,12 @@ class MockHTTPXResponse(httpx.Response):
   """Mock httpx.Response class for testing."""
 
   def __init__(self, lines: List[str]):
-    self.aiter_lines = MagicMock()
-    self.aiter_lines.return_value.__aiter__ = MagicMock(
-        return_value=self._async_line_iterator(lines)
-    )
+    self.aiter_bytes = MagicMock(return_value=self._async_byte_iterator(lines))
     self.aclose = AsyncMock()
 
-  async def _async_line_iterator(self, lines: List[str]):
+  async def _async_byte_iterator(self, lines: List[str]):
     for line in lines:
-      yield line
+      yield line.encode('utf-8') + b'\n'
 
 
 class MockAIOHTTPResponse(aiohttp.ClientResponse):
@@ -128,7 +128,7 @@ async def test_httpx_simple_lines(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == lines
-  mock_response.aiter_lines.assert_called_once()
+  mock_response.aiter_bytes.assert_called_once()
   mock_response.aclose.assert_called_once()
 
 
@@ -141,7 +141,7 @@ async def test_httpx_data_prefix(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == ["{ 'message': 'hello' }", "{ 'status': 'ok' }"]
-  mock_response.aiter_lines.assert_called_once()
+  mock_response.aiter_bytes.assert_called_once()
   mock_response.aclose.assert_called_once()
 
 @pytest.mark.asyncio
@@ -158,7 +158,7 @@ async def test_httpx_multiline_data(responses: api_client.HttpResponse) -> None:
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == ["{\n  'message': 'hello'\n}"]
-  mock_response.aiter_lines.assert_called_once()
+  mock_response.aiter_bytes.assert_called_once()
   mock_response.aclose.assert_called_once()
 
 
@@ -170,7 +170,9 @@ def test_httpx_multiline_data_sync(responses: api_client.HttpResponse) -> None:
       "",
   ]
   mock_response = MagicMock(spec=httpx.Response)
-  mock_response.iter_lines.return_value = iter(lines)
+  mock_response.iter_bytes.return_value = iter(
+      [b'\n'.join(line.encode('utf-8') for line in lines) + b'\n']
+  )
   responses.response_stream = mock_response
 
   results = list(responses._iter_response_stream())
@@ -193,7 +195,7 @@ async def test_httpx_multiple_json_chunk(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == ['{ "id": 1 }', '{ "id": 2 }', '{ "id": 3 }']
-  mock_response.aiter_lines.assert_called_once()
+  mock_response.aiter_bytes.assert_called_once()
   mock_response.aclose.assert_called_once()
 
 
@@ -207,7 +209,7 @@ async def test_httpx_incomplete_json_at_end(responses: api_client.HttpResponse):
 
   # The remaining chunk is yielded
   assert results == ['{ "partial": "data"']
-  mock_response.aiter_lines.assert_called_once()
+  mock_response.aiter_bytes.assert_called_once()
   mock_response.aclose.assert_called_once()
 
 
@@ -220,7 +222,7 @@ async def test_httpx_empty_stream(responses: api_client.HttpResponse):
   results = [line async for line in responses._aiter_response_stream()]
 
   assert results == []
-  mock_response.aiter_lines.assert_called_once()
+  mock_response.aiter_bytes.assert_called_once()
   mock_response.aclose.assert_called_once()
 
 
@@ -538,3 +540,185 @@ async def test_error_event_in_generate_content_stream_async(mock_transport):
 
   with pytest.raises(errors.ServerError):
     await anext(generated_response)
+
+
+_LINE_SEPARATORS = pytest.mark.parametrize(
+    'sep', ['\u2028', '\u2029', '\x85'], ids=['u2028', 'u2029', 'u0085']
+)
+
+
+def _sse_body_with_separator(sep: str) -> bytes:
+  return b''.join(
+      b'data: '
+      + json.dumps(c, ensure_ascii=False).encode('utf-8')
+      + b'\r\n\r\n'
+      for c in _sse_events_with_separator(sep)
+  )
+
+
+def _sse_events_with_separator(sep: str) -> list[dict[str, Any]]:
+  return [
+      {
+          'candidates': [{
+              'content': {
+                  'role': 'model',
+                  'parts': [{'text': f'line one{sep}line two'}],
+              }
+          }]
+      },
+      {
+          'candidates': [{
+              'content': {'role': 'model', 'parts': [{'text': ' done'}]},
+              'finishReason': 'STOP',
+          }]
+      },
+  ]
+
+
+def _sse_handler(sep: str):
+  def handler(_: httpx.Request) -> httpx.Response:
+    return httpx.Response(
+        200,
+        content=_sse_body_with_separator(sep),
+        headers={'content-type': 'text/event-stream'},
+    )
+
+  return handler
+
+
+@_LINE_SEPARATORS
+def test_generate_content_stream_line_separator_in_text(sep):
+  """Unicode line separators inside a JSON string do not split an SSE line."""
+  client = Client(
+      api_key='test_api_key',
+      http_options=types.HttpOptions(
+          client_args={'transport': httpx.MockTransport(_sse_handler(sep))}
+      ),
+  )
+
+  stream = client.models.generate_content_stream(
+      model='gemini-2.5-flash', contents='hi'
+  )
+
+  assert [c.text for c in stream] == [f'line one{sep}line two', ' done']
+
+
+@_LINE_SEPARATORS
+@pytest.mark.asyncio
+async def test_generate_content_stream_line_separator_in_text_async(sep):
+  """Async httpx streams keep Unicode line separators inside JSON strings."""
+  client = Client(
+      api_key='test_api_key',
+      http_options=types.HttpOptions(
+          async_client_args={
+              'transport': httpx.MockTransport(_sse_handler(sep))
+          }
+      ),
+  )
+
+  stream = await client.aio.models.generate_content_stream(
+      model='gemini-2.5-flash', contents='hi'
+  )
+
+  assert [c.text async for c in stream] == [
+      f'line one{sep}line two',
+      ' done',
+  ]
+
+
+@_LINE_SEPARATORS
+def test_requests_stream_line_separator_in_text(sep):
+  """The requests transport splits SSE lines only at CR, LF and CRLF."""
+  resp = requests.Response()
+  resp.status_code = 200
+  resp.raw = io.BytesIO(_sse_body_with_separator(sep))
+  resp.encoding = 'utf-8'
+
+  results = list(
+      api_client.HttpResponse(
+          headers={}, response_stream=resp
+      )._iter_response_stream()
+  )
+
+  assert results == [
+      json.dumps(c, ensure_ascii=False) for c in _sse_events_with_separator(sep)
+  ]
+
+
+def test_httpx_stream_crlf_split_across_chunks():
+  """A CRLF split across two chunks ends exactly one line."""
+  chunks = [b'data: {"a": 1}\r', b'\n\r\n', b'data: {"b": 2}\r\n\r\n']
+  resp = api_client.HttpResponse(
+      headers={}, response_stream=mock_response(chunks)
+  )
+
+  assert list(resp._iter_response_stream()) == ['{"a": 1}', '{"b": 2}']
+
+
+def test_httpx_stream_cr_only_terminators():
+  """A bare CR ends a line, as the SSE format requires."""
+  chunks = [b'data: {"a": 1}\r\rdata: {"b": 2}\r\r']
+  resp = api_client.HttpResponse(
+      headers={}, response_stream=mock_response(chunks)
+  )
+
+  assert list(resp._iter_response_stream()) == ['{"a": 1}', '{"b": 2}']
+
+
+def test_httpx_stream_multibyte_char_split_across_chunks():
+  """A UTF-8 character split across chunks decodes as one character."""
+  chunks = [b'data: {"t": "x\xe2\x80', b'\xa8y"}\n\n']
+  resp = api_client.HttpResponse(
+      headers={}, response_stream=mock_response(chunks)
+  )
+
+  assert list(resp._iter_response_stream()) == ['{"t": "x\u2028y"}']
+
+
+def test_httpx_stream_multiline_data_with_line_separator():
+  """Multi-line data fields still join with LF around a U+2028."""
+  chunks = [b'data: {"t": "a\xe2\x80\xa8b",\n', b'data: "u": 1}\n\n']
+  resp = api_client.HttpResponse(
+      headers={}, response_stream=mock_response(chunks)
+  )
+
+  assert list(resp._iter_response_stream()) == ['{"t": "a\u2028b",\n"u": 1}']
+
+
+def test_httpx_stream_invalid_utf8_is_replaced():
+  """Invalid UTF-8 bytes become U+FFFD instead of raising."""
+  chunks = [b'data: {"t": "\xff"}\n\n']
+  resp = api_client.HttpResponse(
+      headers={}, response_stream=mock_response(chunks)
+  )
+
+  assert list(resp._iter_response_stream()) == ['{"t": "\ufffd"}']
+
+
+def test_httpx_stream_final_line_without_terminator():
+  """A last line with no terminator is still yielded at end of stream."""
+  chunks = [b'data: {"a": 1}\n\n{"error": ', b'{"code": 500}}']
+  resp = api_client.HttpResponse(
+      headers={}, response_stream=mock_response(chunks)
+  )
+
+  assert list(resp._iter_response_stream()) == [
+      '{"a": 1}',
+      '{"error": {"code": 500}}',
+  ]
+
+
+@pytest.mark.asyncio
+async def test_httpx_async_stream_line_separator_in_text(
+    responses: api_client.HttpResponse,
+):
+  """The async httpx branch keeps a U+2028 line whole and closes once."""
+  httpx_response = MockHTTPXResponse(
+      ['data: {"t": "a\u2028b"}', '', 'data: {"t": "c"}', '']
+  )
+  responses.response_stream = httpx_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert results == ['{"t": "a\u2028b"}', '{"t": "c"}']
+  httpx_response.aclose.assert_called_once()

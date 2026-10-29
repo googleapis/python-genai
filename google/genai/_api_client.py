@@ -20,7 +20,9 @@ The BaseApiClient is intended to be a private module and is subject to change.
 """
 
 import asyncio
+from collections.abc import AsyncIterable
 from collections.abc import Generator
+from collections.abc import Iterable
 import copy
 from dataclasses import dataclass
 import inspect
@@ -362,6 +364,71 @@ class HttpRequest:
   timeout: Optional[float] = None
 
 
+class _SseLineDecoder:
+  """Splits a byte stream into lines at CR, LF or CRLF only.
+
+  The SSE format allows no other line terminators. str.splitlines(), which
+  httpx and requests use, also breaks at U+2028, U+2029 and U+0085, and these
+  may appear unescaped inside JSON strings.
+  """
+
+  def __init__(self) -> None:
+    self._buffer: list[bytes] = []
+    self._trailing_cr = False
+
+  def decode(self, chunk: bytes) -> list[str]:
+    """Returns the lines that `chunk` completes."""
+    if self._trailing_cr:
+      chunk = b'\r' + chunk
+      self._trailing_cr = False
+    # Hold a trailing CR until the next chunk shows whether LF follows.
+    if chunk.endswith(b'\r'):
+      self._trailing_cr = True
+      chunk = chunk[:-1]
+    if not chunk:
+      return []
+
+    # bytes.splitlines() breaks only at \r, \n and \r\n.
+    lines = chunk.splitlines()
+    tail = None if chunk.endswith((b'\r', b'\n')) else lines.pop()
+    if lines:
+      self._buffer.append(lines[0])
+      lines[0] = b''.join(self._buffer)
+      self._buffer = []
+    if tail is not None:
+      self._buffer.append(tail)
+    return [line.decode('utf-8', errors='replace') for line in lines]
+
+  def flush(self) -> list[str]:
+    """Returns the buffered line at the end of the stream, if any."""
+    if not self._buffer and not self._trailing_cr:
+      return []
+    line = b''.join(self._buffer)
+    self._buffer = []
+    self._trailing_cr = False
+    return [line.decode('utf-8', errors='replace')]
+
+
+def _iter_sse_lines(chunks: Iterable[bytes]) -> Iterator[str]:
+  """Yields the lines of an SSE byte stream."""
+  decoder = _SseLineDecoder()
+  for chunk in chunks:
+    yield from decoder.decode(chunk)
+  yield from decoder.flush()
+
+
+async def _aiter_sse_lines(
+    chunks: AsyncIterable[bytes],
+) -> AsyncIterator[str]:
+  """Yields the lines of an async SSE byte stream."""
+  decoder = _SseLineDecoder()
+  async for chunk in chunks:
+    for line in decoder.decode(chunk):
+      yield line
+  for line in decoder.flush():
+    yield line
+
+
 class HttpResponse:
 
   def __init__(
@@ -485,9 +552,12 @@ class HttpResponse:
     balance = 0
     data_buffer: list[str] = []
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
-      response_stream = self.response_stream.iter_lines()
+      response_stream = _iter_sse_lines(self.response_stream.iter_bytes())
     else:
-      response_stream = self.response_stream.iter_lines(decode_unicode=True)
+      # 512 bytes is the chunk size requests' iter_lines() reads.
+      response_stream = _iter_sse_lines(
+          self.response_stream.iter_content(chunk_size=512)
+      )
     for line in response_stream:
       if not line:
         if data_buffer:
@@ -542,7 +612,7 @@ class HttpResponse:
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       try:
         response_stream: Any = self.response_stream
-        async for line in response_stream.aiter_lines():
+        async for line in _aiter_sse_lines(response_stream.aiter_bytes()):
           if not line:
             if data_buffer:
               yield '\n'.join(data_buffer)
