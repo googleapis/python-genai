@@ -31,6 +31,7 @@ Task = Union[
         "reference_to_video",
         "edit",
         "extend",
+        "upscale",
     ],
     UnrecognizedStr,
 ]
