@@ -362,6 +362,23 @@ class HttpRequest:
   timeout: Optional[float] = None
 
 
+async def _aiter_aiohttp_lines(
+    content: 'aiohttp.StreamReader',
+) -> AsyncIterator[bytes]:
+  """Yields newline-terminated lines from an aiohttp stream, of any length."""
+  buffer = bytearray()
+  async for data in content.iter_any():
+    scan_start = len(buffer)
+    buffer += data
+    line_start = 0
+    while (newline_pos := buffer.find(b'\n', scan_start)) != -1:
+      yield bytes(buffer[line_start : newline_pos + 1])
+      line_start = scan_start = newline_pos + 1
+    del buffer[:line_start]
+  if buffer:
+    yield bytes(buffer)
+
+
 class HttpResponse:
 
   def __init__(
@@ -581,18 +598,9 @@ class HttpResponse:
         self.response_stream, aiohttp.ClientResponse
     ):
       try:
-        while True:
-          # Read a line from the stream. This returns bytes.
-          try:
-            line_bytes = await self.response_stream.content.readline(
-                max_line_length=READ_BUFFER_SIZE  # type: ignore[call-arg]
-            )
-          except TypeError:
-            # Ensure backwards compatibility with older versions of
-            # aiohttp that do not support max_line_length.
-            line_bytes = await self.response_stream.content.readline()
-          if not line_bytes:
-            break
+        async for line_bytes in _aiter_aiohttp_lines(
+            self.response_stream.content
+        ):
           # Decode the bytes and remove trailing whitespace and newlines.
           line = line_bytes.decode('utf-8').rstrip()
           if not line:
