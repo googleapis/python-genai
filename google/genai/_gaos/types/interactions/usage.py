@@ -33,6 +33,8 @@ class UsageTypedDict(TypedDict):
     r"""A breakdown of cached token usage by modality."""
     grounding_tool_count: NotRequired[List[GroundingToolCountTypedDict]]
     r"""Grounding tool count."""
+    initial_input_tokens: NotRequired[int]
+    r"""Number of input tokens used in the first turn of this interaction."""
     input_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
     r"""A breakdown of input token usage by modality."""
     output_tokens_by_modality: NotRequired[List[ModalityTokensTypedDict]]
@@ -63,6 +65,9 @@ class Usage(BaseModel):
 
     grounding_tool_count: Optional[List[GroundingToolCount]] = None
     r"""Grounding tool count."""
+
+    initial_input_tokens: Optional[int] = None
+    r"""Number of input tokens used in the first turn of this interaction."""
 
     input_tokens_by_modality: Optional[List[ModalityTokens]] = None
     r"""A breakdown of input token usage by modality."""
@@ -99,6 +104,7 @@ class Usage(BaseModel):
             [
                 "cached_tokens_by_modality",
                 "grounding_tool_count",
+                "initial_input_tokens",
                 "input_tokens_by_modality",
                 "output_tokens_by_modality",
                 "tool_use_tokens_by_modality",
