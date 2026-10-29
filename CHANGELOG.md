@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.34.0](https://github.com/googleapis/python-genai/compare/v2.33.0...v2.34.0) (2026-10-29)
+
+
+### Features
+
+* Add support for continuation_token and requires_continuation status ([daac53e](https://github.com/googleapis/python-genai/commit/daac53e8ad1731e8c0067a3e83fd3dfab6973c3f))
+* Add support for Python 3.15. ([cb1408b](https://github.com/googleapis/python-genai/commit/cb1408b06c573060f1593023ca320fde9a4fb5f6))
+* Add video upscale task parameter ([0456043](https://github.com/googleapis/python-genai/commit/045604349be1dd82d80170d152830b1ad4c85650))
+* Drop support for Python 3.10 ([2677298](https://github.com/googleapis/python-genai/commit/2677298eaa011df6662d6379280441d75a4693aa))
+* **interactions:** Add automatic_continuation to interactions.create in the Python SDK ([c85d5ae](https://github.com/googleapis/python-genai/commit/c85d5ae4d70d9b24c4155be0a92730499b23e79d))
+* **interactions:** Declare continuation_ids on Interaction ([4bdde3a](https://github.com/googleapis/python-genai/commit/4bdde3abfde6ec8da1c2c253cb0044991dd6064c))
+* Support base_url, api_version and headers in LiveConnectConfig.http_options ([c0e9c54](https://github.com/googleapis/python-genai/commit/c0e9c54915970948258226e565bde6ef6d5c0b94))
+* Support video understanding in Gemini Developer API ([34b58fd](https://github.com/googleapis/python-genai/commit/34b58fd1b2aa387dff5976bbefa1c1268958369f))
+
+
+### Bug Fixes
+
+* **interactions:** Align SDK User-Agent and x-goog-api-client headers ([358d249](https://github.com/googleapis/python-genai/commit/358d24964185f6510d89b17bf493627d05763d70))
+* Resolve PEP 563 string annotations when invoking AFC tools ([4650ea1](https://github.com/googleapis/python-genai/commit/4650ea156e9908c916050391de37ed12fc1297e9)), refs [#3156](https://github.com/googleapis/python-genai/issues/3156)
+* Stop per-request Authorization and X-Server-Timeout from leaking into client default headers ([0584c96](https://github.com/googleapis/python-genai/commit/0584c96031e1cea876781afb48564d86ad2fc6e2)), refs [#3158](https://github.com/googleapis/python-genai/issues/3158)
+
 ## [2.33.0](https://github.com/googleapis/python-genai/compare/v2.32.0...v2.33.0) (2026-10-22)
 
 
