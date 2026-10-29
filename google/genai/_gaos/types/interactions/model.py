@@ -78,6 +78,8 @@ Model = Union[
         "gemini-3.8-flash-tts",
         # Gemini 3.8 Flash Lite TTS - High-speed and cost-efficient, ideal for rapid dubbing, media localization, and high-throughput voice agents. Direct replacement for gemini-3.1-flash-tts-preview.
         "gemini-3.8-flash-lite-tts",
+        # Gemini 3.5 Transcribe - Low-latency speech-to-text model with utterance-based language detection, speaker diarization, word-level timestamps, and custom vocabulary biasing.
+        "gemini-3.5-transcribe",
         # Our low-latency, music generation model optimized for high-fidelity audio clips and precise rhythmic control.
         "lyria-3-clip-preview",
         # Our advanced, full-song generative model with deep compositional understanding, optimized for precise structural control and complex transitions across diverse musical styles.
