@@ -26,7 +26,7 @@ from .speechannotation import SpeechAnnotation, SpeechAnnotationParam
 from .urlcitation import URLCitation, URLCitationParam
 from .wordinfo import WordInfo, WordInfoParam
 from functools import partial
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_serializer
 from pydantic.functional_validators import BeforeValidator
 from typing import Any, Literal, Union
 from typing_extensions import Annotated, TypeAliasType
@@ -53,6 +53,10 @@ class UnknownAnnotation(BaseModel):
     is_unknown: Literal[True] = True
 
     model_config = ConfigDict(frozen=True)
+
+    @model_serializer
+    def serialize_model(self) -> Any:
+        return self.raw
 
 
 _ANNOTATION_VARIANTS: dict[str, Any] = {
