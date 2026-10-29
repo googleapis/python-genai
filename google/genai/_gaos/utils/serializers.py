@@ -295,7 +295,9 @@ def marshal_json(val, typ):
 
     m = marshaller(body=val)
 
-    d = m.model_dump(by_alias=True, mode="json", exclude_none=True)
+    d = m.model_dump(
+        by_alias=True, mode="json", exclude_none=getattr(m, "body") is None
+    )
 
     if len(d) == 0:
         return ""
