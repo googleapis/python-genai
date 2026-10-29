@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from .datetimes import parse_datetime, parse_duration
     from .enums import OpenEnumMeta
     from .unions import parse_open_union
+    from .unions import dispatch_open_union_members
     from .headers import get_headers, get_response_headers
     from .metadata import (
         FieldMetadata,
@@ -82,6 +83,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "BackoffStrategy",
+    "dispatch_open_union_members",
     "FieldMetadata",
     "find_metadata",
     "FormMetadata",
@@ -138,6 +140,7 @@ __all__ = [
 
 _dynamic_imports: dict[str, str] = {
     "BackoffStrategy": ".retries",
+    "dispatch_open_union_members": ".unions",
     "FieldMetadata": ".metadata",
     "find_metadata": ".metadata",
     "FormMetadata": ".metadata",

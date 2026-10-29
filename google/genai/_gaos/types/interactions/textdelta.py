@@ -22,7 +22,7 @@ from .. import BaseModel
 from ...utils import validate_const
 import pydantic
 from pydantic.functional_validators import AfterValidator
-from typing import Literal
+from typing import Any, Literal
 from typing_extensions import Annotated, TypedDict
 
 
@@ -38,6 +38,9 @@ class TextDelta(BaseModel):
         Annotated[Literal["text"], AfterValidator(validate_const("text"))],
         pydantic.Field(alias="type"),
     ] = "text"
+
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
 
 
 try:

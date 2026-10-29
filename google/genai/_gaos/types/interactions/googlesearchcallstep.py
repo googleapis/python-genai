@@ -24,8 +24,15 @@ from .. import (
     BaseModel,
     UNSET_SENTINEL,
     UnrecognizedStr,
+    current_exclude_none,
+    serialize_with_info,
 )
 from ...utils import validate_const
+from ..basemodel import (
+    current_by_alias,
+    current_filtered_dump,
+    current_serialization_methods_dump,
+)
 from .googlesearchcallarguments import (
     GoogleSearchCallArguments,
     GoogleSearchCallArgumentsParam,
@@ -33,7 +40,7 @@ from .googlesearchcallarguments import (
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Literal, Optional, Union
+from typing import Any, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -85,19 +92,39 @@ class GoogleSearchCallStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "google_search_call"
 
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
+
     @model_serializer(mode="wrap")
+    def _serialize_model_with_info(self, handler, info):
+        return serialize_with_info(self.serialize_model, handler, info)
+
     def serialize_model(self, handler):
         optional_fields = set(["search_type", "signature"])
+        exclude_none = current_exclude_none()
+        by_alias = current_by_alias()
+        use_field_names = by_alias is False
+        serialization_methods_dump = current_serialization_methods_dump()
+        skip_filtered = (
+            serialization_methods_dump
+            or exclude_none is False
+            or current_filtered_dump()
+        )
         serialized = handler(self)
         m = {}
 
         for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
+            k = f.alias if f.alias is not None else n
+            key = k if by_alias or k in serialized else n
+            if key not in serialized and skip_filtered:
+                continue
+            val = serialized.pop(key, None)
 
             if val != UNSET_SENTINEL:
                 if val is not None or k not in optional_fields:
-                    m[k] = val
+                    m[n if use_field_names else k] = val
+        for k, v in serialized.items():
+            m[k] = v
 
         return m
 
