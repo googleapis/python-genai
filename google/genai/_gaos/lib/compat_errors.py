@@ -350,9 +350,9 @@ class CompatErrorHook:
         response: Optional[httpx.Response],
         error: Optional[Exception],
     ) -> tuple[Optional[httpx.Response], Optional[Exception]]:
-        if error is None:
-            return response, error
-        return response, wrap_sdk_error(error)  # type: ignore[return-value]
+        # Runs once per attempt inside the retry loop, which only retries raw
+        # httpx errors, so `wrap_sdk_call` translates after the last attempt.
+        return response, error
 
     def after_parse_error(
         self,

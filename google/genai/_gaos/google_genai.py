@@ -1279,7 +1279,8 @@ class GeminiNextGenEnvironmentFiles(GeneratedFiles):
             or 'v1alpha'
         ).lstrip('/')
 
-        handshake_res = self._internal.start_upload(
+        handshake_res = wrap_sdk_call(
+            self._internal.start_upload,
             environment=clean_env,
             path=clean_path,
             x_goog_upload_header_content_length=size_bytes,
@@ -1437,7 +1438,8 @@ class AsyncGeminiNextGenEnvironmentFiles(GeneratedAsyncFiles):
             or 'v1alpha'
         ).lstrip('/')
 
-        handshake_res = await self._internal.start_upload(
+        handshake_res = await async_wrap_sdk_call(
+            self._internal.start_upload,
             environment=clean_env,
             path=clean_path,
             x_goog_upload_header_content_length=size_bytes,
