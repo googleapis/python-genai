@@ -44,14 +44,17 @@ def parse_open_union(
 
     Known discriminator values are dispatched to their variant types.
 
-    The Unknown fallback only applies when the validation context carries
+    Unknown discriminator values produce an instance of the fallback class,
+    preserving the raw payload, which serializes back unchanged. This applies
+    to server responses and to request payloads alike.
+
+    Known discriminator values whose payload fails variant validation (e.g. a
+    partial variant emitted by a newer server) also produce the fallback
+    class, but only when the validation context carries
     ALLOW_UNKNOWN_UNION_VARIANTS, which the SDK sets when deserializing
-    server responses. There, unknown discriminator values — or known
-    discriminator values whose payload fails variant validation (e.g. a
-    partial variant emitted by a newer server) — produce an instance of the
-    fallback class, preserving the raw payload for inspection. Without the
-    flag (e.g. user-constructed request payloads), invalid values raise so
-    mistakes surface locally instead of being sent to the server.
+    server responses. Without the flag (e.g. user-constructed request
+    payloads), they raise so mistakes surface locally instead of being sent
+    to the server.
 
     Non-dict values and dicts missing the discriminator deliberately raise
     instead of falling back, so pydantic can try sibling branches of an
@@ -71,9 +74,7 @@ def parse_open_union(
     disc = v[disc_key]
     variant_cls = variants.get(disc)
     if variant_cls is None:
-        if fallback_allowed:
-            return unknown_cls(raw=v)
-        raise ValueError(f"{union_name}: unrecognized {disc_key} value {disc!r}")
+        return unknown_cls(raw=v)
     try:
         if isinstance(variant_cls, type) and issubclass(variant_cls, BaseModel):
             return variant_cls.model_validate(v, context=info.context)
@@ -87,6 +88,44 @@ def parse_open_union(
 
             return construct_unvalidated(v, variant_cls)
         return unknown_cls(raw=v)
+
+
+def decline_sibling_variants(
+    value: Any,
+    handler: ValidatorFunctionWrapHandler,
+    info: ValidationInfo,
+    *,
+    union_name: str,
+    sibling_variants: tuple[tuple[str, frozenset[str]], ...],
+) -> Any:
+    """Validate an open union member of an enclosing non-discriminated union.
+
+    Outside server responses, the Unknown fallback is declined for a value
+    whose discriminator another open union member of the enclosing union
+    recognizes (sibling_variants: per discriminator property, the values of
+    those members), so the enclosing union selects a different member.
+    """
+    # pylint: disable=import-outside-toplevel
+    from .serializers import ALLOW_UNKNOWN_UNION_VARIANTS
+
+    result = handler(value)
+    context = info.context
+    if (
+        getattr(result, "is_unknown", False) is not True
+        or not isinstance(value, dict)
+        or (
+            isinstance(context, Mapping)
+            and bool(context.get(ALLOW_UNKNOWN_UNION_VARIANTS))
+        )
+    ):
+        return result
+    for key, values in sibling_variants:
+        disc = value.get(key)
+        if isinstance(disc, str) and disc in values:
+            raise ValueError(
+                f"{union_name}: {key} value {disc!r} belongs to another member of the enclosing union"
+            )
+    return result
 
 
 _DispatchMember = tuple[int, Optional[type], str, Mapping[str, Any]]

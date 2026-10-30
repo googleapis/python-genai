@@ -19,7 +19,11 @@
 
 from __future__ import annotations
 from ..types import BaseModel, UNSET_SENTINEL, current_exclude_none, serialize_with_info
-from ..types.basemodel import current_filtered_dump
+from ..types.basemodel import (
+    current_by_alias,
+    current_filtered_dump,
+    current_serialization_methods_dump,
+)
 from ..types.interactions import (
     interaction as interactions_interaction,
     interactionsseevent as interactions_interactionsseevent,
@@ -51,19 +55,29 @@ class GetInteractionByIDGlobals(BaseModel):
     def serialize_model(self, handler):
         optional_fields = set(["api_version"])
         exclude_none = current_exclude_none()
-        skip_filtered = exclude_none is False or current_filtered_dump()
+        by_alias = current_by_alias()
+        use_field_names = by_alias is False
+        serialization_methods_dump = current_serialization_methods_dump()
+        skip_filtered = (
+            serialization_methods_dump
+            or exclude_none is False
+            or current_filtered_dump()
+        )
         serialized = handler(self)
         m = {}
 
         for n, f in type(self).model_fields.items():
             k = f.alias if f.alias is not None else n
-            if k not in serialized and n not in serialized and skip_filtered:
+            key = k if by_alias or k in serialized else n
+            if key not in serialized and skip_filtered:
                 continue
-            val = serialized.get(k, serialized.get(n))
+            val = serialized.pop(key, None)
 
             if val != UNSET_SENTINEL:
                 if val is not None or k not in optional_fields:
-                    m[k] = val
+                    m[n if use_field_names else k] = val
+        for k, v in serialized.items():
+            m[k] = v
 
         return m
 
@@ -126,19 +140,29 @@ class GetInteractionByIDRequest(BaseModel):
             ["api_version", "include_input", "last_event_id", "stream"]
         )
         exclude_none = current_exclude_none()
-        skip_filtered = exclude_none is False or current_filtered_dump()
+        by_alias = current_by_alias()
+        use_field_names = by_alias is False
+        serialization_methods_dump = current_serialization_methods_dump()
+        skip_filtered = (
+            serialization_methods_dump
+            or exclude_none is False
+            or current_filtered_dump()
+        )
         serialized = handler(self)
         m = {}
 
         for n, f in type(self).model_fields.items():
             k = f.alias if f.alias is not None else n
-            if k not in serialized and n not in serialized and skip_filtered:
+            key = k if by_alias or k in serialized else n
+            if key not in serialized and skip_filtered:
                 continue
-            val = serialized.get(k, serialized.get(n))
+            val = serialized.pop(key, None)
 
             if val != UNSET_SENTINEL:
                 if val is not None or k not in optional_fields:
-                    m[k] = val
+                    m[n if use_field_names else k] = val
+        for k, v in serialized.items():
+            m[k] = v
 
         return m
 
