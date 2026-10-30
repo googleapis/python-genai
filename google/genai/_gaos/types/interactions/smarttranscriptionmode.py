@@ -22,7 +22,7 @@ from .. import BaseModel
 from ...utils import validate_const
 import pydantic
 from pydantic.functional_validators import AfterValidator
-from typing import Literal
+from typing import Any, Literal
 from typing_extensions import Annotated, TypedDict
 
 
@@ -39,6 +39,9 @@ class SmartTranscriptionMode(BaseModel):
         Annotated[Literal["smart"], AfterValidator(validate_const("smart"))],
         pydantic.Field(alias="type"),
     ] = "smart"
+
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
 
 
 try:

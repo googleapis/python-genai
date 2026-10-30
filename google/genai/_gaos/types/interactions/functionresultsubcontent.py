@@ -26,7 +26,7 @@ from .imagecontent import ImageContent, ImageContentParam
 from .textcontent import TextContent, TextContentParam
 from .videocontent import VideoContent, VideoContentParam
 from functools import partial
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_serializer
 from pydantic.functional_validators import BeforeValidator
 from typing import Any, Literal, Union
 from typing_extensions import Annotated, TypeAliasType
@@ -52,6 +52,10 @@ class UnknownFunctionResultSubcontent(BaseModel):
     is_unknown: Literal[True] = True
 
     model_config = ConfigDict(frozen=True)
+
+    @model_serializer
+    def serialize_model(self) -> Any:
+        return self.raw
 
 
 _FUNCTION_RESULT_SUBCONTENT_VARIANTS: dict[str, Any] = {
