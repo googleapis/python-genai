@@ -6522,6 +6522,10 @@ class AudioTranscriptionConfig(_common.BaseModel):
       default=None,
       description="""Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`.""",
   )
+  source_text: Optional[str] = Field(
+      default=None,
+      description="""Optional. The source text to be edited or rewritten via voice instructions. When provided in `SMART` mode, the model evaluates the audio input against this text and emits the complete replacement text in the candidate response rather than appending to it.""",
+  )
 
 
 class AudioTranscriptionConfigDict(TypedDict, total=False):
@@ -6552,6 +6556,9 @@ class AudioTranscriptionConfigDict(TypedDict, total=False):
 
   mode: Optional[AudioTranscriptionConfigMode]
   """Optional. Configures transcription mode. Supported values: `VERBATIM`, `SMART`. If unspecified, defaults to `VERBATIM` transcription. In `SMART` mode, the model performs disfluency removal (eliminating filler words, repetitions, and false starts), light grammatical cleanup, automatic formatting (paragraphs, bullet points, numbered lists), and minor user edits (inline self-corrections). Timestamps and diarization are incompatible with mode `SMART`."""
+
+  source_text: Optional[str]
+  """Optional. The source text to be edited or rewritten via voice instructions. When provided in `SMART` mode, the model evaluates the audio input against this text and emits the complete replacement text in the candidate response rather than appending to it."""
 
 
 AudioTranscriptionConfigOrDict = Union[
