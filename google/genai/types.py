@@ -8809,11 +8809,13 @@ class GenerateContentResponse(_common.BaseModel):
       description="""First candidate from the parsed response if response_schema is provided. Not available for streaming.""",
   )
 
-  def _get_text(self) -> Optional[str]:
+  def _get_text(self, *, warn: bool = False) -> Optional[str]:
     """Returns the concatenation of all text parts in the response.
 
-    This is an internal method that allows customizing or disabling the warning
-    message.
+    Internal structured-output parsing does not emit text accessor warnings.
+
+    Args:
+      warn: Whether to log warnings for explicit access to the text property.
 
     Returns:
       The concatenation of all text parts in the response.
@@ -8825,7 +8827,7 @@ class GenerateContentResponse(_common.BaseModel):
     ):
       return None
     global _response_text_warning_logged
-    if len(self.candidates) > 1 and not _response_text_warning_logged:
+    if warn and len(self.candidates) > 1 and not _response_text_warning_logged:
       logger.warning(
           f'there are {len(self.candidates)} candidates, returning text result'
           ' from the first candidate. Access response.candidates directly to'
@@ -8847,7 +8849,7 @@ class GenerateContentResponse(_common.BaseModel):
         any_text_part_text = True
         text += part.text
     global _response_text_non_text_warning_logged
-    if non_text_parts and not _response_text_non_text_warning_logged:
+    if warn and non_text_parts and not _response_text_non_text_warning_logged:
       logger.warning(
           'Warning: there are non-text parts in the response:'
           f' {non_text_parts}, returning concatenated text result'
@@ -8888,7 +8890,7 @@ class GenerateContentResponse(_common.BaseModel):
     If there are non-text parts in the response, this returns only the text
     parts.
     """
-    return self._get_text()
+    return self._get_text(warn=True)
 
   @property
   def function_calls(self) -> Optional[list[FunctionCall]]:
