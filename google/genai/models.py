@@ -8093,7 +8093,12 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      # deep=True copies before `update`; MCP sessions can't be deep-copied.
+      parsed_config = config.model_copy(update={'tools': None}).model_copy(
+          deep=True
+      )
+      if config.tools is not None:
+        parsed_config.tools = list(config.tools)
 
     # Use AsyncExitStack to keep MCP connections alive across the entire AFC loop
     async with contextlib.AsyncExitStack() as stack:
@@ -8337,7 +8342,12 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      # deep=True copies before `update`; MCP sessions can't be deep-copied.
+      parsed_config = config.model_copy(update={'tools': None}).model_copy(
+          deep=True
+      )
+      if config.tools is not None:
+        parsed_config.tools = list(config.tools)
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(
