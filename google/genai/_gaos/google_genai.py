@@ -230,6 +230,39 @@ def build_google_genai_async_client(
     return sdk
 
 
+# Gemini Developer API resources that are only served on v1beta (agents,
+# triggers, environments, credentials, webhooks, voices). Unless the caller
+# chose an API version explicitly, these are pinned to v1beta so they keep
+# working when the default API version is v1.
+_V1BETA_ONLY_API_VERSION = 'v1beta'
+
+
+def _v1beta_only_api_version(api_client: Any) -> Optional[str]:
+    """Returns the API version override for v1beta-only resources, if any."""
+    if api_client.vertexai or getattr(
+        api_client, '_api_version_is_explicit', False
+    ):
+        return None
+    return _V1BETA_ONLY_API_VERSION
+
+
+def _http_options_with_api_version(
+    http_options: Optional[Any], api_version: Optional[str]
+) -> Optional[Any]:
+    """Sets `api_version` on per-request http_options unless already set."""
+    if not api_version:
+        return http_options
+    if http_options is None:
+        return {'api_version': api_version}
+    if isinstance(http_options, dict):
+        if http_options.get('api_version'):
+            return http_options
+        return {**http_options, 'api_version': api_version}
+    if getattr(http_options, 'api_version', None):
+        return http_options
+    return http_options.model_copy(update={'api_version': api_version})
+
+
 class GeminiNextGenInteractions(GeneratedInteractions):
     """Public interactions resource backed by the NextGen client.
 
@@ -807,7 +840,9 @@ class GeminiNextGenWebhooks(GeneratedWebhooks):
     """
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -845,7 +880,9 @@ class AsyncGeminiNextGenWebhooks(GeneratedAsyncWebhooks):
     """Async public webhooks resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -891,7 +928,9 @@ class GeminiNextGenCredentials(GeneratedCredentials):
     """
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -923,7 +962,9 @@ class AsyncGeminiNextGenCredentials(GeneratedAsyncCredentials):
     """Async public credentials resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -961,7 +1002,9 @@ class GeminiNextGenVoices(GeneratedVoices):
     """
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -990,7 +1033,9 @@ class AsyncGeminiNextGenVoices(GeneratedAsyncVoices):
     """Async voices resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -1025,7 +1070,9 @@ class GeminiNextGenAgents(GeneratedAgents):
     """
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -1054,7 +1101,9 @@ class AsyncGeminiNextGenAgents(GeneratedAsyncAgents):
     """Async public agents resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -1089,7 +1138,9 @@ class GeminiNextGenTriggers(GeneratedTriggers):
     """
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -1131,7 +1182,9 @@ class AsyncGeminiNextGenTriggers(GeneratedAsyncTriggers):
     """Async public triggers resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -1219,7 +1272,9 @@ class GeminiNextGenEnvironmentFiles(GeneratedFiles):
         download_path = f'{env_name}/files/{clean_path}?alt=media'
         return self._api_client.download_file(
             download_path,
-            http_options=http_options,
+            http_options=_http_options_with_api_version(
+                http_options, _v1beta_only_api_version(self._api_client)
+            ),
         )
 
     def upload(
@@ -1275,6 +1330,7 @@ class GeminiNextGenEnvironmentFiles(GeneratedFiles):
                 if isinstance(http_options, dict)
                 else getattr(http_options, 'api_version', None)
             )
+            or _v1beta_only_api_version(self._api_client)
             or self._api_client._http_options.api_version
             or 'v1alpha'
         ).lstrip('/')
@@ -1377,7 +1433,9 @@ class AsyncGeminiNextGenEnvironmentFiles(GeneratedAsyncFiles):
         download_path = f'{env_name}/files/{clean_path}?alt=media'
         return await self._api_client.async_download_file(
             download_path,
-            http_options=http_options,
+            http_options=_http_options_with_api_version(
+                http_options, _v1beta_only_api_version(self._api_client)
+            ),
         )
 
     async def upload(
@@ -1433,6 +1491,7 @@ class AsyncGeminiNextGenEnvironmentFiles(GeneratedAsyncFiles):
                 if isinstance(http_options, dict)
                 else getattr(http_options, 'api_version', None)
             )
+            or _v1beta_only_api_version(self._api_client)
             or self._api_client._http_options.api_version
             or 'v1alpha'
         ).lstrip('/')
@@ -1493,7 +1552,9 @@ class GeminiNextGenEnvironments(GeneratedEnvironments):
 
     def __init__(self, api_client: Any):
         self._api_client = api_client
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     def _init_sdks(self) -> None:
@@ -1544,7 +1605,9 @@ class AsyncGeminiNextGenEnvironments(GeneratedAsyncEnvironments):
 
     def __init__(self, api_client: Any):
         self._api_client = api_client
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=_v1beta_only_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     def _init_sdks(self) -> None:

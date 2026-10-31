@@ -28,6 +28,7 @@ from unittest import mock
 import certifi
 import google.auth
 from google.auth import credentials
+import google.auth.transport.requests
 import httpx
 import pytest
 import requests
@@ -2484,3 +2485,68 @@ async def test_google_auth_async_respects_mtls_endpoint_env_override(
   assert mock_session.request.call_args.kwargs["url"].startswith(
       "https://us-central1-aiplatform.googleapis.com/"
   )
+
+
+def test_client_init_default_api_version(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(api_key="test-api-key")
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+
+
+def test_client_init_with_api_version():
+  client = Client(api_key="test-api-key", api_version="v1beta")
+  assert client._api_client._http_options.api_version == "v1beta"
+
+
+def test_client_init_with_api_version_and_http_options():
+  client = Client(
+      api_key="test-api-key",
+      api_version="v1alpha",
+      http_options={"headers": {"custom": "header"}},
+  )
+  assert client._api_client._http_options.api_version == "v1alpha"
+  assert client._api_client._http_options.headers.get("custom") == "header"
+
+
+def test_client_init_with_api_version_conflict():
+  with pytest.raises(
+      ValueError,
+      match="api_version is set in both client constructor and http_options",
+  ):
+    Client(
+        api_key="test-api-key",
+        api_version="v1beta",
+        http_options={"api_version": "v1"},
+    )
+
+
+def test_client_init_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(api_key="test-api-key")
+  assert client._api_client._http_options.api_version == "v1alpha"
+
+
+def test_client_init_vertexai_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1")
+  client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_explicit_api_version_overrides_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(api_key="test-api-key", api_version="v1")
+  assert client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_http_options_api_version_overrides_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(
+      api_key="test-api-key", http_options={"api_version": "v1"}
+  )
+  assert client._api_client._http_options.api_version == "v1"
+

@@ -21,7 +21,7 @@ from ... import _base_url
 from unittest import mock
 import pytest
 from httpx import Request, Response
-from ..._api_client import AsyncHttpxClient, BaseApiClient
+from ..._api_client import AsyncHttpxClient, BaseApiClient, GOOGLE_AI_API_DEFAULT_VERSION
 from httpx import Client as HTTPClient
 import os
 
@@ -50,7 +50,7 @@ def test_interactions_gemini_url(monkeypatch):
         )
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url).endswith('/v1beta/interactions')
+        assert str(request.url).endswith(f'/{GOOGLE_AI_API_DEFAULT_VERSION}/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
         assert request.headers['user-agent'].startswith('google-genai-sdk/')
         assert 'gl-python/' in request.headers['user-agent']
@@ -277,7 +277,7 @@ async def test_async_interactions_gemini_url(monkeypatch):
         )
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
-        assert str(request.url).endswith('/v1beta/interactions')
+        assert str(request.url).endswith(f'/{GOOGLE_AI_API_DEFAULT_VERSION}/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
         assert request.headers['user-agent'].startswith('google-genai-sdk/')
         assert 'gl-python/' in request.headers['user-agent']
