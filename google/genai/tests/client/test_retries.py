@@ -36,12 +36,16 @@ except ImportError:
   AsyncAuthorizedSession = mock.MagicMock()
 
 from google.oauth2 import credentials
-import httpx
 import tenacity
 
 from ... import _api_client as api_client
 from ... import errors
 from ... import types
+
+if api_client._get_http_client_backend() == 'httpx2':
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
 
 
 requires_aiohttp = pytest.mark.skipif(

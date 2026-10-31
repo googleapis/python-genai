@@ -18,11 +18,15 @@
 
 from unittest import mock
 
-import httpx
 import pytest
 
 from ... import _api_client
 from ... import types
+
+if _api_client._get_http_client_backend() == 'httpx2':
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
 
 
 def test_patch_http_options_with_copies_all_fields():

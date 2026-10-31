@@ -31,7 +31,10 @@ from .sdkconfiguration import SDKConfiguration
 from .types import OptionalNullable, UNSET
 from .utils.logger import Logger, get_default_logger
 from .utils.retries import RetryConfig
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 import importlib
 import importlib.util
 import sys

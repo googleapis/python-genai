@@ -17,13 +17,19 @@
 """Tests for Interactions API."""
 
 from ... import Client
+from ... import _api_client
 from ... import _base_url
 from unittest import mock
 import pytest
-from httpx import Request, Response
-from ..._api_client import AsyncHttpxClient, BaseApiClient
-from httpx import Client as HTTPClient
+from ..._api_client import BaseApiClient
 import os
+
+if _api_client._get_http_client_backend() == "httpx2":
+    from httpx2 import Client as HTTPClient, Request, Response  # pylint: disable=g-import-not-at-top
+    AsyncHttpxClient = _api_client.AsyncHttpx2Client
+else:
+    from httpx import Client as HTTPClient, Request, Response  # pylint: disable=g-import-not-at-top
+    AsyncHttpxClient = _api_client.AsyncHttpxClient
 
 ENV_VARS = [
     "GOOGLE_CLOUD_PROJECT",
@@ -105,9 +111,6 @@ def test_interactions_gemini_extra_headers(monkeypatch):
 
 
 def test_interactions_vertex_auth_header():
-  from ..._api_client import BaseApiClient
-  from httpx import Client as HTTPClient
-
   creds = mock.Mock()
   creds.quota_project_id = "test-quota-project"
   client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
@@ -139,9 +142,6 @@ def test_interactions_vertex_auth_header():
         for key, value in headers.items())
 
 def test_interactions_vertex_key_no_auth_header():
-  from ..._api_client import BaseApiClient
-  from httpx import Client as HTTPClient
-
   creds = mock.Mock()
   client = Client(vertexai=True, api_key='test-api-key')
 
@@ -175,7 +175,7 @@ def test_interactions_vertex_url():
 
     with (
         mock.patch.object(BaseApiClient, "_access_token", return_value="fake-token") as mock_access_token,
-        mock.patch("httpx.Client.send") as mock_send,
+        mock.patch.object(HTTPClient, "send") as mock_send,
     ):
         mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
         client.interactions.create(
@@ -187,9 +187,6 @@ def test_interactions_vertex_url():
         assert str(request.url) == 'https://us-central1-aiplatform.googleapis.com/v1beta1/projects/test-project/locations/us-central1/interactions'
 
 def test_interactions_vertex_auth_refresh_on_retry():
-    from ..._api_client import BaseApiClient
-    from httpx import Client as HTTPClient
-
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
@@ -227,9 +224,6 @@ def test_interactions_vertex_auth_refresh_on_retry():
 
 
 def test_interactions_vertex_extra_headers_override():
-    from ..._api_client import BaseApiClient
-    from httpx import Client as HTTPClient
-
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
@@ -334,9 +328,6 @@ async def test_async_interactions_gemini_extra_headers(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_auth_header():
-  from ..._api_client import BaseApiClient
-  from ..._api_client import AsyncHttpxClient
-
   creds = mock.Mock()
   creds.quota_project_id = "test-quota-project"
   client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
@@ -369,7 +360,6 @@ async def test_async_interactions_vertex_auth_header():
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_key_no_auth_header():
-  from ..._api_client import BaseApiClient
   client = Client(vertexai=True, api_key='test-api-key')
 
   with (
@@ -397,7 +387,6 @@ async def test_async_interactions_vertex_key_no_auth_header():
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_url():
-    from ..._api_client import AsyncHttpxClient
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
@@ -417,9 +406,6 @@ async def test_async_interactions_vertex_url():
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_auth_refresh_on_retry():
-    from ..._api_client import BaseApiClient
-    from ..._api_client import AsyncHttpxClient
-
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
@@ -456,9 +442,6 @@ async def test_async_interactions_vertex_auth_refresh_on_retry():
 
 @pytest.mark.asyncio
 async def test_async_interactions_vertex_extra_headers_override():
-    from ..._api_client import BaseApiClient
-    from ..._api_client import AsyncHttpxClient
-
     creds = mock.Mock()
     creds.quota_project_id = "test-quota-project"
     client = Client(vertexai=True, project='test-project', location='us-central1', credentials=creds)
