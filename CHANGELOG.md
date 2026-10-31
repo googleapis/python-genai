@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.35.0](https://github.com/googleapis/python-genai/compare/v2.34.0...v2.35.0) (2026-10-30)
+
+
+### Features
+
+* **cli:** Use gemini-3.5-transcribe as default model for transcribe command ([b18fd3c](https://github.com/googleapis/python-genai/commit/b18fd3cbe8696588ba8c78c79802707c09708fd6))
+* Disable GenerateVideos for Gemini API, update tests/READMEs ([8ddc655](https://github.com/googleapis/python-genai/commit/8ddc655c5ed5395e1dc976a670d7a054e6245689))
+
 ## [2.34.0](https://github.com/googleapis/python-genai/compare/v2.33.0...v2.34.0) (2026-10-29)
 
 
