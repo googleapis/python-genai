@@ -38,7 +38,7 @@ test_table: list[pytest_helper.TestTableItem] = [
             ),
         ),
         exception_if_mldev=(
-            "models/veo-3.1-lite-generate-001 is not found for API version v1beta"
+            "only supported in Gemini Enterprise Agent Platform"
         ),
     ),
 ]

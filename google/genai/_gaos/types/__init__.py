@@ -19,12 +19,14 @@
 
 from .basemodel import (
     BaseModel,
+    current_exclude_none,
     Nullable,
     OptionalNullable,
     UnrecognizedInt,
     UnrecognizedStr,
     UNSET,
     UNSET_SENTINEL,
+    serialize_with_info,
 )
 from .base64fileinput import Base64EncodedString, Base64FileInput
 from typing import Any, TYPE_CHECKING
@@ -55,6 +57,8 @@ __all__ = [
     "UNSET_SENTINEL",
     "UnrecognizedInt",
     "UnrecognizedStr",
+    "current_exclude_none",
+    "serialize_with_info",
 ]
 
 _dynamic_imports: dict[str, str] = {

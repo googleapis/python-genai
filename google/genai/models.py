@@ -39,16 +39,6 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.models')
 
 
-def _VideoGenerationReferenceType_to_mldev_enum_validate(
-    enum_value: Any,
-) -> None:
-  if enum_value in set(['STYLE']):
-    raise ValueError(
-        f'{enum_value} enum value is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1964,145 +1954,6 @@ def _GenerateImagesResponse_from_vertex(
   return to_object
 
 
-def _GenerateVideosConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['number_of_videos']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'sampleCount'],
-        getv(from_object, ['number_of_videos']),
-    )
-
-  if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError(
-        'output_gcs_uri parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['fps']) is not None:
-    raise ValueError(
-        'fps parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['duration_seconds']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'durationSeconds'],
-        getv(from_object, ['duration_seconds']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    raise ValueError(
-        'seed parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['aspect_ratio']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'aspectRatio'],
-        getv(from_object, ['aspect_ratio']),
-    )
-
-  if getv(from_object, ['resolution']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'resolution'],
-        getv(from_object, ['resolution']),
-    )
-
-  if getv(from_object, ['person_generation']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'personGeneration'],
-        getv(from_object, ['person_generation']),
-    )
-
-  if getv(from_object, ['pubsub_topic']) is not None:
-    raise ValueError(
-        'pubsub_topic parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['negative_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'negativePrompt'],
-        getv(from_object, ['negative_prompt']),
-    )
-
-  if getv(from_object, ['enhance_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'enhancePrompt'],
-        getv(from_object, ['enhance_prompt']),
-    )
-
-  if getv(from_object, ['generate_audio']) is not None:
-    raise ValueError(
-        'generate_audio parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['last_frame']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'lastFrame'],
-        _Image_to_mldev(
-            getv(from_object, ['last_frame']), to_object, root_object
-        ),
-    )
-
-  if getv(from_object, ['reference_images']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'referenceImages'],
-        [
-            _VideoGenerationReferenceImage_to_mldev(
-                item, to_object, root_object
-            )
-            for item in getv(from_object, ['reference_images'])
-        ],
-    )
-
-  if getv(from_object, ['mask']) is not None:
-    raise ValueError(
-        'mask parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['compression_quality']) is not None:
-    raise ValueError(
-        'compression_quality parameter is only supported in Gemini Enterprise'
-        ' Agent Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['labels']) is not None:
-    raise ValueError(
-        'labels parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['webhook_config']) is not None:
-    setv(
-        parent_object, ['webhookConfig'], getv(from_object, ['webhook_config'])
-    )
-
-  if getv(from_object, ['resize_mode']) is not None:
-    raise ValueError(
-        'resize_mode parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  return to_object
-
-
 def _GenerateVideosConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2242,49 +2093,6 @@ def _GenerateVideosConfig_to_vertex(
   return to_object
 
 
-def _GenerateVideosOperation_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']),
-            to_object,
-            root_object,
-        ),
-    )
-
-  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
-    setv(
-        to_object,
-        ['result'],
-        _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']),
-            to_object,
-            root_object,
-        ),
-    )
-
-  return to_object
-
-
 def _GenerateVideosOperation_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2319,50 +2127,6 @@ def _GenerateVideosOperation_from_vertex(
         _GenerateVideosResponse_from_vertex(
             getv(from_object, ['response']), to_object, root_object
         ),
-    )
-
-  return to_object
-
-
-def _GenerateVideosParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
-    )
-
-  if getv(from_object, ['source']) is not None:
-    _GenerateVideosSource_to_mldev(
-        getv(from_object, ['source']), to_object, root_object
-    )
-
-  if getv(from_object, ['config']) is not None:
-    _GenerateVideosConfig_to_mldev(
-        getv(from_object, ['config']), to_object, root_object
     )
 
   return to_object
@@ -2412,39 +2176,6 @@ def _GenerateVideosParameters_to_vertex(
   return to_object
 
 
-def _GenerateVideosResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['generatedSamples']) is not None:
-    setv(
-        to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_mldev(item, to_object, root_object)
-            for item in getv(from_object, ['generatedSamples'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
 def _GenerateVideosResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2473,34 +2204,6 @@ def _GenerateVideosResponse_from_vertex(
         to_object,
         ['rai_media_filtered_reasons'],
         getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
-def _GenerateVideosSource_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prompt']) is not None:
-    setv(
-        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
-    )
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
     )
 
   return to_object
@@ -2590,22 +2293,6 @@ def _GeneratedImage_from_vertex(
 
   if getv(from_object, ['prompt']) is not None:
     setv(to_object, ['enhanced_prompt'], getv(from_object, ['prompt']))
-
-  return to_object
-
-
-def _GeneratedVideo_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_mldev(getv(from_object, ['video']), to_object, root_object),
-    )
 
   return to_object
 
@@ -2973,31 +2660,6 @@ def _Image_from_vertex(
 
   if getv(from_object, ['mimeType']) is not None:
     setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Image_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError(
-        'gcs_uri parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['image_bytes']) is not None:
-    setv(
-        to_object,
-        ['bytesBase64Encoded'],
-        base_t.t_bytes(getv(from_object, ['image_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -4537,28 +4199,6 @@ def _VideoGenerationMask_to_vertex(
   return to_object
 
 
-def _VideoGenerationReferenceImage_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['reference_type']) is not None:
-    _VideoGenerationReferenceType_to_mldev_enum_validate(
-        getv(from_object, ['reference_type'])
-    )
-    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
-
-  return to_object
-
-
 def _VideoGenerationReferenceImage_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -4574,28 +4214,6 @@ def _VideoGenerationReferenceImage_to_vertex(
 
   if getv(from_object, ['reference_type']) is not None:
     setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
-
-  return to_object
-
-
-def _Video_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['encodedVideo']) is not None:
-    setv(
-        to_object,
-        ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
-    )
-
-  if getv(from_object, ['encoding']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
 
   return to_object
 
@@ -4618,28 +4236,6 @@ def _Video_from_vertex(
 
   if getv(from_object, ['mimeType']) is not None:
     setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Video_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['video_bytes']) is not None:
-    setv(
-        to_object,
-        ['encodedVideo'],
-        base_t.t_bytes(getv(from_object, ['video_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['encoding'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -6044,8 +5640,12 @@ class Models(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
       request_dict = _GenerateVideosParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
       )
@@ -6054,15 +5654,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predictLongRunning'.format_map(request_url_dict)
       else:
         path = '{model}:predictLongRunning'
-    else:
-      request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = '{model}:predictLongRunning'.format_map(request_url_dict)
-      else:
-        path = '{model}:predictLongRunning'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -6087,11 +5679,6 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          response_dict, None, parameter_model
-      )
-
-    if not self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_mldev(
           response_dict, None, parameter_model
       )
 
@@ -8331,8 +7918,12 @@ class AsyncModels(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
       request_dict = _GenerateVideosParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
       )
@@ -8341,15 +7932,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predictLongRunning'.format_map(request_url_dict)
       else:
         path = '{model}:predictLongRunning'
-    else:
-      request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = '{model}:predictLongRunning'.format_map(request_url_dict)
-      else:
-        path = '{model}:predictLongRunning'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -8374,11 +7957,6 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          response_dict, None, parameter_model
-      )
-
-    if not self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_mldev(
           response_dict, None, parameter_model
       )
 
