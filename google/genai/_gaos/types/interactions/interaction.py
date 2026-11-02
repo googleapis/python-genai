@@ -25,7 +25,7 @@ from .. import (
     current_exclude_none,
     serialize_with_info,
 )
-from ...utils.unions import parse_open_union
+from ...utils.unions import dispatch_open_union_members, parse_open_union
 from ..basemodel import current_filtered_dump
 from .agentoption import AgentOption
 from .antigravityagentconfig import AntigravityAgentConfig, AntigravityAgentConfigParam
@@ -139,7 +139,16 @@ the JSON schema specified in this field.
 
 
 InteractionResponseFormat = TypeAliasType(
-    "InteractionResponseFormat", Union[ResponseFormat, List[ResponseFormat]]
+    "InteractionResponseFormat",
+    Annotated[
+        Union[ResponseFormat, List[ResponseFormat]],
+        pydantic.WrapValidator(
+            partial(
+                dispatch_open_union_members,
+                members=(ResponseFormat, List[ResponseFormat]),
+            )
+        ),
+    ],
 )
 r"""Enforces that the generated response is a JSON object that complies with
 the JSON schema specified in this field.
