@@ -57,6 +57,9 @@ class FunctionCallStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "function_call"
 
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
+
 
 try:
     FunctionCallStep.model_rebuild()
