@@ -14,6 +14,8 @@
 
 """Tests for httpx and httpx2 compatibility across the GAOS client."""
 
+from unittest import mock
+
 import httpx
 import pytest
 
@@ -113,69 +115,35 @@ async def test_async_stream_error_wrapping_httpx_errors():
   assert "async stream network broken" in str(exc_info.value)
 
 
+@pytest.mark.parametrize("error_type,api_error_type", [
+    (httpx.ConnectError, compat_errors.APIConnectionError),
+    (httpx.ReadTimeout, compat_errors.APITimeoutError),
+])
 @pytest.mark.parametrize(
-    "error_type,api_error_type",
-    [
-        (httpx.ConnectError, compat_errors.APIConnectionError),
-        (httpx.ReadTimeout, compat_errors.APITimeoutError),
-    ],
+    "operation,method", [("sync", "POST"), ("async", "POST"), ("upload", "PUT")]
 )
-def test_interactions_retries_transport_errors(error_type, api_error_type):
-  recorded_requests = []
-
-  def handler(request: httpx.Request) -> httpx.Response:
-    recorded_requests.append(request)
-    raise error_type("request failed", request=request)
-
-  client = client_lib.Client(
-      api_key="fake-key",
-      http_options={"client_args": {"transport": httpx.MockTransport(handler)}},
-  )
-  with pytest.raises(api_error_type) as exc_info:
-    client.interactions.create(model="gemini-1.5-flash", input="Hello")
-  assert [request.method for request in recorded_requests] == ["POST"] * 4
-  assert isinstance(exc_info.value.__cause__, error_type)
-
-
 @pytest.mark.asyncio
-async def test_async_interactions_retries_connection_errors():
-  recorded_requests = []
-
-  def handler(request: httpx.Request) -> httpx.Response:
-    recorded_requests.append(request)
-    raise httpx.ConnectError("connection refused", request=request)
-
-  client = client_lib.Client(
-      api_key="fake-key",
-      http_options={
-          "async_client_args": {"transport": httpx.MockTransport(handler)},
-          "retry_options": {"attempts": 2, "initial_delay": 0, "max_delay": 0},
-      },
-  )
-  with pytest.raises(compat_errors.APIConnectionError) as exc_info:
-    await client.aio.interactions.create(
-        model="gemini-1.5-flash", input="Hello"
-    )
-  assert len(recorded_requests) > 1
-  assert isinstance(exc_info.value.__cause__, httpx.ConnectError)
-
-
-def test_environment_file_upload_wraps_connection_errors():
-  def handler(request: httpx.Request) -> httpx.Response:
-    raise httpx.ConnectError("connection refused", request=request)
-
+async def test_transport_errors(operation, method, error_type, api_error_type):
+  handler = mock.Mock(side_effect=error_type("request failed"))
   client = client_lib.Client(
       api_key="fake-key",
       http_options={
           "client_args": {"transport": httpx.MockTransport(handler)},
-          "retry_options": {"attempts": 1, "initial_delay": 0, "max_delay": 0},
+          "async_client_args": {"transport": httpx.MockTransport(handler)},
+          "retry_options": {"initial_delay": 0, "max_delay": 0},
       },
   )
-  with pytest.raises(compat_errors.APIConnectionError) as exc_info:
-    client.environments.files.upload(
-        environment="env_123", path="src/main.py", file=b"print('hello')"
-    )
-  assert isinstance(exc_info.value.__cause__, httpx.ConnectError)
+  with pytest.raises(api_error_type) as exc_info:
+    if operation == "upload":
+      client.environments.files.upload(
+          environment="env_123", path="src/main.py", file=b"print(1)"
+      )
+    elif operation == "async":
+      await client.aio.interactions.create(model="gemini-1.5-flash", input="Hello")
+    else:
+      client.interactions.create(model="gemini-1.5-flash", input="Hello")
+  assert [call.args[0].method for call in handler.call_args_list] == [method] * 4
+  assert isinstance(exc_info.value.__cause__, error_type)
 
 
 # --- httpx2 tests (run in CI when httpx2 is installed) ---
