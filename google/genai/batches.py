@@ -1166,6 +1166,9 @@ def _GenerateContentConfig_to_mldev(
         ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
 
+  if getv(from_object, ['store']) is not None:
+    setv(parent_object, ['store'], getv(from_object, ['store']))
+
   return to_object
 
 

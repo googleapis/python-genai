@@ -52,6 +52,10 @@ def test_interactions_gemini_url(monkeypatch):
         request = mock_send.call_args[0][0]
         assert str(request.url).endswith('/v1beta/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
+        assert request.headers['user-agent'].startswith('google-genai-sdk/')
+        assert 'gl-python/' in request.headers['user-agent']
+        assert 'speakeasy-sdk' not in request.headers['user-agent']
+        assert request.headers['x-goog-api-client'] == request.headers['user-agent']
 
 
 def test_interactions_gemini_no_vertex_auth(monkeypatch):
@@ -275,6 +279,10 @@ async def test_async_interactions_gemini_url(monkeypatch):
         request = mock_send.call_args[0][0]
         assert str(request.url).endswith('/v1beta/interactions')
         assert request.headers['x-goog-api-key'] == 'test-api-key'
+        assert request.headers['user-agent'].startswith('google-genai-sdk/')
+        assert 'gl-python/' in request.headers['user-agent']
+        assert 'speakeasy-sdk' not in request.headers['user-agent']
+        assert request.headers['x-goog-api-client'] == request.headers['user-agent']
 
 @pytest.mark.asyncio
 async def test_async_interactions_gemini_no_vertex_auth(monkeypatch):
@@ -484,3 +492,95 @@ async def test_async_interactions_vertex_extra_headers_override():
         headers = mock_send.call_args[0][0].headers
         assert headers['x-goog-api-key'] == 'manual-key'
         assert 'authorization' not in headers
+
+
+_GENERATE_CONTENT_BODY = {
+    'candidates': [{
+        'content': {'role': 'model', 'parts': [{'text': 'ok'}]},
+        'finishReason': 'STOP',
+    }]
+}
+
+
+def _send_recording_auth(recorded_auth):
+  """Returns a fake send that records auth and answers REST or Interactions."""
+
+  def send(req, *args, **kwargs):
+    recorded_auth.append((req.url.path, req.headers.get('authorization')))
+    if '/interactions' in req.url.path:
+      return Response(
+          200,
+          request=Request('POST', ''),
+          headers={'content-type': 'application/json'},
+          content='{"status": "completed"}',
+      )
+    return Response(
+        200, request=Request('POST', ''), json=_GENERATE_CONTENT_BODY
+    )
+
+  return send
+
+
+def test_interactions_vertex_fresh_token_after_models_call():
+  # A REST call before the first Interactions access must not pin its token.
+  creds = mock.Mock()
+  creds.quota_project_id = 'test-quota-project'
+  client = Client(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=creds,
+  )
+  recorded_auth = []
+
+  with (
+      mock.patch.object(
+          BaseApiClient, '_access_token', side_effect=['token-1', 'token-2']
+      ),
+      mock.patch.object(
+          HTTPClient, 'send', side_effect=_send_recording_auth(recorded_auth)
+      ),
+  ):
+    client.models.generate_content(model='gemini-2.5-flash', contents='hi')
+    client.interactions.create(model='gemini-2.5-flash', input='Hello')
+
+  assert len(recorded_auth) == 2
+  assert '/interactions' not in recorded_auth[0][0]
+  assert recorded_auth[0][1] == 'Bearer token-1'
+  assert recorded_auth[1][0].endswith('/interactions')
+  assert recorded_auth[1][1] == 'Bearer token-2'
+
+
+@pytest.mark.asyncio
+async def test_async_interactions_vertex_fresh_token_after_models_call():
+  # Async twin; client.aio shares the sync client's BaseApiClient.
+  creds = mock.Mock()
+  creds.quota_project_id = 'test-quota-project'
+  client = Client(
+      vertexai=True,
+      project='test-project',
+      location='us-central1',
+      credentials=creds,
+  )
+  recorded_auth = []
+  sync_send = _send_recording_auth(recorded_auth)
+
+  async def async_send(req, *args, **kwargs):
+    return sync_send(req, *args, **kwargs)
+
+  with (
+      mock.patch.object(
+          BaseApiClient, '_access_token', side_effect=['token-1', 'token-2']
+      ),
+      mock.patch.object(HTTPClient, 'send', side_effect=sync_send),
+      mock.patch.object(AsyncHttpxClient, 'send', side_effect=async_send),
+  ):
+    client.models.generate_content(model='gemini-2.5-flash', contents='hi')
+    await client.aio.interactions.create(
+        model='gemini-2.5-flash', input='Hello'
+    )
+
+  assert len(recorded_auth) == 2
+  assert recorded_auth[0][1] == 'Bearer token-1'
+  assert recorded_auth[1][0].endswith('/interactions')
+  assert recorded_auth[1][1] == 'Bearer token-2'

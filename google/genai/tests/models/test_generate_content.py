@@ -594,6 +594,17 @@ test_table: list[pytest_helper.TestTableItem] = [
         exception_if_vertex='400',
     ),
     pytest_helper.TestTableItem(
+        name='test_store',
+        parameters=types._GenerateContentParameters(
+            model='gemini-3.8-flash',
+            contents=t.t_contents('What is your name?'),
+            config={
+                'store': True,
+            },
+        ),
+        exception_if_vertex='only supported in Gemini Developer API mode',
+    ),
+    pytest_helper.TestTableItem(
         name='test_audio_transcription_config',
         parameters=types._GenerateContentParameters(
             model='gemini-2.5-flash-preview-tts',

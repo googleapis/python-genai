@@ -1342,6 +1342,7 @@ def test_aiohttp_retries_client_connector_error_retries_successfully(
           http_method='GET', path='path', request_dict={}
       )
       mock_request.assert_called()
+      assert mock_request.call_count == 2
       assert response.headers['status-code'] == '200'
 
   asyncio.run(run())

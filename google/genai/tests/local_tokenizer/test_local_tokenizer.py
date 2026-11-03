@@ -16,7 +16,12 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from sentencepiece import sentencepiece_model_pb2
+import pytest
+
+try:
+  from sentencepiece import sentencepiece_model_pb2
+except ImportError:
+  pytest.skip('sentencepiece is not installed', allow_module_level=True)
 
 from ... import local_tokenizer
 from ... import types

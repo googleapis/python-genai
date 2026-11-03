@@ -96,7 +96,7 @@ class Voices(BaseSDK):
             voices with any of the specified region codes (OR).
         :param search: Optional. Free-text substring search query matched case-insensitively
             against both `display_name` and `description`. Maximum 2048 bytes.
-        :param type: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
+        :param type_: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
             `\"prompted\"` (case-insensitive). If multiple values are specified, matches
             voices with any of the specified types (OR).
         :param extra_headers: Additional headers to set or replace on requests.
@@ -832,7 +832,7 @@ class AsyncVoices(AsyncBaseSDK):
             voices with any of the specified region codes (OR).
         :param search: Optional. Free-text substring search query matched case-insensitively
             against both `display_name` and `description`. Maximum 2048 bytes.
-        :param type: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
+        :param type_: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
             `\"prompted\"` (case-insensitive). If multiple values are specified, matches
             voices with any of the specified types (OR).
         :param extra_headers: Additional headers to set or replace on requests.

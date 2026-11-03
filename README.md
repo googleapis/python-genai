@@ -250,6 +250,32 @@ client = genai.Client(
 )
 ```
 
+### HTTP client option: httpx2
+
+By default, the SDK uses `httpx` for its HTTP transport. You can opt in to
+[`httpx2`](https://github.com/pydantic/httpx2) by installing `google-genai[httpx2]`
+and setting the `GOOGLE_GENAI_HTTP_CLIENT` environment variable:
+
+```bash
+export GOOGLE_GENAI_HTTP_CLIENT=httpx2
+```
+
+Alternatively, you can directly inject an `httpx2.Client` or `httpx2.AsyncClient`
+via `HttpOptions`:
+
+```python
+import httpx2
+from google import genai
+from google.genai import types
+
+client = genai.Client(
+    http_options=types.HttpOptions(
+        httpx_client=httpx2.Client(),
+        httpx_async_client=httpx2.AsyncClient(),
+    )
+)
+```
+
 ### Faster async client option: Aiohttp
 
 By default we use httpx for both sync and async client implementations. In order
@@ -265,6 +291,7 @@ http_options = types.HttpOptions(
 
 client=Client(..., http_options=http_options)
 ```
+
 
 ### Proxy
 
@@ -1381,14 +1408,19 @@ response3.generated_images[0].image.show()
 
 ### Veo
 
+Currently, only Gemini Enterprise Agent Platform supports video generation.
+
 #### Generate Videos (Text to Video)
 
 ```python
+from google import genai
 from google.genai import types
+
+client = genai.Client(vertexai=True)
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-3.1-generate-preview',
+    model='veo-3.1-generate-001',
     source=types.GenerateVideosSource(
         prompt='A neon hologram of a cat driving at top speed',
     ),
@@ -1411,14 +1443,17 @@ video.show()
 #### Generate Videos (Image to Video)
 
 ```python
+from google import genai
 from google.genai import types
+
+client = genai.Client(vertexai=True)
 
 # Read local image (uses mimetypes.guess_type to infer mime type)
 image = types.Image.from_file(location="local/path/file.png")
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-3.1-generate-preview',
+    model='veo-3.1-generate-001',
     source=types.GenerateVideosSource(
         # Prompt is optional if image is provided
         prompt='Night sky',
@@ -1443,18 +1478,20 @@ video.show()
 
 #### Generate Videos (Video to Video)
 
-Currently, only Gemini Developer API supports video extension on Veo 3.1 for
-previously generated videos. Gemini Enterprise Agent Platform supports video extension on Veo 2.0.
+Currently, only Gemini Enterprise Agent Platform supports Video to Video generation (Video extension).
 
 ```python
+from google import genai
 from google.genai import types
+
+client = genai.Client(vertexai=True)
 
 # Read local video (uses mimetypes.guess_type to infer mime type)
 video = types.Video.from_file("local/path/video.mp4")
 
 # Create operation
 operation = client.models.generate_videos(
-    model='veo-3.1-generate-preview',
+    model='veo-3.1-generate-001',
     source=types.GenerateVideosSource(
         # Prompt is optional if Video is provided
         prompt='Night sky',

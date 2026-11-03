@@ -37,7 +37,7 @@ from .stepdelta import StepDelta, StepDeltaTypedDict
 from .stepstart import StepStart, StepStartTypedDict
 from .stepstop import StepStop, StepStopTypedDict
 from functools import partial
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_serializer
 from pydantic.functional_validators import BeforeValidator
 from typing import Any, Literal, Union
 from typing_extensions import Annotated, TypeAliasType
@@ -65,6 +65,10 @@ class UnknownInteractionSSEEvent(BaseModel):
     is_unknown: Literal[True] = True
 
     model_config = ConfigDict(frozen=True)
+
+    @model_serializer
+    def serialize_model(self) -> Any:
+        return self.raw
 
 
 _INTERACTION_SSE_EVENT_VARIANTS: dict[str, Any] = {
