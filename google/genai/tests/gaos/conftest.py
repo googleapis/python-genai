@@ -29,6 +29,7 @@ from ... import types
 
 _ENV_VARS_TO_CLEAR = (
     "GOOGLE_GENAI_USE_VERTEXAI",
+    "GOOGLE_GENAI_API_VERSION",
     "http_proxy",
     "https_proxy",
     "all_proxy",

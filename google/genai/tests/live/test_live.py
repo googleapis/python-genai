@@ -31,7 +31,6 @@ import warnings
 
 import certifi
 from google.oauth2.credentials import Credentials
-import httpx
 import pytest
 from websockets import client
 
@@ -42,6 +41,11 @@ from ... import Client
 from ... import client as gl_client
 from ... import live
 from ... import types
+
+if api_client._get_http_client_backend() == 'httpx2':
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
 try:
     import aiohttp
     AIOHTTP_NOT_INSTALLED = False

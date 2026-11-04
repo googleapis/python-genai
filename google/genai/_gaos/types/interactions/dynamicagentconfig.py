@@ -54,6 +54,9 @@ class DynamicAgentConfig(BaseModel):
     def additional_properties(self, value):
         self.__pydantic_extra__ = value  # pyright: ignore[reportIncompatibleVariableOverride]
 
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
+
 
 try:
     DynamicAgentConfig.model_rebuild()

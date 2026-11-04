@@ -21,7 +21,10 @@ from __future__ import annotations
 
 from typing import Any, Callable, Mapping, Optional, Union, cast
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 
 from .. import types, utils
 from .types import BeforeRequestContext, BeforeRequestHook

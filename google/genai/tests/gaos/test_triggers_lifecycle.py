@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import pytest
 
+from ..._api_client import GOOGLE_AI_API_DEFAULT_VERSION as _API_VERSION
 from . import conftest
 
 TRIGGER_BODY = {
@@ -132,13 +133,13 @@ def test_python_triggers_lifecycle_routes_through_google_genai_client(
   assert trigger.schedule == "0 0 * * *"
   assert fetched.schedule == "0 0 * * *"
   assert mock_gaos_server.captured == [
-      "POST /v1beta/triggers",
-      "GET /v1beta/triggers?filter=some-filter&page_size=10",
-      "GET /v1beta/triggers/svc_abc",
-      "PATCH /v1beta/triggers/svc_abc",
-      "DELETE /v1beta/triggers/svc_abc",
-      "POST /v1beta/triggers/svc_abc/executions",
-      "GET /v1beta/triggers/svc_abc/executions?page_size=5",
+      f"POST /{_API_VERSION}/triggers",
+      f"GET /{_API_VERSION}/triggers?filter=some-filter&page_size=10",
+      f"GET /{_API_VERSION}/triggers/svc_abc",
+      f"PATCH /{_API_VERSION}/triggers/svc_abc",
+      f"DELETE /{_API_VERSION}/triggers/svc_abc",
+      f"POST /{_API_VERSION}/triggers/svc_abc/executions",
+      f"GET /{_API_VERSION}/triggers/svc_abc/executions?page_size=5",
   ]
 
   # Verify the serialized interaction input in the CREATE request

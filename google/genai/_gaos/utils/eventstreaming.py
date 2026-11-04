@@ -31,7 +31,10 @@ from typing import (
     AsyncGenerator,
     Tuple,
 )
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 
 T = TypeVar("T")
 

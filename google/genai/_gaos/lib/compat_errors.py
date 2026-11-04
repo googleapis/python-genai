@@ -34,7 +34,10 @@ try:
 except ImportError:
     httpx2 = None
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 
 _HTTPX_TIMEOUT_ERRORS = (
     (httpx.TimeoutException,)

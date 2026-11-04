@@ -19,10 +19,23 @@ import pathlib as _pathlib
 import typing as _typing
 from abc import ABC, abstractmethod
 
-import httpx as _httpx
 import pydantic as _pydantic
 
 from .. import types
+from .._api_client import _DEFAULT_HTTP_CLIENT_BACKEND
+
+if _typing.TYPE_CHECKING:
+    import httpx as _httpx
+elif _DEFAULT_HTTP_CLIENT_BACKEND == "httpx2":
+    try:
+        import httpx2 as _httpx
+    except ImportError:
+        import httpx as _httpx
+else:
+    try:
+        import httpx as _httpx
+    except ImportError:
+        import httpx2 as _httpx
 from ..version import __version__
 from .._gaos.utils.eventstreaming import AsyncStream, Stream
 from .core.error import (

@@ -20,6 +20,7 @@ from typing import Any
 import pytest
 
 from ... import voices
+from ..._api_client import GOOGLE_AI_API_DEFAULT_VERSION as _API_VERSION
 from . import conftest
 
 VOICE_BODY = {
@@ -53,8 +54,8 @@ def _voices_handler(
     unused_server: conftest.MockGaosServer,
 ) -> dict[str, Any]:
   if req["method"] == "GET" and (
-      req["path"] == "/v1beta/voices"
-      or req["path"].startswith("/v1beta/voices?")
+      req["path"] == f"/{_API_VERSION}/voices"
+      or req["path"].startswith(f"/{_API_VERSION}/voices?")
   ):
     return VOICE_LIST_BODY
   if req["method"] == "DELETE":
@@ -98,10 +99,10 @@ def test_python_voices_lifecycle_routes_through_google_genai_client(
   client.voices.delete(id="voice_abc123")
 
   assert mock_gaos_server.captured == [
-      "POST /v1beta/voices",
-      "GET /v1beta/voices?language_code=en-US",
-      "GET /v1beta/voices/voice_abc123",
-      "DELETE /v1beta/voices/voice_abc123",
+      f"POST /{_API_VERSION}/voices",
+      f"GET /{_API_VERSION}/voices?language_code=en-US",
+      f"GET /{_API_VERSION}/voices/voice_abc123",
+      f"DELETE /{_API_VERSION}/voices/voice_abc123",
   ]
   assert mock_gaos_server.captured_bodies[0] == {
       "store": True,
@@ -143,10 +144,10 @@ async def test_python_voices_async_lifecycle(
   assert list_res.voices is not None
   assert len(list_res.voices) == 2
   assert mock_gaos_server.captured == [
-      "POST /v1beta/voices",
-      "GET /v1beta/voices",
-      "GET /v1beta/voices/voice_abc123",
-      "DELETE /v1beta/voices/voice_abc123",
+      f"POST /{_API_VERSION}/voices",
+      f"GET /{_API_VERSION}/voices",
+      f"GET /{_API_VERSION}/voices/voice_abc123",
+      f"DELETE /{_API_VERSION}/voices/voice_abc123",
   ]
 
 

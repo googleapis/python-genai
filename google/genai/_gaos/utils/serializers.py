@@ -25,7 +25,10 @@ from typing import Any, Dict, Iterable, List, Mapping, Tuple, Union, get_args
 import typing_extensions
 from typing_extensions import get_origin
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 from pydantic import ConfigDict, create_model
 from pydantic_core import from_json
 
@@ -131,8 +134,10 @@ def validate_const(v):
 
 ALLOW_UNKNOWN_UNION_VARIANTS = "speakeasy_allow_unknown_union_variants"
 """Validation-context key enabling the Unknown fallback on open discriminated
-unions. The SDK sets it when deserializing server responses; validation
-without it (e.g. of user-constructed request payloads) stays strict. Pass
+unions for known discriminator values whose payload fails validation. The SDK
+sets it when deserializing server responses; validation without it (e.g. of
+user-constructed request payloads) raises for invalid payloads of known
+variants. Pass
 ``context={ALLOW_UNKNOWN_UNION_VARIANTS: True}`` to ``model_validate`` to
 opt in when parsing response payloads manually."""
 
@@ -295,7 +300,9 @@ def marshal_json(val, typ):
 
     m = marshaller(body=val)
 
-    d = m.model_dump(by_alias=True, mode="json", exclude_none=True)
+    d = m.model_dump(
+        by_alias=True, mode="json", exclude_none=getattr(m, "body") is None
+    )
 
     if len(d) == 0:
         return ""

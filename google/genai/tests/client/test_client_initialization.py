@@ -28,7 +28,6 @@ from unittest import mock
 import certifi
 import google.auth
 from google.auth import credentials
-import httpx
 import pytest
 import requests
 
@@ -37,6 +36,15 @@ from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+
+if api_client._get_http_client_backend() == "httpx2":
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpx2Client
+  _AsyncHttpxClient = api_client.AsyncHttpx2Client
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpxClient
+  _AsyncHttpxClient = api_client.AsyncHttpxClient
 
 try:
   import aiohttp
@@ -1550,7 +1558,7 @@ def test_threaded_generate_content_locking(monkeypatch):
         text='{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}',
     )
     mock_request = mock.Mock(return_value=mock_httpx_response)
-    monkeypatch.setattr(api_client.SyncHttpxClient, "send", mock_request)
+    monkeypatch.setattr(_SyncHttpxClient, "send", mock_request)
 
   # Reset credentials to test initialization to ensure the sync lock is tested.
   client._api_client._credentials = None
@@ -2161,7 +2169,7 @@ def test_sync_httpx_uses_mtls_endpoint_with_client_cert(mock_client_cert):
   assert not client._api_client._use_google_auth_sync()
   mock_send = mock.Mock(return_value=httpx.Response(200, text="{}"))
 
-  with mock.patch.object(api_client.SyncHttpxClient, "send", mock_send):
+  with mock.patch.object(_SyncHttpxClient, "send", mock_send):
     client._api_client.request("post", "models/gemini:generateContent", {})
 
   assert mock_send.call_args[0][0].url.host == (
@@ -2177,7 +2185,7 @@ async def test_async_httpx_uses_mtls_endpoint_with_client_cert(
   client = _mtls_test_client()
   mock_request = mock.AsyncMock(return_value=httpx.Response(200, text="{}"))
 
-  with mock.patch.object(api_client.AsyncHttpxClient, "request", mock_request):
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
     await client._api_client.async_request(
         "post", "models/gemini:generateContent", {}
     )
@@ -2195,7 +2203,7 @@ async def test_async_httpx_download_uses_mtls_endpoint_with_client_cert(
   client = _mtls_test_client()
   mock_request = mock.AsyncMock(return_value=httpx.Response(200, content=b""))
 
-  with mock.patch.object(api_client.AsyncHttpxClient, "request", mock_request):
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
     await client._api_client.async_download_file("files/abc:download")
 
   assert mock_request.call_args.kwargs["url"].startswith(
@@ -2484,3 +2492,74 @@ async def test_google_auth_async_respects_mtls_endpoint_env_override(
   assert mock_session.request.call_args.kwargs["url"].startswith(
       "https://us-central1-aiplatform.googleapis.com/"
   )
+
+
+def test_client_init_default_api_version(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(api_key="test-api-key")
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+
+
+def test_client_init_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(api_key="test-api-key")
+  assert client._api_client._http_options.api_version == "v1alpha"
+
+
+def test_client_init_vertexai_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  mldev_client = Client(api_key="test-api-key")
+  assert vertex_client._api_client._http_options.api_version == "v1"
+  assert mldev_client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_with_beta_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "beta")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  mldev_client = Client(api_key="test-api-key")
+  assert vertex_client._api_client._http_options.api_version == "v1beta1"
+  assert mldev_client._api_client._http_options.api_version == "v1beta"
+
+
+def test_client_init_http_options_api_version_overrides_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(
+      api_key="test-api-key", http_options={"api_version": "v1"}
+  )
+  vertex_client = Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1"},
+  )
+  assert client._api_client._http_options.api_version == "v1"
+  assert vertex_client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_empty_env_api_version_uses_default(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "")
+  client = Client(api_key="test-api-key")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+  assert vertex_client._api_client._http_options.api_version == "v1beta1"
+
+
+def test_client_init_vertexai_default_api_version_unaffected(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert client._api_client._http_options.api_version == "v1beta1"
