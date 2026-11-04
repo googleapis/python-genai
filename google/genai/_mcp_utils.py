@@ -213,7 +213,7 @@ async def _connect_agent_platform_mcp(api_client: Any, toolset_name: str) -> typ
   set_mcp_usage_header(headers)
 
   http_client: Any
-  backend = _get_http_client_backend()
+  backend = _get_http_client_backend(getattr(api_client, "_http_options", None))
   async_client = getattr(api_client, "_async_httpx_client", None)
   is_httpx2_client = (
       httpx2 is not None

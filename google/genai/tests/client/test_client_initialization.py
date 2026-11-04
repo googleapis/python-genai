@@ -28,7 +28,6 @@ from unittest import mock
 import certifi
 import google.auth
 from google.auth import credentials
-import httpx
 import pytest
 import requests
 
@@ -37,6 +36,15 @@ from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+
+if api_client._get_http_client_backend() == "httpx2":
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpx2Client
+  _AsyncHttpxClient = api_client.AsyncHttpx2Client
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpxClient
+  _AsyncHttpxClient = api_client.AsyncHttpxClient
 
 try:
   import aiohttp
@@ -1550,7 +1558,7 @@ def test_threaded_generate_content_locking(monkeypatch):
         text='{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}',
     )
     mock_request = mock.Mock(return_value=mock_httpx_response)
-    monkeypatch.setattr(api_client.SyncHttpxClient, "send", mock_request)
+    monkeypatch.setattr(_SyncHttpxClient, "send", mock_request)
 
   # Reset credentials to test initialization to ensure the sync lock is tested.
   client._api_client._credentials = None
@@ -2161,7 +2169,7 @@ def test_sync_httpx_uses_mtls_endpoint_with_client_cert(mock_client_cert):
   assert not client._api_client._use_google_auth_sync()
   mock_send = mock.Mock(return_value=httpx.Response(200, text="{}"))
 
-  with mock.patch.object(api_client.SyncHttpxClient, "send", mock_send):
+  with mock.patch.object(_SyncHttpxClient, "send", mock_send):
     client._api_client.request("post", "models/gemini:generateContent", {})
 
   assert mock_send.call_args[0][0].url.host == (
@@ -2177,7 +2185,7 @@ async def test_async_httpx_uses_mtls_endpoint_with_client_cert(
   client = _mtls_test_client()
   mock_request = mock.AsyncMock(return_value=httpx.Response(200, text="{}"))
 
-  with mock.patch.object(api_client.AsyncHttpxClient, "request", mock_request):
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
     await client._api_client.async_request(
         "post", "models/gemini:generateContent", {}
     )
@@ -2195,7 +2203,7 @@ async def test_async_httpx_download_uses_mtls_endpoint_with_client_cert(
   client = _mtls_test_client()
   mock_request = mock.AsyncMock(return_value=httpx.Response(200, content=b""))
 
-  with mock.patch.object(api_client.AsyncHttpxClient, "request", mock_request):
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
     await client._api_client.async_download_file("files/abc:download")
 
   assert mock_request.call_args.kwargs["url"].startswith(

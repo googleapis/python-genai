@@ -34,8 +34,10 @@ import pytest
 
 try:
   import httpx2
+  import truststore
 except ImportError:
   httpx2 = None
+  truststore = None
 
 # Mark all tests in this module to be skipped if httpx2 is not available
 pytestmark = pytest.mark.skipif(
@@ -166,18 +168,42 @@ def test_httpx2_response_flows_through_sync_stream():
   assert chunks == ['{"first": 1}', '{"second": 2}']
 
 
-def test_default_client_uses_httpx(monkeypatch):
-  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+def _client_classes(backend):
   target_api_client = getattr(api_client, 'public_api_client', api_client)
+  if backend == 'httpx2':
+    return (
+        httpx2.Client,
+        httpx2.AsyncClient,
+        target_api_client.SyncHttpx2Client,
+        target_api_client.AsyncHttpx2Client,
+    )
+  return (
+      httpx.Client,
+      httpx.AsyncClient,
+      target_api_client.SyncHttpxClient,
+      target_api_client.AsyncHttpxClient,
+  )
+
+
+def _set_default_backend(monkeypatch, backend):
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  monkeypatch.setattr(
+      target_api_client, '_DEFAULT_HTTP_CLIENT_BACKEND', backend
+  )
+
+
+@pytest.mark.parametrize('default_backend', ['httpx', 'httpx2'])
+def test_default_client_uses_default_backend(monkeypatch, default_backend):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  _set_default_backend(monkeypatch, default_backend)
+  sync_cls, async_cls, sdk_sync_cls, sdk_async_cls = _client_classes(
+      default_backend
+  )
   client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpxClient
-  )
-  assert isinstance(client._api_client._async_httpx_client, httpx.AsyncClient)
-  assert isinstance(
-      client._api_client._async_httpx_client, target_api_client.AsyncHttpxClient
-  )
+  assert isinstance(client._api_client._httpx_client, sync_cls)
+  assert isinstance(client._api_client._httpx_client, sdk_sync_cls)
+  assert isinstance(client._api_client._async_httpx_client, async_cls)
+  assert isinstance(client._api_client._async_httpx_client, sdk_async_cls)
 
 
 def test_env_var_override_to_httpx(monkeypatch):
@@ -194,6 +220,7 @@ def test_env_var_override_to_httpx(monkeypatch):
   )
 
 
+
 def test_env_var_override_to_httpx2(monkeypatch):
   monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
   target_api_client = getattr(api_client, 'public_api_client', api_client)
@@ -208,19 +235,27 @@ def test_env_var_override_to_httpx2(monkeypatch):
   )
 
 
-def test_env_var_auto(monkeypatch):
+
+
+@pytest.mark.parametrize('default_backend', ['httpx', 'httpx2'])
+def test_env_var_auto(monkeypatch, default_backend):
   monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'auto')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  _set_default_backend(monkeypatch, default_backend)
+  sync_cls, *_ = _client_classes(default_backend)
   client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
+  assert isinstance(client._api_client._httpx_client, sync_cls)
 
 
-def test_env_var_unrecognized_falls_back_to_default(monkeypatch, caplog):
+@pytest.mark.parametrize('default_backend', ['httpx', 'httpx2'])
+def test_env_var_unrecognized_falls_back_to_default(
+    monkeypatch, caplog, default_backend
+):
   monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'unknown_client')
-  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  _set_default_backend(monkeypatch, default_backend)
+  sync_cls, *_ = _client_classes(default_backend)
   with caplog.at_level('WARNING'):
     client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx.Client)
+  assert isinstance(client._api_client._httpx_client, sync_cls)
   assert 'Unrecognized GOOGLE_GENAI_HTTP_CLIENT' in caplog.text
 
 
@@ -232,6 +267,7 @@ def test_env_var_httpx2_missing_raises(monkeypatch):
     Client(api_key='fake_api_key')
 
 
+
 def test_env_var_httpx_missing_raises(monkeypatch):
   monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx')
   target_api_client = getattr(api_client, 'public_api_client', api_client)
@@ -240,19 +276,36 @@ def test_env_var_httpx_missing_raises(monkeypatch):
     Client(api_key='fake_api_key')
 
 
-def test_default_falls_back_to_httpx2_when_httpx_missing(monkeypatch):
+
+
+@pytest.mark.parametrize(
+    'default_backend,fallback_backend',
+    [('httpx', 'httpx2'), ('httpx2', 'httpx')],
+)
+def test_default_falls_back_when_default_backend_missing(
+    monkeypatch, default_backend, fallback_backend
+):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  _set_default_backend(monkeypatch, default_backend)
+  monkeypatch.setattr(target_api_client, default_backend, None)
+  sync_cls, async_cls, sdk_sync_cls, sdk_async_cls = _client_classes(
+      fallback_backend
+  )
+  client = Client(api_key='fake_api_key')
+  assert isinstance(client._api_client._httpx_client, sync_cls)
+  assert isinstance(client._api_client._httpx_client, sdk_sync_cls)
+  assert isinstance(client._api_client._async_httpx_client, async_cls)
+  assert isinstance(client._api_client._async_httpx_client, sdk_async_cls)
+
+
+def test_default_raises_when_no_backend_installed(monkeypatch):
   monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
   target_api_client = getattr(api_client, 'public_api_client', api_client)
   monkeypatch.setattr(target_api_client, 'httpx', None)
-  client = Client(api_key='fake_api_key')
-  assert isinstance(client._api_client._httpx_client, httpx2.Client)
-  assert isinstance(
-      client._api_client._httpx_client, target_api_client.SyncHttpx2Client
-  )
-  assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
-  assert isinstance(
-      client._api_client._async_httpx_client, target_api_client.AsyncHttpx2Client
-  )
+  monkeypatch.setattr(target_api_client, 'httpx2', None)
+  with pytest.raises(ImportError, match='Neither httpx nor httpx2'):
+    target_api_client._get_http_client_backend()
 
 
 # High-level feature tests: end-to-end generate_content and streaming with httpx2
@@ -866,6 +919,21 @@ async def test_async_retries_on_http_status_codes_with_httpx2(monkeypatch):
   assert attempts == 2
 
 
+def test_ensure_httpx2_ssl_ctx_default_uses_truststore(monkeypatch):
+  monkeypatch.delenv('SSL_CERT_FILE', raising=False)
+  monkeypatch.delenv('SSL_CERT_DIR', raising=False)
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(
+          HttpOptions(),
+          vertexai=False,
+          client_cls=api_client.SyncHttpx2Client,
+          async_client_cls=api_client.AsyncHttpx2Client,
+      )
+  )
+  assert isinstance(client_args['verify'], truststore.SSLContext)
+  assert isinstance(async_client_args['verify'], truststore.SSLContext)
+
+
 def test_ensure_httpx2_ssl_ctx_custom_verify():
   custom_ctx = ssl.create_default_context()
   client_args, async_client_args = (
@@ -913,3 +981,537 @@ def test_client_init_with_custom_ssl_context_httpx2(monkeypatch):
   )
   assert isinstance(client._api_client._httpx_client, httpx2.Client)
   assert isinstance(client._api_client._async_httpx_client, httpx2.AsyncClient)
+
+
+def test_ensure_httpx2_ssl_ctx_with_ssl_cert_file_env(monkeypatch):
+  import certifi
+
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+  monkeypatch.setenv('SSL_CERT_FILE', certifi.where())
+  monkeypatch.delenv('SSL_CERT_DIR', raising=False)
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(
+          HttpOptions(),
+          vertexai=False,
+      )
+  )
+  assert isinstance(client_args['verify'], ssl.SSLContext)
+  assert not isinstance(client_args['verify'], truststore.SSLContext)
+  assert isinstance(async_client_args['verify'], ssl.SSLContext)
+
+
+def test_auto_detect_httpx_from_injected_client_when_default_httpx2(
+    monkeypatch,
+):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  _set_default_backend(monkeypatch, 'httpx2')
+
+  # Only sync httpx.Client injected -> async client should also use httpx
+  sync_injected = httpx.Client()
+  client_sync = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(httpx_client=sync_injected),
+  )
+  assert client_sync._api_client._httpx_client is sync_injected
+  assert isinstance(
+      client_sync._api_client._async_httpx_client, httpx.AsyncClient
+  )
+
+  # Only async httpx.AsyncClient injected -> sync client should also use httpx
+  async_injected = httpx.AsyncClient()
+  client_async = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(httpx_async_client=async_injected),
+  )
+  assert isinstance(client_async._api_client._httpx_client, httpx.Client)
+  assert client_async._api_client._async_httpx_client is async_injected
+
+
+def test_auto_detect_httpx2_from_injected_client_when_default_httpx(
+    monkeypatch,
+):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  _set_default_backend(monkeypatch, 'httpx')
+
+  # Only sync httpx2.Client injected -> async client should also use httpx2
+  sync_injected = httpx2.Client()
+  client_sync = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(httpx_client=sync_injected),
+  )
+  assert client_sync._api_client._httpx_client is sync_injected
+  assert isinstance(
+      client_sync._api_client._async_httpx_client, httpx2.AsyncClient
+  )
+
+  # Only async httpx2.AsyncClient injected -> sync client should also use httpx2
+  async_injected = httpx2.AsyncClient()
+  client_async = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(httpx_async_client=async_injected),
+  )
+  assert isinstance(client_async._api_client._httpx_client, httpx2.Client)
+  assert client_async._api_client._async_httpx_client is async_injected
+
+
+@pytest.mark.parametrize(
+    'arg_key,httpx_val_fn,httpx2_val_fn',
+    [
+        (
+            'transport',
+            lambda: httpx.MockTransport(lambda req: httpx.Response(200)),
+            lambda: httpx2.MockTransport(lambda req: httpx2.Response(200)),
+        ),
+        ('timeout', lambda: httpx.Timeout(5.0), lambda: httpx2.Timeout(5.0)),
+        (
+            'auth',
+            lambda: httpx.BasicAuth('u', 'p'),
+            lambda: httpx2.BasicAuth('u', 'p'),
+        ),
+        (
+            'limits',
+            lambda: httpx.Limits(max_connections=5),
+            lambda: httpx2.Limits(max_connections=5),
+        ),
+        (
+            'proxy',
+            lambda: httpx.Proxy('http://localhost:8080'),
+            lambda: httpx2.Proxy('http://localhost:8080'),
+        ),
+    ],
+)
+def test_auto_detect_backend_from_client_args(
+    monkeypatch, arg_key, httpx_val_fn, httpx2_val_fn
+):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'auto')
+
+  # When default is httpx2, passing httpx.* object in client_args selects httpx
+  _set_default_backend(monkeypatch, 'httpx2')
+  client_httpx = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(client_args={arg_key: httpx_val_fn()}),
+  )
+  assert isinstance(client_httpx._api_client._httpx_client, httpx.Client)
+  assert isinstance(
+      client_httpx._api_client._async_httpx_client, httpx.AsyncClient
+  )
+
+  # When default is httpx, passing httpx2.* object in client_args selects httpx2
+  _set_default_backend(monkeypatch, 'httpx')
+  client_httpx2 = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(client_args={arg_key: httpx2_val_fn()}),
+  )
+  assert isinstance(client_httpx2._api_client._httpx_client, httpx2.Client)
+  assert isinstance(
+      client_httpx2._api_client._async_httpx_client, httpx2.AsyncClient
+  )
+
+
+def test_auto_detect_backend_from_async_client_args(monkeypatch):
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+
+  class CustomAsyncTransport(httpx.AsyncBaseTransport):
+
+    async def handle_async_request(
+        self, request: httpx.Request
+    ) -> httpx.Response:
+      return httpx.Response(200)
+
+  class CustomAsyncTransport2(httpx2.AsyncBaseTransport):
+
+    async def handle_async_request(
+        self, request: httpx2.Request
+    ) -> httpx2.Response:
+      return httpx2.Response(200)
+
+  _set_default_backend(monkeypatch, 'httpx2')
+  client_httpx = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(
+          async_client_args={'transport': CustomAsyncTransport()}
+      ),
+  )
+  assert isinstance(client_httpx._api_client._httpx_client, httpx.Client)
+  assert isinstance(
+      client_httpx._api_client._async_httpx_client, httpx.AsyncClient
+  )
+
+  _set_default_backend(monkeypatch, 'httpx')
+  client_httpx2 = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(
+          async_client_args={'transport': CustomAsyncTransport2()}
+      ),
+  )
+  assert isinstance(client_httpx2._api_client._httpx_client, httpx2.Client)
+  assert isinstance(
+      client_httpx2._api_client._async_httpx_client, httpx2.AsyncClient
+  )
+
+
+def test_skips_ensure_httpx_ssl_ctx_when_both_custom_clients_provided(
+    monkeypatch,
+):
+  from unittest import mock
+
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+  with (
+      mock.patch.object(
+          api_client.BaseApiClient,
+          '_ensure_httpx_ssl_ctx',
+          wraps=api_client.BaseApiClient._ensure_httpx_ssl_ctx,
+      ) as spy_ensure,
+      mock.patch.object(
+          httpx2, 'create_ssl_context', wraps=httpx2.create_ssl_context
+      ) as spy_create_ssl,
+  ):
+    client = Client(
+        api_key='fake_api_key',
+        http_options=HttpOptions(
+            httpx_client=httpx2.Client(trust_env=False),
+            httpx_async_client=httpx2.AsyncClient(trust_env=False),
+        ),
+    )
+    spy_ensure.assert_not_called()
+    spy_create_ssl.assert_not_called()
+    assert client._api_client._async_httpx_client_args == {}
+
+
+def test_gaos_basesdk_use_client_default_and_timeout():
+  from ..._gaos import basesdk
+
+  httpx_client = httpx.Client()
+  httpx2_client = httpx2.Client()
+  assert (
+      basesdk._use_client_default(httpx_client) is httpx.USE_CLIENT_DEFAULT
+  )
+  assert (
+      basesdk._use_client_default(httpx2_client) is httpx2.USE_CLIENT_DEFAULT
+  )
+
+  client = Client(
+      api_key='fake_api_key',
+      http_options=HttpOptions(
+          httpx_client=httpx2_client,
+          httpx_async_client=httpx2.AsyncClient(),
+      ),
+  )
+  req_default = client.interactions._build_request(
+      method='GET',
+      path='/v1beta/interactions/123',
+      base_url='https://example.com',
+      url_variables=None,
+      request=None,
+      request_body_required=False,
+      request_has_path_params=False,
+      request_has_query_params=False,
+      user_agent_header='user-agent',
+      accept_header_value='application/json',
+      timeout_ms=None,
+  )
+  assert req_default.extensions['timeout'] == {
+      'connect': 5.0,
+      'read': 5.0,
+      'write': 5.0,
+      'pool': 5.0,
+  }
+
+  req_timeout = client.interactions._build_request(
+      method='GET',
+      path='/v1beta/interactions/123',
+      base_url='https://example.com',
+      url_variables=None,
+      request=None,
+      request_body_required=False,
+      request_has_path_params=False,
+      request_has_query_params=False,
+      user_agent_header='user-agent',
+      accept_header_value='application/json',
+      timeout_ms=2500,
+  )
+  assert req_timeout.extensions['timeout'] == {
+      'connect': 2.5,
+      'read': 2.5,
+      'write': 2.5,
+      'pool': 2.5,
+  }
+
+  async_req_default = client.aio.interactions._build_request_async(
+      method='GET',
+      path='/v1beta/interactions/123',
+      base_url='https://example.com',
+      url_variables=None,
+      request=None,
+      request_body_required=False,
+      request_has_path_params=False,
+      request_has_query_params=False,
+      user_agent_header='user-agent',
+      accept_header_value='application/json',
+      timeout_ms=None,
+  )
+  assert async_req_default.extensions['timeout'] == {
+      'connect': 5.0,
+      'read': 5.0,
+      'write': 5.0,
+      'pool': 5.0,
+  }
+
+  async_req_timeout = client.aio.interactions._build_request_async(
+      method='GET',
+      path='/v1beta/interactions/123',
+      base_url='https://example.com',
+      url_variables=None,
+      request=None,
+      request_body_required=False,
+      request_has_path_params=False,
+      request_has_query_params=False,
+      user_agent_header='user-agent',
+      accept_header_value='application/json',
+      timeout_ms=2500,
+  )
+  assert async_req_timeout.extensions['timeout'] == {
+      'connect': 2.5,
+      'read': 2.5,
+      'write': 2.5,
+      'pool': 2.5,
+  }
+
+
+
+# SSL / mTLS security tests.
+#
+# These record the kwargs passed to the SDK-built client constructors, so they
+# assert on the `verify` SSL context each real client is created with (rather
+# than on intermediate helper return values).
+
+_VERTEX_URL = 'https://us-central1-aiplatform.googleapis.com/v1'
+_VERTEX_MTLS_URL = 'https://us-central1-aiplatform.mtls.googleapis.com/v1'
+
+
+def _target_api_client():
+  return getattr(api_client, 'public_api_client', api_client)
+
+
+def _record_client_init(monkeypatch, backend):
+  """Records constructor kwargs for the SDK's sync/async clients of `backend`."""
+  _, _, sdk_sync_cls, sdk_async_cls = _client_classes(backend)
+  calls = {'sync': [], 'async': []}
+  for key, cls in (('sync', sdk_sync_cls), ('async', sdk_async_cls)):
+    original_init = cls.__init__
+
+    def _init(self, _original_init=original_init, _key=key, **kwargs):
+      calls[_key].append(kwargs)
+      _original_init(self, **kwargs)
+
+    monkeypatch.setattr(cls, '__init__', _init)
+  return calls
+
+
+@pytest.fixture
+def no_ssl_env(monkeypatch):
+  monkeypatch.delenv('SSL_CERT_FILE', raising=False)
+  monkeypatch.delenv('SSL_CERT_DIR', raising=False)
+
+
+@pytest.fixture
+def client_cert(monkeypatch):
+  """Simulates a configured default client certificate; returns its context."""
+  from google.auth.transport import mtls
+
+  cert_ctx = ssl.create_default_context()
+  monkeypatch.delenv('GOOGLE_API_USE_MTLS_ENDPOINT', raising=False)
+  monkeypatch.setattr(
+      mtls, 'should_use_client_cert', lambda: True, raising=False
+  )
+  monkeypatch.setattr(mtls, 'has_default_client_cert_source', lambda: True)
+  monkeypatch.setattr(mtls, 'get_default_ssl_context', lambda: cert_ctx)
+  # Keep the async path on httpx (not AsyncAuthorizedSession/aiohttp) so the
+  # SDK-built async httpx client is exercised.
+  monkeypatch.setattr(_target_api_client(), 'has_aiohttp', False)
+  return cert_ctx
+
+
+def _vertex_client(**http_options):
+  return Client(
+      vertexai=True,
+      project='fake-project',
+      location='us-central1',
+      http_options=http_options,
+  )
+
+
+@pytest.mark.parametrize('backend', ['httpx', 'httpx2'])
+@pytest.mark.parametrize('injected', ['sync', 'async'])
+def test_single_injected_client_other_client_still_gets_sdk_ssl_ctx(
+    monkeypatch, no_ssl_env, backend, injected
+):
+  """Injecting one client must not skip SSL setup for the SDK-built one."""
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', backend)
+  sync_cls, async_cls, _, _ = _client_classes(backend)
+  calls = _record_client_init(monkeypatch, backend)
+
+  if injected == 'sync':
+    http_options = HttpOptions(httpx_client=sync_cls())
+    built = 'async'
+  else:
+    http_options = HttpOptions(httpx_async_client=async_cls())
+    built = 'sync'
+  Client(api_key='fake_api_key', http_options=http_options)
+
+  assert calls[injected] == []
+  assert len(calls[built]) == 1
+  verify = calls[built][0]['verify']
+  assert isinstance(verify, ssl.SSLContext)
+  assert isinstance(verify, truststore.SSLContext) == (backend == 'httpx2')
+
+
+@pytest.mark.parametrize('backend', ['httpx', 'httpx2'])
+@pytest.mark.parametrize('injected', ['sync', 'async'])
+def test_vertex_single_injected_client_other_client_keeps_client_cert(
+    monkeypatch, client_cert, backend, injected
+):
+  """The SDK-built client keeps the client cert and uses the mTLS endpoint."""
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', backend)
+  sync_cls, async_cls, _, _ = _client_classes(backend)
+  calls = _record_client_init(monkeypatch, backend)
+
+  if injected == 'sync':
+    client = _vertex_client(httpx_client=sync_cls())
+    built = 'async'
+  else:
+    client = _vertex_client(httpx_async_client=async_cls())
+    built = 'sync'
+
+  assert calls[injected] == []
+  assert len(calls[built]) == 1
+  assert calls[built][0]['verify'] is client_cert
+  assert client._api_client._httpx_url(
+      _VERTEX_URL, is_async=(built == 'async')
+  ) == _VERTEX_MTLS_URL
+  # The caller-supplied client does not present the SDK's client cert, so it
+  # must not be routed to the mTLS endpoint.
+  assert client._api_client._httpx_url(
+      _VERTEX_URL, is_async=(injected == 'async')
+  ) == _VERTEX_URL
+
+
+@pytest.mark.parametrize('backend', ['httpx', 'httpx2'])
+def test_vertex_both_injected_clients_skip_ssl_and_mtls_endpoint(
+    monkeypatch, client_cert, backend
+):
+  """With both clients injected, no httpx SSL setup and no mTLS routing."""
+  from unittest import mock
+
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', backend)
+  sync_cls, async_cls, _, _ = _client_classes(backend)
+  calls = _record_client_init(monkeypatch, backend)
+  sync_injected = sync_cls()
+  async_injected = async_cls()
+
+  with mock.patch.object(
+      _target_api_client().BaseApiClient,
+      '_ensure_httpx_ssl_ctx',
+      wraps=_target_api_client().BaseApiClient._ensure_httpx_ssl_ctx,
+  ) as spy_ensure:
+    client = _vertex_client(
+        httpx_client=sync_injected, httpx_async_client=async_injected
+    )
+
+  spy_ensure.assert_not_called()
+  assert calls == {'sync': [], 'async': []}
+  assert client._api_client._httpx_client is sync_injected
+  assert client._api_client._async_httpx_client is async_injected
+  assert client._api_client._httpx_url(_VERTEX_URL, is_async=False) == (
+      _VERTEX_URL
+  )
+  assert client._api_client._httpx_url(_VERTEX_URL, is_async=True) == (
+      _VERTEX_URL
+  )
+
+
+@pytest.mark.parametrize('backend', ['httpx', 'httpx2'])
+def test_vertex_client_cert_takes_precedence_over_default_ctx(
+    monkeypatch, client_cert, no_ssl_env, backend
+):
+  """The client-cert context wins over truststore/certifi for both clients."""
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', backend)
+  calls = _record_client_init(monkeypatch, backend)
+
+  client = _vertex_client()
+
+  assert calls['sync'][0]['verify'] is client_cert
+  assert calls['async'][0]['verify'] is client_cert
+  assert client._api_client._httpx_url(_VERTEX_URL, is_async=False) == (
+      _VERTEX_MTLS_URL
+  )
+  assert client._api_client._httpx_url(_VERTEX_URL, is_async=True) == (
+      _VERTEX_MTLS_URL
+  )
+
+
+@pytest.mark.parametrize(
+    'default_backend,detected_backend', [('httpx2', 'httpx'), ('httpx', 'httpx2')]
+)
+def test_auto_detected_backend_selects_matching_ssl_ctx(
+    monkeypatch, no_ssl_env, default_backend, detected_backend
+):
+  """Auto-detection picks the SSL context for the detected backend.
+
+  httpx -> certifi-based `ssl.SSLContext`; httpx2 -> truststore. Both the sync
+  client (with the detected transport) and the async client (built from empty
+  async_client_args, i.e. a real network client) must get it.
+  """
+  monkeypatch.delenv('GOOGLE_GENAI_HTTP_CLIENT', raising=False)
+  _set_default_backend(monkeypatch, default_backend)
+  calls = _record_client_init(monkeypatch, detected_backend)
+  module = httpx2 if detected_backend == 'httpx2' else httpx
+  transport = module.MockTransport(lambda req: module.Response(200))
+
+  Client(api_key='fake_api_key', http_options={'client_args': {'transport': transport}})
+
+  for key in ('sync', 'async'):
+    assert len(calls[key]) == 1
+    verify = calls[key][0]['verify']
+    assert isinstance(verify, ssl.SSLContext)
+    assert isinstance(verify, truststore.SSLContext) == (
+        detected_backend == 'httpx2'
+    )
+  assert calls['sync'][0]['transport'] is transport
+
+
+def test_ensure_httpx2_ssl_ctx_with_ssl_cert_dir_env(monkeypatch, tmp_path):
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+  monkeypatch.delenv('SSL_CERT_FILE', raising=False)
+  monkeypatch.setenv('SSL_CERT_DIR', str(tmp_path))
+  client_args, async_client_args = (
+      api_client.BaseApiClient._ensure_httpx_ssl_ctx(HttpOptions())
+  )
+  for args in (client_args, async_client_args):
+    assert isinstance(args['verify'], ssl.SSLContext)
+    assert not isinstance(args['verify'], truststore.SSLContext)
+
+
+@pytest.mark.parametrize('backend', ['httpx', 'httpx2'])
+def test_custom_verify_in_client_args_is_not_overridden(
+    monkeypatch, client_cert, backend
+):
+  """A caller's `verify` SSL context is never replaced by the SDK's."""
+  monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', backend)
+  calls = _record_client_init(monkeypatch, backend)
+  custom_ctx = ssl.create_default_context()
+
+  client = _vertex_client(
+      client_args={'verify': custom_ctx},
+      async_client_args={'verify': custom_ctx},
+  )
+
+  assert calls['sync'][0]['verify'] is custom_ctx
+  assert calls['async'][0]['verify'] is custom_ctx
+  # The custom context doesn't carry the SDK's client cert: no mTLS routing.
+  assert client._api_client._httpx_url(_VERTEX_URL, is_async=False) == (
+      _VERTEX_URL
+  )
+  assert client._api_client._httpx_url(_VERTEX_URL, is_async=True) == (
+      _VERTEX_URL
+  )

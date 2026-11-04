@@ -32,12 +32,15 @@ except ImportError:
   AIOHTTP_NOT_INSTALLED = True
   aiohttp = mock.MagicMock()
 
-import httpx
-
 from ... import _api_client as api_client
 from ... import Client
 from ... import errors
 from ... import types
+
+if api_client._get_http_client_backend() == 'httpx2':
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
 
 
 EVENT_STREAM_DATA_WITH_ERROR = [
@@ -387,7 +390,7 @@ def mock_response(chunks):
   )
 
 
-@patch('httpx.Client.send')
+@patch.object(httpx.Client, 'send')
 def test_error_event_in_streamed_responses_bad_json(mock_send_method):
   with_bad_json = [
       b'{"candidates":[{"content":{"parts":[{"text":"test"}],"role":"model"}}]}',
@@ -412,7 +415,7 @@ def test_error_event_in_streamed_responses_bad_json(mock_send_method):
     next(stream)
 
 
-@patch('httpx.Client.send')
+@patch.object(httpx.Client, 'send')
 def test_error_event_in_streamed_responses(mock_send_method):
   mock_send_method.return_value = mock_response(EVENT_STREAM_DATA_WITH_ERROR)
 
@@ -432,7 +435,7 @@ def test_error_event_in_streamed_responses(mock_send_method):
     next(stream)
 
 
-@patch('httpx.Client.send')
+@patch.object(httpx.Client, 'send')
 def test_error_event_in_generate_content_stream(mock_send_method):
   mock_send_method.return_value = mock_response(EVENT_STREAM_DATA_WITH_ERROR)
 
@@ -464,8 +467,12 @@ def test_error_event_in_generate_content_stream(mock_send_method):
 
 
 async def _async_httpx_response(_):
+  async def _aiter():
+    for chunk in EVENT_STREAM_DATA_WITH_ERROR:
+      yield chunk
+
   mock_stream = MagicMock(spec=httpx.AsyncByteStream)
-  mock_stream.__aiter__.return_value = EVENT_STREAM_DATA_WITH_ERROR
+  mock_stream.__aiter__.side_effect = _aiter
   mock_stream.aclose = AsyncMock()
   return httpx.Response(
       status_code=200,
@@ -473,7 +480,7 @@ async def _async_httpx_response(_):
   )
 
 
-@patch('httpx.AsyncBaseTransport')
+@patch.object(httpx, 'AsyncBaseTransport')
 @pytest.mark.asyncio
 async def test_error_event_in_streamed_responses_async(mock_transport):
   client = api_client.BaseApiClient(
@@ -502,7 +509,7 @@ async def test_error_event_in_streamed_responses_async(mock_transport):
     await anext(resp)
 
 
-@patch('httpx.AsyncBaseTransport')
+@patch.object(httpx, 'AsyncBaseTransport')
 @pytest.mark.asyncio
 async def test_error_event_in_generate_content_stream_async(mock_transport):
   client = Client(
