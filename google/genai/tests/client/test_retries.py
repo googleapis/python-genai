@@ -36,12 +36,16 @@ except ImportError:
   AsyncAuthorizedSession = mock.MagicMock()
 
 from google.oauth2 import credentials
-import httpx
 import tenacity
 
 from ... import _api_client as api_client
 from ... import errors
 from ... import types
+
+if api_client._get_http_client_backend() == 'httpx2':
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
 
 
 requires_aiohttp = pytest.mark.skipif(
@@ -185,6 +189,21 @@ def test_retry_args_enabled_with_custom_values_are_not_overridden():
     except errors.APIError as e:
       # Does not retry for error codes outside of the retried codes list.
       assert not retry.predicate(e)
+
+
+def test_retry_args_explicit_zero_values_are_not_overridden():
+  # A field set to 0.0 is specified, so it must reach tenacity instead of
+  # falling back to the default.
+  options = types.HttpRetryOptions(
+      initial_delay=0.0, max_delay=0.0, exp_base=0.0, jitter=0.0
+  )
+
+  wait = api_client.retry_args(options)['wait']
+
+  assert wait.jitter == 0.0
+  assert wait.initial == 0.0
+  assert wait.max == 0.0
+  assert wait.exp_base == 0.0
 
 
 def test_retry_args_retries_httpx_transport_errors():
@@ -1327,6 +1346,7 @@ def test_aiohttp_retries_client_connector_error_retries_successfully(
           http_method='GET', path='path', request_dict={}
       )
       mock_request.assert_called()
+      assert mock_request.call_count == 2
       assert response.headers['status-code'] == '200'
 
   asyncio.run(run())

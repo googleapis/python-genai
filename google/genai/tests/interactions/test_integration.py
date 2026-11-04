@@ -14,13 +14,18 @@
 
 from unittest import mock
 
-import httpx
 import pytest
 
+from ... import _api_client
 from ... import client as client_lib
 from ..._gaos import google_genai as gaos_google_genai
 from ..._gaos.types.interactions import interaction as gaos_interaction
 from ..._gaos.utils import serializers as gaos_serializers
+
+if _api_client._get_http_client_backend() == "httpx2":
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
 
 
 pytest_plugins = ("pytest_asyncio",)
@@ -235,7 +240,7 @@ def test_interaction_lenient_parsing():
 def test_interactions_default_timeout():
   from ... import _interactions
 
-  assert _interactions.DEFAULT_TIMEOUT == httpx.Timeout(
+  assert _interactions.DEFAULT_TIMEOUT == _interactions.Timeout(
       timeout=None, connect=5.0
   )
 

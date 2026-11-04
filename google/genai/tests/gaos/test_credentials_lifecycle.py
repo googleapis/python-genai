@@ -15,13 +15,10 @@
 
 from __future__ import annotations
 
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-import json
-import threading
+from typing import Any
 
 import pytest
 
-from ... import Client
 from ..._gaos.models.getcredential import GetCredentialRequest
 from ..._gaos.models.listcredentials import ListCredentialsRequest
 from ..._gaos.types.credentials.credential import Credential
@@ -40,6 +37,7 @@ from ..._gaos.types.credentials.httpbearerupdateconfig import (
 )
 from ..._gaos.types.credentials.oauth2config import OAuth2Config
 from ..._gaos.types.credentials.oauth2updateconfig import OAuth2UpdateConfig
+from . import conftest
 
 CREDENTIAL_BODY = {
     "id": "cred_bearer_123",
@@ -71,261 +69,181 @@ CREDENTIAL_LIST_BODY = {
 }
 
 
-class _RecordingHandler(BaseHTTPRequestHandler):
-  captured: list[str] = []
-  captured_bodies: list[dict] = []
-
-  def _record_and_respond(self) -> None:
-    self.captured.append(f"{self.command} {self.path}")
-    if self.command in ("POST", "PATCH", "PUT"):
-      content_length = int(self.headers.get("Content-Length", 0))
-      if content_length > 0:
-        body = self.rfile.read(content_length)
-        self.captured_bodies.append(json.loads(body.decode("utf-8")))
-
-    if self.command == "GET" and (
-        self.path == "/v1beta/credentials"
-        or self.path.startswith("/v1beta/credentials?")
-    ):
-      payload = json.dumps(CREDENTIAL_LIST_BODY).encode()
-    else:
-      payload = json.dumps(CREDENTIAL_BODY).encode()
-
-    self.send_response(200)
-    self.send_header("content-type", "application/json")
-    self.send_header("content-length", str(len(payload)))
-    self.end_headers()
-    self.wfile.write(payload)
-
-  do_GET = _record_and_respond
-  do_POST = _record_and_respond
-  do_PATCH = _record_and_respond
-  do_DELETE = _record_and_respond
-
-  def log_message(self, *args) -> None:
-    pass
+def _credentials_handler(
+    req: conftest.CapturedRequest,
+    unused_server: conftest.MockGaosServer,
+) -> dict[str, Any]:
+  if req["method"] == "GET" and (
+      req["path"] == "/v1beta/credentials"
+      or req["path"].startswith("/v1beta/credentials?")
+  ):
+    return CREDENTIAL_LIST_BODY
+  return CREDENTIAL_BODY
 
 
 def test_python_credentials_lifecycle_routes_through_google_genai_client(
-    monkeypatch,
+    mock_gaos_server: conftest.MockGaosServer,
 ):
-  monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
-  captured: list[str] = []
-  captured_bodies: list[dict] = []
-  handler = type("Handler", (_RecordingHandler,), {
-      "captured": captured,
-      "captured_bodies": captured_bodies,
-  })
-  server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
-  thread = threading.Thread(target=server.serve_forever, daemon=True)
-  thread.start()
-  try:
-    client = Client(
-        api_key="test-api-key",
-        http_options={
-            "api_version": "v1beta",
-            "base_url": f"http://127.0.0.1:{server.server_port}",
-        },
-    )
+  mock_gaos_server.handler_fn = _credentials_handler
+  client = mock_gaos_server.client
 
-    # 1. Create Bearer Token Credential with header_name and prefix
-    bearer_cred = client.credentials.create(
-        id="cred_bearer_123",
-        token="test-bearer-token",
-        header_name="X-Custom-Auth",
-        prefix="Token",
-        type="bearer_token",
-    )
-    assert bearer_cred.id == "cred_bearer_123"
+  # 1. Create Bearer Token Credential with header_name and prefix
+  bearer_cred = client.credentials.create(
+      id="cred_bearer_123",
+      token="test-bearer-token",
+      header_name="X-Custom-Auth",
+      prefix="Token",
+      type="bearer_token",
+  )
+  assert bearer_cred.id == "cred_bearer_123"
 
-    # 2. Create Environment Variable Credential with injection_location and trusted_domains
-    env_cred = client.credentials.create(
-        id="cred_env_123",
-        value="super-secret-key",
-        injection_location=["header", "query"],
-        trusted_domains=["api.example.com", "service.example.org"],
-        type="environment_variable",
-    )
-    assert env_cred.id == "cred_bearer_123"
+  # 2. Create Environment Variable Credential with injection_location and trusted_domains
+  env_cred = client.credentials.create(
+      id="cred_env_123",
+      value="super-secret-key",
+      injection_location=["header", "query"],
+      trusted_domains=["api.example.com", "service.example.org"],
+      type="environment_variable",
+  )
+  assert env_cred.id == "cred_bearer_123"
 
-    # 3. Create OAuth2 Credential with scopes
-    oauth_cred = client.credentials.create(
-        id="cred_oauth_123",
-        client_id="test-client-id",
-        client_secret="test-client-secret",
-        refresh_token="test-refresh-token",
-        token_url="https://oauth2.googleapis.com/token",
-        scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        type="oauth2",
-    )
-    assert oauth_cred.id == "cred_bearer_123"
+  # 3. Create OAuth2 Credential with scopes
+  oauth_cred = client.credentials.create(
+      id="cred_oauth_123",
+      client_id="test-client-id",
+      client_secret="test-client-secret",
+      refresh_token="test-refresh-token",
+      token_url="https://oauth2.googleapis.com/token",
+      scopes=["https://www.googleapis.com/auth/cloud-platform"],
+      type="oauth2",
+  )
+  assert oauth_cred.id == "cred_bearer_123"
 
-    # 4. List credentials
-    list_res = client.credentials.list()
-    assert list_res.credentials is not None
-    assert len(list_res.credentials) == 3
+  # 4. List credentials
+  list_res = client.credentials.list()
+  assert list_res.credentials is not None
+  assert len(list_res.credentials) == 3
 
-    # 5. Get credential
-    fetched = client.credentials.get(id="cred_bearer_123")
-    assert fetched.id == "cred_bearer_123"
+  # 5. Get credential
+  fetched = client.credentials.get(id="cred_bearer_123")
+  assert fetched.id == "cred_bearer_123"
 
-    # 6. Update Bearer Token Credential
-    client.credentials.update(
-        id="cred_bearer_123",
-        token="updated-bearer-token",
-        header_name="Authorization",
-        prefix="Bearer",
-        type="bearer_token",
-    )
+  # 6. Update Bearer Token Credential
+  client.credentials.update(
+      id="cred_bearer_123",
+      token="updated-bearer-token",
+      header_name="Authorization",
+      prefix="Bearer",
+      type="bearer_token",
+  )
 
-    # 7. Update Environment Variable Credential
-    client.credentials.update(
-        id="cred_env_123",
-        value="updated-secret",
-        injection_location="header",
-        trusted_domains=["api.example.com"],
-        type="environment_variable",
-    )
+  # 7. Update Environment Variable Credential
+  client.credentials.update(
+      id="cred_env_123",
+      value="updated-secret",
+      injection_location="header",
+      trusted_domains=["api.example.com"],
+      type="environment_variable",
+  )
 
-    # 8. Update OAuth2 Credential
-    client.credentials.update(
-        id="cred_oauth_123",
-        client_secret="updated-secret",
-        scopes=["scope1", "scope2"],
-        type="oauth2",
-    )
+  # 8. Update OAuth2 Credential
+  client.credentials.update(
+      id="cred_oauth_123",
+      client_secret="updated-secret",
+      scopes=["scope1", "scope2"],
+      type="oauth2",
+  )
 
-    # 9. Delete credential
-    client.credentials.delete(id="cred_bearer_123")
+  # 9. Delete credential
+  client.credentials.delete(id="cred_bearer_123")
 
-    assert captured == [
-        "POST /v1beta/credentials",
-        "POST /v1beta/credentials",
-        "POST /v1beta/credentials",
-        "GET /v1beta/credentials",
-        "GET /v1beta/credentials/cred_bearer_123",
-        "PATCH /v1beta/credentials/cred_bearer_123",
-        "PATCH /v1beta/credentials/cred_env_123",
-        "PATCH /v1beta/credentials/cred_oauth_123",
-        "DELETE /v1beta/credentials/cred_bearer_123",
-    ]
+  assert mock_gaos_server.captured == [
+      "POST /v1beta/credentials",
+      "POST /v1beta/credentials",
+      "POST /v1beta/credentials",
+      "GET /v1beta/credentials",
+      "GET /v1beta/credentials/cred_bearer_123",
+      "PATCH /v1beta/credentials/cred_bearer_123",
+      "PATCH /v1beta/credentials/cred_env_123",
+      "PATCH /v1beta/credentials/cred_oauth_123",
+      "DELETE /v1beta/credentials/cred_bearer_123",
+  ]
 
-    # Verify captured bodies
-    assert captured_bodies[0] == {
-        "id": "cred_bearer_123",
-        "token": "test-bearer-token",
-        "header_name": "X-Custom-Auth",
-        "prefix": "Token",
-        "type": "bearer_token",
-    }
-    assert captured_bodies[1] == {
-        "id": "cred_env_123",
-        "value": "super-secret-key",
-        "injection_location": ["header", "query"],
-        "trusted_domains": ["api.example.com", "service.example.org"],
-        "type": "environment_variable",
-    }
-    assert captured_bodies[2] == {
-        "id": "cred_oauth_123",
-        "client_id": "test-client-id",
-        "client_secret": "test-client-secret",
-        "refresh_token": "test-refresh-token",
-        "token_url": "https://oauth2.googleapis.com/token",
-        "scopes": ["https://www.googleapis.com/auth/cloud-platform"],
-        "type": "oauth2",
-    }
-
-  finally:
-    server.shutdown()
-    thread.join()
-    server.server_close()
+  # Verify captured bodies
+  assert mock_gaos_server.captured_bodies[0] == {
+      "id": "cred_bearer_123",
+      "token": "test-bearer-token",
+      "header_name": "X-Custom-Auth",
+      "prefix": "Token",
+      "type": "bearer_token",
+  }
+  assert mock_gaos_server.captured_bodies[1] == {
+      "id": "cred_env_123",
+      "value": "super-secret-key",
+      "injection_location": ["header", "query"],
+      "trusted_domains": ["api.example.com", "service.example.org"],
+      "type": "environment_variable",
+  }
+  assert mock_gaos_server.captured_bodies[2] == {
+      "id": "cred_oauth_123",
+      "client_id": "test-client-id",
+      "client_secret": "test-client-secret",
+      "refresh_token": "test-refresh-token",
+      "token_url": "https://oauth2.googleapis.com/token",
+      "scopes": ["https://www.googleapis.com/auth/cloud-platform"],
+      "type": "oauth2",
+  }
 
 
 @pytest.mark.asyncio
-async def test_python_credentials_async_lifecycle(monkeypatch):
-  monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
-  captured: list[str] = []
-  captured_bodies: list[dict] = []
-  handler = type("Handler", (_RecordingHandler,), {
-      "captured": captured,
-      "captured_bodies": captured_bodies,
-  })
-  server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
-  thread = threading.Thread(target=server.serve_forever, daemon=True)
-  thread.start()
-  try:
-    client = Client(
-        api_key="test-api-key",
-        http_options={
-            "api_version": "v1beta",
-            "base_url": f"http://127.0.0.1:{server.server_port}",
-        },
-    )
+async def test_python_credentials_async_lifecycle(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  mock_gaos_server.handler_fn = _credentials_handler
+  client = mock_gaos_server.client
 
-    credential = await client.aio.credentials.create(
-        id="cred_env_123",
-        value="super-secret-key",
-        injection_location=["header", "query"],
-        trusted_domains=["api.example.com"],
-        type="environment_variable",
-    )
-    list_res = await client.aio.credentials.list()
-    fetched = await client.aio.credentials.get(id="cred_env_123")
-    updated = await client.aio.credentials.update(
-        id="cred_env_123",
-        value="updated-secret",
-        injection_location="header",
-        type="environment_variable",
-    )
-    await client.aio.credentials.delete(id="cred_env_123")
+  credential = await client.aio.credentials.create(
+      id="cred_env_123",
+      value="super-secret-key",
+      injection_location=["header", "query"],
+      trusted_domains=["api.example.com"],
+      type="environment_variable",
+  )
+  list_res = await client.aio.credentials.list()
+  fetched = await client.aio.credentials.get(id="cred_env_123")
+  updated = await client.aio.credentials.update(
+      id="cred_env_123",
+      value="updated-secret",
+      injection_location="header",
+      type="environment_variable",
+  )
+  await client.aio.credentials.delete(id="cred_env_123")
 
-    assert credential.id == "cred_bearer_123"
-    assert fetched.id == "cred_bearer_123"
-    assert updated.id == "cred_bearer_123"
-    assert list_res.credentials is not None
-    assert len(list_res.credentials) == 3
-    assert captured == [
-        "POST /v1beta/credentials",
-        "GET /v1beta/credentials",
-        "GET /v1beta/credentials/cred_env_123",
-        "PATCH /v1beta/credentials/cred_env_123",
-        "DELETE /v1beta/credentials/cred_env_123",
-    ]
-
-  finally:
-    server.shutdown()
-    thread.join()
-    server.server_close()
+  assert credential.id == "cred_bearer_123"
+  assert fetched.id == "cred_bearer_123"
+  assert updated.id == "cred_bearer_123"
+  assert list_res.credentials is not None
+  assert len(list_res.credentials) == 3
+  assert mock_gaos_server.captured == [
+      "POST /v1beta/credentials",
+      "GET /v1beta/credentials",
+      "GET /v1beta/credentials/cred_env_123",
+      "PATCH /v1beta/credentials/cred_env_123",
+      "DELETE /v1beta/credentials/cred_env_123",
+  ]
 
 
-def test_python_credentials_with_raw_response(monkeypatch):
-  monkeypatch.delenv("GOOGLE_GENAI_USE_VERTEXAI", raising=False)
-  captured: list[str] = []
-  handler = type("Handler", (_RecordingHandler,), {
-      "captured": captured,
-  })
-  server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
-  thread = threading.Thread(target=server.serve_forever, daemon=True)
-  thread.start()
-  try:
-    client = Client(
-        api_key="test-api-key",
-        http_options={
-            "api_version": "v1beta",
-            "base_url": f"http://127.0.0.1:{server.server_port}",
-        },
-    )
+def test_python_credentials_with_raw_response(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  mock_gaos_server.handler_fn = _credentials_handler
+  client = mock_gaos_server.client
 
-    raw_res = client.credentials.with_raw_response.list()
-    parsed = raw_res.parse()
-    assert parsed.credentials is not None
-    assert len(parsed.credentials) == 3
-    assert parsed.credentials[0].id == "cred_bearer_123"
-
-  finally:
-    server.shutdown()
-    thread.join()
-    server.server_close()
+  raw_res = client.credentials.with_raw_response.list()
+  parsed = raw_res.parse()
+  assert parsed.credentials is not None
+  assert len(parsed.credentials) == 3
+  assert parsed.credentials[0].id == "cred_bearer_123"
 
 
 def test_python_credentials_types_and_models():

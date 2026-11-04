@@ -24,7 +24,10 @@ from .types import OptionalNullable, UNSET, voices
 from .types.voices import voice_input as voices_voice_input
 from .utils import get_security_from_env, response_helpers
 from .utils.unmarshal_json_response import unmarshal_json_response
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 from typing import Any, Iterable, List, Mapping, Optional, Union, cast
 
 
@@ -96,7 +99,7 @@ class Voices(BaseSDK):
             voices with any of the specified region codes (OR).
         :param search: Optional. Free-text substring search query matched case-insensitively
             against both `display_name` and `description`. Maximum 2048 bytes.
-        :param type: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
+        :param type_: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
             `\"prompted\"` (case-insensitive). If multiple values are specified, matches
             voices with any of the specified types (OR).
         :param extra_headers: Additional headers to set or replace on requests.
@@ -832,7 +835,7 @@ class AsyncVoices(AsyncBaseSDK):
             voices with any of the specified region codes (OR).
         :param search: Optional. Free-text substring search query matched case-insensitively
             against both `display_name` and `description`. Maximum 2048 bytes.
-        :param type: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
+        :param type_: Optional. Filter by voice type. Accepts `\"prebuilt\"`, `\"replicated\"`,
             `\"prompted\"` (case-insensitive). If multiple values are specified, matches
             voices with any of the specified types (OR).
         :param extra_headers: Additional headers to set or replace on requests.

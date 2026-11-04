@@ -1,5 +1,73 @@
 # Changelog
 
+## [2.34.0](https://github.com/googleapis/python-genai/compare/v2.33.0...v2.34.0) (2026-10-29)
+
+
+### Features
+
+* Add support for continuation_token and requires_continuation status ([daac53e](https://github.com/googleapis/python-genai/commit/daac53e8ad1731e8c0067a3e83fd3dfab6973c3f))
+* Add support for Python 3.15. ([cb1408b](https://github.com/googleapis/python-genai/commit/cb1408b06c573060f1593023ca320fde9a4fb5f6))
+* Add video upscale task parameter ([0456043](https://github.com/googleapis/python-genai/commit/045604349be1dd82d80170d152830b1ad4c85650))
+* Drop support for Python 3.10 ([2677298](https://github.com/googleapis/python-genai/commit/2677298eaa011df6662d6379280441d75a4693aa))
+* **interactions:** Add automatic_continuation to interactions.create in the Python SDK ([c85d5ae](https://github.com/googleapis/python-genai/commit/c85d5ae4d70d9b24c4155be0a92730499b23e79d))
+* **interactions:** Declare continuation_ids on Interaction ([4bdde3a](https://github.com/googleapis/python-genai/commit/4bdde3abfde6ec8da1c2c253cb0044991dd6064c))
+* Support base_url, api_version and headers in LiveConnectConfig.http_options ([c0e9c54](https://github.com/googleapis/python-genai/commit/c0e9c54915970948258226e565bde6ef6d5c0b94))
+* Support video understanding in Gemini Developer API ([34b58fd](https://github.com/googleapis/python-genai/commit/34b58fd1b2aa387dff5976bbefa1c1268958369f))
+
+
+### Bug Fixes
+
+* **interactions:** Align SDK User-Agent and x-goog-api-client headers ([358d249](https://github.com/googleapis/python-genai/commit/358d24964185f6510d89b17bf493627d05763d70))
+* Resolve PEP 563 string annotations when invoking AFC tools ([4650ea1](https://github.com/googleapis/python-genai/commit/4650ea156e9908c916050391de37ed12fc1297e9)), refs [#3156](https://github.com/googleapis/python-genai/issues/3156)
+* Stop per-request Authorization and X-Server-Timeout from leaking into client default headers ([0584c96](https://github.com/googleapis/python-genai/commit/0584c96031e1cea876781afb48564d86ad2fc6e2)), refs [#3158](https://github.com/googleapis/python-genai/issues/3158)
+
+## [2.33.0](https://github.com/googleapis/python-genai/compare/v2.32.0...v2.33.0) (2026-10-22)
+
+
+### Features
+
+* Add `store` to `GenerateContentConfig` (Gemini Developer API only) and `labels` to `LiveConnectConfig`. ([16a29c9](https://github.com/googleapis/python-genai/commit/16a29c9ea351041f92656e398becbfaa23d0c4f6))
+* Add support for Python 3.15. ([e1c4fc7](https://github.com/googleapis/python-genai/commit/e1c4fc78ee29d45db7bb3e10f173bafa15aeb634))
+* Add support for Python 3.15. ([1a64450](https://github.com/googleapis/python-genai/commit/1a644508462c4f9cc6ba2e2655b25909ca4b5546))
+* **client:** Support httpx2 with GOOGLE_GENAI_HTTP_CLIENT configuration ([87ddba1](https://github.com/googleapis/python-genai/commit/87ddba1efdaf40c7027ca8ff9734a4026c730069))
+* Include AudioContent, DocumentContent, and VideoContent in FunctionResultSubContent ([adbc79c](https://github.com/googleapis/python-genai/commit/adbc79c03a02ea2b991b8fae032d3afc5db98830))
+
+
+### Bug Fixes
+
+* **client:** Skip mTLS URL rewriting for multi-regional .rep.googleapis.com endpoints and honor GOOGLE_API_USE_MTLS_ENDPOINT in Google Auth sessions ([4e44c84](https://github.com/googleapis/python-genai/commit/4e44c848c3c26251c0316155032202d149eb331a))
+* Honor an explicit zero in HttpRetryOptions delay fields ([419dd89](https://github.com/googleapis/python-genai/commit/419dd89a826eba65504c45ff97a9a1faeb01b980)), refs [#2026](https://github.com/googleapis/python-genai/issues/2026)
+* Honor HttpRetryOptions for aiohttp connection errors in async requests ([ee639c6](https://github.com/googleapis/python-genai/commit/ee639c6392d910a3597036e8ac2c36d2e7ef3c0a)), refs [#3160](https://github.com/googleapis/python-genai/issues/3160)
+
+
+### Documentation
+
+* Update unenforced JSON Schema keywords on Interactions schema fields. ([c97ae02](https://github.com/googleapis/python-genai/commit/c97ae02ff87b5138bee29100b56c04c649233fed))
+
+## [2.32.0](https://github.com/googleapis/python-genai/compare/v2.31.0...v2.32.0) (2026-10-21)
+
+
+### Features
+
+* Add base_voice to PromptedVoice in GAOS SDK ([5488643](https://github.com/googleapis/python-genai/commit/548864370ee9c88de0bd839b619dc05bcb7085e7))
+* Add generation_output_config to GenerateContentConfig ([5c008e1](https://github.com/googleapis/python-genai/commit/5c008e14b9c9fdecbaf61eb53ad7c09f57fa5f8a))
+* Add Live API in-session context updates (`send_context_update`) and types across GenAI SDKs. ([364889a](https://github.com/googleapis/python-genai/commit/364889aafe40bfa8f3b9db847ba272d299f7d632))
+* **sdks:** Enable `fixes.openSingleValueEnumsOct2026` across all SDKs ([78f6d34](https://github.com/googleapis/python-genai/commit/78f6d3412caaaed44f99ce57be2d16d0b8c407cb))
+* Update discovery doc ([6cd176e](https://github.com/googleapis/python-genai/commit/6cd176e135a188bbb0d0f9afca520e7d6483823d))
+
+
+### Bug Fixes
+
+* Base64-encode inline bytes in Live send_tool_response ([a7bbff6](https://github.com/googleapis/python-genai/commit/a7bbff6e73fa9444802cd9a17e8c94e30341bf5d)), refs [#3022](https://github.com/googleapis/python-genai/issues/3022)
+* Don't crash parsing responses with JSON objects in `Any`-typed fields ([4c1abcc](https://github.com/googleapis/python-genai/commit/4c1abccf258c9247218e66610790043893cd6950))
+* **interactions:** Sync InteractionSseEventInteractionStatus enum with InteractionStatus ([ba854b2](https://github.com/googleapis/python-genai/commit/ba854b2d29a3ff0d4758da886edabb458726b210))
+
+
+### Documentation
+
+* Publish the API reference on each release ([1d12358](https://github.com/googleapis/python-genai/commit/1d12358a1398b9a510ae8ba25dd31e746d8e9be9))
+* Transition docs workflow to GitHub Actions ([3b1256a](https://github.com/googleapis/python-genai/commit/3b1256ac5f4b8c49a469ca307ca765185184774d))
+
 ## [2.31.0](https://github.com/googleapis/python-genai/compare/v2.30.1...v2.31.0) (2026-10-14)
 
 

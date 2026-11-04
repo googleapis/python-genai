@@ -20,17 +20,27 @@
 from __future__ import annotations
 from .. import BaseModel
 from ...utils.unions import parse_open_union
+from .audiocontent import AudioContent, AudioContentParam
+from .documentcontent import DocumentContent, DocumentContentParam
 from .imagecontent import ImageContent, ImageContentParam
 from .textcontent import TextContent, TextContentParam
+from .videocontent import VideoContent, VideoContentParam
 from functools import partial
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_serializer
 from pydantic.functional_validators import BeforeValidator
 from typing import Any, Literal, Union
 from typing_extensions import Annotated, TypeAliasType
 
 
 FunctionResultSubcontentParam = TypeAliasType(
-    "FunctionResultSubcontentParam", Union[TextContentParam, ImageContentParam]
+    "FunctionResultSubcontentParam",
+    Union[
+        TextContentParam,
+        DocumentContentParam,
+        ImageContentParam,
+        AudioContentParam,
+        VideoContentParam,
+    ],
 )
 
 
@@ -43,15 +53,29 @@ class UnknownFunctionResultSubcontent(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
+    @model_serializer
+    def serialize_model(self) -> Any:
+        return self.raw
+
 
 _FUNCTION_RESULT_SUBCONTENT_VARIANTS: dict[str, Any] = {
+    "audio": AudioContent,
+    "document": DocumentContent,
     "image": ImageContent,
     "text": TextContent,
+    "video": VideoContent,
 }
 
 
 FunctionResultSubcontent = Annotated[
-    Union[ImageContent, TextContent, UnknownFunctionResultSubcontent],
+    Union[
+        AudioContent,
+        DocumentContent,
+        ImageContent,
+        TextContent,
+        VideoContent,
+        UnknownFunctionResultSubcontent,
+    ],
     BeforeValidator(
         partial(
             parse_open_union,

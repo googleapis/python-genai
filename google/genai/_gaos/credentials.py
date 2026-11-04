@@ -23,7 +23,10 @@ from .basesdk import AsyncBaseSDK, BaseSDK
 from .types import BaseModel, OptionalNullable, UNSET, credentials, interactions
 from .utils import get_security_from_env, response_helpers
 from .utils.unmarshal_json_response import unmarshal_json_response
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
 from typing import Any, List, Literal, Mapping, Optional, Union, cast, overload
 
 
@@ -237,7 +240,7 @@ class Credentials(BaseSDK):
         :param refresh_token: Required. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Required. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -268,7 +271,7 @@ class Credentials(BaseSDK):
             Accepts either a single location (e.g. \"header\") or an array of locations.
         :param trusted_domains: Optional. List of domains allowed to receive this environment variable
             value in HTTP requests.
-        :param type:
+        :param type_:
         :param value: Required. Input only. Secret value of the environment variable. Write-only; never
             returned in responses.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -301,7 +304,7 @@ class Credentials(BaseSDK):
         :param prefix: Optional. Prefix to prepend to the token. Defaults to 'Bearer'. Set to ''
             for no prefix.
         :param token: Required. Input only. The static bearer token. Write-only; never returned in responses.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -331,7 +334,7 @@ class Credentials(BaseSDK):
         :param refresh_token: Required. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Required. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Required. Locations where the environment variable can be injected in
             outgoing HTTP requests. Must contain at least one location.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -372,7 +375,7 @@ class Credentials(BaseSDK):
         :param refresh_token: Required. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Required. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Required. Locations where the environment variable can be injected in
             outgoing HTTP requests. Must contain at least one location.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -991,7 +994,7 @@ class Credentials(BaseSDK):
         :param refresh_token: Optional. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Optional. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1023,7 +1026,7 @@ class Credentials(BaseSDK):
             Accepts either a single location (e.g. \"header\") or an array of locations.
         :param trusted_domains: Optional. List of domains allowed to receive this environment variable
             value in HTTP requests.
-        :param type:
+        :param type_:
         :param value: Optional. Input only. Secret value of the environment variable. Write-only; never
             returned in responses.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -1057,7 +1060,7 @@ class Credentials(BaseSDK):
         :param prefix: Optional. Prefix to prepend to the token. Defaults to 'Bearer'. Set to ''
             for no prefix.
         :param token: Optional. Input only. The static bearer token. Write-only; never returned in responses.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1089,7 +1092,7 @@ class Credentials(BaseSDK):
         :param refresh_token: Optional. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Optional. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Optional. Locations where the environment variable can be injected in
             outgoing HTTP requests.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -1132,7 +1135,7 @@ class Credentials(BaseSDK):
         :param refresh_token: Optional. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Optional. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Optional. Locations where the environment variable can be injected in
             outgoing HTTP requests.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -1650,7 +1653,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param refresh_token: Required. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Required. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1681,7 +1684,7 @@ class AsyncCredentials(AsyncBaseSDK):
             Accepts either a single location (e.g. \"header\") or an array of locations.
         :param trusted_domains: Optional. List of domains allowed to receive this environment variable
             value in HTTP requests.
-        :param type:
+        :param type_:
         :param value: Required. Input only. Secret value of the environment variable. Write-only; never
             returned in responses.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -1714,7 +1717,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param prefix: Optional. Prefix to prepend to the token. Defaults to 'Bearer'. Set to ''
             for no prefix.
         :param token: Required. Input only. The static bearer token. Write-only; never returned in responses.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -1744,7 +1747,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param refresh_token: Required. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Required. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Required. Locations where the environment variable can be injected in
             outgoing HTTP requests. Must contain at least one location.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -1785,7 +1788,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param refresh_token: Required. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Required. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Required. Locations where the environment variable can be injected in
             outgoing HTTP requests. Must contain at least one location.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -2413,7 +2416,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param refresh_token: Optional. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Optional. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -2445,7 +2448,7 @@ class AsyncCredentials(AsyncBaseSDK):
             Accepts either a single location (e.g. \"header\") or an array of locations.
         :param trusted_domains: Optional. List of domains allowed to receive this environment variable
             value in HTTP requests.
-        :param type:
+        :param type_:
         :param value: Optional. Input only. Secret value of the environment variable. Write-only; never
             returned in responses.
         :param extra_headers: Additional headers to set or replace on requests.
@@ -2479,7 +2482,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param prefix: Optional. Prefix to prepend to the token. Defaults to 'Bearer'. Set to ''
             for no prefix.
         :param token: Optional. Input only. The static bearer token. Write-only; never returned in responses.
-        :param type:
+        :param type_:
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -2511,7 +2514,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param refresh_token: Optional. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Optional. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Optional. Locations where the environment variable can be injected in
             outgoing HTTP requests.
             Accepts either a single location (e.g. \"header\") or an array of locations.
@@ -2554,7 +2557,7 @@ class AsyncCredentials(AsyncBaseSDK):
         :param refresh_token: Optional. Input only. OAuth2 refresh token. Write-only; never returned in responses.
         :param scopes: Optional. List of OAuth2 scopes.
         :param token_url: Optional. OAuth2 token endpoint URL for refreshing access tokens.
-        :param type:
+        :param type_:
         :param injection_location: Optional. Locations where the environment variable can be injected in
             outgoing HTTP requests.
             Accepts either a single location (e.g. \"header\") or an array of locations.

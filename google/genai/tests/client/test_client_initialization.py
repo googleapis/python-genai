@@ -28,7 +28,6 @@ from unittest import mock
 import certifi
 import google.auth
 from google.auth import credentials
-import httpx
 import pytest
 import requests
 
@@ -37,6 +36,15 @@ from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+
+if api_client._get_http_client_backend() == "httpx2":
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpx2Client
+  _AsyncHttpxClient = api_client.AsyncHttpx2Client
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpxClient
+  _AsyncHttpxClient = api_client.AsyncHttpxClient
 
 try:
   import aiohttp
@@ -1550,7 +1558,7 @@ def test_threaded_generate_content_locking(monkeypatch):
         text='{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}',
     )
     mock_request = mock.Mock(return_value=mock_httpx_response)
-    monkeypatch.setattr(api_client.SyncHttpxClient, "send", mock_request)
+    monkeypatch.setattr(_SyncHttpxClient, "send", mock_request)
 
   # Reset credentials to test initialization to ensure the sync lock is tested.
   client._api_client._credentials = None
@@ -2075,6 +2083,26 @@ def test_aiohttp_session_kept_per_live_event_loop():
             "https://us-central1-aiplatform.mtls.googleapis.com/v1/models",
         ),
         (
+            "https://secretmanager.us-central1.rep.googleapis.com/v1/secrets",
+            "https://secretmanager.us-central1.rep.mtls.googleapis.com/v1/secrets",
+        ),
+        (
+            "https://aiplatform.us.rep.googleapis.com/v1/models",
+            "https://aiplatform.us.rep.googleapis.com/v1/models",
+        ),
+        (
+            "https://aiplatform.eu.rep.googleapis.com/v1/models",
+            "https://aiplatform.eu.rep.googleapis.com/v1/models",
+        ),
+        (
+            "https://aiplatform.us.rep.sandbox.googleapis.com/v1/models",
+            "https://aiplatform.us.rep.sandbox.googleapis.com/v1/models",
+        ),
+        (
+            "https://aiplatform.eu.rep.sandbox.googleapis.com/v1/models",
+            "https://aiplatform.eu.rep.sandbox.googleapis.com/v1/models",
+        ),
+        (
             "wss://aiplatform.googleapis.com/ws",
             "wss://aiplatform.mtls.googleapis.com/ws",
         ),
@@ -2141,7 +2169,7 @@ def test_sync_httpx_uses_mtls_endpoint_with_client_cert(mock_client_cert):
   assert not client._api_client._use_google_auth_sync()
   mock_send = mock.Mock(return_value=httpx.Response(200, text="{}"))
 
-  with mock.patch.object(api_client.SyncHttpxClient, "send", mock_send):
+  with mock.patch.object(_SyncHttpxClient, "send", mock_send):
     client._api_client.request("post", "models/gemini:generateContent", {})
 
   assert mock_send.call_args[0][0].url.host == (
@@ -2157,7 +2185,7 @@ async def test_async_httpx_uses_mtls_endpoint_with_client_cert(
   client = _mtls_test_client()
   mock_request = mock.AsyncMock(return_value=httpx.Response(200, text="{}"))
 
-  with mock.patch.object(api_client.AsyncHttpxClient, "request", mock_request):
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
     await client._api_client.async_request(
         "post", "models/gemini:generateContent", {}
     )
@@ -2175,7 +2203,7 @@ async def test_async_httpx_download_uses_mtls_endpoint_with_client_cert(
   client = _mtls_test_client()
   mock_request = mock.AsyncMock(return_value=httpx.Response(200, content=b""))
 
-  with mock.patch.object(api_client.AsyncHttpxClient, "request", mock_request):
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
     await client._api_client.async_download_file("files/abc:download")
 
   assert mock_request.call_args.kwargs["url"].startswith(
@@ -2392,3 +2420,75 @@ def test_google_auth_async_used_by_default(
   api_client.has_aiohttp = True
   client = _mtls_test_client()
   assert client._api_client._use_google_auth_async()
+
+
+@pytest.mark.parametrize("call", ["request", "download"])
+def test_google_auth_sync_respects_mtls_endpoint_env_override(
+    mock_client_cert, monkeypatch, call
+):
+  monkeypatch.setenv("GOOGLE_API_USE_MTLS_ENDPOINT", "never")
+  client = _mtls_test_client()
+  base_client = client._api_client
+  assert base_client._use_google_auth_sync()
+
+  mock_response = mock.MagicMock()
+  mock_response.status_code = 200
+  mock_response.headers = {}
+  mock_response.text = "{}"
+  mock_response.content = b""
+  mock_session = mock.MagicMock()
+  mock_session._is_mtls = True
+  mock_session.request = mock.Mock(return_value=mock_response)
+  base_client._authorized_session = mock_session
+
+  if call == "download":
+    base_client.download_file("files/abc:download")
+  else:
+    base_client.request("post", "models/gemini:generateContent", {})
+
+  assert mock_session.request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.googleapis.com/"
+  )
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@pytest.mark.parametrize("call", ["request", "stream", "download"])
+async def test_google_auth_async_respects_mtls_endpoint_env_override(
+    mock_client_cert, mock_google_auth_aio, monkeypatch, call
+):
+  from google.auth.transport import mtls
+
+  api_client.has_aiohttp = True
+  monkeypatch.setenv("GOOGLE_API_USE_MTLS_ENDPOINT", "never")
+  monkeypatch.setattr(mtls, "default_client_cert_source", lambda: None)
+  client = _mtls_test_client()
+  base_client = client._api_client
+  assert base_client._use_google_auth_async()
+
+  mock_response = mock.create_autospec(aiohttp.ClientResponse, instance=True)
+  mock_response.status = 200
+  mock_response.headers = {}
+  mock_response.text.return_value = "{}"
+  mock_response.read.return_value = b""
+  mock_session = mock.MagicMock()
+  mock_session._is_mtls = True
+  mock_session.configure_mtls_channel = mock.AsyncMock()
+  mock_session.request = mock.AsyncMock(return_value=mock_response)
+
+  with mock.patch.object(
+      base_client, "_get_aiohttp_session", return_value=mock_session
+  ):
+    if call == "download":
+      await base_client.async_download_file("files/abc:download")
+    else:
+      http_request = base_client._build_request(
+          "post", "models/gemini:generateContent", {}, None
+      )
+      await base_client._async_request_once(
+          http_request, stream=call == "stream"
+      )
+
+  assert mock_session.request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.googleapis.com/"
+  )

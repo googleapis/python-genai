@@ -23,7 +23,10 @@ from typing import (
     List,
     Optional,
 )
-from httpx import Headers
+try:
+    from httpx import Headers
+except ImportError:
+    from httpx2 import Headers
 from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 

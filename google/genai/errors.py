@@ -16,31 +16,41 @@
 """Error classes for the GenAI SDK."""
 
 from typing import Any, Callable, Optional, TYPE_CHECKING, Union
-import httpx
 import json
-
-try:
-  import httpx2
-except ImportError:
-  httpx2 = None  # type: ignore[assignment]
-
-from . import _common
-
 
 if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
   import aiohttp
   from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
+  import httpx
+  import httpx2
   import requests  # pylint: disable=g-import-not-at-top
 
+  _HTTPX_RESPONSE_TYPES = (httpx.Response, httpx2.Response)
+else:
+  try:
+    import httpx
+  except ImportError:
+    httpx = None  # type: ignore[assignment]
 
-# httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
-# separate import namespace, so its Response is not an instance of
-# httpx.Response. Widen the runtime type checks to accept either when httpx2 is
-# installed.
-_HTTPX_RESPONSE_TYPES = (
-    (httpx.Response,) if httpx2 is None else (httpx.Response, httpx2.Response)
-)
+  try:
+    import httpx2
+  except ImportError:
+    httpx2 = None  # type: ignore[assignment]
+
+  # httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
+  # separate import namespace, so its Response is not an instance of
+  # httpx.Response. Widen the runtime type checks to accept either when installed.
+  _HTTPX_RESPONSE_TYPES = tuple(
+      cls
+      for cls in (
+          getattr(httpx, 'Response', None),
+          getattr(httpx2, 'Response', None),
+      )
+      if cls is not None
+  )
+
+from . import _common
 
 
 class APIError(Exception):
@@ -49,7 +59,8 @@ class APIError(Exception):
   response: Union[
       'requests.Response',
       'ReplayResponse',
-      httpx.Response,
+      'httpx.Response',
+      'httpx2.Response',
       'AsyncAuthorizedSessionResponse',
   ]
 
@@ -64,7 +75,8 @@ class APIError(Exception):
           Union[
               'requests.Response',
               'ReplayResponse',
-              httpx.Response,
+              'httpx.Response',
+              'httpx2.Response',
               'AsyncAuthorizedSessionResponse',
           ]
       ] = None,
@@ -139,7 +151,7 @@ class APIError(Exception):
   @classmethod
   def raise_for_response(
       cls,
-      response: Union['ReplayResponse', httpx.Response, 'requests.Response'],
+      response: Union['ReplayResponse', 'httpx.Response', 'httpx2.Response', 'requests.Response'],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
@@ -167,8 +179,10 @@ class APIError(Exception):
             'message': response.text,
             'status': response.reason,
         }
-    else:
+    elif hasattr(response, 'body_segments'):
       response_json = response.body_segments[0].get('error', {})
+    else:
+      response_json = {}
 
     cls.raise_error(response.status_code, response_json, response)
 
@@ -180,7 +194,7 @@ class APIError(Exception):
       response: Optional[
           Union[
               'ReplayResponse',
-              httpx.Response,
+              'httpx.Response', 'httpx2.Response',
               'requests.Response',
           ]
       ],
@@ -210,7 +224,7 @@ class APIError(Exception):
       cls,
       response: Union[
           'ReplayResponse',
-          httpx.Response,
+          'httpx.Response', 'httpx2.Response',
           'aiohttp.ClientResponse',
           'AsyncAuthorizedSessionResponse',
       ],
@@ -267,7 +281,7 @@ class APIError(Exception):
   @classmethod
   async def raise_error_async(
       cls, status_code: int, response_json: Any, response: Optional[
-          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+          Union['ReplayResponse', 'httpx.Response', 'httpx2.Response', 'aiohttp.ClientResponse']
       ]
   ) -> None:
     """Raises an appropriate APIError subclass based on the status code.
@@ -319,5 +333,50 @@ class FunctionInvocationError(ValueError):
 class UnknownApiResponseError(ValueError):
   """Raised when the response from the API cannot be parsed as JSON."""
   pass
+
+
+class ContinuationInterruptedError(Exception):
+  """Raised when Interactions automatic continuation fails after progress.
+
+  `interactions.create()` with `automatic_continuation` enabled (the default)
+  may make several requests ("hops"), each one resuming the decode from the
+  previous hop's `continuation_token`. If a hop fails after the server already
+  produced (and billed) output in an earlier hop, or after a resumable
+  checkpoint was reached, this error is raised instead of the underlying
+  error so the work is not lost. The underlying error is `__cause__`.
+
+  To resume, pass `continuation_token` to `interactions.create()`: with `store`
+  enabled (the default), also pass `interaction_id` as `previous_interaction_id`
+  and no `input`; with `store=False`, resend the original `input`.
+
+  Attributes:
+    partial_interaction: For unary calls, the interaction merged from the hops
+      that completed (status `requires_continuation`, with the resumable
+      `continuation_token`), or None if no hop completed. Always None for
+      streams, whose events were already yielded.
+    continuation_token: The latest resumable `continuation_token`. For streams
+      this may be a mid-hop checkpoint: resuming from it re-generates any
+      output yielded after the checkpoint.
+    interaction_id: The id of the stored interaction that issued
+      `continuation_token` (the value to send as `previous_interaction_id` when
+      `store` is enabled), or None when `store=False` or unknown.
+    continuation_ids: The ids of every hop created during the call, in order.
+  """
+
+  def __init__(
+      self,
+      message: str,
+      *,
+      partial_interaction: Any = None,
+      continuation_token: Optional[str] = None,
+      interaction_id: Optional[str] = None,
+      continuation_ids: Optional[list[str]] = None,
+  ):
+    super().__init__(message)
+    self.partial_interaction = partial_interaction
+    self.continuation_token = continuation_token
+    self.interaction_id = interaction_id
+    self.continuation_ids = list(continuation_ids or [])
+
 
 ExperimentalWarning = _common.ExperimentalWarning
