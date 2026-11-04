@@ -2492,3 +2492,74 @@ async def test_google_auth_async_respects_mtls_endpoint_env_override(
   assert mock_session.request.call_args.kwargs["url"].startswith(
       "https://us-central1-aiplatform.googleapis.com/"
   )
+
+
+def test_client_init_default_api_version(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(api_key="test-api-key")
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+
+
+def test_client_init_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(api_key="test-api-key")
+  assert client._api_client._http_options.api_version == "v1alpha"
+
+
+def test_client_init_vertexai_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  mldev_client = Client(api_key="test-api-key")
+  assert vertex_client._api_client._http_options.api_version == "v1"
+  assert mldev_client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_with_beta_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "beta")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  mldev_client = Client(api_key="test-api-key")
+  assert vertex_client._api_client._http_options.api_version == "v1beta1"
+  assert mldev_client._api_client._http_options.api_version == "v1beta"
+
+
+def test_client_init_http_options_api_version_overrides_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(
+      api_key="test-api-key", http_options={"api_version": "v1"}
+  )
+  vertex_client = Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1"},
+  )
+  assert client._api_client._http_options.api_version == "v1"
+  assert vertex_client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_empty_env_api_version_uses_default(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "")
+  client = Client(api_key="test-api-key")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+  assert vertex_client._api_client._http_options.api_version == "v1beta1"
+
+
+def test_client_init_vertexai_default_api_version_unaffected(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert client._api_client._http_options.api_version == "v1beta1"

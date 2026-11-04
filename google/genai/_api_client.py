@@ -148,6 +148,7 @@ READ_BUFFER_SIZE = 2**22
 MAX_RETRY_COUNT = 3
 INITIAL_RETRY_DELAY = 1  # second
 DELAY_MULTIPLIER = 2
+GOOGLE_AI_API_DEFAULT_VERSION = 'v1'
 
 _MULTI_REGIONAL_LOCATIONS = {'us', 'eu'}
 
@@ -1087,7 +1088,12 @@ class BaseApiClient:
         self._http_options.base_url = (
             f'https://{self.location}-aiplatform.googleapis.com/'
         )
-      self._http_options.api_version = 'v1beta1'
+      env_api_version = os.environ.get('GOOGLE_GENAI_API_VERSION', None)
+      self._http_options.api_version = (
+          'v1beta1'
+          if not env_api_version or env_api_version == 'beta'
+          else env_api_version
+      )
     else:  # Implicit initialization or missing arguments.
       if not self.api_key:
         raise ValueError(
@@ -1096,7 +1102,12 @@ class BaseApiClient:
             ' https://ai.google.dev/gemini-api/docs/api-key.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
-      self._http_options.api_version = 'v1beta'
+      env_api_version = os.environ.get('GOOGLE_GENAI_API_VERSION', None)
+      self._http_options.api_version = (
+          'v1beta'
+          if env_api_version == 'beta'
+          else (env_api_version or GOOGLE_AI_API_DEFAULT_VERSION)
+      )
     # Default options for both clients.
     self._http_options.headers = {'Content-Type': 'application/json'}
     if self.api_key:

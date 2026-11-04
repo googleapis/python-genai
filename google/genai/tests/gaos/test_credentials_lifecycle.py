@@ -19,6 +19,7 @@ from typing import Any
 
 import pytest
 
+from ..._api_client import GOOGLE_AI_API_DEFAULT_VERSION as _API_VERSION
 from ..._gaos.models.getcredential import GetCredentialRequest
 from ..._gaos.models.listcredentials import ListCredentialsRequest
 from ..._gaos.types.credentials.credential import Credential
@@ -74,8 +75,8 @@ def _credentials_handler(
     unused_server: conftest.MockGaosServer,
 ) -> dict[str, Any]:
   if req["method"] == "GET" and (
-      req["path"] == "/v1beta/credentials"
-      or req["path"].startswith("/v1beta/credentials?")
+      req["path"] == f"/{_API_VERSION}/credentials"
+      or req["path"].startswith(f"/{_API_VERSION}/credentials?")
   ):
     return CREDENTIAL_LIST_BODY
   return CREDENTIAL_BODY
@@ -158,15 +159,15 @@ def test_python_credentials_lifecycle_routes_through_google_genai_client(
   client.credentials.delete(id="cred_bearer_123")
 
   assert mock_gaos_server.captured == [
-      "POST /v1beta/credentials",
-      "POST /v1beta/credentials",
-      "POST /v1beta/credentials",
-      "GET /v1beta/credentials",
-      "GET /v1beta/credentials/cred_bearer_123",
-      "PATCH /v1beta/credentials/cred_bearer_123",
-      "PATCH /v1beta/credentials/cred_env_123",
-      "PATCH /v1beta/credentials/cred_oauth_123",
-      "DELETE /v1beta/credentials/cred_bearer_123",
+      f"POST /{_API_VERSION}/credentials",
+      f"POST /{_API_VERSION}/credentials",
+      f"POST /{_API_VERSION}/credentials",
+      f"GET /{_API_VERSION}/credentials",
+      f"GET /{_API_VERSION}/credentials/cred_bearer_123",
+      f"PATCH /{_API_VERSION}/credentials/cred_bearer_123",
+      f"PATCH /{_API_VERSION}/credentials/cred_env_123",
+      f"PATCH /{_API_VERSION}/credentials/cred_oauth_123",
+      f"DELETE /{_API_VERSION}/credentials/cred_bearer_123",
   ]
 
   # Verify captured bodies
@@ -225,11 +226,11 @@ async def test_python_credentials_async_lifecycle(
   assert list_res.credentials is not None
   assert len(list_res.credentials) == 3
   assert mock_gaos_server.captured == [
-      "POST /v1beta/credentials",
-      "GET /v1beta/credentials",
-      "GET /v1beta/credentials/cred_env_123",
-      "PATCH /v1beta/credentials/cred_env_123",
-      "DELETE /v1beta/credentials/cred_env_123",
+      f"POST /{_API_VERSION}/credentials",
+      f"GET /{_API_VERSION}/credentials",
+      f"GET /{_API_VERSION}/credentials/cred_env_123",
+      f"PATCH /{_API_VERSION}/credentials/cred_env_123",
+      f"DELETE /{_API_VERSION}/credentials/cred_env_123",
   ]
 
 

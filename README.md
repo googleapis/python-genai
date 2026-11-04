@@ -219,9 +219,16 @@ async with Client().aio as aclient:
 
 ### API Selection
 
-By default, the SDK uses the beta API endpoints provided by Google to support
-preview features in the APIs. The stable API endpoints can be selected by
-setting the API version to `v1`.
+By default, the SDK uses:
+- the stable `v1` API endpoints for the Gemini Developer API.
+- and the beta `v1beta1` API endpoints for Gemini Enterprise Agent Platform.
+
+A different API version (for example `v1beta` or `v1alpha`) can be selected
+with `http_options` or with the `GOOGLE_GENAI_API_VERSION` environment
+variable. An explicitly configured version in `http_options` takes precedence
+over the environment variable. Setting `GOOGLE_GENAI_API_VERSION=beta` selects
+the beta version of whichever backend is in use: `v1beta` for the Gemini
+Developer API and `v1beta1` for Gemini Enterprise Agent Platform.
 
 To set the API version use `http_options`. For example, to set the API version
 to `v1` for Gemini Enterprise Agent Platform:
