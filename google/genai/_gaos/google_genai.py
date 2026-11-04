@@ -156,7 +156,8 @@ _MAX_ELAPSED_TIME_MS = 30000
 def _translate_retry_config(http_options: Any) -> RetryConfig:
     """Maps parent `HttpOptions.retry_options` onto a `RetryConfig`.
 
-    `attempts` becomes the retry count (an unset `attempts` falls back to the
+    `attempts` counts the original request, so `attempts - 1` becomes the retry
+    count: 0 and 1 both mean no retries (an unset `attempts` falls back to the
     default retry count). The delay-shaping options (`initial_delay`,
     `max_delay`, `exp_base`, `jitter`) and `http_status_codes` are honored when
     provided, each defaulting to the built-in behavior when omitted.
@@ -164,7 +165,10 @@ def _translate_retry_config(http_options: Any) -> RetryConfig:
     options = getattr(http_options, 'retry_options', None)
 
     attempts = getattr(options, 'attempts', None) if options is not None else None
-    max_retries = attempts if attempts is not None else _DEFAULT_MAX_RETRIES + 1
+    if attempts is None:
+        max_retries = _DEFAULT_MAX_RETRIES + 1
+    else:
+        max_retries = max(attempts - 1, 0)
 
     initial_interval = _DEFAULT_INITIAL_INTERVAL_MS
     max_interval = _DEFAULT_MAX_INTERVAL_MS
