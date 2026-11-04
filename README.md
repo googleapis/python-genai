@@ -10,7 +10,7 @@
 
 Google Gen AI Python SDK provides an interface for developers to integrate
 Google's generative models into their Python applications. It supports
-the [Gemini Developer API](https://ai.google.dev/gemini-api/docs) and
+the [Gemini Developer API](https://aistudio.google.com/docs) and
 [Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
@@ -64,7 +64,7 @@ from google.genai import types
 ## Create a client
 
 Please run one of the following code blocks to create a client for
-different services ([Gemini Developer API](https://ai.google.dev/gemini-api/docs) or [Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)).
+different services ([Gemini Developer API](https://aistudio.google.com/docs) or [Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)).
 
 ```python
 from google import genai
@@ -655,7 +655,7 @@ available in generate_content's config parameter. For example, increasing
 `max_output_tokens` is essential for longer model responses. Capabilities and parameter defaults
 for each model is shown in the
 [Gemini Enterprise Agent Platform docs](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/google-models)
-and [Gemini API docs](https://ai.google.dev/gemini-api/docs/models)
+and [Gemini API docs](https://aistudio.google.com/docs/models)
 respectively. Note that all API methods support Pydantic types and
 dictionaries, which you can access from `google.genai.types`. In this example,
 we use `GenerateContentConfig` to specify the desired behavior from the model.
@@ -1666,7 +1666,7 @@ print(response.text)
 
 The Interactions API is a unified interface for interacting with Gemini models and agents. It simplifies state management, tool orchestration, and long-running tasks.
 
-See the [documentation site](https://ai.google.dev/gemini-api/docs/interactions) for more details.
+See the [documentation site](https://aistudio.google.com/docs/interactions-overview) for more details.
 
 ### Basic Interaction
 
@@ -2184,7 +2184,7 @@ experimental backend features that are not yet formally supported in the SDK.
 The structure of the dictionary must match the backend API's request structure.
 
 - Gemini Enterprise Agent Platform backend API docs: https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest
-- Gemini API backend API docs: https://ai.google.dev/api/rest
+- Gemini API backend API docs: https://aistudio.google.com/api-reference
 
 ```python
 response = client.models.generate_content(
