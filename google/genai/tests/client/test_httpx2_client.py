@@ -591,6 +591,9 @@ async def test_aclose_when_async_httpx_client_is_none(monkeypatch):
 
 def test_vertexai_with_httpx2(monkeypatch):
   monkeypatch.setenv('GOOGLE_GENAI_HTTP_CLIENT', 'httpx2')
+  # Keep the async path on httpx2 even when aiohttp is installed.
+  target_api_client = getattr(api_client, 'public_api_client', api_client)
+  monkeypatch.setattr(target_api_client, 'has_aiohttp', False)
   client = Client(
       vertexai=True,
       project='fake-project',
