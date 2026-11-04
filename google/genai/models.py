@@ -5737,7 +5737,7 @@ class Models(_api_module.BaseModule):
       )
 
       multimodal_embeddings = client.models.embed_content(
-          model='gemini-embedding-2-preview',
+          model='gemini-embedding-2',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -8928,7 +8928,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       multimodal_embeddings = await client.aio.models.embed_content(
-          model='gemini-embedding-2-preview',
+          model='gemini-embedding-2',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
