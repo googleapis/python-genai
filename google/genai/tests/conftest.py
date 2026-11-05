@@ -22,6 +22,7 @@ from unittest import mock
 import uuid
 import pytest
 
+from .. import _api_client
 from .. import _common
 from .. import _replay_api_client
 from .. import client as google_genai_client_module
@@ -109,6 +110,19 @@ def skip_based_on_api_mode_env_vars(request):
       pytest.skip('Skipping Vertex AI tests in API mode (GEMINI ONLY config enabled).')
     elif use_vertex is False and run_vertex_only:
       pytest.skip('Skipping Gemini API tests in API mode (VERTEX ONLY config enabled).')
+
+
+@pytest.fixture(autouse=True)
+def restore_has_aiohttp():
+  """Restores `_api_client.has_aiohttp` after each test.
+
+  Some tests set `has_aiohttp` directly. Without a restore, the value leaks
+  into later tests on the same worker. If aiohttp is not installed, a leaked
+  `True` makes the async upload path fail with `NameError: aiohttp`.
+  """
+  original = _api_client.has_aiohttp
+  yield
+  _api_client.has_aiohttp = original
 
 
 # Overridden at the module level for each test file.
