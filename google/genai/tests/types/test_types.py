@@ -2970,3 +2970,82 @@ def test_computer_use_types():
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
 
+
+class _OversizedIntModel(pydantic.BaseModel):
+  count: int
+
+
+def _text_response(text: str) -> dict[str, object]:
+  return {
+      'candidates': [{'content': {'role': 'model', 'parts': [{'text': text}]}}]
+  }
+
+
+_skip_without_int_digit_limit = pytest.mark.skipif(
+    getattr(sys, 'get_int_max_str_digits', lambda: 0)() == 0,
+    reason='int string digit limit is unavailable or disabled',
+)
+
+
+@_skip_without_int_digit_limit
+@pytest.mark.parametrize(
+    'config',
+    [
+        {'response_json_schema': {'type': 'integer'}},
+        {'response_schema': {'type': 'integer'}},
+        {'response_schema': types.Schema(type=types.Type.INTEGER)},
+        {'response_schema': int},
+        {'response_schema': list[int]},
+        {'response_schema': typing.Union[_OversizedIntModel, int]},
+    ],
+    ids=[
+        'json_schema_dict',
+        'schema_dict',
+        'schema_object',
+        'type',
+        'generic_alias',
+        'union',
+    ],
+)
+def test_from_response_oversized_int_keeps_response(config):
+  """An integer over the digit limit leaves .parsed unset instead of raising."""
+  big = '9' * (sys.get_int_max_str_digits() + 1)
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response(big), kwargs={'config': config}
+  )
+  assert response.text == big
+  assert response.parsed is None
+
+
+@_skip_without_int_digit_limit
+def test_from_response_oversized_int_pydantic_schema():
+  """Regression guard: pydantic raises ValidationError for an oversized int."""
+  big = '9' * (sys.get_int_max_str_digits() + 1)
+  text = '{"count": ' + big + '}'
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response(text),
+      kwargs={'config': {'response_schema': _OversizedIntModel}},
+  )
+  assert response.text == text
+  assert response.parsed is None
+
+
+@_skip_without_int_digit_limit
+def test_from_response_int_at_digit_limit_still_parses():
+  """An integer exactly at the digit limit still parses."""
+  text = '9' * sys.get_int_max_str_digits()
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response(text),
+      kwargs={'config': {'response_json_schema': {'type': 'integer'}}},
+  )
+  assert response.parsed == int(text)
+
+
+def test_from_response_malformed_json_parsed_is_none():
+  """Malformed JSON leaves .parsed unset without raising."""
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response('{not json'),
+      kwargs={'config': {'response_json_schema': {'type': 'object'}}},
+  )
+  assert response.text == '{not json'
+  assert response.parsed is None
