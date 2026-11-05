@@ -14,8 +14,30 @@
 #
 
 
+import logging
+
+import pydantic
 import pytest
+
 from ... import types
+
+
+class _Recipe(pydantic.BaseModel):
+  name: str
+
+
+_TWO_CANDIDATES_RESPONSE = {
+    'candidates': [
+        {'content': {'parts': [{'text': '{"name": "a"}'}]}},
+        {'content': {'parts': [{'text': '{"name": "b"}'}]}},
+    ]
+}
+
+_ONE_CANDIDATE_RESPONSE = {
+    'candidates': [
+        {'content': {'parts': [{'text': '{"name": "a"}'}]}},
+    ]
+}
 
 
 @pytest.fixture
@@ -81,6 +103,82 @@ def test_two_candidates_text(caplog, generate_content_response):
       for record in caplog.records
   )
   generate_content_response.candidates = None
+
+
+def test_from_response_with_schema_does_not_warn_on_multiple_candidates(
+    caplog, monkeypatch
+):
+  """The SDK parses the first candidate by contract, so it must not warn."""
+  monkeypatch.setattr(types, '_response_text_warning_logged', False)
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
+  response = types.GenerateContentResponse._from_response(
+      response=_TWO_CANDIDATES_RESPONSE,
+      kwargs={'config': {'response_schema': _Recipe}},
+  )
+
+  assert response.parsed == _Recipe(name='a')
+  assert not any(
+      'there are 2 candidates' in record.message for record in caplog.records
+  )
+
+
+def test_text_warns_after_internal_parse(caplog, monkeypatch):
+  """The internal parse must leave the warning available to the caller."""
+  monkeypatch.setattr(types, '_response_text_warning_logged', False)
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
+  response = types.GenerateContentResponse._from_response(
+      response=_TWO_CANDIDATES_RESPONSE,
+      kwargs={'config': {'response_schema': _Recipe}},
+  )
+  caplog.clear()
+
+  assert response.text == '{"name": "a"}'
+  assert any(
+      record.levelname == 'WARNING'
+      and 'there are 2 candidates' in record.message
+      for record in caplog.records
+  )
+
+
+def test_from_response_with_schema_one_candidate_does_not_warn(
+    caplog, monkeypatch
+):
+  """A single candidate parses and warns about nothing."""
+  monkeypatch.setattr(types, '_response_text_warning_logged', False)
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
+  response = types.GenerateContentResponse._from_response(
+      response=_ONE_CANDIDATE_RESPONSE,
+      kwargs={'config': {'response_schema': _Recipe}},
+  )
+
+  assert response.parsed == _Recipe(name='a')
+  assert not any('candidate' in record.message for record in caplog.records)
+
+
+def test_from_response_with_json_schema_does_not_warn(caplog, monkeypatch):
+  """The JSON-schema branch parses the first candidate without a warning."""
+  monkeypatch.setattr(types, '_response_text_warning_logged', False)
+  caplog.set_level(logging.WARNING, logger='google_genai.types')
+
+  response = types.GenerateContentResponse._from_response(
+      response=_TWO_CANDIDATES_RESPONSE,
+      kwargs={
+          'config': {
+              'response_schema': {
+                  'type': 'object',
+                  'properties': {'name': {'type': 'string'}},
+              }
+          }
+      },
+  )
+
+  assert response.parsed == {'name': 'a'}
+  assert not any(
+      'there are 2 candidates' in record.message for record in caplog.records
+  )
 
 
 def test_thought_signature_no_warning(caplog, generate_content_response):
