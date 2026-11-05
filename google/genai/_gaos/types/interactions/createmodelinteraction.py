@@ -79,7 +79,7 @@ class CreateModelInteractionParam(TypedDict):
     r"""Interaction for generating the completion using models."""
 
     model: Model
-    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+    r"""The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details."""
     background: NotRequired[bool]
     r"""Input only. Whether to run the model interaction in the background."""
     cached_content: NotRequired[str]
@@ -135,7 +135,7 @@ class CreateModelInteraction(BaseModel):
     r"""Interaction for generating the completion using models."""
 
     model: Model
-    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+    r"""The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details."""
 
     background: Optional[bool] = None
     r"""Input only. Whether to run the model interaction in the background."""
