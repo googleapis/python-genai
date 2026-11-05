@@ -558,6 +558,8 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Image generation stopped for a reason not otherwise specified."""
   CONTINUATION = 'CONTINUATION'
   """Token generation stopped because the response reached the per-request token limit, but generation is not yet complete. The response can be continued by passing the returned `continuation_token` in a subsequent request."""
+  MALFORMED_RESPONSE = 'MALFORMED_RESPONSE'
+  """Token generation stopped because the response was malformed."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
