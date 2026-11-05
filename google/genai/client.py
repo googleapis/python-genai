@@ -15,7 +15,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import os
 from typing import Any, Optional, TYPE_CHECKING, Union
 import warnings
@@ -263,12 +262,6 @@ class AsyncClient:
   async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
     del args, kwargs
     await self.aclose()
-
-  def __del__(self) -> None:
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
 
 
 class DebugConfig(pydantic.BaseModel):
