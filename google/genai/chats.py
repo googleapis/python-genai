@@ -62,6 +62,17 @@ def _validate_response(response: GenerateContentResponse) -> bool:
   return _validate_content(response.candidates[0].content)
 
 
+def _merge_streamed_contents(contents: list[Content]) -> list[Content]:
+  """Merges the per-chunk contents of one streamed response into one turn."""
+  if not contents:
+    return []
+  parts: list[Part] = []
+  for content in contents:
+    if content.parts:
+      parts.extend(content.parts)
+  return [Content(role="model", parts=parts)]
+
+
 def _extract_curated_history(
     comprehensive_history: list[Content],
 ) -> list[Content]:
@@ -475,6 +486,7 @@ class Chat(_BaseChat):
           if chunk.candidates and chunk.candidates[0].finish_reason:
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
+        model_output = _merge_streamed_contents(model_output)
         self.record_history(
             user_input=user_input,
             model_output=model_output,
@@ -549,6 +561,7 @@ class Chat(_BaseChat):
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
 
+        model_output = _merge_streamed_contents(model_output)
         if is_last_remote_call_afc:
           break
         if not function_map or not func_response_parts:
@@ -974,6 +987,7 @@ class AsyncChat(_BaseChat):
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
 
+        output_contents = _merge_streamed_contents(output_contents)
         if not output_contents or finish_reason is None:
           is_valid = False
 
@@ -1123,6 +1137,7 @@ class AsyncChat(_BaseChat):
               finish_reason = chunk.candidates[0].finish_reason
             yield chunk
 
+          model_output = _merge_streamed_contents(model_output)
           if is_last_remote_call_afc:
             break
           if not function_map or not func_response_parts:
