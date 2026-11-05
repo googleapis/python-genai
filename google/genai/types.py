@@ -2748,7 +2748,7 @@ class HttpOptions(_common.BaseModel):
       description="""Extra parameters to add to the request body.
       The structure must match the backend API's request structure.
       - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
-      - GeminiAPI backend API docs: https://ai.google.dev/api/rest""",
+      - GeminiAPI backend API docs: https://aistudio.google.com/api-reference""",
   )
   retry_options: Optional[HttpRetryOptions] = Field(
       default=None, description="""HTTP retry options for the request."""
@@ -2796,7 +2796,7 @@ class HttpOptionsDict(TypedDict, total=False):
   """Extra parameters to add to the request body.
       The structure must match the backend API's request structure.
       - Gemini Enterprise Agent Platform backend API docs: https://cloud.google.com/vertex-ai/docs/reference/rest
-      - GeminiAPI backend API docs: https://ai.google.dev/api/rest"""
+      - GeminiAPI backend API docs: https://aistudio.google.com/api-reference"""
 
   retry_options: Optional[HttpRetryOptionsDict]
   """HTTP retry options for the request."""
@@ -22877,7 +22877,7 @@ class LiveConnectConstraints(_common.BaseModel):
       default=None,
       description="""ID of the model to configure in the ephemeral token for Live API.
       For a list of models, see `Gemini models
-      <https://ai.google.dev/gemini-api/docs/models>`.""",
+      <https://aistudio.google.com/docs/models>`.""",
   )
   config: Optional[LiveConnectConfig] = Field(
       default=None,
@@ -22891,7 +22891,7 @@ class LiveConnectConstraintsDict(TypedDict, total=False):
   model: Optional[str]
   """ID of the model to configure in the ephemeral token for Live API.
       For a list of models, see `Gemini models
-      <https://ai.google.dev/gemini-api/docs/models>`."""
+      <https://aistudio.google.com/docs/models>`."""
 
   config: Optional[LiveConnectConfigDict]
   """Configuration specific to Live API connections created using this token."""

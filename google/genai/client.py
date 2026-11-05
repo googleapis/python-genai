@@ -306,13 +306,13 @@ class Client:
   `GOOGLE_CLOUD_LOCATION` environment variables.
 
   Attributes:
-    api_key: The `API key <https://ai.google.dev/gemini-api/docs/api-key>`_ to
-      use for authentication. Applies to the Gemini Developer API only.
+    api_key: The `API key <https://aistudio.google.com/docs/api-key>`_ to use
+      for authentication. Applies to the Gemini Developer API only.
     enterprise (bool): Indicates whether the client should use the Gemini
-      Enterprise Agent Platform endpoints (previously Vertex AI API).
-      Defaults to False (uses Gemini Developer API endpoints). When
-      `enterprise` and `vertexai` are both set, and they have conflicting
-      values, a `ValueError` will be raised.
+      Enterprise Agent Platform endpoints (previously Vertex AI API). Defaults
+      to False (uses Gemini Developer API endpoints). When `enterprise` and
+      `vertexai` are both set, and they have conflicting values, a `ValueError`
+      will be raised.
     vertexai (bool): Legacy flag for `enterprise`.
     credentials: The credentials to use for authentication when calling the
       Gemini Enterprise Agent Platform APIs. Credentials can be obtained from
@@ -323,8 +323,8 @@ class Client:
     project: The `Google Cloud project ID
       <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to use
       for quota. Can be obtained from environment variables (for example,
-      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-      Find your `Google Cloud project ID
+      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only. Find your
+      `Google Cloud project ID
       <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
     location: The `location
       <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
@@ -376,9 +376,8 @@ class Client:
          `enterprise` and `vertexai` are both set, and they have conflicting
          values, a `ValueError` will be raised.
        vertexai (bool): Legacy flag for `enterprise`.
-       api_key (str): The `API key
-         <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
-         authentication. Applies to the Gemini Developer API only.
+       api_key (str): The `API key <https://aistudio.google.com/docs/api-key>`_
+         to use for authentication. Applies to the Gemini Developer API only.
        credentials (google.auth.credentials.Credentials): The credentials to use
          for authentication when calling the Vertex AI APIs. Credentials can be
          obtained from environment variables and default credentials. For more

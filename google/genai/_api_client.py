@@ -1125,7 +1125,7 @@ class BaseApiClient:
         raise ValueError(
             'No API key was provided. Please pass a valid API key. Learn how to'
             ' create an API key at'
-            ' https://ai.google.dev/gemini-api/docs/api-key.'
+            ' https://aistudio.google.com/docs/api-key.'
         )
       self._http_options.base_url = 'https://generativelanguage.googleapis.com/'
       env_api_version = os.environ.get('GOOGLE_GENAI_API_VERSION', None)
