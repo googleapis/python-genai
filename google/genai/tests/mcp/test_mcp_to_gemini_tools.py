@@ -124,6 +124,44 @@ def test_items_conversion():
   ]
 
 
+def test_integer_enum_conversion():
+  """Test that integer enum values in MCP tools become strings."""
+  mcp_tools = [
+      mcp_types.Tool(
+          name='tool',
+          description='tool-description',
+          inputSchema={
+              'type': 'object',
+              'properties': {
+                  'days': {
+                      'type': 'integer',
+                      'enum': [1, 5, 10],
+                  },
+              },
+          },
+      ),
+  ]
+  result = _mcp_utils.mcp_to_gemini_tools(mcp_tools)
+  assert result == [
+      types.Tool(
+          function_declarations=[
+              types.FunctionDeclaration(
+                  name='tool',
+                  description='tool-description',
+                  parameters=types.Schema(
+                      type='OBJECT',
+                      properties={
+                          'days': types.Schema(
+                              type='INTEGER', enum=['1', '5', '10']
+                          ),
+                      },
+                  ),
+              ),
+          ],
+      ),
+  ]
+
+
 def test_any_of_conversion():
   """Test conversion of MCP tools with any_of to Gemini tools."""
   mcp_tools = [

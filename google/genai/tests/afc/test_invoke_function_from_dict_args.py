@@ -16,7 +16,8 @@
 
 """Test invoke_function_from_dict_args."""
 
-from typing import Union
+import enum
+from typing import Optional, Union
 import pydantic
 import pytest
 import sys
@@ -231,6 +232,90 @@ def test_incompatible_value_and_annotation():
     invoke_function_from_dict_args({'x': 1.0}, func_under_test)
   with pytest.raises(errors.UnknownFunctionCallArgumentError):
     invoke_function_from_dict_args({'x': {}}, func_under_test)
+
+
+class _DaysEnum(enum.IntEnum):
+  ONE = 1
+  FIVE = 5
+  TEN = 10
+
+
+class _ColorEnum(enum.Enum):
+  RED = 'red'
+  BLUE = 'blue'
+
+
+def test_int_enum():
+  def func_under_test(days: _DaysEnum):
+    assert isinstance(days, _DaysEnum)
+    return days.name
+
+  assert invoke_function_from_dict_args({'days': 5}, func_under_test) == 'FIVE'
+
+
+def test_int_enum_string_value():
+  """Schema.enum sends the values as strings, so "5" must also convert."""
+
+  def func_under_test(days: _DaysEnum):
+    assert isinstance(days, _DaysEnum)
+    return days.name
+
+  assert (
+      invoke_function_from_dict_args({'days': '5'}, func_under_test) == 'FIVE'
+  )
+
+
+def test_str_enum():
+  def func_under_test(color: _ColorEnum):
+    assert isinstance(color, _ColorEnum)
+    return color.name
+
+  assert (
+      invoke_function_from_dict_args({'color': 'blue'}, func_under_test)
+      == 'BLUE'
+  )
+
+
+def test_optional_int_enum():
+  def func_under_test(days: Optional[_DaysEnum] = None):
+    return days
+
+  assert (
+      invoke_function_from_dict_args({'days': 10}, func_under_test)
+      is _DaysEnum.TEN
+  )
+  assert invoke_function_from_dict_args({'days': None}, func_under_test) is None
+
+
+def test_union_enum_falls_through_to_later_type():
+  def func_under_test(x: Union[_DaysEnum, str]):
+    return x
+
+  assert invoke_function_from_dict_args({'x': 1}, func_under_test) is (
+      _DaysEnum.ONE
+  )
+  assert invoke_function_from_dict_args({'x': 'abc'}, func_under_test) == 'abc'
+
+
+def test_list_of_int_enum():
+  def func_under_test(days: list[_DaysEnum]):
+    return days
+
+  assert invoke_function_from_dict_args(
+      {'days': [1, '10']}, func_under_test
+  ) == [_DaysEnum.ONE, _DaysEnum.TEN]
+
+
+def test_invalid_enum_value():
+  def func_under_test(days: _DaysEnum):
+    return days
+
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    invoke_function_from_dict_args({'days': 7}, func_under_test)
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    invoke_function_from_dict_args({'days': 'FIVE'}, func_under_test)
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    invoke_function_from_dict_args({'days': None}, func_under_test)
 
 
 def test_function_invocation_error():

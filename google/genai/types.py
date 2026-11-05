@@ -3346,6 +3346,14 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
           non_null_types.append(type_value)
       return non_null_types, nullable
 
+    def _enum_value_to_str(value: Any) -> Any:
+      """Converts a numeric JSON Schema enum value to the API's string form."""
+      if isinstance(value, Enum):
+        value = value.value
+      if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+      return value
+
     def raise_error_if_cannot_convert(
         json_schema_dict: dict[str, Any],
         api_option: Literal['ENTERPRISE', 'GEMINI_API', 'VERTEX_AI'],
@@ -3510,6 +3518,9 @@ are recommended to pass/receive Json Schema directly to/from the API. For exampl
             schema.nullable = True
           if non_null_types:
             schema.type = Type(non_null_types[0])
+        elif field_name == 'enum':
+          # Schema.enum is a list of strings, also for INTEGER and NUMBER.
+          schema.enum = [_enum_value_to_str(value) for value in field_value]
         else:
           if (
               hasattr(schema, field_name)

@@ -16,6 +16,7 @@
 
 """Tests for get_function_response_parts."""
 
+import enum
 import typing
 from typing import Any
 import pytest
@@ -158,6 +159,74 @@ def test_string_value():
     assert actual_part.model_dump_json(
         exclude_none=True
     ) == expected_part.model_dump_json(exclude_none=True)
+
+
+class _DaysEnum(enum.IntEnum):
+  ONE = 1
+  FIVE = 5
+
+
+def _days_enum_response() -> GenerateContentResponse:
+  # Function call args arrive as JSON numbers, i.e. 5.0 for an INTEGER.
+  return GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              name='func_under_test',
+                              args={'days': 5.0},
+                          )
+                      )
+                  ]
+              )
+          )
+      ]
+  )
+
+
+def test_int_enum_value():
+  def func_under_test(days: _DaysEnum) -> str:
+    assert isinstance(days, _DaysEnum)
+    return days.name
+
+  function_map = {'func_under_test': func_under_test}
+  expected_parts = [
+      Part(
+          function_response=FunctionResponse(
+              name='func_under_test',
+              response={'result': 'FIVE'},
+          )
+      )
+  ]
+  actual_parts = get_function_response_parts(
+      _days_enum_response(), function_map
+  )
+
+  assert actual_parts == expected_parts
+
+
+@pytest.mark.asyncio
+async def test_int_enum_value_async():
+  async def func_under_test(days: _DaysEnum) -> str:
+    assert isinstance(days, _DaysEnum)
+    return days.name
+
+  function_map = {'func_under_test': func_under_test}
+  expected_parts = [
+      Part(
+          function_response=FunctionResponse(
+              name='func_under_test',
+              response={'result': 'FIVE'},
+          )
+      )
+  ]
+  actual_parts = await get_function_response_parts_async(
+      _days_enum_response(), function_map
+  )
+
+  assert actual_parts == expected_parts
 
 
 @pytest.mark.asyncio
