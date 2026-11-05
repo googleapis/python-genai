@@ -384,12 +384,13 @@ def t_parts(
     ],
 ) -> list[types.Part]:
   #
-  if parts is None or (isinstance(parts, list) and not parts):
+  if parts is None:
     raise ValueError('content parts are required.')
-  if isinstance(parts, list):
-    return [t_part(part) for part in parts]
-  else:
+  if isinstance(parts, (str, bytes)) or not isinstance(parts, Sequence):
     return [t_part(parts)]
+  if not parts:
+    raise ValueError('content parts are required.')
+  return [t_part(part) for part in parts]
 
 
 def t_image_predictions(
@@ -446,7 +447,7 @@ def t_contents_for_embed(
     client: _api_client.BaseApiClient,
     contents: Union[list[types.Content], list[types.ContentDict], ContentType],
 ) -> Union[list[str], list[types.Content]]:
-  if isinstance(contents, list):
+  if isinstance(contents, Sequence) and not isinstance(contents, (str, bytes)):
     transformed_contents = [t_content(content) for content in contents]
   else:
     transformed_contents = [t_content(contents)]
@@ -473,10 +474,12 @@ def t_contents(
         Union[types.ContentListUnion, types.ContentListUnionDict, types.Content]
     ],
 ) -> list[types.Content]:
-  if contents is None or (isinstance(contents, list) and not contents):
+  if contents is None:
     raise ValueError('contents are required.')
-  if not isinstance(contents, list):
+  if isinstance(contents, (str, bytes)) or not isinstance(contents, Sequence):
     return [t_content(contents)]
+  if not contents:
+    raise ValueError('contents are required.')
 
   result: list[types.Content] = []
   accumulated_parts: list[types.Part] = []
@@ -555,11 +558,13 @@ def t_contents(
   #   group consecutive user part(s) to a UserContent
   #   group consecutive model part(s) to a ModelContent
   #   append to result
-  # if list, we only accept a list of types.PartUnion
+  # if sequence, we only accept a sequence of types.PartUnion
   for content in contents:
-    if is_duck_type_of(content, types.Content) or isinstance(content, list):
+    if is_duck_type_of(content, types.Content) or (
+        isinstance(content, Sequence) and not isinstance(content, (str, bytes))
+    ):
       _append_accumulated_parts_as_content(result, accumulated_parts)
-      if isinstance(content, list):
+      if isinstance(content, Sequence):
         result.append(types.UserContent(parts=content))  # type: ignore[arg-type]
       else:
         result.append(content)  # type: ignore[arg-type]

@@ -32,6 +32,15 @@ def test_empty_list():
     t.t_parts([])
 
 
+def test_empty_tuple():
+  with pytest.raises(ValueError, match='content parts are required.'):
+    t.t_parts(())
+
+
+def test_tuple():
+  assert t.t_parts(('test1', 'test2')) == t.t_parts(['test1', 'test2'])
+
+
 def test_list():
   assert t.t_parts(['test1', 'test2']) == [
       types.Part(text='test1'),

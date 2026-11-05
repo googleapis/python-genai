@@ -14,6 +14,7 @@
 #
 
 
+import collections.abc
 import copy
 import json
 import sys
@@ -2970,3 +2971,27 @@ def test_computer_use_types():
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
 
+
+@pytest.mark.parametrize(
+    'alias, item',
+    [
+        (types.ContentUnion, types.PartUnion),
+        (types.ContentUnionDict, types.PartUnionDict),
+        (types.ContentListUnion, types.ContentUnion),
+        (types.ContentListUnionDict, types.ContentUnionDict),
+    ],
+    ids=[
+        'ContentUnion',
+        'ContentUnionDict',
+        'ContentListUnion',
+        'ContentListUnionDict',
+    ],
+)
+def test_content_union_aliases_use_sequence(alias, item):
+  """Covariant Sequence lets type checkers accept mixed lists of contents."""
+  members = [
+      (typing.get_origin(arg), typing.get_args(arg))
+      for arg in typing.get_args(alias)
+  ]
+  assert (collections.abc.Sequence, (item,)) in members
+  assert (list, (item,)) not in members

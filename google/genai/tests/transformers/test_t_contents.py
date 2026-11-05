@@ -15,8 +15,10 @@
 
 """Tests for t_contents."""
 
-import pytest
+from unittest import mock
+
 import pydantic
+import pytest
 
 from ... import _transformers as t
 from ... import types
@@ -396,3 +398,31 @@ def test_list_of_text_part_list():
           ]
       ),
   ]
+
+
+def test_string_file_tuple():
+  """A tuple of mixed parts gives the same contents as the equivalent list."""
+  f = types.File(uri='gs://test', mime_type='image/png')
+  assert t.t_contents((f, 'test')) == t.t_contents([f, 'test'])
+
+
+def test_empty_tuple():
+  with pytest.raises(ValueError, match='contents are required.'):
+    t.t_contents(())
+
+
+def test_tuple_of_text_parts_in_list():
+  """A nested tuple of parts becomes one UserContent, like a nested list."""
+  assert t.t_contents([('a', types.Part(text='b')), 'c']) == t.t_contents(
+      [['a', types.Part(text='b')], 'c']
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+def test_contents_for_embed_tuple(vertexai):
+  """Embedding inputs given as a tuple match the list result on both APIs."""
+  client = mock.Mock(vertexai=vertexai)
+  contents = ('a', types.Content(parts=[types.Part(text='b')]))
+  assert t.t_contents_for_embed(client, contents) == t.t_contents_for_embed(
+      client, list(contents)
+  )
