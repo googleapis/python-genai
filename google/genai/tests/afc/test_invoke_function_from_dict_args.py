@@ -80,6 +80,15 @@ def test_builtin_compound_types():
   assert actual_response == expected_response
 
 
+def test_set_parameter():
+  def func_under_test(tags: set[str]):
+    return sorted(tags)
+
+  assert invoke_function_from_dict_args(
+      {'tags': ['b', 'a']}, func_under_test
+  ) == ['a', 'b']
+
+
 def test_nested_pydantic_model():
   class SimpleModel(pydantic.BaseModel):
     key1_simple: int
