@@ -30,6 +30,22 @@ from ._gaos.types.environments import *  # noqa: F401,F403
 from ._gaos.types.environments import __all__ as _environments_all
 from ._gaos.types.interactions import *  # noqa: F401,F403
 from ._gaos.types.interactions import __all__ as _interactions_all
+from ._gaos.lib.compat_errors import (  # pylint: disable=g-multiple-import
+    APIConnectionError,
+    APIError,
+    APIResponseValidationError,
+    APIStatusError,
+    APITimeoutError,
+    AuthenticationError,
+    BadRequestError,
+    ConflictError,
+    GeminiNextGenAPIClientError,
+    InternalServerError,
+    NotFoundError,
+    PermissionDeniedError,
+    RateLimitError,
+    UnprocessableEntityError,
+)
 from ._gaos.models.listagents import ListAgentsRequestParam as AgentListParams
 from ._gaos.models.listwebhooks import ListWebhooksRequestParam as WebhookListParams
 from ._gaos.resources.interactions import *  # noqa: F401,F403
@@ -111,22 +127,36 @@ InteractionGetParams = Union[
 
 
 __all__ = [
+    "APIConnectionError",
+    "APIError",
+    "APIResponseValidationError",
+    "APIStatusError",
+    "APITimeoutError",
     "Agent",
     "AgentCreateParams",
     "AgentDeleteResponse",
     "AgentListParams",
     "AgentListResponse",
+    "AuthenticationError",
+    "BadRequestError",
+    "ConflictError",
     "CreateAgentInteractionParamsNonStreaming",
     "CreateAgentInteractionParamsStreaming",
     "CreateModelInteractionParamsNonStreaming",
     "CreateModelInteractionParamsStreaming",
+    "GeminiNextGenAPIClientError",
     "InteractionCreateParams",
     "InteractionGetParams",
     "InteractionGetParamsBase",
     "InteractionGetParamsNonStreaming",
     "InteractionGetParamsStreaming",
+    "InternalServerError",
     "ModelParam",
+    "NotFoundError",
+    "PermissionDeniedError",
+    "RateLimitError",
     "SigningSecret",
+    "UnprocessableEntityError",
     "Webhook",
     "WebhookCreateParams",
     "WebhookDeleteResponse",

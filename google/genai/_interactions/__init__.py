@@ -264,4 +264,4 @@ for _name in (
     "RateLimitError",
     "UnprocessableEntityError",
 ):
-    globals()[_name].__module__ = "google.genai._interactions"
+    globals()[_name].__module__ = __name__  # pylint: disable=bad-indentation

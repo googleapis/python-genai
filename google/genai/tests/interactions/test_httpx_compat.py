@@ -14,6 +14,9 @@
 
 """Tests for httpx and httpx2 compatibility across the GAOS client."""
 
+import copy
+import pickle
+
 import httpx
 import pytest
 
@@ -22,8 +25,12 @@ try:
 except ImportError:
   httpx2 = None
 
-from ... import client as client_lib
-from ..._gaos.basesdk import AsyncBaseSDK, BaseSDK
+from ... import _interactions  # pylint: disable=g-import-not-at-top
+from ... import client as client_lib  # pylint: disable=g-import-not-at-top
+from ... import errors  # pylint: disable=g-import-not-at-top
+from ... import interactions  # pylint: disable=g-import-not-at-top
+from ..._gaos.basesdk import AsyncBaseSDK, BaseSDK  # pylint: disable=g-import-not-at-top,g-multiple-import
+from ..._gaos.errors.genaierror import GenAiError  # pylint: disable=g-import-not-at-top
 from ..._gaos.httpclient import AsyncHttpClient, HttpClient
 from ..._gaos.lib import compat_errors
 from ..._gaos.utils import eventstreaming, retries
@@ -409,3 +416,145 @@ def test_interactions_create_env_var_httpx2_mock_transport(monkeypatch):
   assert len(recorded_requests) == 1
   assert isinstance(recorded_requests[0], httpx2.Request)
   assert result.status == "completed"
+
+
+# --- Error hierarchy unification tests (b/577987345) ---
+
+
+@pytest.mark.parametrize(
+    "compat_cls, expected_native",
+    [
+        (compat_errors.APIStatusError, errors.APIError),
+        (compat_errors.BadRequestError, errors.ClientError),
+        (compat_errors.AuthenticationError, errors.ClientError),
+        (compat_errors.PermissionDeniedError, errors.ClientError),
+        (compat_errors.NotFoundError, errors.ClientError),
+        (compat_errors.ConflictError, errors.ClientError),
+        (compat_errors.UnprocessableEntityError, errors.ClientError),
+        (compat_errors.RateLimitError, errors.ClientError),
+        (compat_errors.InternalServerError, errors.ServerError),
+    ],
+)
+def test_compat_status_errors_subclass_native_errors(
+    compat_cls, expected_native
+):
+  """Tests that status-bearing compat errors subclass native errors."""
+  assert issubclass(compat_cls, expected_native)
+  assert issubclass(compat_cls, errors.APIError)
+  assert issubclass(compat_cls, compat_errors.APIError)
+  assert issubclass(compat_cls, compat_errors.GeminiNextGenAPIClientError)
+  if expected_native is errors.ClientError:
+    assert not issubclass(compat_cls, errors.ServerError)
+  elif expected_native is errors.ServerError:
+    assert not issubclass(compat_cls, errors.ClientError)
+
+
+@pytest.mark.parametrize(
+    "compat_cls",
+    [
+        compat_errors.GeminiNextGenAPIClientError,
+        compat_errors.APIError,
+        compat_errors.APIConnectionError,
+        compat_errors.APITimeoutError,
+        compat_errors.APIResponseValidationError,
+    ],
+)
+def test_non_status_compat_errors_do_not_subclass_native_api_error(compat_cls):
+  """Tests that non-status compat errors do not subclass native APIError."""
+  assert not issubclass(compat_cls, errors.APIError)
+
+
+def test_compat_errors_exported_on_interactions_and_errors_entrypoints():
+  """Tests that compat errors are exported on interactions and errors."""
+  for name in (
+      "APIConnectionError",
+      "APIResponseValidationError",
+      "APIStatusError",
+      "APITimeoutError",
+      "AuthenticationError",
+      "BadRequestError",
+      "ConflictError",
+      "GeminiNextGenAPIClientError",
+      "InternalServerError",
+      "NotFoundError",
+      "PermissionDeniedError",
+      "RateLimitError",
+      "UnprocessableEntityError",
+  ):
+    assert getattr(interactions, name) is getattr(compat_errors, name)
+    assert getattr(_interactions, name) is getattr(compat_errors, name)
+    assert getattr(errors, name) is getattr(compat_errors, name)
+  assert interactions.APIError is compat_errors.APIError
+  assert _interactions.APIError is compat_errors.APIError
+  assert errors.InteractionsAPIError is compat_errors.APIError
+
+
+def test_wrap_sdk_error_populates_native_api_error_fields_and_roundtrips():
+  """Tests native field population and copy/pickle roundtripping."""
+  req = httpx.Request("POST", "https://example.com/v1beta/interactions")
+  raw_body = (
+      '{"error": {"code": 400, "message": "bad model",'
+      ' "status": "INVALID_ARGUMENT"}}'
+  )
+  resp = httpx.Response(
+      400,
+      request=req,
+      headers={"content-type": "application/json"},
+      text=raw_body,
+  )
+  sdk_err = GenAiError("API error occurred", resp, raw_body)
+
+  with pytest.raises(errors.ClientError) as exc_info:
+    raise compat_errors.wrap_sdk_error(sdk_err)
+
+  err = exc_info.value
+  assert isinstance(err, compat_errors.BadRequestError)
+  assert isinstance(err, errors.APIError)
+  assert err.status_code == 400
+  assert err.code == 400
+  assert err.status == "INVALID_ARGUMENT"
+  assert err.details == {
+      "error": {
+          "code": 400,
+          "message": "bad model",
+          "status": "INVALID_ARGUMENT",
+      }
+  }
+  assert err.body == err.details
+  assert err.response is resp
+  assert err.message.startswith("Error code: 400 - ")
+  assert str(err) == err.message
+
+  unpickled = pickle.loads(pickle.dumps(err))  # pylint: disable=g-unsafe-pickle-load
+  for clone in (copy.copy(err), copy.deepcopy(err), unpickled):
+    assert clone.__class__ is compat_errors.BadRequestError
+    assert clone.status_code == 400
+    assert clone.code == 400
+    assert clone.status == "INVALID_ARGUMENT"
+    assert clone.details == err.details
+    assert clone.message == err.message
+    assert str(clone) == str(err)
+
+
+def test_unmapped_4xx_status_caught_by_native_client_error():
+  """Tests that unmapped 4xx status codes are caught by native ClientError."""
+  req = httpx.Request("POST", "https://example.com/v1beta/interactions")
+  resp = httpx.Response(413, request=req, text="Payload too large")
+  sdk_err = GenAiError("API error occurred", resp, "Payload too large")
+
+  with pytest.raises(errors.ClientError) as exc_info:
+    raise compat_errors.wrap_sdk_error(sdk_err)
+
+  err = exc_info.value
+  assert isinstance(err, compat_errors.APIStatusError)
+  assert not isinstance(err, errors.ServerError)
+  assert err.status_code == 413
+  assert err.code == 413
+  assert err.details == {
+      "message": "Payload too large",
+      "status": "Request Entity Too Large",
+  }
+  unpickled = pickle.loads(pickle.dumps(err))  # pylint: disable=g-unsafe-pickle-load
+  assert isinstance(unpickled, errors.ClientError)
+  assert isinstance(unpickled, compat_errors.APIStatusError)
+  assert unpickled.code == 413
