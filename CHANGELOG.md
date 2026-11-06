@@ -7,7 +7,7 @@
 
 * **Default Gemini Developer API version is now `v1` (was `v1beta`)** ([2d0f947](https://github.com/googleapis/python-genai/commit/2d0f9476ae5c7a6d3c90f81b056fad0315be5b60))
   * Clients targeting the **Gemini Developer API** now default to API version `v1` instead of `v1beta`.
-  * **No effect on Gemini Enterprise Agent Platform (Vertex AI) defaults:** Clients with `vertexai=True` / `enterprise=True` are **unaffected** by this default change and continue to default to `v1beta1`.
+  * **No effect on Gemini Enterprise (Vertex AI) defaults:** Clients with `vertexai=True` / `enterprise=True` are **unaffected** by this default change and continue to default to `v1beta1`.
   * **How to configure or restore the previous default via environment variable:** Set `GOOGLE_GENAI_API_VERSION` (works for both Gemini Developer API and Enterprise / Vertex AI clients when no version is set in code):
     ```bash
     # Restores the beta default ('v1beta' on Gemini Developer API, 'v1beta1' on Enterprise / Vertex AI)
