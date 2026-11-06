@@ -35,6 +35,14 @@ if TYPE_CHECKING:
         AntigravityAgentConfig,
         AntigravityAgentConfigParam,
     )
+    from .apierror import (
+        APIError,
+        APIErrorCode,
+        APIErrorCodeTypedDict,
+        APIErrorStatus,
+        APIErrorStatusTypedDict,
+        APIErrorTypedDict,
+    )
     from .argumentsdelta import ArgumentsDelta, ArgumentsDeltaTypedDict
     from .audiocontent import AudioContent, AudioContentMimeType, AudioContentParam
     from .audiodelta import AudioDelta, AudioDeltaMimeType, AudioDeltaTypedDict
@@ -448,6 +456,12 @@ if TYPE_CHECKING:
     from .wordinfo import WordInfo, WordInfoParam
 
 __all__ = [
+    "APIError",
+    "APIErrorCode",
+    "APIErrorCodeTypedDict",
+    "APIErrorStatus",
+    "APIErrorStatusTypedDict",
+    "APIErrorTypedDict",
     "AgentOption",
     "AllowedTools",
     "AllowedToolsParam",
@@ -871,6 +885,12 @@ _dynamic_imports: dict[str, str] = {
     "UnknownAnnotation": ".annotation",
     "AntigravityAgentConfig": ".antigravityagentconfig",
     "AntigravityAgentConfigParam": ".antigravityagentconfig",
+    "APIError": ".apierror",
+    "APIErrorCode": ".apierror",
+    "APIErrorCodeTypedDict": ".apierror",
+    "APIErrorStatus": ".apierror",
+    "APIErrorStatusTypedDict": ".apierror",
+    "APIErrorTypedDict": ".apierror",
     "ArgumentsDelta": ".argumentsdelta",
     "ArgumentsDeltaTypedDict": ".argumentsdelta",
     "AudioContent": ".audiocontent",
