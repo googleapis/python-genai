@@ -214,8 +214,11 @@ def test_build_request_with_custom_base_url_no_env_vars(monkeypatch):
       build_test_client_no_env_vars(monkeypatch).models._api_client
   )
   request = request_client._build_request(
-      'GET',
-      'test/path',
+      'POST',
+      'publishers/google/models/gemini-2.5-flash-image:generateContent',
       {'key': 'value'},
   )
-  assert request.url == 'https://custom-base-url.com'
+  assert request.url == (
+      'https://custom-base-url.com/v1beta1/'
+      'publishers/google/models/gemini-2.5-flash-image:generateContent'
+  )
