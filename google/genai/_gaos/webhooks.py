@@ -127,16 +127,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.WebhookListResponse, http_res, validate=False
@@ -305,16 +320,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.Webhook, http_res, validate=False
@@ -455,16 +485,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     interactions.Empty, http_res, validate=False
@@ -605,16 +650,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.Webhook, http_res, validate=False
@@ -795,16 +855,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.Webhook, http_res, validate=False
@@ -963,16 +1038,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.WebhookPingResponse, http_res, validate=False
@@ -1130,16 +1220,31 @@ class Webhooks(BaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = utils.stream_to_text(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.WebhookRotateSigningSecretResponse,
@@ -1344,16 +1449,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.WebhookListResponse, http_res, validate=False
@@ -1525,16 +1645,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.Webhook, http_res, validate=False
@@ -1678,16 +1813,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     interactions.Empty, http_res, validate=False
@@ -1831,16 +1981,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.Webhook, http_res, validate=False
@@ -2024,16 +2189,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.Webhook, http_res, validate=False
@@ -2195,16 +2375,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.WebhookPingResponse, http_res, validate=False
@@ -2365,16 +2560,31 @@ class AsyncWebhooks(AsyncBaseSDK):
             retry_config = (retries, ["408", "409", "429", "5XX"])
 
         async def _speakeasy_parse_response(http_res):
-            if utils.match_response(http_res, "4XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
-            if utils.match_response(http_res, "5XX", "*"):
-                http_res_text = await utils.stream_to_text_async(http_res)
-                raise errors.GenAiDefaultError(
-                    "API error occurred", http_res, http_res_text
-                )
+            response_data: Any = None
+            if utils.match_response(http_res, "4XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIClientErrorData, http_res
+                    )
+                    raise errors.APIClientError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
+            if utils.match_response(http_res, "5XX", "application/json"):
+                try:
+                    response_data = unmarshal_json_response(
+                        errors.APIServerErrorData, http_res
+                    )
+                    raise errors.APIServerError(response_data, http_res)
+                except errors.ResponseValidationError as e:
+                    raise errors.GenAiDefaultError(
+                        "Error response body did not match expected schema",
+                        http_res,
+                        http_res.text,
+                    ) from e
             if utils.match_response(http_res, "default", "application/json"):
                 return unmarshal_json_response(
                     webhooks.WebhookRotateSigningSecretResponse,

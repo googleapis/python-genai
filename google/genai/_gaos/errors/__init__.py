@@ -23,6 +23,8 @@ from typing import Any, TYPE_CHECKING
 from ..utils.dynamic_imports import lazy_getattr, lazy_dir
 
 if TYPE_CHECKING:
+    from .apiclienterror import APIClientError, APIClientErrorData
+    from .apiservererror import APIServerError, APIServerErrorData
     from .cancelinteractionbyid import (
         CancelInteractionByIDClientError,
         CancelInteractionByIDClientErrorData,
@@ -52,6 +54,10 @@ if TYPE_CHECKING:
     from .responsevalidationerror import ResponseValidationError
 
 __all__ = [
+    "APIClientError",
+    "APIClientErrorData",
+    "APIServerError",
+    "APIServerErrorData",
     "CancelInteractionByIDClientError",
     "CancelInteractionByIDClientErrorData",
     "CancelInteractionByIDServerError",
@@ -75,6 +81,10 @@ __all__ = [
 ]
 
 _dynamic_imports: dict[str, str] = {
+    "APIClientError": ".apiclienterror",
+    "APIClientErrorData": ".apiclienterror",
+    "APIServerError": ".apiservererror",
+    "APIServerErrorData": ".apiservererror",
     "CancelInteractionByIDClientError": ".cancelinteractionbyid",
     "CancelInteractionByIDClientErrorData": ".cancelinteractionbyid",
     "CancelInteractionByIDServerError": ".cancelinteractionbyid",
