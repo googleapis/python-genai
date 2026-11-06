@@ -245,11 +245,11 @@ class AsyncClient:
           enterprise=True, project='my-project-id', location='us-central1'
       ).aio
       response_1 = await async_client.models.generate_content(
-          model='gemini-flash-latest',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       response_2 = await async_client.models.generate_content(
-          model='gemini-flash-latest',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       # Close the client to release resources.
@@ -641,11 +641,11 @@ class Client:
           enterprise=True, project='my-project-id', location='us-central1'
       )
       response_1 = client.models.generate_content(
-          model='gemini-flash-latest',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       response_2 = client.models.generate_content(
-          model='gemini-flash-latest',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       # Close the client to release resources.

@@ -245,7 +245,7 @@ class Chat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-flash-latest')
+      chat = client.chats.create(model='gemini-3.8-flash')
       response = chat.send_message('tell me a story')
     """
 
@@ -418,7 +418,7 @@ class Chat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.chats.create(model='gemini-flash-latest')
+      chat = client.chats.create(model='gemini-3.8-flash')
       for chunk in chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
@@ -657,7 +657,7 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.aio.chats.create(model='gemini-flash-latest')
+      chat = client.aio.chats.create(model='gemini-3.8-flash')
       response = await chat.send_message('tell me a story')
     """
     method_config = config if config else self._config
@@ -913,7 +913,7 @@ class AsyncChat(_BaseChat):
 
     .. code-block:: python
 
-      chat = client.aio.chats.create(model='gemini-flash-latest')
+      chat = client.aio.chats.create(model='gemini-3.8-flash')
       async for chunk in await chat.send_message_stream('tell me a story'):
         print(chunk.text)
     """
