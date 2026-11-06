@@ -1397,3 +1397,4 @@ def t_is_vertex_embed_content_model(model: str) -> bool:
 
 def t_json_schema(origin: Any) -> Any:
   return origin
+

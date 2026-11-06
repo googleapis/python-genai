@@ -4141,3 +4141,25 @@ async def test_async_models_max_tokens_on_resumed_hop_stops_and_returns_token(
     last = chunks[-1].candidates[0]
     assert last.finish_reason == types.FinishReason.MAX_TOKENS
     assert last.continuation_token == b'tok_hop2_max_tokens'
+
+def test_generate_content_accepts_reversed_iterator(mock_api_client):
+  """reversed([...]) contents should be materialized before Pydantic validation."""
+  models_module = models.Models(mock_api_client)
+  contents = [
+      types.Content(role='user', parts=[types.Part(text='hello')]),
+      types.Content(role='user', parts=[types.Part(text='world')]),
+  ]
+  mock_api_client.request.return_value = {
+      'candidates': [{'content': {'role': 'model', 'parts': [{'text': 'ok'}]}, 'finish_reason': 'STOP'}]
+  }
+  with mock.patch.object(
+      models.Models,
+      '_generate_content_with_continuation',
+      return_value=types.GenerateContentResponse(
+          candidates=[types.Candidate(content=types.Content(role='model', parts=[types.Part(text='ok')]))]
+      ),
+  ) as mock_gc:
+    models_module.generate_content(model='gemini-2.5-pro', contents=reversed(contents))
+    called_contents = mock_gc.call_args.kwargs['contents']
+    assert isinstance(called_contents, list), 'reversed() should be materialized to a list'
+    assert len(called_contents) == 2
