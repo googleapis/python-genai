@@ -59,6 +59,9 @@ class _TextsAccumulator:
   def __init__(self) -> None:
     self._texts: list[str] = []
 
+  def __len__(self) -> int:
+    return len(self._texts)
+
   def get_texts(self) -> Iterable[str]:
     return self._texts
 
@@ -369,14 +372,19 @@ class LocalTokenizer:
       # tokens_info=[TokensInfo(token_ids=[279, 329, 1313, 2508, 13], tokens=[b' What', b' is', b' your', b' name', b'?'], role='user')]
     """
     processed_contents = t.t_contents(contents)
-    roles = []
+    roles: list[Optional[str]] = []
 
     text_accumulator = _TextsAccumulator()
     for content in processed_contents:
+      texts_before = len(text_accumulator)
       text_accumulator.add_content(content)
-      if content.parts:
-        for _ in content.parts:
-          roles.append(content.role)
+      # A part does not map to exactly one tokenized text: a function_call
+      # or function_response part contributes the function name plus every
+      # key and string value of its args/response as separate texts, and a
+      # thought_signature-only part contributes none. Extend `roles` by the
+      # number of texts the accumulator actually added, so the zip() below
+      # stays aligned with `text_accumulator.get_texts()`.
+      roles.extend([content.role] * (len(text_accumulator) - texts_before))
 
     token_infos = []
     if self._tokenizer_name in loader.GEMMA_TOKENIZER_TO_MODEL_NAMES:
