@@ -1267,7 +1267,14 @@ def _GenerateContentConfig_to_mldev(
     setv(
         to_object,
         ['responseSchema'],
-        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+        t.t_schema(
+            api_client,
+            getv(from_object, ['response_schema']),
+            order_properties=getv(
+                from_object, ['response_schema_property_ordering']
+            )
+            is not False,
+        ),
     )
 
   if getv(from_object, ['response_json_schema']) is not None:
@@ -1484,7 +1491,14 @@ def _GenerateContentConfig_to_vertex(
     setv(
         to_object,
         ['responseSchema'],
-        t.t_schema(api_client, getv(from_object, ['response_schema'])),
+        t.t_schema(
+            api_client,
+            getv(from_object, ['response_schema']),
+            order_properties=getv(
+                from_object, ['response_schema_property_ordering']
+            )
+            is not False,
+        ),
     )
 
   if getv(from_object, ['response_json_schema']) is not None:
