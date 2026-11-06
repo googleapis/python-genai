@@ -1017,6 +1017,9 @@ def _EmbedContentResponse_from_mldev(
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
   return to_object
 
 
@@ -1043,6 +1046,18 @@ def _EmbedContentResponse_from_vertex(
 
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['truncated']) is not None:
+    setv(to_object, ['truncated'], getv(from_object, ['truncated']))
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(
+        to_object,
+        ['usage_metadata'],
+        _UsageMetadata_from_vertex(
+            getv(from_object, ['usageMetadata']), to_object, root_object
+        ),
+    )
 
   if getv(root_object, ['embedding_api_type']) == 'EMBED_CONTENT':
     embedding = getv(from_object, ['embedding'])
@@ -4176,6 +4191,86 @@ def _UpscaleImageResponse_from_vertex(
             for item in getv(from_object, ['predictions'])
         ],
     )
+
+  return to_object
+
+
+def _UsageMetadata_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['promptTokenCount']) is not None:
+    setv(
+        to_object,
+        ['prompt_token_count'],
+        getv(from_object, ['promptTokenCount']),
+    )
+
+  if getv(from_object, ['cachedContentTokenCount']) is not None:
+    setv(
+        to_object,
+        ['cached_content_token_count'],
+        getv(from_object, ['cachedContentTokenCount']),
+    )
+
+  if getv(from_object, ['candidatesTokenCount']) is not None:
+    setv(
+        to_object,
+        ['response_token_count'],
+        getv(from_object, ['candidatesTokenCount']),
+    )
+
+  if getv(from_object, ['toolUsePromptTokenCount']) is not None:
+    setv(
+        to_object,
+        ['tool_use_prompt_token_count'],
+        getv(from_object, ['toolUsePromptTokenCount']),
+    )
+
+  if getv(from_object, ['thoughtsTokenCount']) is not None:
+    setv(
+        to_object,
+        ['thoughts_token_count'],
+        getv(from_object, ['thoughtsTokenCount']),
+    )
+
+  if getv(from_object, ['totalTokenCount']) is not None:
+    setv(
+        to_object, ['total_token_count'], getv(from_object, ['totalTokenCount'])
+    )
+
+  if getv(from_object, ['promptTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['prompt_tokens_details'],
+        [item for item in getv(from_object, ['promptTokensDetails'])],
+    )
+
+  if getv(from_object, ['cacheTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['cache_tokens_details'],
+        [item for item in getv(from_object, ['cacheTokensDetails'])],
+    )
+
+  if getv(from_object, ['candidatesTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['response_tokens_details'],
+        [item for item in getv(from_object, ['candidatesTokensDetails'])],
+    )
+
+  if getv(from_object, ['toolUsePromptTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['tool_use_prompt_tokens_details'],
+        [item for item in getv(from_object, ['toolUsePromptTokensDetails'])],
+    )
+
+  if getv(from_object, ['trafficType']) is not None:
+    setv(to_object, ['traffic_type'], getv(from_object, ['trafficType']))
 
   return to_object
 
