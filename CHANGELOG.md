@@ -5,10 +5,52 @@
 
 ### ⚠ BREAKING CHANGES
 
-* **interactions:** In the typed SDKs, `CodeExecutionResultStep.result` changes from `string` to the `CodeExecutionResultStepResult` union. Code that reads `result` as a string must now check which variant is present and read the string from it. The JSON for text-only results is unchanged.
-* default Gemini API version to v1 instead of v1beta across SDKs
-* `httpx2` is now the required dependency and default HTTP client instead of `httpx`, and default SSL verification with `httpx2` uses the OS certificate trust store (via `truststore` / `httpx2.create_ssl_context()`) when `SSL_CERT_FILE` and `SSL_CERT_DIR` are not set. To maintain baseline behavior, install `google-genai[httpx]` and set `GOOGLE_GENAI_HTTP_CLIENT=httpx`.
+* **Default Gemini Developer API version is now `v1` (was `v1beta`)** ([2d0f947](https://github.com/googleapis/python-genai/commit/2d0f9476ae5c7a6d3c90f81b056fad0315be5b60))
+  * Clients targeting the **Gemini Developer API** now default to API version `v1` instead of `v1beta`.
+  * **No effect on Gemini Enterprise Agent Platform (Vertex AI) defaults:** Clients with `vertexai=True` / `enterprise=True` are **unaffected** by this default change and continue to default to `v1beta1`.
+  * **How to configure or restore the previous default via environment variable:** Set `GOOGLE_GENAI_API_VERSION` (works for both Gemini Developer API and Enterprise / Vertex AI clients when no version is set in code):
+    ```bash
+    # Restores the beta default ('v1beta' on Gemini Developer API, 'v1beta1' on Enterprise / Vertex AI)
+    export GOOGLE_GENAI_API_VERSION=beta
 
+    # Or set an explicit API version string on either platform (e.g. 'v1', 'v1beta', 'v1beta1')
+    export GOOGLE_GENAI_API_VERSION=v1beta
+    ```
+  * **How to set the API version in code:** Pass `api_version` in `HttpOptions` (takes precedence over `GOOGLE_GENAI_API_VERSION`):
+    ```python
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(
+        http_options=types.HttpOptions(api_version='v1beta')
+    )
+    ```
+
+* **Default HTTP client is now `httpx2` (was `httpx`), and `httpx` is no longer installed by default** ([51285c8](https://github.com/googleapis/python-genai/commit/51285c87a4394d3e895df07af7664df5cd1c30de))
+  * **`httpx` is no longer installed by default.** `httpx2` is now the required dependency and default HTTP client.
+  * **How to restore the previous `httpx` default via environment variable:** Because `httpx2` is installed by default, installing `google-genai[httpx]` alone only makes `import httpx` available; to switch the SDK's default client back to `httpx` without code changes, **both** install the `httpx` extra **and** set `GOOGLE_GENAI_HTTP_CLIENT=httpx`:
+    ```bash
+    pip install "google-genai[httpx]"
+    export GOOGLE_GENAI_HTTP_CLIENT=httpx
+    ```
+  * **How to pass an `httpx` client in code:** After installing `google-genai[httpx]`, you can pass `httpx.Client` / `httpx.AsyncClient` directly via `HttpOptions`:
+    ```python
+    import httpx
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(
+        http_options=types.HttpOptions(
+            httpx_client=httpx.Client(),
+            httpx_async_client=httpx.AsyncClient(),
+        )
+    )
+    ```
+  * **Migrating existing `httpx` code to `httpx2`:** In most cases, updating your imports with `import httpx2 as httpx` is sufficient.
+  * **SSL certificate verification:** By default, `httpx2` uses the OS certificate trust store (via `truststore` / `httpx2.create_ssl_context()`) instead of `certifi` when `SSL_CERT_FILE` and `SSL_CERT_DIR` are not set.
+  * **When `httpx` vs. `httpx2` types matter:** Package-specific objects passed in `HttpOptions(client_args=..., async_client_args=...)` (such as `Timeout`, `Limits`, `MockTransport` / `BaseTransport`, or custom `Auth` subclasses) and unwrapped transport exceptions caught from `client.models`, `client.files`, etc. (`TimeoutException`, `ConnectError`, `HTTPError`) must match the active HTTP client. (When `GOOGLE_GENAI_HTTP_CLIENT` is unset or `auto`, passing `httpx` objects in `HttpOptions` will also auto-select the `httpx` backend if `google-genai[httpx]` is installed.)
+
+  
 ### Features
 
 * Add `source_text` to `AudioTranscriptionConfig` and `SmartTranscriptionMode`. ([1ac3c91](https://github.com/googleapis/python-genai/commit/1ac3c915d1b1eae5323f2cfed1676ef2cec2c897))
