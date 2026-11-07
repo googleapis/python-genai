@@ -62,6 +62,8 @@ if TYPE_CHECKING:
     from .codeexecutionresultstep import (
         CodeExecutionResultStep,
         CodeExecutionResultStepParam,
+        CodeExecutionResultStepResult,
+        CodeExecutionResultStepResultParam,
     )
     from .codemenderagentconfig import CodeMenderAgentConfig, CodeMenderAgentConfigParam
     from .computeruse import (
@@ -481,6 +483,8 @@ __all__ = [
     "CodeExecutionResultDeltaTypedDict",
     "CodeExecutionResultStep",
     "CodeExecutionResultStepParam",
+    "CodeExecutionResultStepResult",
+    "CodeExecutionResultStepResultParam",
     "CodeMenderAgentConfig",
     "CodeMenderAgentConfigParam",
     "ComputerUse",
@@ -892,6 +896,8 @@ _dynamic_imports: dict[str, str] = {
     "CodeExecutionResultDeltaTypedDict": ".codeexecutionresultdelta",
     "CodeExecutionResultStep": ".codeexecutionresultstep",
     "CodeExecutionResultStepParam": ".codeexecutionresultstep",
+    "CodeExecutionResultStepResult": ".codeexecutionresultstep",
+    "CodeExecutionResultStepResultParam": ".codeexecutionresultstep",
     "CodeMenderAgentConfig": ".codemenderagentconfig",
     "CodeMenderAgentConfigParam": ".codemenderagentconfig",
     "ComputerUse": ".computeruse",

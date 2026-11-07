@@ -558,6 +558,8 @@ class FinishReason(_common.CaseInSensitiveEnum):
   """Image generation stopped for a reason not otherwise specified."""
   CONTINUATION = 'CONTINUATION'
   """Token generation stopped because the response reached the per-request token limit, but generation is not yet complete. The response can be continued by passing the returned `continuation_token` in a subsequent request."""
+  MALFORMED_RESPONSE = 'MALFORMED_RESPONSE'
+  """Token generation stopped because the response was malformed."""
 
 
 class HarmProbability(_common.CaseInSensitiveEnum):
@@ -16406,7 +16408,7 @@ class _CreateTuningJobParametersPrivate(_common.BaseModel):
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-flash-latest".""",
+      description="""The base model that is being tuned, e.g., "gemini-3.8-flash".""",
   )
   pre_tuned_model: Optional[PreTunedModel] = Field(
       default=None, description="""The PreTunedModel that is being tuned."""
@@ -16424,7 +16426,7 @@ class _CreateTuningJobParametersPrivateDict(TypedDict, total=False):
   """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-flash-latest"."""
+  """The base model that is being tuned, e.g., "gemini-3.8-flash"."""
 
   pre_tuned_model: Optional[PreTunedModelDict]
   """The PreTunedModel that is being tuned."""
@@ -16766,7 +16768,7 @@ class _CreateCachedContentParameters(_common.BaseModel):
 
   model: Optional[str] = Field(
       default=None,
-      description="""ID of the model to use. Example: gemini-flash-latest""",
+      description="""ID of the model to use. Example: gemini-3.8-flash""",
   )
   config: Optional[CreateCachedContentConfig] = Field(
       default=None,
@@ -16779,7 +16781,7 @@ class _CreateCachedContentParametersDict(TypedDict, total=False):
   """Parameters for caches.create method."""
 
   model: Optional[str]
-  """ID of the model to use. Example: gemini-flash-latest"""
+  """ID of the model to use. Example: gemini-3.8-flash"""
 
   config: Optional[CreateCachedContentConfigDict]
   """Configuration that contains optional parameters.
@@ -18134,6 +18136,84 @@ _ListFilesParametersOrDict = Union[
 ]
 
 
+class ClaudeFile(_common.BaseModel):
+  """A file that can be referenced by ID from subsequent Claude model requests.
+
+  The JSON representation of this message matches the Claude Files API File
+  object field-for-field, so that code written against that API parses these
+  responses unchanged. This data type is not supported in Gemini API.
+  """
+
+  created_at: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The time at which the file was created.""",
+  )
+  downloadable: Optional[bool] = Field(
+      default=None,
+      description="""Output only. Whether the contents of this file can be retrieved with `DownloadFile`. False for user-uploaded files, true for tool-generated ones.""",
+  )
+  expires_at: Optional[datetime.datetime] = Field(
+      default=None,
+      description="""Output only. The time at which the file expires and is deleted, set from the `expires_in_seconds` upload form field. Unset for files that do not expire, which is serialised as `null`.""",
+  )
+  filename: Optional[str] = Field(
+      default=None,
+      description="""Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\/` are not accepted.""",
+  )
+  id: Optional[str] = Field(
+      default=None,
+      description="""Output only. The server-assigned identifier of the file, for example `file_abc123`. This is the ID to pass in subsequent model requests.""",
+  )
+  mime_type: Optional[str] = Field(
+      default=None,
+      description="""Output only. The media type of the file, taken from the `Content-Type` header of the file part on upload.""",
+  )
+  size_bytes: Optional[int] = Field(
+      default=None,
+      description="""Output only. The size of the file in bytes.""",
+  )
+  type: Optional[str] = Field(
+      default=None,
+      description="""Output only. The object type. Always `file`.""",
+  )
+
+
+class ClaudeFileDict(TypedDict, total=False):
+  """A file that can be referenced by ID from subsequent Claude model requests.
+
+  The JSON representation of this message matches the Claude Files API File
+  object field-for-field, so that code written against that API parses these
+  responses unchanged. This data type is not supported in Gemini API.
+  """
+
+  created_at: Optional[datetime.datetime]
+  """Output only. The time at which the file was created."""
+
+  downloadable: Optional[bool]
+  """Output only. Whether the contents of this file can be retrieved with `DownloadFile`. False for user-uploaded files, true for tool-generated ones."""
+
+  expires_at: Optional[datetime.datetime]
+  """Output only. The time at which the file expires and is deleted, set from the `expires_in_seconds` upload form field. Unset for files that do not expire, which is serialised as `null`."""
+
+  filename: Optional[str]
+  """Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\/` are not accepted."""
+
+  id: Optional[str]
+  """Output only. The server-assigned identifier of the file, for example `file_abc123`. This is the ID to pass in subsequent model requests."""
+
+  mime_type: Optional[str]
+  """Output only. The media type of the file, taken from the `Content-Type` header of the file part on upload."""
+
+  size_bytes: Optional[int]
+  """Output only. The size of the file in bytes."""
+
+  type: Optional[str]
+  """Output only. The object type. Always `file`."""
+
+
+ClaudeFileOrDict = Union[ClaudeFile, ClaudeFileDict]
+
+
 class ListFilesResponse(_common.BaseModel):
   """Response for the list files method."""
 
@@ -18142,10 +18222,19 @@ class ListFilesResponse(_common.BaseModel):
   )
   next_page_token: Optional[str] = Field(
       default=None,
-      description="""A token that can be sent as a `page_token` into a subsequent `ListFiles` call.""",
+      description="""A token that can be sent as a `page_token` into a subsequent `ListFiles` call. This field is not supported in Vertex AI.""",
   )
   files: Optional[list[File]] = Field(
-      default=None, description="""The list of `File`s."""
+      default=None,
+      description="""The list of `File`s. This field is not supported in Vertex AI.""",
+  )
+  data: Optional[list[ClaudeFile]] = Field(
+      default=None,
+      description="""The files. This field is not supported in Gemini API.""",
+  )
+  next_page: Optional[str] = Field(
+      default=None,
+      description="""Opaque cursor for the next page. Unset on the last page, and always unset when `ids` was supplied, since batch fetch is single-page. This field is not supported in Gemini API.""",
   )
 
 
@@ -18156,10 +18245,16 @@ class ListFilesResponseDict(TypedDict, total=False):
   """Used to retain the full HTTP response."""
 
   next_page_token: Optional[str]
-  """A token that can be sent as a `page_token` into a subsequent `ListFiles` call."""
+  """A token that can be sent as a `page_token` into a subsequent `ListFiles` call. This field is not supported in Vertex AI."""
 
   files: Optional[list[FileDict]]
-  """The list of `File`s."""
+  """The list of `File`s. This field is not supported in Vertex AI."""
+
+  data: Optional[list[ClaudeFileDict]]
+  """The files. This field is not supported in Gemini API."""
+
+  next_page: Optional[str]
+  """Opaque cursor for the next page. Unset on the last page, and always unset when `ids` was supplied, since batch fetch is single-page. This field is not supported in Gemini API."""
 
 
 ListFilesResponseOrDict = Union[ListFilesResponse, ListFilesResponseDict]
@@ -18342,6 +18437,12 @@ class DeleteFileResponse(_common.BaseModel):
   sdk_http_response: Optional[HttpResponse] = Field(
       default=None, description="""Used to retain the full HTTP response."""
   )
+  id: Optional[str] = Field(
+      default=None, description="""The ID of the deleted file."""
+  )
+  type: Optional[str] = Field(
+      default=None, description="""The object type. Always `file_deleted`."""
+  )
 
 
 class DeleteFileResponseDict(TypedDict, total=False):
@@ -18349,6 +18450,12 @@ class DeleteFileResponseDict(TypedDict, total=False):
 
   sdk_http_response: Optional[HttpResponseDict]
   """Used to retain the full HTTP response."""
+
+  id: Optional[str]
+  """The ID of the deleted file."""
+
+  type: Optional[str]
+  """The object type. Always `file_deleted`."""
 
 
 DeleteFileResponseOrDict = Union[DeleteFileResponse, DeleteFileResponseDict]
@@ -22935,7 +23042,7 @@ class CreateTuningJobParameters(_common.BaseModel):
 
   base_model: Optional[str] = Field(
       default=None,
-      description="""The base model that is being tuned, e.g., "gemini-flash-latest".""",
+      description="""The base model that is being tuned, e.g., "gemini-3.8-flash".""",
   )
   training_dataset: Optional[TuningDataset] = Field(
       default=None,
@@ -22950,7 +23057,7 @@ class CreateTuningJobParametersDict(TypedDict, total=False):
   """Fine-tuning job creation parameters - optional fields."""
 
   base_model: Optional[str]
-  """The base model that is being tuned, e.g., "gemini-flash-latest"."""
+  """The base model that is being tuned, e.g., "gemini-3.8-flash"."""
 
   training_dataset: Optional[TuningDatasetDict]
   """Cloud Storage path to file containing training dataset for tuning. The dataset must be formatted as a JSONL file."""

@@ -1,5 +1,82 @@
 # Changelog
 
+## [3.0.0](https://github.com/googleapis/python-genai/compare/v2.34.0...v3.0.0) (2026-11-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **Default Gemini Developer API version is now `v1` (was `v1beta`)** ([2d0f947](https://github.com/googleapis/python-genai/commit/2d0f9476ae5c7a6d3c90f81b056fad0315be5b60))
+  * Clients targeting the **Gemini Developer API** now default to API version `v1` instead of `v1beta`.
+  * **No effect on Gemini Enterprise (Vertex AI) defaults:** Clients with `vertexai=True` / `enterprise=True` are **unaffected** by this default change and continue to default to `v1beta1`.
+  * **How to configure or restore the previous default via environment variable:** Set `GOOGLE_GENAI_API_VERSION` (works for both Gemini Developer API and Enterprise / Vertex AI clients when no version is set in code):
+    ```bash
+    # Restores the beta default ('v1beta' on Gemini Developer API, 'v1beta1' on Enterprise / Vertex AI)
+    export GOOGLE_GENAI_API_VERSION=beta
+
+    # Or set an explicit API version string on either platform (e.g. 'v1', 'v1beta', 'v1beta1')
+    export GOOGLE_GENAI_API_VERSION=v1beta
+    ```
+  * **How to set the API version in code:** Pass `api_version` in `HttpOptions` (takes precedence over `GOOGLE_GENAI_API_VERSION`):
+    ```python
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(
+        http_options=types.HttpOptions(api_version='v1beta')
+    )
+    ```
+
+* **Default HTTP client is now `httpx2` (was `httpx`), and `httpx` is no longer installed by default** ([51285c8](https://github.com/googleapis/python-genai/commit/51285c87a4394d3e895df07af7664df5cd1c30de))
+  * **`httpx` is no longer installed by default.** `httpx2` is now the required dependency and default HTTP client.
+  * **How to restore the previous `httpx` default via environment variable:** Because `httpx2` is installed by default, installing `google-genai[httpx]` alone only makes `import httpx` available; to switch the SDK's default client back to `httpx` without code changes, **both** install the `httpx` extra **and** set `GOOGLE_GENAI_HTTP_CLIENT=httpx`:
+    ```bash
+    pip install "google-genai[httpx]"
+    export GOOGLE_GENAI_HTTP_CLIENT=httpx
+    ```
+  * **How to pass an `httpx` client in code:** After installing `google-genai[httpx]`, you can pass `httpx.Client` / `httpx.AsyncClient` directly via `HttpOptions`:
+    ```python
+    import httpx
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(
+        http_options=types.HttpOptions(
+            httpx_client=httpx.Client(),
+            httpx_async_client=httpx.AsyncClient(),
+        )
+    )
+    ```
+  * **Migrating existing `httpx` code to `httpx2`:** In most cases, updating your imports with `import httpx2 as httpx` is sufficient.
+  * **SSL certificate verification:** By default, `httpx2` uses the OS certificate trust store (via `truststore` / `httpx2.create_ssl_context()`) instead of `certifi` when `SSL_CERT_FILE` and `SSL_CERT_DIR` are not set.
+  * **When `httpx` vs. `httpx2` types matter:** Package-specific objects passed in `HttpOptions(client_args=..., async_client_args=...)` (such as `Timeout`, `Limits`, `MockTransport` / `BaseTransport`, or custom `Auth` subclasses) and unwrapped transport exceptions caught from `client.models`, `client.files`, etc. (`TimeoutException`, `ConnectError`, `HTTPError`) must match the active HTTP client. (When `GOOGLE_GENAI_HTTP_CLIENT` is unset or `auto`, passing `httpx` objects in `HttpOptions` will also auto-select the `httpx` backend if `google-genai[httpx]` is installed.)
+
+  
+### Features
+
+* Add `source_text` to `AudioTranscriptionConfig` and `SmartTranscriptionMode`. ([1ac3c91](https://github.com/googleapis/python-genai/commit/1ac3c915d1b1eae5323f2cfed1676ef2cec2c897))
+* Add MALFORMED_RESPONSE to FinishReason ([6eb8523](https://github.com/googleapis/python-genai/commit/6eb852389e4349f20b8f3f26a5c58311b4f2fb4f)), refs [#2937](https://github.com/googleapis/python-genai/issues/2937)
+* **cli:** Use gemini-3.5-transcribe as default model for transcribe command ([b18fd3c](https://github.com/googleapis/python-genai/commit/b18fd3cbe8696588ba8c78c79802707c09708fd6))
+* Default Gemini API version to v1 instead of v1beta across SDKs ([2d0f947](https://github.com/googleapis/python-genai/commit/2d0f9476ae5c7a6d3c90f81b056fad0315be5b60))
+* Disable GenerateVideos for Gemini API, update tests/READMEs ([8ddc655](https://github.com/googleapis/python-genai/commit/8ddc655c5ed5395e1dc976a670d7a054e6245689))
+* **interactions:** Add Office and OpenDocument MIME types ([753cc1c](https://github.com/googleapis/python-genai/commit/753cc1c2a67ea33b2629a9c6f2a8e04af4d1d1e1))
+* **interactions:** Support multimodal content in CodeExecutionResultStep.result ([a216d95](https://github.com/googleapis/python-genai/commit/a216d95cc708ebcf8185e2ed9304f97ae809d1f7))
+* Support GOOGLE_GENAI_API_VERSION environment variable across SDKs ([2d0f947](https://github.com/googleapis/python-genai/commit/2d0f9476ae5c7a6d3c90f81b056fad0315be5b60))
+* Switch default HTTP client to httpx2 and use OS trust store by default ([51285c8](https://github.com/googleapis/python-genai/commit/51285c87a4394d3e895df07af7664df5cd1c30de))
+* Update discovery doc ([5647e1e](https://github.com/googleapis/python-genai/commit/5647e1e3678dd5a877c4a709cff8288357988c10))
+
+
+### Bug Fixes
+
+* **interactions:** Retries = attempts - 1 ([0f688a6](https://github.com/googleapis/python-genai/commit/0f688a678fbb6785fb6d37748af95af924f2904f))
+* Preserve unknown fields and open-union variants in Interactions models ([2eaf2d8](https://github.com/googleapis/python-genai/commit/2eaf2d84e6cc3714eb5b5669fc26a2a1f5edf6c9))
+* Respect configured and default API version for Gemini API file uploads across SDKs ([ddc45d0](https://github.com/googleapis/python-genai/commit/ddc45d06dedf182a226ddcfc5c84ada946a2bd37))
+
+
+### Documentation
+
+* Update embedding examples from gemini-embedding-2-preview to gemini-embedding-2 ([d97752a](https://github.com/googleapis/python-genai/commit/d97752a945f409971e707d31f692411d9f1e7c95))
+* Update remaining documentation links from ai.google.dev to aistudio.google.com. ([0e34831](https://github.com/googleapis/python-genai/commit/0e3483167f9fc79a99a45992f8bf2aee68056629))
+
 ## [2.34.0](https://github.com/googleapis/python-genai/compare/v2.33.0...v2.34.0) (2026-10-29)
 
 

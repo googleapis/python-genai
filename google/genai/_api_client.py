@@ -255,6 +255,32 @@ def join_url_path(base_url: str, path: str) -> str:
   return urlunparse(parsed_base._replace(path=base_path + '/' + path))
 
 
+_API_VERSION_PLACEHOLDER = '{api_version}'
+
+
+def _resolve_api_version_in_path(path: str, api_version: Optional[str]) -> str:
+  """Substitutes `{api_version}` in a path template.
+
+  For example, `upload/{api_version}/files` becomes `upload/v1/files`. If
+  `api_version` is empty or `None`, the `{api_version}` segment is omitted
+  without leaving a double slash (e.g. `upload/files`).
+
+  Args:
+    path: A request path template containing `{api_version}`.
+    api_version: The resolved API version for the request.
+
+  Returns:
+    The path with `{api_version}` resolved.
+  """
+  if api_version:
+    return path.replace(_API_VERSION_PLACEHOLDER, api_version)
+  return (
+      path.replace(f'{_API_VERSION_PLACEHOLDER}/', '')
+      .replace(f'/{_API_VERSION_PLACEHOLDER}', '')
+      .replace(_API_VERSION_PLACEHOLDER, '')
+  )
+
+
 _MULTI_REGIONAL_REP_SUFFIXES = tuple(
     f'.{loc}.rep.{domain}'
     for loc in _MULTI_REGIONAL_LOCATIONS
@@ -1779,7 +1805,14 @@ class BaseApiClient:
     ):
       path = f'projects/{self.project}/locations/{self.location}/' + path
 
-    if patched_http_options.api_version is None:
+    if _API_VERSION_PLACEHOLDER in path:
+      versioned_path = _resolve_api_version_in_path(
+          path, patched_http_options.api_version
+      )
+      # The COLLECTION branches below use `path` as is: with a COLLECTION-scoped
+      # base_url, the base_url already carries the version.
+      path = _resolve_api_version_in_path(path, None)
+    elif patched_http_options.api_version is None:
       versioned_path = f'/{path}'
     else:
       versioned_path = f'{patched_http_options.api_version}/{path}'

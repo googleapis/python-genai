@@ -694,12 +694,13 @@ def prepare_resumable_upload(
           'Unknown mime type: Could not determine the mimetype for your'
           ' file\n    please set the `mime_type` argument'
       )
+  # Leave api_version unset unless the user set it: the API client puts the
+  # resolved version in the `upload/{api_version}/...` path.
   http_options: types.HttpOptions
   if user_http_options:
     if isinstance(user_http_options, dict):
       user_http_options = types.HttpOptions(**user_http_options)
     http_options = user_http_options
-    http_options.api_version = ''
     http_options.headers = {
         'Content-Type': 'application/json',
         'X-Goog-Upload-Protocol': 'resumable',
@@ -709,7 +710,6 @@ def prepare_resumable_upload(
     }
   else:
     http_options = types.HttpOptions(
-        api_version='',
         headers={
             'Content-Type': 'application/json',
             'X-Goog-Upload-Protocol': 'resumable',

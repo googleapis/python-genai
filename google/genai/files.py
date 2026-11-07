@@ -270,9 +270,9 @@ class Files(_api_module.BaseModule):
       request_dict = _CreateFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = 'upload/v1beta/files'.format_map(request_url_dict)
+        path = 'upload/{{api_version}}/files'.format_map(request_url_dict)
       else:
-        path = 'upload/v1beta/files'
+        path = 'upload/{api_version}/files'
 
     query_params = request_dict.get('_query')
     if query_params:
@@ -919,9 +919,9 @@ class AsyncFiles(_api_module.BaseModule):
       request_dict = _CreateFileParameters_to_mldev(parameter_model)
       request_url_dict = request_dict.get('_url')
       if request_url_dict:
-        path = 'upload/v1beta/files'.format_map(request_url_dict)
+        path = 'upload/{{api_version}}/files'.format_map(request_url_dict)
       else:
-        path = 'upload/v1beta/files'
+        path = 'upload/{api_version}/files'
 
     query_params = request_dict.get('_query')
     if query_params:

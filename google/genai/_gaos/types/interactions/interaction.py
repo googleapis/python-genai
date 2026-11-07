@@ -222,7 +222,7 @@ class InteractionTypedDict(TypedDict):
     Label values are optional. Label keys must start with a letter.
     """
     model: NotRequired[Model]
-    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+    r"""The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details."""
     output_audio: NotRequired[AudioContentParam]
     r"""An audio content block."""
     output_image: NotRequired[ImageContentParam]
@@ -333,7 +333,7 @@ class Interaction(BaseModel):
     """
 
     model: Optional[Model] = None
-    r"""The model that will complete your prompt.\n\nSee [models](https://ai.google.dev/gemini-api/docs/models) for additional details."""
+    r"""The model that will complete your prompt.\n\nSee [models](https://aistudio.google.com/docs/models) for additional details."""
 
     output_audio: Optional[AudioContent] = None
     r"""An audio content block."""
