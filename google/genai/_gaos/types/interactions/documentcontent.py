@@ -44,16 +44,6 @@ DocumentContentMimeType = Union[
     Literal[
         "application/pdf",
         "text/csv",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "application/vnd.ms-powerpoint",
-        "application/vnd.oasis.opendocument.presentation",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
-        "application/vnd.oasis.opendocument.text",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "application/vnd.ms-excel",
-        "application/vnd.oasis.opendocument.spreadsheet",
     ],
     UnrecognizedStr,
 ]
