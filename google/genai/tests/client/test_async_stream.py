@@ -300,6 +300,93 @@ async def test_aiohttp_incomplete_json_at_end(
   mock_response.release.assert_called_once()
 
 
+RAW_LINES_WITH_BRACES_IN_STRINGS = [
+    '{"content": {"parts": [{"text": "unmatched {"}]}, "id": "evt1"}',
+    '{"content": {"parts": [{"text": "unmatched }"}]}, "id": "evt2"}',
+    '{"text": "quote \\" then {", "id": "evt3"}',
+    '{"id": "evt4"}',
+    '{"path": "C:\\\\", "note": "{", "id": "evt5"}',
+]
+
+
+def test_segments_raw_lines_with_braces_in_strings(
+    responses: api_client.HttpResponse,
+):
+  """Braces inside string values do not merge raw JSON lines."""
+  responses.response_stream = httpx.Response(
+      200, content='\n'.join(RAW_LINES_WITH_BRACES_IN_STRINGS).encode()
+  )
+
+  results = [segment['id'] for segment in responses.segments()]
+
+  assert results == ['evt1', 'evt2', 'evt3', 'evt4', 'evt5']
+
+
+def test_httpx_raw_lines_with_braces_in_strings_sync(
+    responses: api_client.HttpResponse,
+):
+  """The sync line iterator yields one chunk per raw JSON line."""
+  mock_response = MagicMock(spec=httpx.Response)
+  mock_response.iter_lines.return_value = iter(RAW_LINES_WITH_BRACES_IN_STRINGS)
+  responses.response_stream = mock_response
+
+  results = list(responses._iter_response_stream())
+
+  assert results == RAW_LINES_WITH_BRACES_IN_STRINGS
+
+
+@pytest.mark.asyncio
+async def test_httpx_raw_lines_with_braces_in_strings(
+    responses: api_client.HttpResponse,
+):
+  """The async httpx iterator yields one chunk per raw JSON line."""
+  mock_response = MockHTTPXResponse(RAW_LINES_WITH_BRACES_IN_STRINGS)
+  responses.response_stream = mock_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert results == RAW_LINES_WITH_BRACES_IN_STRINGS
+  mock_response.aclose.assert_called_once()
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_aiohttp_raw_lines_with_braces_in_strings(
+    responses: api_client.HttpResponse,
+):
+  """The aiohttp iterator yields one chunk per raw JSON line."""
+  api_client.has_aiohttp = True
+  mock_response = MockAIOHTTPResponse(RAW_LINES_WITH_BRACES_IN_STRINGS)
+  responses.response_stream = mock_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert results == RAW_LINES_WITH_BRACES_IN_STRINGS
+  mock_response.release.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_httpx_multiline_json_with_brace_in_string(
+    responses: api_client.HttpResponse,
+):
+  """String state carries across the lines of a pretty-printed object."""
+  error_lines = [
+      '{',
+      '  "error": {',
+      '    "code": 400,',
+      '    "message": "bad template {name"',
+      '  }',
+      '}',
+  ]
+  mock_response = MockHTTPXResponse(error_lines + ['{"id": "next"}'])
+  responses.response_stream = mock_response
+
+  results = [line async for line in responses._aiter_response_stream()]
+
+  assert results == [''.join(error_lines), '{"id": "next"}']
+  mock_response.aclose.assert_called_once()
+
+
 class MockAIOHTTPResponseWithLineLimits(aiohttp.ClientResponse):
   """Mock that enforces aiohttp's real readline limits.
 
