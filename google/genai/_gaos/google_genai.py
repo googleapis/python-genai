@@ -161,7 +161,8 @@ def _translate_retry_config(http_options: Any) -> RetryConfig:
     `_api_client._RETRY_ATTEMPTS`, shared with the rest of the SDK). The
     delay-shaping options (`initial_delay`,
     `max_delay`, `exp_base`, `jitter`) and `http_status_codes` are honored when
-    provided, each defaulting to the built-in behavior when omitted.
+    provided, each defaulting to the `_api_client` retry defaults
+    (`_RETRY_INITIAL_DELAY`, `_RETRY_MAX_DELAY`, `_RETRY_JITTER`) when omitted.
     """
     options = getattr(http_options, 'retry_options', None)
 
