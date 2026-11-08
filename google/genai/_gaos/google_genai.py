@@ -171,10 +171,10 @@ def _translate_retry_config(http_options: Any) -> RetryConfig:
         attempts = _api_client._RETRY_ATTEMPTS
     max_retries = max(attempts - 1, 0)
 
-    initial_interval = _DEFAULT_INITIAL_INTERVAL_MS
-    max_interval = _DEFAULT_MAX_INTERVAL_MS
+    initial_interval = int(_api_client._RETRY_INITIAL_DELAY * 1000)
+    max_interval = int(_api_client._RETRY_MAX_DELAY * 1000)
     exponent = _DEFAULT_EXPONENT
-    jitter_ms = None
+    jitter_ms = int(_api_client._RETRY_JITTER * 1000)
     status_codes_override = None
 
     if options is not None:
