@@ -19,6 +19,8 @@
 End to end tests should be in models/test_generate_content.py.
 """
 
+import pickle
+
 import httpx
 import pytest
 
@@ -255,6 +257,43 @@ def test_constructor_message_not_present():
   }
 
 
+def test_constructor_with_websocket_connection_closed_error():
+  actual_error = errors.APIError(
+      1007,
+      'At most one response modality can be specified in the setup request.'
+      ' To enable simultaneous transcription and audio output,',
+      None,
+  )
+  assert actual_error.code == 1007
+  assert (
+      actual_error.details
+      == 'At most one response modality can be specified in the setup request.'
+      ' To enable simultaneous transcription and audio output,'
+  )
+  assert actual_error.status == None
+  assert actual_error.message == None
+
+
+def test_raise_for_websocket_connection_closed_error():
+  try:
+    errors.APIError.raise_error(
+        1007,
+        'At most one response modality can be specified in the setup request.'
+        ' To enable simultaneous transcription and audio output,',
+        None,
+    )
+  except errors.APIError as actual_error:
+    assert actual_error.code == 1007
+    assert (
+        actual_error.details
+        == 'At most one response modality can be specified in the setup'
+        ' request.'
+        ' To enable simultaneous transcription and audio output,'
+    )
+    assert actual_error.status == None
+    assert actual_error.message == None
+
+
 def test_raise_for_response_code_exist_json_decoder_error():
   class FakeResponse(httpx.Response):
 
@@ -327,6 +366,11 @@ def test_raise_for_response_server_error():
             'status': 'SERVER_INTERNAL ERROR',
         }
     }
+
+
+def test_api_error_is_picklable():
+  pickled_error = pickle.loads(pickle.dumps(errors.APIError(1, {})))
+  assert isinstance(pickled_error, errors.APIError)
 
 
 @pytest.mark.asyncio

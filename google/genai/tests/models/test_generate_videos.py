@@ -24,7 +24,11 @@ from ... import _replay_api_client
 from ... import types
 from .. import pytest_helper
 
-VEO_MODEL_LATEST = "veo-2.0-generate-001"
+VEO_MODEL_LATEST = "veo-3.1-generate-preview"
+VEO_MODEL_2 = "veo-2.0-generate-001"
+VEO_MODEL_2_EXP = "veo-2.0-generate-exp"
+
+OUTPUT_GCS_URI = "gs://genai-sdk-tests/temp/videos/"
 
 GCS_IMAGE = types.Image(
     gcs_uri="gs://cloud-samples-data/vertex-ai/llm/prompts/landmark1.png",
@@ -43,10 +47,38 @@ IMAGE_FILE_PATH = os.path.abspath(
 )
 LOCAL_IMAGE = types.Image.from_file(location=IMAGE_FILE_PATH)
 
+LOCAL_IMAGE_MAN = types.Image.from_file(
+    location=os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data/man.jpg")
+    )
+)
+
+LOCAL_IMAGE_DOG = types.Image.from_file(
+    location=os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../data/dog.jpg")
+    )
+)
+
+GCS_OUTPAINT_MASK = types.Image(
+    gcs_uri="gs://genai-sdk-tests/inputs/videos/video_outpaint_mask.png",
+    mime_type="image/png",
+)
+
+GCS_REMOVE_MASK = types.Image(
+    gcs_uri="gs://genai-sdk-tests/inputs/videos/video_remove_mask.png",
+    mime_type="image/png",
+)
+
+GCS_REMOVE_STATIC_MASK = types.Image(
+    gcs_uri="gs://genai-sdk-tests/inputs/videos/video_remove_static_mask.png",
+    mime_type="image/png",
+)
+
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_simple_prompt",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="Man with a dog",
@@ -54,14 +86,13 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_vertex",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="A neon hologram of a cat driving at top speed",
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
-                output_gcs_uri=(
-                    "gs://unified-genai-tests/tmp/genai/video/outputs"
-                ),
+                output_gcs_uri=OUTPUT_GCS_URI,
                 fps=30,
                 duration_seconds=6,
                 seed=1,
@@ -72,14 +103,13 @@ test_table: list[pytest_helper.TestTableItem] = [
                 negative_prompt="ugly, low quality",
                 enhance_prompt=True,
                 compression_quality=types.VideoCompressionQuality.LOSSLESS,
+                labels={"veo_label_key": "generate_videos"},
             ),
-        ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
         ),
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(prompt="Man with a dog"),
@@ -90,6 +120,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_from_image_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
@@ -102,6 +133,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_and_image_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
@@ -115,49 +147,66 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_from_video_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
                 video=types.Video(
                     uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+                    mime_type="video/mp4",
                 ),
             ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
-                output_gcs_uri=(
-                    "gs://unified-genai-tests/tmp/genai/video/outputs"
-                ),
+                output_gcs_uri=OUTPUT_GCS_URI,
             ),
-        ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
         ),
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_and_video_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
                 prompt="Rain",
                 video=types.Video(
                     uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+                    mime_type="video/mp4",
                 ),
             ),
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
-                output_gcs_uri=(
-                    "gs://unified-genai-tests/tmp/genai/video/outputs"
-                ),
+                output_gcs_uri=OUTPUT_GCS_URI,
             ),
         ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
+    ),
+    pytest_helper.TestTableItem(
+        name="test_video_edit_outpaint",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_2_EXP,
+            source=types.GenerateVideosSource(
+                prompt="A mountain landscape",
+                video=types.Video(
+                    uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+                    mime_type="video/mp4",
+                ),
+            ),
+            config=types.GenerateVideosConfig(
+                output_gcs_uri=OUTPUT_GCS_URI,
+                aspect_ratio="16:9",
+                mask=types.VideoGenerationMask(
+                    image=GCS_OUTPAINT_MASK,
+                    mask_mode=types.VideoGenerationMaskMode.OUTPAINT,
+                ),
+            ),
         ),
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
-            model=VEO_MODEL_LATEST,
+            model=VEO_MODEL_2,
             prompt="A neon hologram of a cat driving at top speed",
             config=types.GenerateVideosConfig(
                 number_of_videos=1,
@@ -170,22 +219,69 @@ test_table: list[pytest_helper.TestTableItem] = [
         ),
     ),
     pytest_helper.TestTableItem(
-        name="test_reference_to_video",
+        name="test_all_parameters_veo3_mldev",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
-            model="veo-2.0-generate-exp",
+            model=VEO_MODEL_LATEST,
+            prompt="A neon hologram of a cat driving at top speed",
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                aspect_ratio="16:9",
+                resolution="1080p",
+                negative_prompt="ugly, low quality",
+            ),
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_reference_to_video",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
             prompt="Rain",
             config=types.GenerateVideosConfig(
-                output_gcs_uri="gs://genai-sdk-tests/temp/videos/",
+                output_gcs_uri=OUTPUT_GCS_URI,
                 reference_images=[
                     types.VideoGenerationReferenceImage(
                         image=GCS_IMAGE,
-                        reference_type=types.VideoGenerationReferenceType.STYLE,
+                        reference_type=types.VideoGenerationReferenceType.ASSET,
                     )
                 ],
             ),
         ),
-        exception_if_mldev=(
-            "not supported in Gemini API"
+    ),
+    pytest_helper.TestTableItem(
+        name="test_with_webhook_config",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            prompt="Man with a dog",
+            config=types.GenerateVideosConfig(
+                number_of_videos=1,
+                webhook_config=types.WebhookConfig(
+                    uris=["https://example.com/webhook"],
+                    user_metadata={"job_id": "video_123"},
+                ),
+            ),
+        ),
+        exception_if_vertex=(
+            "parameter is only supported in Gemini Developer API mode"
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name="test_with_webhook_config_dict",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
+        parameters=types._GenerateVideosParameters(
+            model=VEO_MODEL_LATEST,
+            prompt="Man with a dog",
+            config={
+                "number_of_videos": 1,
+                "webhook_config": {
+                    "uris": ["https://example.com/webhook"],
+                },
+            },
+        ),
+        exception_if_vertex=(
+            "parameter is only supported in Gemini Developer API mode"
         ),
     ),
 ]
@@ -199,74 +295,76 @@ pytestmark = pytest_helper.setup(
 
 
 def test_text_to_video_poll(client):
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="A neon hologram of a cat driving at top speed",
-      config=types.GenerateVideosConfig(
-          output_gcs_uri="gs://unified-genai-tests/tmp/genai/video/outputs"
-          if client.vertexai
-          else None,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="A neon hologram of a cat driving at top speed",
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_image_to_video_poll(client):
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs" if client.vertexai else None
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_text_and_image_to_video_poll(client):
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs" if client.vertexai else None
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Lightning storm",
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Lightning storm",
+        image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+            resize_mode=(
+                types.ImageResizeMode.CROP if client.vertexai else None
+            ),
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_video_to_video_poll(client):
-  # Video extension is only supported in Vertex AI.
+  # GCS URI video input is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs"
 
   operation = client.models.generate_videos(
-      model="veo-2.0-generate-exp",
+      model=VEO_MODEL_2,
       video=types.Video(
           uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+          mime_type="video/mp4",
       ),
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI,
       ),
   )
   while not operation.done:
@@ -279,19 +377,19 @@ def test_video_to_video_poll(client):
 
 
 def test_text_and_video_to_video_poll(client):
-  # Video extension is only supported in Vertex AI.
+  # GCS URI video input is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs"
 
   operation = client.models.generate_videos(
-      model="veo-2.0-generate-exp",
+      model=VEO_MODEL_2,
       prompt="Rain",
       video=types.Video(
           uri="gs://genai-sdk-tests/inputs/videos/cat_driving.mp4",
+          mime_type="video/mp4",
       ),
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
+          output_gcs_uri=OUTPUT_GCS_URI,
       ),
   )
   while not operation.done:
@@ -304,18 +402,70 @@ def test_text_and_video_to_video_poll(client):
 
 
 def test_image_to_video_frame_interpolation_poll(client):
-  # Video extension is only supported in Vertex AI.
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Rain",
+        image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+            last_frame=GCS_IMAGE2 if client.vertexai else LOCAL_IMAGE_DOG,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
+
+    assert operation.result.generated_videos[0].video.uri
+
+
+def test_reference_images_to_video_poll(client):
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Chirping birds in a colorful forest",
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+            reference_images=[
+                types.VideoGenerationReferenceImage(
+                    image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+                    reference_type=types.VideoGenerationReferenceType.ASSET,
+                ),
+            ],
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
+
+    assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_outpaint_poll(client):
+  # Editing videos is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://unified-genai-tests/tmp/genai/video/outputs"
 
   operation = client.models.generate_videos(
-      model="veo-2.0-generate-exp",
-      prompt="Rain",
-      image=GCS_IMAGE,
+      model=VEO_MODEL_2_EXP,
+      source=types.GenerateVideosSource(
+          prompt="A mountain landscape",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+              mime_type="video/mp4",
+          ),
+      ),
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
-          last_frame=GCS_IMAGE2,
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              image=GCS_OUTPAINT_MASK,
+              mask_mode=types.VideoGenerationMaskMode.OUTPAINT,
+          ),
       ),
   )
   while not operation.done:
@@ -327,23 +477,92 @@ def test_image_to_video_frame_interpolation_poll(client):
   assert operation.result.generated_videos[0].video.uri
 
 
-def test_reference_images_to_video_poll(client):
-  # Reference images to Video is only supported in Vertex AI.
+def test_video_edit_remove_poll(client):
+  # Editing videos is only supported in Vertex AI.
   if not client.vertexai:
     return
-  output_gcs_uri = "gs://genai-sdk-tests/temp/videos/"
 
   operation = client.models.generate_videos(
-      model="veo-2.0-generate-exp",
-      prompt="Rain",
+      model=VEO_MODEL_2_EXP,
+      source=types.GenerateVideosSource(
+          prompt="A red dune buggy",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+              mime_type="video/mp4",
+          ),
+      ),
       config=types.GenerateVideosConfig(
-          output_gcs_uri=output_gcs_uri,
-          reference_images=[
-              types.VideoGenerationReferenceImage(
-                  image=GCS_IMAGE,
-                  reference_type=types.VideoGenerationReferenceType.STYLE,
-              ),
-          ],
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              image=GCS_REMOVE_MASK,
+              mask_mode=types.VideoGenerationMaskMode.REMOVE,
+          ),
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_remove_static_poll(client):
+  # Editing videos is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+
+  operation = client.models.generate_videos(
+      model=VEO_MODEL_2_EXP,
+      source=types.GenerateVideosSource(
+          prompt="A red dune buggy",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+              mime_type="video/mp4",
+          ),
+      ),
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              image=GCS_REMOVE_STATIC_MASK,
+              mask_mode=types.VideoGenerationMaskMode.REMOVE_STATIC,
+          ),
+      ),
+  )
+  while not operation.done:
+    # Skip the sleep when in replay mode.
+    if client._api_client._mode not in ("replay", "auto"):
+      time.sleep(20)
+    operation = client.operations.get(operation=operation)
+
+  assert operation.result.generated_videos[0].video.uri
+
+
+def test_video_edit_insert_poll(client):
+  # Editing videos is only supported in Vertex AI.
+  if not client.vertexai:
+    return
+
+  operation = client.models.generate_videos(
+      model=VEO_MODEL_2_EXP,
+      source=types.GenerateVideosSource(
+          prompt="Bike",
+          video=types.Video(
+              uri="gs://genai-sdk-tests/inputs/videos/editing_demo.mp4",
+              mime_type="video/mp4",
+          ),
+      ),
+      config=types.GenerateVideosConfig(
+          output_gcs_uri=OUTPUT_GCS_URI,
+          aspect_ratio="16:9",
+          mask=types.VideoGenerationMask(
+              # Insert and remove masks are the same for this input.
+              image=GCS_REMOVE_MASK,
+              mask_mode=types.VideoGenerationMaskMode.INSERT,
+          ),
       ),
   )
   while not operation.done:
@@ -358,13 +577,14 @@ def test_reference_images_to_video_poll(client):
 def test_create_operation_to_poll(client):
   if client.vertexai:
     # Fill in project and location for record mode
-    operation_name = "projects/<project>/locations/<location>/publishers/google/models/veo-2.0-generate-001/operations/ddb46542-07ed-4000-958d-655fbffb05a4"
+    operation_name = "projects/<project>/locations/<location>/publishers/google/models/veo-3.1-generate-preview/operations/9d2fc0b5-5bdf-4b5f-9a41-82970515e20b"
   else:
-    operation_name = "models/veo-2.0-generate-001/operations/ren0ubieaocs"
+    operation_name = "models/veo-3.1-generate-preview/operations/vz341u0pmdlc"
 
   operation = types.GenerateVideosOperation(
       name=operation_name,
   )
+  operation = client.operations.get(operation=operation)
   while not operation.done:
     # Skip the sleep when in replay mode.
     if client._api_client._mode not in ("replay", "auto"):
@@ -385,19 +605,18 @@ def test_source_and_prompt_raises(client):
 
 @pytest.mark.asyncio
 async def test_text_to_video_poll_async(client):
-  operation = await client.aio.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="A neon hologram of a cat driving at top speed",
-      config=types.GenerateVideosConfig(
-          output_gcs_uri="gs://unified-genai-tests/tmp/genai/video/outputs"
-          if client.vertexai
-          else None,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = await client.aio.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = await client.aio.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="A neon hologram of a cat driving at top speed",
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = await client.aio.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri

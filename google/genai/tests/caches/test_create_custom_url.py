@@ -22,7 +22,7 @@ from . import constants
 from ... import _transformers as t
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters(
-    model='gemini-1.5-pro-002',
+    model='gemini-2.5-flash',
     config={
         'contents': [
             types.Content(
@@ -51,7 +51,7 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GCS_URI = types._CreateCachedContentParameters
 )
 
 _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentParameters(
-    model='gemini-1.5-pro-001',
+    model='gemini-2.5-flash',
     config={
         'contents': [
             types.Content(
@@ -59,7 +59,7 @@ _CREATE_CACHED_CONTENT_PARAMETERS_GOOGLEAI_FILE = types._CreateCachedContentPara
                 parts=[
                     types.Part(
                         fileData=types.FileData(
-                            mimeType='video/mp4',
+                            mimeType='application/pdf',
                             fileUri='https://generativelanguage.googleapis.com/v1beta/files/v200dhvn15h7',
                         )
                     )

@@ -457,9 +457,14 @@ def test_repr_max_len_bytes():
   assert repr(b_data) == _common._pretty_repr(b_data, max_len=200)
 
 
-def test_repr_max_depth():
-  nested = [[[[[["deep"]]]]]]
-  assert "<... Max depth ...>" in _common._pretty_repr(nested, depth=3)
+def test_repr_max_depth_dict():
+  nested = {'a': {'a': {'a': {'a': 'a', 'b': 'b'}}}}
+  assert "{<... 2 items at Max depth ...>}" in _common._pretty_repr(nested, depth=3)
+
+
+def test_repr_max_depth_list():
+  nested = [[[["d", "e", "e", "p"]]]]
+  assert "[<... 4 items at Max depth ...>]" in _common._pretty_repr(nested, depth=3)
 
 
 def test_repr_collections():
@@ -670,3 +675,389 @@ However, we can talk about the **leading contenders** and what they are generall
       )
   """).strip()
   assert repr(obj) == expected
+
+
+def test_move_value_by_path():
+  """Test move_value_by_path function with array wildcard notation."""
+  data = {
+      "requests": [
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "1"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "2"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "3"
+                          }
+                      ]
+                  }
+              },
+              "outputDimensionality": 64
+          }
+      ]
+  }
+
+  paths = {'requests[].*': 'requests[].request.*'}
+  _common.move_value_by_path(data, paths)
+
+  expected = {
+      "requests": [
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "1"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "2"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          },
+          {
+              "request": {
+                  "content": {
+                      "parts": [
+                          {
+                              "text": "3"
+                          }
+                      ]
+                  },
+                  "outputDimensionality": 64
+              }
+          }
+      ]
+  }
+
+  assert data == expected
+
+
+def test_check_field_type_mismatches_no_warning_for_correct_types(caplog):
+  """Test that no warning is logged when types match."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_a: ModelA
+
+  # Should not warn - dict will be converted to ModelA by Pydantic
+  data = {"model_a": {"value": 123}}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_a.value == 123
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_warns_on_pydantic_type_mismatch(caplog):
+  """Test that warning is logged when Pydantic model types mismatch."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class ModelB(_common.BaseModel):
+    value: str
+
+  class TestModel(_common.BaseModel):
+    model_field: ModelA
+
+  # Create an instance of ModelB (wrong type)
+  model_b_instance = ModelB(value="test")
+
+  # Pass the wrong Pydantic model instance
+  data = {"model_field": model_b_instance}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel._check_field_type_mismatches(data)
+
+  assert len(caplog.records) == 1
+  assert "Type mismatch in TestModel.model_field" in caplog.records[0].message
+  assert "expected ModelA, got ModelB" in caplog.records[0].message
+
+
+def test_check_field_type_mismatches_no_warning_for_none_values(caplog):
+  """Test that no warning is logged for None values."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_field: Optional[ModelA] = None
+
+  data = {"model_field": None}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_field is None
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_no_warning_for_missing_fields(caplog):
+  """Test that no warning is logged for missing fields."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_field: Optional[ModelA] = None
+
+  data = {}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_field is None
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_no_warning_for_primitive_types(caplog):
+  """Test that no warning is logged for primitive type mismatches."""
+
+  class TestModel(_common.BaseModel):
+    int_field: int
+    str_field: str
+
+  # Even though we're passing wrong primitive types, we should not warn
+  # (Pydantic will handle validation)
+  data = {"int_field": "123", "str_field": "test"}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    # This will succeed because Pydantic can coerce "123" to int
+    result = TestModel.model_validate(data)
+
+  assert result.int_field == 123
+  assert result.str_field == "test"
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_handles_optional_unwrapping(caplog):
+  """Test that Optional types are properly unwrapped before checking."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class ModelB(_common.BaseModel):
+    value: str
+
+  class TestModel(_common.BaseModel):
+    model_field: Optional[ModelA] = None
+
+  # Pass wrong Pydantic model type
+  model_b_instance = ModelB(value="test")
+  data = {"model_field": model_b_instance}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel._check_field_type_mismatches(data)
+
+  assert len(caplog.records) == 1
+  assert "expected ModelA, got ModelB" in caplog.records[0].message
+
+
+def test_check_field_type_mismatches_no_warning_for_correct_pydantic_instance(caplog):
+  """Test that no warning is logged when correct Pydantic instance is provided."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class TestModel(_common.BaseModel):
+    model_field: ModelA
+
+  # Pass correct Pydantic model instance
+  model_a_instance = ModelA(value=42)
+  data = {"model_field": model_a_instance}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    result = TestModel.model_validate(data)
+
+  assert result.model_field.value == 42
+  assert len(caplog.records) == 0
+
+
+def test_check_field_type_mismatches_with_multiple_fields(caplog):
+  """Test checking multiple fields with mixed scenarios."""
+
+  class ModelA(_common.BaseModel):
+    value: int
+
+  class ModelB(_common.BaseModel):
+    value: str
+
+  class TestModel(_common.BaseModel):
+    field_a: ModelA
+    field_b: Optional[ModelA] = None
+    field_c: str
+
+  model_b_instance = ModelB(value="wrong")
+  data = {
+      "field_a": model_b_instance,  # Wrong type - should warn
+      "field_b": None,  # None - should not warn
+      "field_c": "test",  # Primitive - should not warn
+  }
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel._check_field_type_mismatches(data)
+
+  # Should only warn about field_a
+  assert len(caplog.records) == 1
+  assert "field_a" in caplog.records[0].message
+  assert "expected ModelA, got ModelB" in caplog.records[0].message
+
+
+def test_check_field_type_mismatches_generic_type_no_error(caplog):
+  """Test that validation doesn't crash on generic types like list[str]."""
+  class TestModel(_common.BaseModel):
+    tags: list[str]
+
+  data = {"tags": ["a", "b"]}
+
+  with caplog.at_level(logging.WARNING, logger="google_genai._common"):
+    TestModel.model_validate(data)
+
+  assert len(caplog.records) == 0
+
+
+class _ForwardRefOuterModel(_common.BaseModel):
+  # Declared before the model it points at, the way the generated types
+  # sometimes are, so the annotation is a forward reference.
+  items: Optional[List["_ForwardRefInnerModel"]] = None
+
+
+class _ForwardRefInnerModel(_common.BaseModel):
+  value: Optional[str] = None
+
+
+def test_from_response_resolves_forward_references():
+  """Extra fields are pruned from nested models declared as forward references.
+
+  Models are built on first use, so until something builds the outer model its
+  `items` annotation holds an unresolved reference to `_ForwardRefInnerModel`
+  rather than the class, and the pruning walk has nothing to recurse into.
+  """
+  assert not _ForwardRefOuterModel.__pydantic_complete__
+
+  result = _ForwardRefOuterModel._from_response(
+      response={"items": [{"value": "a", "extraField": 1}]}, kwargs={}
+  )
+
+  assert result.items is not None
+  assert result.items[0].value == "a"
+
+
+class _PrunedNestedModel(_common.BaseModel):
+  name: Optional[str] = None
+
+
+class _FreeFormJsonModel(_common.BaseModel):
+  # Mirrors PredictResponse: model servers return arbitrary JSON here.
+  predictions: Optional[List[typing.Any]] = None
+  metadata: Optional[typing.Any] = None
+  nested: Optional[_PrunedNestedModel] = None
+  nested_list: Optional[List[_PrunedNestedModel]] = None
+
+
+@pytest.mark.parametrize(
+    "response,field,expected",
+    [
+        pytest.param(
+            {"predictions": [{"content": "a", "score": 0.9}]},
+            "predictions",
+            [{"content": "a", "score": 0.9}],
+            id="dicts_in_list_of_any",
+        ),
+        pytest.param(
+            {"predictions": ["a", {"content": "b"}, [0.1, 0.2]]},
+            "predictions",
+            ["a", {"content": "b"}, [0.1, 0.2]],
+            id="mixed_items_in_list_of_any",
+        ),
+        pytest.param(
+            {"metadata": {"tokens": 3, "extraField": True}},
+            "metadata",
+            {"tokens": 3, "extraField": True},
+            id="dict_in_any",
+        ),
+    ],
+)
+def test_from_response_keeps_free_form_json(response, field, expected):
+  """Dicts in `Any`-typed fields are free-form JSON and are kept verbatim."""
+  result = _FreeFormJsonModel._from_response(response=response, kwargs={})
+
+  assert getattr(result, field) == expected
+
+
+def test_from_response_still_prunes_nested_models_next_to_any_fields():
+  """Pruning still recurses into BaseModel fields alongside `Any` fields."""
+  result = _FreeFormJsonModel._from_response(
+      response={
+          "predictions": [{"content": "a"}],
+          "nested": {"name": "n", "extraField": 1},
+          "nestedList": [{"name": "m", "extraField": 2}],
+          "unknownTopLevel": 3,
+      },
+      kwargs={},
+  )
+
+  assert result.predictions == [{"content": "a"}]
+  assert result.nested.name == "n"
+  assert "extra_field" not in result.nested.model_dump()
+  assert result.nested_list[0].name == "m"
+  assert "unknown_top_level" not in result.model_dump()
+
+
+class _AnnotatedNestedModel(_common.BaseModel):
+  nested: Optional[typing.Annotated[_PrunedNestedModel, "metadata"]] = None
+  nested_list: Optional[
+      List[typing.Annotated[_PrunedNestedModel, "metadata"]]
+  ] = None
+
+
+def test_from_response_prunes_annotated_nested_models():
+  """`Annotated[Model, ...]` fields are pruned like `Model` fields."""
+  result = _AnnotatedNestedModel._from_response(
+      response={
+          "nested": {"name": "n", "extraField": 1},
+          "nestedList": [{"name": "m", "extraField": 2}],
+      },
+      kwargs={},
+  )
+
+  assert result.nested.name == "n"
+  assert result.nested_list[0].name == "m"

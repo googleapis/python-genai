@@ -123,14 +123,16 @@ class TestBatchJobSource:
         }]
     }
     result_inlined = t.t_batch_job_source(mldev_client, src_dict_inlined)
-    expected_inlined = types.BatchJobSource(inlined_requests=[{
+    expected_inlined = types.BatchJobSource(
+        inlined_requests=[{
             'contents': [{
                 'parts': [{
                     'text': 'Hello!',
                 }],
                 'role': 'user',
             }],
-        }])
+        }]
+    )
     assert result_inlined == expected_inlined
 
   # Test cases for src as types.BatchJobSource (mocked MockBatchJobSource)
@@ -147,17 +149,15 @@ class TestBatchJobSource:
     )
     with pytest.raises(
         ValueError,
-        match='Only one of `inlined_requests` or `file_name` can be set.',
+        match='`inlined_requests`, `file_name`,',
     ):
       t.t_batch_job_source(mldev_client, src_obj)
 
   def test_batch_job_source_mldev_invalid_neither_set(self, mldev_client):
-    src_obj = types.BatchJobSource(
-        gcs_uri=['gs://temp']
-    )
+    src_obj = types.BatchJobSource(gcs_uri=['gs://temp'])
     with pytest.raises(
         ValueError,
-        match='One of `inlined_requests` or `file_name` must be set.',
+        match='`inlined_requests`, `file_name`,',
     ):
       t.t_batch_job_source(mldev_client, src_obj)
 
@@ -172,22 +172,65 @@ class TestBatchJobSource:
     result = t.t_batch_job_source(vertex_client, src_obj)
     assert result is src_obj
 
-  def test_batch_job_source_vertexai_valid_both(self, vertex_client):
+  def test_batch_job_source_vertexai_valid_all(self, vertex_client):
+    src_obj = types.BatchJobSource(
+        gcs_uri=['gs://vertex-bucket/data.jsonl'],
+        bigquery_uri='bq://project.dataset.table',
+        vertex_dataset_name='projects/123/locations/us-central1/datasets/456',
+    )
+    with pytest.raises(
+        ValueError,
+        match=(
+            'Exactly one of `gcs_uri` or `bigquery_uri`, or'
+            ' `vertex_dataset_name` must be set, other sources are not'
+            ' supported in Gemini Enterprise Agent Platform.'
+        ),
+    ):
+      t.t_batch_job_source(vertex_client, src_obj)
+
+  def test_batch_job_source_vertexai_valid_gcs_and_bigquery(
+      self, vertex_client
+  ):
     src_obj = types.BatchJobSource(
         gcs_uri=['gs://vertex-bucket/data.jsonl'],
         bigquery_uri='bq://project.dataset.table',
     )
     with pytest.raises(
-        ValueError, match='Only one of `gcs_uri` or `bigquery_uri` can be set.'
+        ValueError,
+        match=(
+            'Exactly one of `gcs_uri` or `bigquery_uri`, or'
+            ' `vertex_dataset_name` must be set, other sources are not'
+            ' supported in Gemini Enterprise Agent Platform.'
+        ),
+    ):
+      t.t_batch_job_source(vertex_client, src_obj)
+
+  def test_batch_job_source_vertexai_valid_bigquery_and_vertex_dataset(
+      self, vertex_client
+  ):
+    src_obj = types.BatchJobSource(
+        bigquery_uri='bq://project.dataset.table',
+        vertex_dataset_name='projects/123/locations/us-central1/datasets/456',
+    )
+    with pytest.raises(
+        ValueError,
+        match=(
+            'Exactly one of `gcs_uri` or `bigquery_uri`, or'
+            ' `vertex_dataset_name` must be set, other sources are not'
+            ' supported in Gemini Enterprise Agent Platform.'
+        ),
     ):
       t.t_batch_job_source(vertex_client, src_obj)
 
   def test_batch_job_source_vertexai_invalid_neither_set(self, vertex_client):
-    src_obj = types.BatchJobSource(
-        file_name='files/data.csv'
-    )
+    src_obj = types.BatchJobSource(file_name='files/data.csv')
     with pytest.raises(
-        ValueError, match='One of `gcs_uri` or `bigquery_uri` must be set.'
+        ValueError,
+        match=(
+            'Exactly one of `gcs_uri` or `bigquery_uri`, or'
+            ' `vertex_dataset_name` must be set, other sources are not'
+            ' supported in Gemini Enterprise Agent Platform.'
+        ),
     ):
       t.t_batch_job_source(vertex_client, src_obj)
 
@@ -281,6 +324,8 @@ class TestJobState:
           ('BATCH_STATE_SUCCEEDED', 'JOB_STATE_SUCCEEDED'),
           ('BATCH_STATE_FAILED', 'JOB_STATE_FAILED'),
           ('BATCH_STATE_CANCELLED', 'JOB_STATE_CANCELLED'),
+          ('BATCH_STATE_EXPIRED', 'JOB_STATE_EXPIRED'),
+          ('BATCH_STATE_RUNNING', 'JOB_STATE_RUNNING'),
           ('BATCH_STATE_FOOBAR', 'BATCH_STATE_FOOBAR'),
       ],
   )

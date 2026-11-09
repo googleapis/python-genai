@@ -24,7 +24,7 @@ pytestmark = pytest_helper.setup(file=__file__)
 def test_sample(client):
   # [START generativeaionvertexai_gemini_text_only]
   response = client.models.generate_content(
-      model="gemini-1.5-flash-002",
+      model="gemini-2.5-flash",
       contents=(
           "What's a good name for a flower shop that specializes in selling"
           " bouquets of dried flowers?"

@@ -23,13 +23,13 @@ from .. import pytest_helper
 
 
 # Vertex AI batch job name.
-_BATCH_JOB_NAME = '2803006536245313536'
+_BATCH_JOB_NAME = '6339625664542408704'
 _BATCH_JOB_FULL_RESOURCE_NAME = (
     'projects/964831358985/locations/us-central1/'
     f'batchPredictionJobs/{_BATCH_JOB_NAME}'
 )
 # MLDev batch operation name.
-_MLDEV_BATCH_OPERATION_NAME = 'batches/coqrz7leaeit8g83thvdrkzdulz1bxgi8s74'
+_MLDEV_BATCH_OPERATION_NAME = 'batches/0yew7plxupyybd7appsrq5vw7w0lp3l79lab'
 _INVALID_BATCH_JOB_NAME = 'invalid_name'
 
 

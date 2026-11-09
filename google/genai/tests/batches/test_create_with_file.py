@@ -22,11 +22,11 @@ from ... import types
 from .. import pytest_helper
 
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
+_GEMINI_MODEL = 'gemini-2.5-flash'
 _DISPLAY_NAME = 'test_batch'
 
-_MLDEV_GEMINI_MODEL = 'gemini-2.0-flash'
-_FILE_NAME = 'files/76eifkmq7uxd'
+_MLDEV_GEMINI_MODEL = 'gemini-2.5-flash'
+_FILE_NAME = 'files/s0pa54alni6w'
 
 # All tests will be run for both Vertex and MLDev.
 test_table: list[pytest_helper.TestTableItem] = [
@@ -34,12 +34,12 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_generate_content_with_file',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src='files/jjnehuuz8ie3',
+            src={'file_name': _FILE_NAME},
             config={
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported',
         has_union=True,
     ),
     pytest_helper.TestTableItem(
@@ -51,7 +51,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported',
     ),
 ]
 

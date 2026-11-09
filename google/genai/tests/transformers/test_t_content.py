@@ -122,6 +122,17 @@ def test_file_no_mime_type():
     t.t_content(types.File(uri='gs://test'))
 
 
+def test_file_dict():
+  assert t.t_content({'file_uri': 'gs://test', 'mime_type': 'image/png'}) == types.UserContent(
+          parts=[
+              types.Part(
+                  file_data=types.FileData(
+                      file_uri='gs://test', mime_type='image/png'
+                  )
+              )
+          ]
+      )
+
 def test_int():
   try:
     t.t_content(1)

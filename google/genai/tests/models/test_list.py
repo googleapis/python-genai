@@ -30,7 +30,17 @@ test_http_options = {'headers': {'test': 'headers'}}
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_tuned_models',
-        parameters=types._ListModelsParameters(config={'query_base': False}),
+        parameters=types._ListModelsParameters(
+            config={'query_base': False, 'page_size': 3}
+        ),
+    ),
+    pytest_helper.TestTableItem(
+        name='test_tuned_models_with_filter',
+        parameters=types._ListModelsParameters(
+            config={'query_base': False,
+                    'page_size': 3,
+                    'filter': 'displayName="gemini-2.5-flash-1b0689e3-9773-43b4-97eb-c8140d5f183b"'}
+        ),
     ),
     pytest_helper.TestTableItem(
         name='test_base_models',
@@ -193,13 +203,13 @@ def test_empty_api_response_empty_dict_headers(mock_api_client, client):
 
 @pytest.mark.asyncio
 async def test_tuned_models_async_pager(client):
-  pager = await client.aio.models.list(config={'page_size': 10, 'query_base': False})
+  pager = await client.aio.models.list(config={'page_size': 3, 'query_base': False})
 
   assert 'Content-Type' in pager.sdk_http_response.headers
   assert 'Content-Encoding' in pager.sdk_http_response.headers
   assert pager.name == 'models'
-  assert pager.page_size == 10
-  assert len(pager) <= 10
+  assert pager.page_size == 3
+  assert len(pager) <= 3
 
   # Iterate through all the pages. Then next_page() should raise an exception.
   async for _ in pager:

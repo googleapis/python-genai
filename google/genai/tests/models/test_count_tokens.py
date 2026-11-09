@@ -23,7 +23,7 @@ from .. import pytest_helper
 from . import constants
 
 _COUNT_TOKENS_PARAMS = types._CountTokensParameters(
-    model='gemini-1.5-flash',
+    model='gemini-2.5-flash',
     contents=[t.t_content('Tell me a story in 300 words.')],
 )
 
@@ -75,17 +75,17 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_system_instruction',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=_COUNT_TOKENS_PARAMS_WITH_SYSTEM_INSTRUCTION,
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_tools',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=_COUNT_TOKENS_PARAMS_WITH_TOOLS,
     ),
     pytest_helper.TestTableItem(
         name='test_count_tokens_with_generation_config',
-        exception_if_mldev='not supported',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform mode',
         parameters=_COUNT_TOKENS_PARAMS_WITH_GENERATION_CONFIG,
     ),
 ]
@@ -108,26 +108,26 @@ async def test_async(client):
 def test_different_model_names(client):
   if client._api_client.vertexai:
     response1 = client.models.count_tokens(
-        model='gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
+        model='gemini-2.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response1
     response3 = client.models.count_tokens(
-        model='publishers/google/models/gemini-1.5-flash',
+        model='publishers/google/models/gemini-2.5-flash',
         contents=_COUNT_TOKENS_PARAMS.contents,
     )
     assert response3
     response4 = client.models.count_tokens(
-        model='projects/vertexsdk/locations/us-central1/publishers/google/models/gemini-1.5-flash',
+        model='projects/vertexsdk/locations/us-central1/publishers/google/models/gemini-2.5-flash',
         contents=_COUNT_TOKENS_PARAMS.contents,
     )
     assert response4
   else:
     response1 = client.models.count_tokens(
-        model='gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
+        model='gemini-2.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response1
     response2 = client.models.count_tokens(
-        model='models/gemini-1.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
+        model='models/gemini-2.5-flash', contents=_COUNT_TOKENS_PARAMS.contents
     )
     assert response2
 

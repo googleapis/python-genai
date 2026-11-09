@@ -26,44 +26,7 @@ from . import types
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
 
-
 logger = logging.getLogger('google_genai.operations')
-
-
-def _GetOperationParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _GetOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
 
 
 def _FetchPredictOperationParameters_to_vertex(
@@ -81,8 +44,48 @@ def _FetchPredictOperationParameters_to_vertex(
         getv(from_object, ['resource_name']),
     )
 
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
+  return to_object
+
+
+def _GetOperationParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'operationName'],
+        getv(from_object, ['operation_name']),
+    )
+
+  return to_object
+
+
+def _GetOperationParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'operationName'],
+        getv(from_object, ['operation_name']),
+    )
+
+  return to_object
+
+
+def _GetProjectOperationParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_id']) is not None:
+    setv(
+        to_object, ['_url', 'operation_id'], getv(from_object, ['operation_id'])
+    )
 
   return to_object
 
@@ -134,7 +137,7 @@ class Operations(_api_module.BaseModule):
 
     response = self._api_client.request('get', path, request_dict, http_options)
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
 
@@ -153,7 +156,10 @@ class Operations(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
     else:
       request_dict = _FetchPredictOperationParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
@@ -184,9 +190,76 @@ class Operations(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
+
+  def _get(
+      self,
+      *,
+      operation_id: str,
+      config: Optional[types.GetOperationConfigOrDict] = None,
+  ) -> types.ProjectOperation:
+    parameter_model = types._GetProjectOperationParameters(
+        operation_id=operation_id,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
+      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'operations/{operation_id}'.format_map(request_url_dict)
+      else:
+        path = 'operations/{operation_id}'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = self._api_client.request('get', path, request_dict, http_options)
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    return_value = types.ProjectOperation._from_response(
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
 
   T = TypeVar('T', bound=types.Operation)
 
@@ -196,7 +269,34 @@ class Operations(_api_module.BaseModule):
       *,
       config: Optional[types.GetOperationConfigOrDict] = None,
   ) -> T:
-    """Gets the status of an operation."""
+    """Gets the status of a long-running operation.
+
+    Args:
+      operation (Operation): The operation instance to get the status for.
+      config (GetOperationConfig): Configuration for getting the operation.
+
+    Returns:
+      Operation: The updated operation instance with the latest status or
+      result.
+
+    Usage:
+
+    .. code-block:: python
+
+      import time
+
+      operation = client.models.generate_videos(
+          model="veo-2.0-generate-001",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
+      )
+      while not operation.done:
+          time.sleep(10)
+          operation = client.operations.get(operation)
+
+      print(operation.response)
+    """
     # Currently, only GenerateVideosOperation is supported.
     # TODO(b/398040607): Support short form names
     operation_name = operation.name
@@ -229,6 +329,8 @@ class Operations(_api_module.BaseModule):
       response_operation = operation.from_api_response(
           response_dict, is_vertex_ai=True
       )
+
+      self._api_client._verify_response(response_operation)  # type: ignore [arg-type]
       return response_operation  # type: ignore[no-any-return]
     else:
       response_dict = self._get_videos_operation(
@@ -238,6 +340,8 @@ class Operations(_api_module.BaseModule):
       response_operation = operation.from_api_response(
           response_dict, is_vertex_ai=False
       )
+
+      self._api_client._verify_response(response_operation)  # type: ignore [arg-type]
       return response_operation  # type: ignore[no-any-return]
 
 
@@ -290,7 +394,7 @@ class AsyncOperations(_api_module.BaseModule):
         'get', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
 
@@ -309,7 +413,10 @@ class AsyncOperations(_api_module.BaseModule):
 
     request_url_dict: Optional[dict[str, str]]
     if not self._api_client.vertexai:
-      raise ValueError('This method is only supported in the Vertex AI client.')
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
     else:
       request_dict = _FetchPredictOperationParameters_to_vertex(parameter_model)
       request_url_dict = request_dict.get('_url')
@@ -340,9 +447,78 @@ class AsyncOperations(_api_module.BaseModule):
         'post', path, request_dict, http_options
     )
 
-    response_dict = '' if not response.body else json.loads(response.body)
+    response_dict = {} if not response.body else json.loads(response.body)
 
     return response_dict
+
+  async def _get(
+      self,
+      *,
+      operation_id: str,
+      config: Optional[types.GetOperationConfigOrDict] = None,
+  ) -> types.ProjectOperation:
+    parameter_model = types._GetProjectOperationParameters(
+        operation_id=operation_id,
+        config=config,
+    )
+
+    request_url_dict: Optional[dict[str, str]]
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
+      request_dict = _GetProjectOperationParameters_to_vertex(parameter_model)
+      request_url_dict = request_dict.get('_url')
+      if request_url_dict:
+        path = 'operations/{operation_id}'.format_map(request_url_dict)
+      else:
+        path = 'operations/{operation_id}'
+
+    query_params = request_dict.get('_query')
+    if query_params:
+      path = f'{path}?{urlencode(query_params)}'
+    # TODO: remove the hack that pops config.
+    request_dict.pop('config', None)
+
+    http_options: Optional[types.HttpOptions] = None
+    if (
+        parameter_model.config is not None
+        and parameter_model.config.http_options is not None
+    ):
+      http_options = parameter_model.config.http_options
+
+    request_dict = _common.convert_to_dict(request_dict)
+    request_dict = _common.encode_unserializable_types(request_dict)
+
+    response = await self._api_client.async_request(
+        'get', path, request_dict, http_options
+    )
+
+    response_dict = {} if not response.body else json.loads(response.body)
+
+    return_value = types.ProjectOperation._from_response(
+        response=response_dict,
+        kwargs={
+            'config': {
+                'response_schema': getattr(
+                    parameter_model.config, 'response_schema', None
+                ),
+                'response_json_schema': getattr(
+                    parameter_model.config, 'response_json_schema', None
+                ),
+                'include_all_fields': getattr(
+                    parameter_model.config, 'include_all_fields', None
+                ),
+            }
+        }
+        if getattr(parameter_model, 'config', None)
+        else {},
+    )
+
+    self._api_client._verify_response(return_value)
+    return return_value
 
   T = TypeVar('T', bound=types.Operation)
 
@@ -352,7 +528,34 @@ class AsyncOperations(_api_module.BaseModule):
       *,
       config: Optional[types.GetOperationConfigOrDict] = None,
   ) -> T:
-    """Gets the status of an operation."""
+    """Gets the status of a long-running operation.
+
+    Args:
+      operation (Operation): The operation instance to get the status for.
+      config (GetOperationConfig): Configuration for getting the operation.
+
+    Returns:
+      Operation: The updated operation instance with the latest status or
+      result.
+
+    Usage:
+
+    .. code-block:: python
+
+      import asyncio
+
+      operation = await client.aio.models.generate_videos(
+          model="veo-2.0-generate-001",
+          source=types.GenerateVideosSource(
+              prompt="A neon hologram of a cat driving at top speed",
+          ),
+      )
+      while not operation.done:
+          await asyncio.sleep(10)
+          operation = await client.aio.operations.get(operation)
+
+      print(operation.response)
+    """
     # Currently, only GenerateVideosOperation is supported.
     operation_name = operation.name
     if not operation_name:

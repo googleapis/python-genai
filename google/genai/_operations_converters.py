@@ -27,31 +27,22 @@ def _FetchPredictOperationParameters_to_mldev(
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
   if getv(from_object, ['operation_name']) is not None:
-    raise ValueError('operation_name parameter is not supported in Gemini API.')
+    raise ValueError(
+        'operation_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
+    )
 
   if getv(from_object, ['resource_name']) is not None:
-    raise ValueError('resource_name parameter is not supported in Gemini API.')
-
-  if getv(from_object, ['config']) is not None:
-    raise ValueError('config parameter is not supported in Gemini API.')
-
-  return to_object
-
-
-def _GetOperationParameters_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
+    raise ValueError(
+        'resource_name parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
+    raise ValueError(
+        'config parameter is only supported in Gemini Enterprise Agent Platform'
+        ' mode, not in Gemini Developer API mode.'
+    )
 
   return to_object
 
@@ -69,95 +60,6 @@ def _FetchPredictOperationParameters_to_vertex(
         to_object,
         ['_url', 'resourceName'],
         getv(from_object, ['resource_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _GetOperationParameters_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['operation_name']) is not None:
-    setv(
-        to_object,
-        ['_url', 'operationName'],
-        getv(from_object, ['operation_name']),
-    )
-
-  if getv(from_object, ['config']) is not None:
-    setv(to_object, ['config'], getv(from_object, ['config']))
-
-  return to_object
-
-
-def _Video_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video', 'uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['video', 'uri']))
-
-  if getv(from_object, ['video', 'encodedVideo']) is not None:
-    setv(
-        to_object,
-        ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['video', 'encodedVideo'])),
-    )
-
-  if getv(from_object, ['encoding']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
-
-  return to_object
-
-
-def _GeneratedVideo_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_mldev(getv(from_object, ['_self']), to_object),
-    )
-
-  return to_object
-
-
-def _GenerateVideosResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['generatedSamples']) is not None:
-    setv(
-        to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_mldev(item, to_object)
-            for item in getv(from_object, ['generatedSamples'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
     )
 
   return to_object
@@ -201,37 +103,71 @@ def _GenerateVideosOperation_from_mldev(
   return to_object
 
 
-def _Video_from_vertex(
+def _GenerateVideosOperation_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcsUri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
 
-  if getv(from_object, ['bytesBase64Encoded']) is not None:
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['done']) is not None:
+    setv(to_object, ['done'], getv(from_object, ['done']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
+  if getv(from_object, ['response']) is not None:
     setv(
         to_object,
-        ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+        ['response'],
+        _GenerateVideosResponse_from_vertex(
+            getv(from_object, ['response']), to_object
+        ),
     )
 
-  if getv(from_object, ['mimeType']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
+  if getv(from_object, ['response']) is not None:
+    setv(
+        to_object,
+        ['result'],
+        _GenerateVideosResponse_from_vertex(
+            getv(from_object, ['response']), to_object
+        ),
+    )
 
   return to_object
 
 
-def _GeneratedVideo_from_vertex(
+def _GenerateVideosResponse_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
   to_object: dict[str, Any] = {}
-  if getv(from_object, ['_self']) is not None:
+  if getv(from_object, ['generatedSamples']) is not None:
     setv(
         to_object,
-        ['video'],
-        _Video_from_vertex(getv(from_object, ['_self']), to_object),
+        ['generated_videos'],
+        [
+            _GeneratedVideo_from_mldev(item, to_object)
+            for item in getv(from_object, ['generatedSamples'])
+        ],
+    )
+
+  if getv(from_object, ['raiMediaFilteredCount']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_count'],
+        getv(from_object, ['raiMediaFilteredCount']),
+    )
+
+  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
+    setv(
+        to_object,
+        ['rai_media_filtered_reasons'],
+        getv(from_object, ['raiMediaFilteredReasons']),
     )
 
   return to_object
@@ -269,7 +205,67 @@ def _GenerateVideosResponse_from_vertex(
   return to_object
 
 
-def _GenerateVideosOperation_from_vertex(
+def _GeneratedVideo_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['video']) is not None:
+    setv(
+        to_object,
+        ['video'],
+        _Video_from_mldev(getv(from_object, ['video']), to_object),
+    )
+
+  return to_object
+
+
+def _GeneratedVideo_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['_self']) is not None:
+    setv(
+        to_object,
+        ['video'],
+        _Video_from_vertex(getv(from_object, ['_self']), to_object),
+    )
+
+  return to_object
+
+
+def _GetOperationParameters_to_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'operationName'],
+        getv(from_object, ['operation_name']),
+    )
+
+  return to_object
+
+
+def _GetOperationParameters_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['operation_name']) is not None:
+    setv(
+        to_object,
+        ['_url', 'operationName'],
+        getv(from_object, ['operation_name']),
+    )
+
+  return to_object
+
+
+def _ImportFileOperation_from_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
@@ -290,18 +286,118 @@ def _GenerateVideosOperation_from_vertex(
     setv(
         to_object,
         ['response'],
-        _GenerateVideosResponse_from_vertex(
+        _ImportFileResponse_from_mldev(
             getv(from_object, ['response']), to_object
         ),
     )
 
+  return to_object
+
+
+def _ImportFileResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['parent']) is not None:
+    setv(to_object, ['parent'], getv(from_object, ['parent']))
+
+  if getv(from_object, ['documentName']) is not None:
+    setv(to_object, ['document_name'], getv(from_object, ['documentName']))
+
+  return to_object
+
+
+def _UploadToFileSearchStoreOperation_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['metadata']) is not None:
+    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
+
+  if getv(from_object, ['done']) is not None:
+    setv(to_object, ['done'], getv(from_object, ['done']))
+
+  if getv(from_object, ['error']) is not None:
+    setv(to_object, ['error'], getv(from_object, ['error']))
+
   if getv(from_object, ['response']) is not None:
     setv(
         to_object,
-        ['result'],
-        _GenerateVideosResponse_from_vertex(
+        ['response'],
+        _UploadToFileSearchStoreResponse_from_mldev(
             getv(from_object, ['response']), to_object
         ),
     )
+
+  return to_object
+
+
+def _UploadToFileSearchStoreResponse_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['sdkHttpResponse']) is not None:
+    setv(
+        to_object, ['sdk_http_response'], getv(from_object, ['sdkHttpResponse'])
+    )
+
+  if getv(from_object, ['parent']) is not None:
+    setv(to_object, ['parent'], getv(from_object, ['parent']))
+
+  if getv(from_object, ['documentName']) is not None:
+    setv(to_object, ['document_name'], getv(from_object, ['documentName']))
+
+  return to_object
+
+
+def _Video_from_mldev(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['uri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['uri']))
+
+  if getv(from_object, ['encodedVideo']) is not None:
+    setv(
+        to_object,
+        ['video_bytes'],
+        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
+    )
+
+  if getv(from_object, ['encoding']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
+
+  return to_object
+
+
+def _Video_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['gcsUri']) is not None:
+    setv(to_object, ['uri'], getv(from_object, ['gcsUri']))
+
+  if getv(from_object, ['bytesBase64Encoded']) is not None:
+    setv(
+        to_object,
+        ['video_bytes'],
+        base_t.t_bytes(getv(from_object, ['bytesBase64Encoded'])),
+    )
+
+  if getv(from_object, ['mimeType']) is not None:
+    setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
 
   return to_object

@@ -16,27 +16,63 @@
 
 """Tests for batches.create() with inlined requests."""
 import base64
+import copy
 import datetime
 import os
 
 import pytest
 
+from ... import _transformers as t
 from ... import types
 from .. import pytest_helper
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
+_GEMINI_MODEL = 'gemini-2.5-flash'
 _DISPLAY_NAME = 'test_batch'
 
-_MLDEV_GEMINI_MODEL = 'gemini-2.0-flash'
-_INLINED_REQUEST = {
-    'contents': [{
-        'parts': [{
-            'text': 'Hello!',
+_MLDEV_GEMINI_MODEL = 'gemini-2.5-flash'
+
+_SAFETY_SETTINGS = [
+    {
+        'category': 'HARM_CATEGORY_HATE_SPEECH',
+        'threshold': 'BLOCK_ONLY_HIGH',
+    },
+    {
+        'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        'threshold': 'BLOCK_LOW_AND_ABOVE',
+    },
+]
+
+_INLINED_REQUESTS = [
+    {
+        'contents': [{
+            'parts': [{
+                'text': 'what is the number after 1? return just the number.',
+            }],
+            'role': 'user',
         }],
-        'role': 'user',
-    }],
-}
-_INLINED_TEXT_REQUEST = {
+        'metadata': {
+            'key': 'request-1',
+        },
+        'config': {
+            'safety_settings': _SAFETY_SETTINGS,
+        },
+    },
+    {
+        'contents': [{
+            'parts': [{
+                'text': 'what is the number after 2? return just the number.',
+            }],
+            'role': 'user',
+        }],
+        'metadata': {
+            'key': 'request-2',
+        },
+        'config': {
+            'safety_settings': _SAFETY_SETTINGS,
+        },
+    },
+]
+_INLINED_TEXT_REQUEST_UNION = {
     'contents': [{
         'parts': [{
             'text': 'high',
@@ -52,6 +88,15 @@ _INLINED_TEXT_REQUEST = {
         },
     },
 }
+_INLINED_TEXT_REQUEST = copy.deepcopy(_INLINED_TEXT_REQUEST_UNION)
+_INLINED_TEXT_REQUEST['config']['system_instruction'] = t.t_content(
+    'I say high, you say low'
+)
+_INLINED_TEXT_REQUEST['config']['tools'] = [{'google_search': {}}]
+_INLINED_TEXT_REQUEST['config']['tool_config'] = {
+    'retrieval_config': {'lat_lng': {'latitude': 37.422, 'longitude': -122.084}}
+}
+
 _INLINED_IMAGE_REQUEST = {
     'contents': [{
         'parts': [
@@ -125,36 +170,47 @@ test_table: list[pytest_helper.TestTableItem] = [
         name='test_union_with_inlined_request',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src=[_INLINED_REQUEST],
+            src=_INLINED_REQUESTS,
             config={
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported in Vertex',
+        exception_if_vertex='supported in',
         has_union=True,
     ),
     pytest_helper.TestTableItem(
         name='test_with_inlined_request',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src={'inlined_requests': [_INLINED_REQUEST]},
+            src={'inlined_requests': _INLINED_REQUESTS},
             config={
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_with_inlined_request_config',
+        parameters=types._CreateBatchJobParameters(
+            model=_MLDEV_GEMINI_MODEL,
+            src={'inlined_requests': _INLINED_REQUESTS},
+            config={
+                'display_name': _DISPLAY_NAME,
+            },
+        ),
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_union_with_inlined_request_system_instruction',
         parameters=types._CreateBatchJobParameters(
             model=_MLDEV_GEMINI_MODEL,
-            src={'inlined_requests': [_INLINED_TEXT_REQUEST]},
+            src={'inlined_requests': [_INLINED_TEXT_REQUEST_UNION]},
             config={
                 'display_name': _DISPLAY_NAME,
             },
         ),
         has_union=True,
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_image_file',
@@ -165,7 +221,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_image_blob',
@@ -176,7 +232,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
     pytest_helper.TestTableItem(
         name='test_with_video_file',
@@ -187,7 +243,7 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'display_name': _DISPLAY_NAME,
             },
         ),
-        exception_if_vertex='not supported',
+        exception_if_vertex='supported in',
     ),
 ]
 
@@ -207,7 +263,7 @@ async def test_async_create(client):
   with pytest_helper.exception_if_vertex(client, ValueError):
     batch_job = await client.aio.batches.create(
         model=_GEMINI_MODEL,
-        src=[_INLINED_REQUEST],
+        src=_INLINED_REQUESTS,
     )
     assert batch_job.name.startswith('batches/')
     assert (

@@ -15,11 +15,16 @@
 
 """Extra utils depending on types that are shared between sync and async modules."""
 
+import asyncio
+import dataclasses
 import inspect
+import io
 import logging
+import mimetypes
+import os
 import sys
 import typing
-from typing import Any, Callable, Dict, Optional, Union, get_args, get_origin
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
 
 import pydantic
 
@@ -28,6 +33,7 @@ from . import _mcp_utils
 from . import _transformers as t
 from . import errors
 from . import types
+from . import version as public_version
 from ._adapters import McpToGenAiToolAdapter
 
 
@@ -42,12 +48,9 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
+
+
+C = TypeVar('C', bound='_common.BaseModel')
 
 _DEFAULT_MAX_REMOTE_CALLS_AFC = 10
 
@@ -90,14 +93,12 @@ def _get_bigquery_uri(
 
 
 def format_destination(
-    src: Union[str, types.BatchJobSourceOrDict],
-    config: Optional[types.CreateBatchJobConfigOrDict] = None,
+    src: Union[str, types.BatchJobSource],
+    config: Optional[types.CreateBatchJobConfig] = None,
 ) -> types.CreateBatchJobConfig:
   """Formats the destination uri based on the source uri for Vertex AI."""
-  config = (
-      types._CreateBatchJobParameters(config=config).config
-      or types.CreateBatchJobConfig()
-  )
+  if config is None:
+    config = types.CreateBatchJobConfig()
 
   unique_name = None
   if not config.display_name:
@@ -113,9 +114,59 @@ def format_destination(
     elif bigquery_source_uri:
       unique_name = unique_name or _common.timestamped_unique_name()
       config.dest = f'{bigquery_source_uri}_dest_{unique_name}'
-    else:
-      raise ValueError(f'The source {src} is not supported.')
+
   return config
+
+
+def find_afc_incompatible_tool_indexes(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+    is_agent_platform: bool = False,
+) -> list[int]:
+  """Checks if the config contains any AFC incompatible tools."""
+  if not config:
+    return []
+  config_model = _create_generate_content_config_model(config)
+  incompatible_tools_indexes: list[int] = []
+
+  if not config_model or not config_model.tools:
+    return incompatible_tools_indexes
+
+  for index, tool in enumerate(config_model.tools):
+    if not isinstance(tool, types.Tool):
+      continue
+    if getattr(tool, 'function_declarations', None):
+      incompatible_tools_indexes.append(index)
+
+    # Only mark it incompatible if it's MLDev, not Agent Platform.
+    if getattr(tool, 'mcp_servers', None) and not is_agent_platform:
+      incompatible_tools_indexes.append(index)
+  return incompatible_tools_indexes
+
+
+def log_afc_incompatible_tools_warning(
+    config: Optional[types.GenerateContentConfigOrDict],
+    incompatible_tools_indexes: list[int],
+) -> None:
+  """Logs a warning if any tools are incompatible with automatic function calling."""
+  if not incompatible_tools_indexes:
+    return
+  original_tools_length = 0
+  if isinstance(config, types.GenerateContentConfig):
+    if config.tools:
+      original_tools_length = len(config.tools)
+  elif isinstance(config, dict):
+    tools = config.get('tools', [])
+    if tools:
+      original_tools_length = len(tools)
+  if len(incompatible_tools_indexes) != original_tools_length:
+    indices_str = ', '.join(map(str, incompatible_tools_indexes))
+    logger.warning(
+        'Tools at indices [%s] are not compatible with automatic function '
+        'calling (AFC). AFC is disabled. If AFC is intended, please '
+        'include python callables in the tool list, and do not include '
+        'function declaration and MCP server in the tool list.',
+        indices_str,
+    )
 
 
 def get_function_map(
@@ -261,12 +312,20 @@ def convert_argument_from_function(
 ) -> _common.StringDict:
   signature = inspect.signature(function)
   func_name = function.__name__
+  # Without include_extras, Annotated[T, ...] unwraps to runtime type T.
+  try:
+    type_hints = typing.get_type_hints(function)
+  except (NameError, TypeError):
+    type_hints = {}
   converted_args = {}
   for param_name, param in signature.parameters.items():
     if param_name in args:
+      annotation = param.annotation
+      if isinstance(annotation, str) and param_name in type_hints:
+        annotation = type_hints[param_name]
       converted_args[param_name] = convert_if_exist_pydantic_model(
           args[param_name],
-          param.annotation,
+          annotation,
           param_name,
           func_name,
       )
@@ -351,18 +410,26 @@ async def get_function_response_parts_async(
       if not part.function_call:
         continue
       func_name = part.function_call.name
-      if func_name is not None and part.function_call.args is not None:
+      if func_name is not None:
         func = function_map[func_name]
-        args = convert_number_values_for_dict_function_call_args(
+        # Treat None as an empty dictionary for execution
+        raw_args = (
             part.function_call.args
+            if part.function_call.args is not None
+            else {}
         )
-        func_response: _common.StringDict
+        args = convert_number_values_for_dict_function_call_args(raw_args)
         try:
           if isinstance(func, McpToGenAiToolAdapter):
             mcp_tool_response = await func.call_tool(
                 types.FunctionCall(name=func_name, args=args)
             )
-            if mcp_tool_response.isError:
+            is_error = getattr(
+                mcp_tool_response,
+                'is_error',
+                getattr(mcp_tool_response, 'isError', False),
+            )
+            if is_error:
               func_response = {'error': mcp_tool_response}
             else:
               func_response = {'result': mcp_tool_response}
@@ -372,10 +439,12 @@ async def get_function_response_parts_async(
             }
           else:
             func_response = {
-                'result': invoke_function_from_dict_args(args, func)
+                'result': await asyncio.to_thread(
+                    invoke_function_from_dict_args, args, func
+                )
             }
         except Exception as e:  # pylint: disable=broad-except
-          func_response = {'error': str(e)}
+          func_response = {'error': str(e)}  # type: ignore[dict-item]
         func_response_part = types.Part.from_function_response(
             name=func_name, response=func_response
         )
@@ -458,6 +527,31 @@ def get_max_remote_calls_afc(
   return int(config_model.automatic_function_calling.maximum_remote_calls)
 
 
+def raise_error_for_afc_incompatible_config(config: Optional[types.GenerateContentConfig]
+) -> None:
+  """Raises an error if the config is not compatible with AFC."""
+  if (
+      not config
+      or not config.tool_config
+      or not config.tool_config.function_calling_config
+  ):
+    return
+  afc_config = config.automatic_function_calling
+  disable_afc_config = afc_config.disable if afc_config else False
+  stream_function_call = (
+      config.tool_config.function_calling_config.stream_function_call_arguments
+  )
+
+  if stream_function_call and not disable_afc_config:
+    raise ValueError(
+        'Running in streaming mode with stream_function_call_arguments'
+        ' enabled, this feature is not compatible with automatic function'
+        ' calling (AFC). Please set config.automatic_function_calling.disable'
+        ' to True to disable AFC or leave config.tool_config.'
+        ' function_calling_config.stream_function_call_arguments to be empty'
+        ' or set to False to disable streaming function call arguments.'
+    )
+
 def should_append_afc_history(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> bool:
@@ -492,6 +586,7 @@ def parse_config_for_mcp_usage(
 
 async def parse_config_for_mcp_sessions(
     config: Optional[types.GenerateContentConfigOrDict] = None,
+    is_agent_platform: bool = False,
 ) -> tuple[
     Optional[types.GenerateContentConfig],
     dict[str, McpToGenAiToolAdapter],
@@ -509,27 +604,37 @@ async def parse_config_for_mcp_sessions(
   parsed_config_copy = parsed_config.model_copy(update={'tools': None})
   if parsed_config.tools:
     parsed_config_copy.tools = []
-    for tool in parsed_config.tools:
-      if McpClientSession is not None and isinstance(tool, McpClientSession):
-        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
-        )
-        # Extend the config with the MCP session tools converted to GenAI tools.
-        parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
-        for genai_tool in mcp_to_genai_tool_adapter.tools:
-          if genai_tool.function_declarations:
-            for function_declaration in genai_tool.function_declarations:
-              if function_declaration.name:
-                if mcp_to_genai_tool_adapters.get(function_declaration.name):
-                  raise ValueError(
-                      f'Tool {function_declaration.name} is already defined for'
-                      ' the request.'
+    if not _mcp_utils._is_mcp_loaded():
+      # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
+      parsed_config_copy.tools.extend(parsed_config.tools)
+    else:
+      try:
+        from mcp import ClientSession as _McpClientSession  # pylint: disable=g-import-not-at-top
+      except ImportError:
+        _McpClientSession = type('DummySession', (), {})  # type: ignore
+
+      for tool in parsed_config.tools:
+        if isinstance(tool, _McpClientSession):
+          mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+              tool, await tool.list_tools(), is_agent_platform=is_agent_platform
+          )
+          # Extend the config with the MCP session tools converted to GenAI
+          # tools.
+          parsed_config_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+          for genai_tool in mcp_to_genai_tool_adapter.tools:
+            if genai_tool.function_declarations:
+              for function_declaration in genai_tool.function_declarations:
+                if function_declaration.name is not None:
+                  if mcp_to_genai_tool_adapters.get(function_declaration.name):
+                    raise ValueError(
+                        f'Tool {function_declaration.name} is already defined'
+                        ' for the request.'
+                    )
+                  mcp_to_genai_tool_adapters[function_declaration.name] = (
+                      mcp_to_genai_tool_adapter
                   )
-                mcp_to_genai_tool_adapters[function_declaration.name] = (
-                    mcp_to_genai_tool_adapter
-                )
-      else:
-        parsed_config_copy.tools.append(tool)
+        else:
+          parsed_config_copy.tools.append(tool)
 
   return parsed_config_copy, mcp_to_genai_tool_adapters
 
@@ -537,10 +642,703 @@ async def parse_config_for_mcp_sessions(
 def append_chunk_contents(
     contents: Union[types.ContentListUnion, types.ContentListUnionDict],
     chunk: types.GenerateContentResponse,
-) -> None:
-  """Appends the contents of the chunk to the contents list."""
+) -> Union[types.ContentListUnion, types.ContentListUnionDict]:
+  """Appends the contents of the chunk to the contents list and returns it."""
   if chunk is not None and chunk.candidates is not None:
     chunk_content = chunk.candidates[0].content
     contents = t.t_contents(contents)  # type: ignore[assignment]
     if isinstance(contents, list) and chunk_content is not None:
       contents.append(chunk_content)  # type: ignore[arg-type]
+  return contents
+
+
+def prepare_resumable_upload(
+    file: Union[str, os.PathLike[str], io.IOBase],
+    user_http_options: Optional[types.HttpOptionsOrDict] = None,
+    user_mime_type: Optional[str] = None,
+) -> tuple[
+    types.HttpOptions,
+    int,
+    str,
+]:
+  """Prepares the HTTP options, file bytes size and mime type for a resumable upload.
+
+  This function inspects a file (from a path or an in-memory object) to
+  determine its size and MIME type. It then constructs the necessary HTTP
+  headers and options required to initiate a resumable upload session.
+  """
+  size_bytes = None
+  mime_type = user_mime_type
+  if isinstance(file, io.IOBase):
+    if mime_type is None:
+      raise ValueError(
+          'Unknown mime type: Could not determine the mimetype for your'
+          ' file\n please set the `mime_type` argument'
+      )
+    if hasattr(file, 'mode'):
+      if 'b' not in file.mode:
+        raise ValueError('The file must be opened in binary mode.')
+    offset = file.tell()
+    file.seek(0, os.SEEK_END)
+    size_bytes = file.tell() - offset
+    file.seek(offset, os.SEEK_SET)
+  else:
+    fs_path = os.fspath(file)
+    if not fs_path or not os.path.isfile(fs_path):
+      raise FileNotFoundError(f'{file} is not a valid file path.')
+    size_bytes = os.path.getsize(fs_path)
+    if mime_type is None:
+      mime_type, _ = mimetypes.guess_type(fs_path)
+    if mime_type is None:
+      raise ValueError(
+          'Unknown mime type: Could not determine the mimetype for your'
+          ' file\n    please set the `mime_type` argument'
+      )
+  # Leave api_version unset unless the user set it: the API client puts the
+  # resolved version in the `upload/{api_version}/...` path.
+  http_options: types.HttpOptions
+  if user_http_options:
+    if isinstance(user_http_options, dict):
+      user_http_options = types.HttpOptions(**user_http_options)
+    http_options = user_http_options
+    http_options.headers = {
+        'Content-Type': 'application/json',
+        'X-Goog-Upload-Protocol': 'resumable',
+        'X-Goog-Upload-Command': 'start',
+        'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
+        'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+    }
+  else:
+    http_options = types.HttpOptions(
+        headers={
+            'Content-Type': 'application/json',
+            'X-Goog-Upload-Protocol': 'resumable',
+            'X-Goog-Upload-Command': 'start',
+            'X-Goog-Upload-Header-Content-Length': f'{size_bytes}',
+            'X-Goog-Upload-Header-Content-Type': f'{mime_type}',
+        },
+    )
+  if isinstance(file, (str, os.PathLike)):
+    if http_options.headers is None:
+        http_options.headers = {}
+    http_options.headers['X-Goog-Upload-File-Name'] = os.path.basename(file)
+  return http_options, size_bytes, mime_type
+
+
+def has_agent_platform_mcp_servers(
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> bool:
+    """Checks whether the configuration contains any MCP server requests."""
+    if not config:
+      return False
+    config_model = _create_generate_content_config_model(config)
+    if not config_model.tools:
+      return False
+
+    for tool in config_model.tools:
+      if getattr(tool, 'mcp_servers', None):
+        return True
+    return False
+
+
+def get_usage_header(
+    config: Optional[Union[dict[str, Any], C]], config_cls: Type[C], usage: str
+) -> C:
+  """Returns the usage header for the config."""
+  usage_header = f'google-genai-sdk/{public_version.__version__}+{usage}'
+  if not config:
+    config_model = config_cls()
+  elif isinstance(config, dict):
+    config_model = config_cls(**config)
+  else:
+    config_model = config
+
+  # Many configs have http_options, safely initialize it if it's missing
+  if not hasattr(config_model, 'http_options'):
+    return config_model
+
+  http_options = getattr(config_model, 'http_options', None)
+  if http_options is None:
+    http_options = types.HttpOptions()
+    setattr(config_model, 'http_options', http_options)
+
+  http_options = typing.cast(types.HttpOptions, http_options)
+  existing_headers = http_options.headers or {}
+
+  for header_key in ('user-agent', 'x-goog-api-client'):
+    if header_key in existing_headers:
+      if (
+          f'+{usage}' not in existing_headers[header_key]
+          and usage_header not in existing_headers[header_key]
+      ):
+        if (
+            f'google-genai-sdk/{public_version.__version__}'
+            in existing_headers[header_key]
+        ):
+          existing_headers[header_key] = existing_headers[header_key].replace(
+              f'google-genai-sdk/{public_version.__version__}', usage_header
+          )
+        else:
+          existing_headers[header_key] += f' {usage_header}'
+    else:
+      existing_headers[header_key] = usage_header
+
+  http_options.headers = existing_headers
+  return config_model
+
+
+def should_enable_automatic_continuation(
+    config: Optional[types.GenerateContentConfigOrDict],
+    *,
+    default_enabled: bool = True,
+) -> bool:
+  """Returns whether automatic continuation token resumption is enabled."""
+  if config is None:
+    return default_enabled
+  if isinstance(config, dict):
+    automatic_continuation = config.get('automatic_continuation')
+  else:
+    automatic_continuation = getattr(config, 'automatic_continuation', None)
+  if automatic_continuation is None:
+    return default_enabled
+  return bool(automatic_continuation)
+
+
+def is_resumable_finish_reason(
+    finish_reason: Optional[types.FinishReason],
+) -> bool:
+  """Returns True if finish_reason is eligible for automatic continuation.
+
+  A completed generation always ends with finish_reason != CONTINUATION. If the
+  last received response has finish_reason == None (e.g. mid-stream checkpoint
+  before a stream cutoff/error) or FinishReason.CONTINUATION, it can be resumed
+  when a continuation_token is present.
+  """
+  return (
+      finish_reason is None or finish_reason == types.FinishReason.CONTINUATION
+  )
+
+
+def can_resume_stream(
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+    finish_reason: Optional[types.FinishReason],
+    has_prompt_feedback: bool = False,
+) -> bool:
+  """Returns True if a streaming hop should auto-resume with continuation_token."""
+  return bool(
+      enable_continuation
+      and continuation_token
+      and not has_prompt_feedback
+      and is_resumable_finish_reason(finish_reason)
+  )
+
+
+# Maximum number of consecutive streaming reconnects that do not receive a new
+# checkpoint continuation_token before the error is surfaced to the caller.
+MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS = 3
+
+
+def clear_intermediate_finish_reason(
+    chunk: types.GenerateContentResponse,
+    enable_continuation: bool,
+    continuation_token: Optional[bytes],
+) -> types.GenerateContentResponse:
+  """Clears finish_reason on candidates[0] when the stream will auto-continue."""
+  if not chunk.candidates:
+    return chunk
+  candidate = chunk.candidates[0]
+  if candidate.finish_reason and can_resume_stream(
+      enable_continuation, continuation_token, candidate.finish_reason
+  ):
+    updated_candidates = list(chunk.candidates)
+    updated_candidates[0] = candidate.model_copy(
+        update={'finish_reason': None}
+    )
+    return chunk.model_copy(update={'candidates': updated_candidates})
+  return chunk
+
+
+@dataclasses.dataclass
+class _StreamHop:
+  """What was observed during one hop (HTTP request) of a continuation stream."""
+
+  # The continuation_token the hop was requested with (None for the initial
+  # request).
+  start_token: Optional[bytes] = None
+  # The latest continuation_token received during the hop.
+  token: Optional[bytes] = None
+  # The finish_reason received during the hop, or None if the stream ended (or
+  # failed) without one.
+  finish_reason: Optional[types.FinishReason] = None
+  has_prompt_feedback: bool = False
+  # Whether the hop already yielded candidate content parts.
+  has_yielded_content: bool = False
+  # Whether the hop received any chunk (i.e. the server accepted the request
+  # and started streaming).
+  received_any_chunk: bool = False
+  # Usage for the whole stream so far: the usage of all previous hops plus
+  # this hop's latest usage_metadata. Within a hop, each chunk's
+  # usage_metadata is the server's running total for the hop, so it replaces
+  # the previous value (it is not summed); a chunk without usage_metadata
+  # leaves it unchanged.
+  usage: Optional[types.GenerateContentResponseUsageMetadata] = None
+
+
+class StreamContinuation:
+  """State of a generate_content_stream call with automatic continuation.
+
+  A stream is made of one or more hops (HTTP requests). Each hop after the first
+  resumes from a continuation_token. The caller drives the loop:
+
+    state = StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error = None
+      try:
+        for chunk in <stream request with call_config>:
+          yield state.observe(chunk)
+      except Exception as e:
+        error = e
+      if not state.end_hop(error):
+        return
+
+  Per-hop state lives in a `_StreamHop` that is replaced by `start_hop()`, so it
+  is always reset between hops. Loop state (usage accumulated across hops, the
+  token to resume from, and the reconnect count) carries across hops.
+
+  Usage metadata: within a hop, each chunk's usage_metadata is the server's
+  running total for that hop, so the latest one is the hop's usage (chunks are
+  not summed). Across hops, the hops' usage is summed, since each hop is a
+  separate request. Each yielded chunk that has usage_metadata carries the
+  usage of all previous hops plus its own.
+  """
+
+  def __init__(self, config: Optional[types.GenerateContentConfigOrDict]):
+    self._config = config
+    self.enable_continuation = should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    # Usage of all finished hops, summed. Each hop is a separate request whose
+    # usage the server reports independently, so hop totals are added (unlike
+    # chunks within a hop; see _StreamHop.usage).
+    self._accumulated_usage_across_hops: Optional[
+        types.GenerateContentResponseUsageMetadata
+    ] = None
+    # Token the next hop resumes from (None for the initial request).
+    self._resume_token: Optional[bytes] = None
+    # Number of consecutive hops that ended without a new continuation_token.
+    self._reconnects_without_progress = 0
+    # The most recent error raised by a hop since the stream last made
+    # progress. Raised if the stream gives up, so that an error is not hidden
+    # by a later retry that ends cleanly without progress.
+    self._last_error: Optional[Exception] = None
+    self._hop = _StreamHop()
+
+  def start_hop(self) -> Optional[types.GenerateContentConfigOrDict]:
+    """Starts a new hop and returns the config to request it with."""
+    self._hop = _StreamHop(start_token=self._resume_token)
+    return prepare_continuation_config(self._config, self._resume_token)
+
+  def observe(
+      self, chunk: types.GenerateContentResponse
+  ) -> types.GenerateContentResponse:
+    """Records one streamed chunk and returns the chunk to yield.
+
+    The returned chunk has its intermediate finish_reason cleared when the
+    stream will auto-continue, and its usage_metadata (if any) set to this
+    hop's latest usage plus the usage of all previous hops.
+    """
+    hop = self._hop
+    hop.received_any_chunk = True
+    if chunk.prompt_feedback is not None:
+      hop.has_prompt_feedback = True
+    if chunk.candidates:
+      candidate = chunk.candidates[0]
+      if candidate.content and candidate.content.parts:
+        hop.has_yielded_content = True
+      if candidate.finish_reason:
+        hop.finish_reason = candidate.finish_reason
+      if candidate.continuation_token:
+        hop.token = candidate.continuation_token
+      elif candidate.finish_reason and not is_resumable_finish_reason(
+          candidate.finish_reason
+      ):
+        hop.token = None
+      chunk = clear_intermediate_finish_reason(
+          chunk, self.enable_continuation, hop.token
+      )
+    if chunk.usage_metadata is not None:
+      if self._accumulated_usage_across_hops is not None:
+        merged_usage = merge_pydantic_models(
+            self._accumulated_usage_across_hops, chunk.usage_metadata
+        )
+        chunk = chunk.model_copy(update={'usage_metadata': merged_usage})
+        hop.usage = merged_usage
+      else:
+        hop.usage = chunk.usage_metadata
+    return chunk
+
+  def end_hop(self, error: Optional[Exception] = None) -> bool:
+    """Ends the current hop. Returns True if another hop should be started.
+
+    If the stream fails or ends without a terminal finish_reason, the next hop
+    resumes from the latest checkpoint token. If the hop failed before emitting
+    a checkpoint of its own and before yielding content, it is retried from the
+    token it started with.
+
+    Only failures of an accepted stream are retried here (a dropped connection,
+    or a stream that ends early). A request the server rejected before streaming
+    anything (an HTTP error status, or an error as the first event) is raised
+    immediately: retrying rejected requests, with backoff, is the job of
+    `HttpOptions.retry_options`.
+
+    When the stream gives up, the latest error raised since the stream last made
+    progress is re-raised, even if a later retry ended without an error. Errors
+    are never invented: a stream that only ever ended cleanly returns normally.
+
+    Args:
+      error: The exception raised while streaming the hop, if any.
+
+    Raises:
+      Exception: The hop's error, or the latest error since the stream last
+        made progress, if the stream can't be resumed.
+    """
+    hop = self._hop
+    if hop.usage is not None:
+      self._accumulated_usage_across_hops = hop.usage
+    if isinstance(error, errors.APIError) and not hop.received_any_chunk:
+      raise error
+    made_progress = hop.has_yielded_content or bool(
+        hop.token and hop.token != hop.start_token
+    )
+    if error is not None:
+      self._last_error = error
+    elif made_progress:
+      self._last_error = None
+    self._resume_token, self._reconnects_without_progress = (
+        self._next_resume_token()
+    )
+    if can_resume_stream(
+        self.enable_continuation,
+        self._resume_token,
+        hop.finish_reason,
+        hop.has_prompt_feedback,
+    ):
+      return True
+    if error is not None:
+      raise error
+    gave_up = hop.finish_reason is None and not hop.has_prompt_feedback
+    if gave_up and self._last_error is not None:
+      raise self._last_error
+    return False
+
+  def _next_resume_token(self) -> tuple[Optional[bytes], int]:
+    """Returns (token to resume from or None to stop, updated reconnect count).
+
+    Long-decode checkpoints are only emitted part way through each hop, so a
+    connection can drop during prefill before the hop has produced a checkpoint
+    of its own. In that case, if no candidate content has been yielded yet, the
+    hop can be retried from the token it was started with.
+    """
+    hop = self._hop
+    reconnects = self._reconnects_without_progress
+    if hop.finish_reason is not None or hop.has_prompt_feedback:
+      if (
+          hop.finish_reason == types.FinishReason.CONTINUATION
+          and not hop.has_prompt_feedback
+          and hop.token
+          and hop.token != hop.start_token
+      ):
+        return hop.token, 0
+      # The server ended the hop without a new token (or returned
+      # prompt_feedback); replaying the same token would only repeat the hop.
+      return None, 0
+    if hop.token and hop.token != hop.start_token:
+      return hop.token, 0
+    if (
+        hop.has_yielded_content
+        or reconnects >= MAX_STREAM_RECONNECTS_WITHOUT_PROGRESS
+    ):
+      return None, reconnects
+    return hop.start_token, reconnects + 1
+
+
+def should_continue_generation(
+    response: Optional[types.GenerateContentResponse],
+) -> Optional[bytes]:
+  """Returns continuation_token if generation should auto-resume, else None."""
+  if not response or not response.candidates:
+    return None
+  candidate = response.candidates[0]
+  if not candidate.continuation_token:
+    return None
+  if is_resumable_finish_reason(candidate.finish_reason):
+    return candidate.continuation_token
+  return None
+
+
+def prepare_continuation_config(
+    base_config: Optional[types.GenerateContentConfigOrDict],
+    continuation_token: Optional[bytes],
+    *,
+    clear_automatic_continuation: bool = False,
+) -> Optional[types.GenerateContentConfig]:
+  """Returns a shallow copy of base_config with continuation_token set."""
+  has_auto_cont = (
+      base_config.get('automatic_continuation') is not None
+      if isinstance(base_config, dict)
+      else getattr(base_config, 'automatic_continuation', None) is not None
+  )
+  need_clear_auto_cont = clear_automatic_continuation and has_auto_cont
+  if (
+      not continuation_token
+      and not need_clear_auto_cont
+      and (
+          base_config is None
+          or isinstance(base_config, types.GenerateContentConfig)
+      )
+  ):
+    return base_config
+  if base_config is None:
+    return types.GenerateContentConfig(continuation_token=continuation_token)
+  if isinstance(base_config, dict):
+    copied_dict: dict[str, Any] = dict(base_config)
+    if continuation_token:
+      copied_dict['continuation_token'] = continuation_token
+    if need_clear_auto_cont:
+      copied_dict['automatic_continuation'] = None
+    return types.GenerateContentConfig(**copied_dict)
+  updates: dict[str, Any] = {}
+  if continuation_token:
+    updates['continuation_token'] = continuation_token
+  if need_clear_auto_cont:
+    updates['automatic_continuation'] = None
+  return base_config.model_copy(update=updates)
+
+
+def merge_modality_token_counts(
+    prev_list: list[types.ModalityTokenCount],
+    curr_list: list[types.ModalityTokenCount],
+) -> list[types.ModalityTokenCount]:
+  """Sums token_count per modality across two lists of ModalityTokenCount."""
+  counts_by_modality: dict[Any, int] = {}
+  order: list[Any] = []
+  for item in prev_list + curr_list:
+    if item.modality not in counts_by_modality:
+      counts_by_modality[item.modality] = 0
+      order.append(item.modality)
+    counts_by_modality[item.modality] += item.token_count or 0
+  return [
+      types.ModalityTokenCount(
+          modality=mod, token_count=counts_by_modality[mod]
+      )
+      for mod in order
+  ]
+
+
+def merge_safety_ratings(
+    prev_list: list[types.SafetyRating],
+    curr_list: list[types.SafetyRating],
+) -> list[types.SafetyRating]:
+  """Deduplicates safety ratings by category, keeping the latest hop's rating."""
+  by_category: dict[Any, types.SafetyRating] = {}
+  order: list[Any] = []
+  for rating in prev_list + curr_list:
+    if rating.category not in by_category:
+      order.append(rating.category)
+    by_category[rating.category] = rating
+  return [by_category[cat] for cat in order]
+
+
+def _shift_candidate_grounding_supports(
+    prev: types.Candidate,
+    curr: types.Candidate,
+) -> types.Candidate:
+  """Shifts curr's GroundingSupport chunk and part indices by prev's lengths."""
+  curr_gm = curr.grounding_metadata
+  if curr_gm is None or not curr_gm.grounding_supports:
+    return curr
+
+  part_offset = (
+      len(prev.content.parts)
+      if prev.content is not None and prev.content.parts
+      else 0
+  )
+  chunk_offset = (
+      len(prev.grounding_metadata.grounding_chunks)
+      if prev.grounding_metadata is not None
+      and prev.grounding_metadata.grounding_chunks
+      else 0
+  )
+  if part_offset == 0 and chunk_offset == 0:
+    return curr
+
+  shifted_supports: list[types.GroundingSupport] = []
+  for support in curr_gm.grounding_supports:
+    support_updates: dict[str, Any] = {}
+    if chunk_offset > 0 and support.grounding_chunk_indices:
+      support_updates['grounding_chunk_indices'] = [
+          idx + chunk_offset for idx in support.grounding_chunk_indices
+      ]
+    if part_offset > 0 and support.segment is not None:
+      prev_part_index = (
+          support.segment.part_index
+          if support.segment.part_index is not None
+          else 0
+      )
+      support_updates['segment'] = support.segment.model_copy(
+          update={'part_index': prev_part_index + part_offset}
+      )
+    if support_updates:
+      shifted_supports.append(support.model_copy(update=support_updates))
+    else:
+      shifted_supports.append(support)
+
+  return curr.model_copy(
+      update={
+          'grounding_metadata': curr_gm.model_copy(
+              update={'grounding_supports': shifted_supports}
+          )
+      }
+  )
+
+
+def merge_candidates(
+    prev_candidates: list[types.Candidate],
+    curr_candidates: list[types.Candidate],
+) -> list[types.Candidate]:
+  """Merges candidates element-wise across continuation hops."""
+  if not prev_candidates:
+    return curr_candidates
+  if not curr_candidates:
+    return [
+        merge_pydantic_models(prev_candidate, types.Candidate())
+        for prev_candidate in prev_candidates
+    ]
+  result: list[types.Candidate] = []
+  for prev_candidate, curr_candidate in zip(prev_candidates, curr_candidates):
+    merged_candidate = merge_pydantic_models(prev_candidate, curr_candidate)
+    result.append(merged_candidate)
+  result.extend(prev_candidates[len(curr_candidates) :])
+  result.extend(curr_candidates[len(prev_candidates) :])
+  return result
+
+
+def merge_pydantic_models(prev: C, curr: C) -> C:
+  """Recursively merges two Pydantic BaseModel instances across continuation hops."""
+  if isinstance(prev, types.Candidate) and isinstance(curr, types.Candidate):
+    curr = typing.cast(C, _shift_candidate_grounding_supports(prev, curr))
+  merged_data: dict[str, Any] = {}
+  for field_name in type(curr).model_fields:
+    prev_val = getattr(prev, field_name, None)
+    curr_val = getattr(curr, field_name, None)
+
+    # Terminal hop state on Candidate must reflect the final hop even if None
+    # e.g., continuation_token is None when the final hop finishes with STOP
+    if isinstance(curr, types.Candidate) and field_name in (
+        'continuation_token',
+        'finish_reason',
+        'finish_message',
+    ):
+      merged_data[field_name] = curr_val
+      continue
+
+    # Route candidates through merge_candidates even when curr.candidates is
+    # None so preserved candidates clear terminal continuation state.
+    if (
+        isinstance(curr, types.GenerateContentResponse)
+        and field_name == 'candidates'
+        and prev_val is not None
+    ):
+      merged_data[field_name] = merge_candidates(prev_val, curr_val or [])
+      continue
+
+    if curr_val is None:
+      merged_data[field_name] = prev_val
+    elif prev_val is None:
+      merged_data[field_name] = curr_val
+    elif isinstance(prev_val, _common.BaseModel) and isinstance(
+        curr_val, _common.BaseModel
+    ):
+      merged_data[field_name] = merge_pydantic_models(prev_val, curr_val)
+    elif (
+        isinstance(prev_val, (int, float))
+        and not isinstance(prev_val, bool)
+        and isinstance(curr_val, (int, float))
+        and not isinstance(curr_val, bool)
+        and (
+            field_name == 'token_count'
+            or field_name.endswith('_count')
+            or field_name.endswith('_sum')
+        )
+    ):
+      merged_data[field_name] = prev_val + curr_val
+    elif isinstance(prev_val, list) and isinstance(curr_val, list):
+      if prev_val and isinstance(prev_val[0], types.ModalityTokenCount):
+        merged_data[field_name] = merge_modality_token_counts(
+            prev_val, curr_val
+        )
+      elif curr_val and isinstance(curr_val[0], types.ModalityTokenCount):
+        merged_data[field_name] = merge_modality_token_counts(
+            prev_val, curr_val
+        )
+      elif field_name == 'safety_ratings':
+        merged_data[field_name] = merge_safety_ratings(prev_val, curr_val)
+      else:
+        # Concatenates Content.parts (keeping each hop's Part distinct and
+        # preserving empty placeholder Parts), GroundingChunks, Citations, etc.
+        merged_data[field_name] = prev_val + curr_val
+    else:
+      merged_data[field_name] = curr_val
+
+  merged = curr.model_copy(update=merged_data)
+  if (
+      isinstance(prev, types.GenerateContentResponseUsageMetadata)
+      and isinstance(curr, types.GenerateContentResponseUsageMetadata)
+      and isinstance(merged, types.GenerateContentResponseUsageMetadata)
+  ):
+    merged._initial_prompt_token_count = (
+        prev.initial_prompt_token_count
+        if prev.initial_prompt_token_count is not None
+        else curr.initial_prompt_token_count
+    )
+  return merged
+
+
+def merge_continuation_responses(
+    responses: list[types.GenerateContentResponse],
+    config: Optional[types.GenerateContentConfigOrDict] = None,
+) -> types.GenerateContentResponse:
+  """Merges a sequence of continuation hop responses into a single response."""
+  if not responses:
+    return types.GenerateContentResponse()
+  if len(responses) == 1:
+    return responses[0]
+  merged = responses[0]
+  for resp in responses[1:]:
+    merged = merge_pydantic_models(merged, resp)
+
+  if config is not None:
+    response_schema = (
+        config.get('response_schema')
+        if isinstance(config, dict)
+        else getattr(config, 'response_schema', None)
+    )
+    response_json_schema = (
+        config.get('response_json_schema')
+        if isinstance(config, dict)
+        else getattr(config, 'response_json_schema', None)
+    )
+    if response_schema is not None or response_json_schema is not None:
+      config_dict = {
+          'response_schema': response_schema,
+          'response_json_schema': response_json_schema,
+      }
+      reparsed = types.GenerateContentResponse._from_response(
+          response=merged.model_dump(exclude_none=True),
+          kwargs={'config': config_dict},
+      )
+      merged.parsed = reparsed.parsed
+
+  return merged

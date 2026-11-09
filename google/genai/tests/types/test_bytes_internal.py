@@ -20,6 +20,8 @@ from unittest import mock
 
 import pytest
 
+from .. import pytest_helper
+
 from ... import _api_client as google_genai_api_client_module
 from ... import _common as common_module
 from ... import client as google_genai_client_module
@@ -86,7 +88,7 @@ def test_base64_pydantic_input_success(
   )
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash-001',
+      model='gemini-2.5-flash-001',
       contents=types.Content(
           role='user',
           parts=[
@@ -103,9 +105,10 @@ def test_base64_pydantic_input_success(
   encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
-      mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
+      pytest_helper.get_value_ignore_key_case(
+          mock_request_method.call_args[0][2]['contents'][0]['parts'][0],
           'inlineData'
-      ]['data']
+      )['data']
       == _BASE64_URL_SAFE
   )
   assert response.candidates[0].content == types.Content(
@@ -129,7 +132,7 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
   )
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash-001',
+      model='gemini-2.5-flash-001',
       contents={
           'role': 'user',
           'parts': [
@@ -146,9 +149,10 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
   encode_unserializable_types_method.assert_called()
   assert mock_request_method.call_count == 1
   assert (
-      mock_request_method.call_args[0][2]['contents'][0]['parts'][0][
+      pytest_helper.get_value_ignore_key_case(
+          mock_request_method.call_args[0][2]['contents'][0]['parts'][0],
           'inlineData'
-      ]['data']
+      )['data']
       == _BASE64_URL_SAFE
   )
   assert response.candidates[0].content == types.Content(
@@ -163,7 +167,7 @@ def test_base64_dict_input_success(client, mock_request_method, encode_unseriali
 def test_base64_pydantic_input_failure(client):
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-2.5-flash-001',
         contents=types.Content(
             role='user',
             parts=[
@@ -184,7 +188,7 @@ def test_base64_pydantic_input_failure(client):
 def test_base64_dict_input_failure(client):
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-2.5-flash-001',
         contents={
             'role': 'user',
             'parts': [{
@@ -219,7 +223,7 @@ def test_base64_pydantic_output_success(client, mock_request_method):
   )
 
   response = client.models.generate_content(
-      model='gemini-1.5-flash-001',
+      model='gemini-2.5-flash-001',
       contents=types.Content(
           role='user',
           parts=[types.Part(text='Hello World')],
@@ -259,7 +263,7 @@ def test_base64_pydantic_output_failure(client, mock_request_method):
 
   with pytest.raises(ValueError, match='Data should be valid base64'):
     client.models.generate_content(
-        model='gemini-1.5-flash-001',
+        model='gemini-2.5-flash-001',
         contents=types.Content(
             role='user',
             parts=[types.Part(text='Hello World')],

@@ -15,9 +15,12 @@
 
 
 import copy
+import json
 import sys
 import typing
 from typing import Optional, assert_never
+import warnings
+import PIL.Image
 import pydantic
 import pytest
 from ... import types
@@ -37,6 +40,10 @@ else:
 
 
 class SubPart(types.Part):
+  pass
+
+
+class SubFunctionResponsePart(types.FunctionResponsePart):
   pass
 
 
@@ -94,6 +101,41 @@ def test_factory_method_from_function_response_part():
   assert my_part.function_response.name == 'func'
   assert my_part.function_response.response == {'response': 'value'}
   assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_part_from_function_response_with_multi_modal_parts():
+  my_part = SubPart.from_function_response(
+      name='func',
+      response={'response': 'value'},
+      parts=[{'inline_data': {'data': b'123', 'mime_type': 'image/png'}}],
+  )
+  assert my_part.function_response.name == 'func'
+  assert my_part.function_response.response == {'response': 'value'}
+  assert my_part.function_response.parts[0].inline_data.data == b'123'
+  assert my_part.function_response.parts[0].inline_data.mime_type == 'image/png'
+  assert isinstance(my_part, SubPart)
+
+
+def test_factory_method_function_response_part_from_bytes():
+  my_part = SubFunctionResponsePart.from_bytes(
+      data=b'123', mime_type='image/png'
+  )
+  assert my_part.inline_data.data == b'123'
+  assert my_part.inline_data.mime_type == 'image/png'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_uri():
+  my_part = SubFunctionResponsePart.from_uri(
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+      mime_type='image/jpeg',
+  )
+  assert (
+      my_part.file_data.file_uri
+      == 'gs://generativeai-downloads/images/scones.jpg'
+  )
+  assert my_part.file_data.mime_type == 'image/jpeg'
+  assert isinstance(my_part, SubFunctionResponsePart)
 
 
 def test_factory_method_from_executable_code_part():
@@ -260,6 +302,58 @@ def test_factory_method_from_mcp_call_tool_function_response_embedded_resource()
       ]
   }
   assert isinstance(my_function_response, types.FunctionResponse)
+
+
+def test_part_constructor_with_string_value():
+  part = types.Part('hello')
+  assert part.text == 'hello'
+  assert part.file_data is None
+  assert part.inline_data is None
+
+
+def test_part_constructor_with_part_value():
+  other_part = types.Part(text='hello from other part')
+  part = types.Part(other_part)
+  assert part.text == 'hello from other part'
+
+
+def test_part_constructor_with_part_dict_value():
+  part = types.Part({'text': 'hello from dict'})
+  assert part.text == 'hello from dict'
+
+
+def test_part_constructor_with_file_data_dict_value():
+  part = types.Part(
+      {'file_uri': 'gs://my-bucket/file-data', 'mime_type': 'text/plain'}
+  )
+  assert part.file_data.file_uri == 'gs://my-bucket/file-data'
+  assert part.file_data.mime_type == 'text/plain'
+
+
+def test_part_constructor_with_kwargs_and_value_fails():
+  with pytest.raises(
+      ValueError, match='Positional and keyword arguments can not be combined'
+  ):
+    types.Part('hello', text='world')
+
+
+def test_part_constructor_with_file_value():
+  f = types.File(
+      uri='gs://my-bucket/my-file',
+      mime_type='text/plain',
+      display_name='test file',
+  )
+  part = types.Part(f)
+  assert part.file_data.file_uri == 'gs://my-bucket/my-file'
+  assert part.file_data.mime_type == 'text/plain'
+  assert part.file_data.display_name == 'test file'
+
+
+def test_part_constructor_with_pil_image():
+  img = PIL.Image.new('RGB', (1, 1), color='red')
+  part = types.Part(img)
+  assert part.inline_data.mime_type == 'image/jpeg'
+  assert isinstance(part.inline_data.data, bytes)
 
 
 class FakeClient:
@@ -914,9 +1008,11 @@ def test_generic_alias_complex_array_all_py_versions():
   assert actual_schema_mldev == expected_schema
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason='| is only supported in Python 3.10 and above.',
+@pytest.mark.skip(
+    reason=(
+        'AFC is in progress of refactoring, this test is failing python 3.14'
+        ' b/512415555 will update once refactoring from yyyu@ is done'
+    ),
 )
 def test_generic_alias_complex_array_with_default_value():
 
@@ -1000,6 +1096,12 @@ def test_generic_alias_complex_array_with_default_value():
   assert actual_schema_mldev == expected_schema
 
 
+@pytest.mark.skip(
+    reason=(
+        'AFC is in progress of refactoring, this test is failing python 3.14'
+        ' b/512415555 will update once refactoring from yyyu@ is done'
+    ),
+)
 def test_generic_alias_complex_array_with_default_value_all_py_versions():
 
   def func_under_test(
@@ -1412,6 +1514,12 @@ def test_pydantic_model_in_list_type():
   assert actual_schema_vertex == expected_schema
 
 
+@pytest.mark.skip(
+    reason=(
+        'AFC is in progress of refactoring, this test is failing python 3.14'
+        ' b/512415555 will update once refactoring from yyyu@ is done'
+    ),
+)
 def test_pydantic_model_in_union_type():
   class CatInformationObject(pydantic.BaseModel):
     name: str
@@ -1554,9 +1662,11 @@ def test_custom_class():
     )
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 10),
-    reason='| is only supported in Python 3.10 and above.',
+@pytest.mark.skip(
+    reason=(
+        'AFC is in progress of refactoring, this test is failing python 3.14'
+        ' b/512415555 will update once refactoring from yyyu@ is done'
+    ),
 )
 def test_type_union():
 
@@ -1630,6 +1740,12 @@ def test_type_union():
   assert actual_schema_mldev == expected_schema
 
 
+@pytest.mark.skip(
+    reason=(
+        'AFC is in progress of refactoring, this test is failing python 3.14'
+        ' b/512415555 will update once refactoring from yyyu@ is done'
+    ),
+)
 def test_type_union_all_py_versions():
 
   def func_under_test(
@@ -1809,6 +1925,12 @@ def test_type_union_with_default_value():
   assert actual_schema_mldev == expected_schema
 
 
+@pytest.mark.skip(
+    reason=(
+        'AFC is in progress of refactoring, this test is failing python 3.14'
+        ' b/512415555 will update once refactoring from yyyu@ is done'
+    ),
+)
 def test_type_union_with_default_value_all_py_versions():
 
   def func_under_test(
@@ -2594,6 +2716,30 @@ def test_function_with_option_vertex(monkeypatch):
   assert actual_schema_vertex == expected_schema_vertex
 
 
+def test_convert_json_schema_with_cycle():
+  json_schema_dict = {
+      'type': 'object',
+      'properties': {
+          'foo': {'$ref': '#/$defs/Foo'}
+      },
+      '$defs': {
+          'Foo': {
+              'type': 'object',
+              'properties': {
+                  'foo': {'$ref': '#/$defs/Foo'}
+              }
+          }
+      }
+  }
+
+  json_schema = types.JSONSchema(**json_schema_dict)
+  schema = types.Schema.from_json_schema(json_schema=json_schema)
+
+  assert schema.type == types.Type.OBJECT
+  assert schema.properties['foo'].type == types.Type.OBJECT
+  assert schema.properties['foo'].properties['foo'] == types.Schema()
+
+
 def test_case_insensitive_enum():
   assert types.Type('STRING') == types.Type.STRING
   assert types.Type('string') == types.Type.STRING
@@ -2620,6 +2766,28 @@ def test_unknown_enum_value_in_nested_dict():
   )
   assert schema.category.name == 'NEW_CATEGORY'
   assert schema.category.value == 'NEW_CATEGORY'
+
+
+def test_finish_reason_malformed_response():
+  """MALFORMED_RESPONSE from the API parses into a real member, unwarned."""
+  with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter('always')
+    response = types.GenerateContentResponse._from_response(
+        response={'candidates': [{'finish_reason': 'MALFORMED_RESPONSE'}]},
+        kwargs={},
+    )
+  assert not [w for w in caught if 'is not a valid' in str(w.message)]
+  assert 'MALFORMED_RESPONSE' in types.FinishReason.__members__
+  assert response.candidates[0].finish_reason in list(types.FinishReason)
+
+
+def test_finish_reason_malformed_response_case_insensitive():
+  """A lowercase value resolves to the same member without a warning."""
+  with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter('always')
+    reason = types.FinishReason('malformed_response')
+  assert not [w for w in caught if 'is not a valid' in str(w.message)]
+  assert reason is types.FinishReason.MALFORMED_RESPONSE
 
 
 # Tests that TypedDict types from types.py are compatible with pydantic
@@ -2774,3 +2942,52 @@ def test_user_content_unsupported_type_in_list():
 def test_user_content_unsupported_role():
   with pytest.raises(TypeError):
     types.UserContent(role='model', parts=['hi'])
+
+
+def test_instantiate_response_from_batch_json():
+  test_batch_json = json.dumps({
+      'candidates': [{
+          'citationMetadata': {
+              'citationSources': [{
+                  'endIndex': 2009,
+                  'startIndex': 1880,
+                  'uri': 'http://someurl.com',
+              }]
+          },
+          'content': {
+              'parts': [{
+                  'text': (
+                      'This recipe makes a moist and delicious banana bread!'
+                  )
+              }],
+              'role': 'model',
+          },
+          'finishReason': 'STOP',
+      }],
+      'modelVersion': 'gemini-1.5-flash-002@default',
+  })
+  parsed = types.GenerateContentResponse.model_validate_json(test_batch_json)
+  assert isinstance(parsed, types.GenerateContentResponse)
+  assert isinstance(parsed.candidates[0].citation_metadata, types.CitationMetadata)
+  assert isinstance(
+      parsed.candidates[0].citation_metadata.citations[0], types.Citation
+  )
+  assert(
+      parsed.candidates[0].citation_metadata.citations[0].uri
+      == 'http://someurl.com'
+  )
+
+
+def test_computer_use_types():
+  c = types.ComputerUse(
+      environment=types.Environment.ENVIRONMENT_MOBILE,
+      enable_prompt_injection_detection=True,
+      disabled_safety_policies=[
+          types.SafetyPolicy.FINANCIAL_TRANSACTIONS,
+          types.SafetyPolicy.COMMUNICATION_TOOL,
+      ],
+  )
+  assert c.environment == types.Environment.ENVIRONMENT_MOBILE
+  assert c.enable_prompt_injection_detection is True
+  assert len(c.disabled_safety_policies) == 2
+  assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies

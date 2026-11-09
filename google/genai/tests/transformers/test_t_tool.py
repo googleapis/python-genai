@@ -62,14 +62,59 @@ def test_function(client):
       function_declarations=[
           types.FunctionDeclaration(
               name='test_func',
-              parameters=types.Schema(
-                  type='OBJECT',
-                  properties={
-                      'arg1': types.Schema(type='STRING'),
-                      'arg2': types.Schema(type='INTEGER'),
+              description='',
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'arg1': {'type': 'string'},
+                      'arg2': {'type': 'integer'},
                   },
-                  required=['arg1', 'arg2'],
-              ),
+                  'required': ['arg1', 'arg2'],
+              },
+          )
+      ]
+  )
+
+
+@pytest.mark.usefixtures('client')
+def test_function_with_optional_and_union_types(client):
+  def test_func(
+      query: str | int,
+      start_line: int | None = None,
+  ) -> str | None:
+    del query, start_line
+    return None
+
+  assert t.t_tool(client, test_func) == types.Tool(
+      function_declarations=[
+          types.FunctionDeclaration(
+              name='test_func',
+              description='',
+              parameters_json_schema={
+                  'type': 'object',
+                  'properties': {
+                      'query': {
+                          'anyOf': [
+                              {'type': 'string'},
+                              {'type': 'integer'},
+                          ],
+                      },
+                      'start_line': {
+                          'anyOf': [
+                              {'type': 'integer'},
+                              {'type': 'null'},
+                          ],
+                          'default': None,
+                      },
+                  },
+                  'required': ['query'],
+              },
+              response_json_schema={
+                  'anyOf': [
+                      {'type': 'string'},
+                      {'type': 'null'},
+                  ],
+              },
           )
       ]
   )

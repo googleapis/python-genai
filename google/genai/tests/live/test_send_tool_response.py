@@ -15,6 +15,8 @@
 
 
 """Tests for live.py."""
+
+import base64
 import contextlib
 import json
 from unittest import mock
@@ -23,7 +25,6 @@ import pytest
 from websockets import client
 
 from .. import pytest_helper
-
 from ... import client as gl_client
 from ... import live
 from ... import types
@@ -104,7 +105,12 @@ async def test_function_response(mock_websocket, vertexai):
 
   input = types.FunctionResponse(
       name='get_current_weather',
-      response={'temperature': 14.5, 'unit': 'C'},
+      response={
+          'temperature': 14.5,
+          'unit': 'C',
+          'user_name': 'test_user_name',
+          'userEmail': 'test_user_email',
+      },
   )
   if not vertexai:
     input.id = 'some-id'
@@ -119,14 +125,8 @@ async def test_function_response(mock_websocket, vertexai):
       == 'get_current_weather'
   )
   assert (
-      sent_data['tool_response']['functionResponses'][0]['response'][
-          'temperature'
-      ]
-      == 14.5
-  )
-  assert (
-      sent_data['tool_response']['functionResponses'][0]['response']['unit']
-      == 'C'
+      sent_data['tool_response']['functionResponses'][0]['response']
+      == input.response
   )
 
 
@@ -145,17 +145,14 @@ async def test_function_response_scheduling(mock_websocket, vertexai):
   if not vertexai:
     input.id = 'some-id'
 
-  with pytest_helper.exception_if_vertex(api_client, ValueError):
-    await session.send_tool_response(function_responses=input)
-  if vertexai:
-    return
+  await session.send_tool_response(function_responses=input)
 
   mock_websocket.send.assert_called_once()
   sent_data = json.loads(mock_websocket.send.call_args[0][0])
   assert 'tool_response' in sent_data
 
-  assert (
-      sent_data['tool_response']['functionResponses'][0]['willContinue'] == True
+  assert pytest_helper.get_value_ignore_key_case(
+      sent_data['tool_response']['functionResponses'][0], 'will_continue'
   )
   assert (
       sent_data['tool_response']['functionResponses'][0]['scheduling']
@@ -224,3 +221,111 @@ async def test_missing_id(mock_websocket, vertexai):
   if not vertexai:
     with pytest.raises(ValueError, match=".*must have.*"):
       await session.send_tool_response(function_responses=[input1, input2])
+
+
+_IMAGE_BYTES = b'\x89PNG\r\n\x1a\n\x00\xff\xfe'
+
+
+def _assert_inline_image(part):
+  inline_data = pytest_helper.get_value_ignore_key_case(part, 'inline_data')
+  mime_type = pytest_helper.get_value_ignore_key_case(inline_data, 'mime_type')
+  assert mime_type == 'image/png'
+  assert isinstance(inline_data['data'], str)
+  assert base64.urlsafe_b64decode(inline_data['data']) == _IMAGE_BYTES
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_function_response_inline_bytes(mock_websocket, vertexai):
+  """Inline bytes in function response parts are sent as base64."""
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+
+  function_response_input = types.FunctionResponse(
+      id='some-id',
+      name='take_photo',
+      response={'output': 'Photo taken.'},
+      parts=[
+          types.FunctionResponsePart.from_bytes(
+              data=_IMAGE_BYTES, mime_type='image/png'
+          )
+      ],
+  )
+
+  await session.send_tool_response(function_responses=function_response_input)
+
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  function_response = sent_data['tool_response']['functionResponses'][0]
+  assert function_response['response'] == {'output': 'Photo taken.'}
+  _assert_inline_image(function_response['parts'][0])
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_function_response_inline_bytes_dict(mock_websocket, vertexai):
+  """Inline bytes given in a plain dict are sent as base64."""
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+
+  function_response_input = {
+      'id': 'some-id',
+      'name': 'take_photo',
+      'response': {'output': 'Photo taken.'},
+      'parts': [
+          {'inline_data': {'data': _IMAGE_BYTES, 'mime_type': 'image/png'}}
+      ],
+  }
+
+  await session.send_tool_response(function_responses=function_response_input)
+
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  function_response = sent_data['tool_response']['functionResponses'][0]
+  assert function_response['response'] == {'output': 'Photo taken.'}
+  _assert_inline_image(function_response['parts'][0])
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
+async def test_function_response_list_mixed_parts(mock_websocket, vertexai):
+  """Bytes, file URI and part-less responses survive together in one list."""
+  session = live.AsyncSession(
+      api_client=mock_api_client(vertexai=vertexai), websocket=mock_websocket
+  )
+
+  input1 = types.FunctionResponse(
+      id='1',
+      name='take_photo',
+      response={'output': 'Photo taken.'},
+      parts=[
+          types.FunctionResponsePart.from_bytes(
+              data=_IMAGE_BYTES, mime_type='image/png'
+          ),
+          types.FunctionResponsePart.from_uri(
+              file_uri='gs://bucket/photo.png', mime_type='image/png'
+          ),
+      ],
+  )
+  input2 = types.FunctionResponse(
+      id='2', name='get_time', response={'time': '12:00'}
+  )
+
+  await session.send_tool_response(function_responses=[input1, input2])
+
+  mock_websocket.send.assert_called_once()
+  sent_data = json.loads(mock_websocket.send.call_args[0][0])
+  function_responses = sent_data['tool_response']['functionResponses']
+  assert len(function_responses) == 2
+  _assert_inline_image(function_responses[0]['parts'][0])
+  file_data = pytest_helper.get_value_ignore_key_case(
+      function_responses[0]['parts'][1], 'file_data'
+  )
+  assert (
+      pytest_helper.get_value_ignore_key_case(file_data, 'file_uri')
+      == 'gs://bucket/photo.png'
+  )
+  assert 'parts' not in function_responses[1]
+  assert function_responses[1]['response'] == {'time': '12:00'}

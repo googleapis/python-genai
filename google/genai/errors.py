@@ -15,21 +15,54 @@
 
 """Error classes for the GenAI SDK."""
 
-from typing import Any, Optional, TYPE_CHECKING, Union
-import httpx
+from typing import Any, Callable, Optional, TYPE_CHECKING, Union
 import json
-from . import _common
-
 
 if TYPE_CHECKING:
   from .replay_api_client import ReplayResponse
   import aiohttp
+  from google.auth.aio.transport.aiohttp import Response as AsyncAuthorizedSessionResponse
+  import httpx
+  import httpx2
+  import requests  # pylint: disable=g-import-not-at-top
+
+  _HTTPX_RESPONSE_TYPES = (httpx.Response, httpx2.Response)
+else:
+  try:
+    import httpx
+  except ImportError:
+    httpx = None  # type: ignore[assignment]
+
+  try:
+    import httpx2
+  except ImportError:
+    httpx2 = None  # type: ignore[assignment]
+
+  # httpx2 (https://github.com/pydantic/httpx2) is a drop-in fork of httpx under a
+  # separate import namespace, so its Response is not an instance of
+  # httpx.Response. Widen the runtime type checks to accept either when installed.
+  _HTTPX_RESPONSE_TYPES = tuple(
+      cls
+      for cls in (
+          getattr(httpx, 'Response', None),
+          getattr(httpx2, 'Response', None),
+      )
+      if cls is not None
+  )
+
+from . import _common
 
 
 class APIError(Exception):
   """General errors raised by the GenAI API."""
   code: int
-  response: Union['ReplayResponse', httpx.Response]
+  response: Union[
+      'requests.Response',
+      'ReplayResponse',
+      'httpx.Response',
+      'httpx2.Response',
+      'AsyncAuthorizedSessionResponse',
+  ]
 
   status: Optional[str] = None
   message: Optional[str] = None
@@ -39,9 +72,18 @@ class APIError(Exception):
       code: int,
       response_json: Any,
       response: Optional[
-          Union['ReplayResponse', httpx.Response, 'aiohttp.ClientResponse']
+          Union[
+              'requests.Response',
+              'ReplayResponse',
+              'httpx.Response',
+              'httpx2.Response',
+              'AsyncAuthorizedSessionResponse',
+          ]
       ] = None,
   ):
+    if isinstance(response_json, list) and len(response_json) == 1:
+      response_json = response_json[0]
+
     self.response = response
     self.details = response_json
     self.message = self._get_message(response_json)
@@ -50,15 +92,42 @@ class APIError(Exception):
 
     super().__init__(f'{self.code} {self.status}. {self.details}')
 
+  def __reduce__(
+      self,
+  ) -> tuple[Callable[..., 'APIError'], tuple[dict[str, Any]]]:
+    """Returns a tuple that can be used to reconstruct the error for pickling."""
+    state = self.__dict__.copy()
+    return (self.__class__._rebuild, (state,))
+
+  @staticmethod
+  def _rebuild(state: dict[str, Any]) -> 'APIError':
+    """Rebuilds the error from the state."""
+    obj = APIError.__new__(APIError)
+    obj.__dict__.update(state)
+    Exception.__init__(obj, f'{obj.code} {obj.status}. {obj.details}')
+    return obj
+
   def _get_status(self, response_json: Any) -> Any:
-    return response_json.get(
-        'status', response_json.get('error', {}).get('status', None)
-    )
+    try:
+      status = response_json.get(
+          'status', response_json.get('error', {}).get('status', None)
+      )
+      return status
+    except AttributeError:
+      # If response_json is not a dict, return close code to handle the case
+      # when encountering a websocket error.
+      return None
 
   def _get_message(self, response_json: Any) -> Any:
-    return response_json.get(
-        'message', response_json.get('error', {}).get('message', None)
-    )
+    try:
+      message = response_json.get(
+          'message', response_json.get('error', {}).get('message', None)
+      )
+      return message
+    except AttributeError:
+      # If response_json is not a dict, return it as None.
+      # This is to handle the case when encountering a websocket error.
+      return None
 
   def _get_code(self, response_json: Any) -> Any:
     return response_json.get(
@@ -81,13 +150,14 @@ class APIError(Exception):
 
   @classmethod
   def raise_for_response(
-      cls, response: Union['ReplayResponse', httpx.Response]
+      cls,
+      response: Union['ReplayResponse', 'httpx.Response', 'httpx2.Response', 'requests.Response'],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
     if response.status_code == 200:
       return
 
-    if isinstance(response, httpx.Response):
+    if isinstance(response, _HTTPX_RESPONSE_TYPES):
       try:
         response.read()
         response_json = response.json()
@@ -97,10 +167,51 @@ class APIError(Exception):
             'message': message,
             'status': response.reason_phrase,
         }
-    else:
+    elif (requests := _common.loaded_requests()) is not None and isinstance(
+        response, requests.Response
+    ):
+      try:
+        # do not do any extra muanipulation on the response.
+        # return the raw response json as is.
+        response_json = response.json()
+      except requests.exceptions.JSONDecodeError:
+        response_json = {
+            'message': response.text,
+            'status': response.reason,
+        }
+    elif hasattr(response, 'body_segments'):
       response_json = response.body_segments[0].get('error', {})
+    else:
+      response_json = {}
 
-    status_code = response.status_code
+    cls.raise_error(response.status_code, response_json, response)
+
+  @classmethod
+  def raise_error(
+      cls,
+      status_code: int,
+      response_json: Any,
+      response: Optional[
+          Union[
+              'ReplayResponse',
+              'httpx.Response', 'httpx2.Response',
+              'requests.Response',
+          ]
+      ],
+  ) -> None:
+    """Raises an appropriate APIError subclass based on the status code.
+
+    Args:
+      status_code: The HTTP status code of the response.
+      response_json: The JSON body of the response, or a dict containing error
+        details.
+      response: The original response object.
+
+    Raises:
+      ClientError: If the status code is in the 4xx range.
+      ServerError: If the status code is in the 5xx range.
+      APIError: For other error status codes.
+    """
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
@@ -112,13 +223,14 @@ class APIError(Exception):
   async def raise_for_async_response(
       cls,
       response: Union[
-          'ReplayResponse', httpx.Response, 'aiohttp.ClientResponse'
+          'ReplayResponse',
+          'httpx.Response', 'httpx2.Response',
+          'aiohttp.ClientResponse',
+          'AsyncAuthorizedSessionResponse',
       ],
   ) -> None:
     """Raises an error with detailed error message if the response has an error status."""
-    status_code = 0
-    response_json = None
-    if isinstance(response, httpx.Response):
+    if isinstance(response, _HTTPX_RESPONSE_TYPES):
       if response.status_code == 200:
         return
       try:
@@ -131,27 +243,60 @@ class APIError(Exception):
             'status': response.reason_phrase,
         }
       status_code = response.status_code
+    elif hasattr(response, 'body_segments') and hasattr(
+        response, 'status_code'
+    ):
+      if response.status_code == 200:
+        return
+      response_json = response.body_segments[0].get('error', {})
+      status_code = response.status_code
     else:
       try:
         import aiohttp  # pylint: disable=g-import-not-at-top
 
-        if isinstance(response, aiohttp.ClientResponse):
-          if response.status == 200:
+        # Use a local variable to help Mypy handle the unwrapped response
+        unwrapped_response: Any = response
+        if hasattr(unwrapped_response, '_response'):
+          unwrapped_response = unwrapped_response._response
+
+        if isinstance(unwrapped_response, aiohttp.ClientResponse):
+          if unwrapped_response.status == 200:
             return
           try:
-            response_json = await response.json()
+            response_json = await unwrapped_response.json()
           except aiohttp.client_exceptions.ContentTypeError:
-            message = await response.text()
+            message = await unwrapped_response.text()
             response_json = {
                 'message': message,
-                'status': response.reason,
+                'status': unwrapped_response.reason,
             }
-          status_code = response.status
+          status_code = unwrapped_response.status
         else:
-          response_json = response.body_segments[0].get('error', {})
+          raise ValueError(f'Unsupported response type: {type(response)}')
       except ImportError:
-        response_json = response.body_segments[0].get('error', {})
+        raise ValueError(f'Unsupported response type: {type(response)}')
 
+    await cls.raise_error_async(status_code, response_json, response)
+
+  @classmethod
+  async def raise_error_async(
+      cls, status_code: int, response_json: Any, response: Optional[
+          Union['ReplayResponse', 'httpx.Response', 'httpx2.Response', 'aiohttp.ClientResponse']
+      ]
+  ) -> None:
+    """Raises an appropriate APIError subclass based on the status code.
+
+    Args:
+      status_code: The HTTP status code of the response.
+      response_json: The JSON body of the response, or a dict containing error
+        details.
+      response: The original response object.
+
+    Raises:
+      ClientError: If the status code is in the 4xx range.
+      ServerError: If the status code is in the 5xx range.
+      APIError: For other error status codes.
+    """
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
@@ -188,5 +333,50 @@ class FunctionInvocationError(ValueError):
 class UnknownApiResponseError(ValueError):
   """Raised when the response from the API cannot be parsed as JSON."""
   pass
+
+
+class ContinuationInterruptedError(Exception):
+  """Raised when Interactions automatic continuation fails after progress.
+
+  `interactions.create()` with `automatic_continuation` enabled (the default)
+  may make several requests ("hops"), each one resuming the decode from the
+  previous hop's `continuation_token`. If a hop fails after the server already
+  produced (and billed) output in an earlier hop, or after a resumable
+  checkpoint was reached, this error is raised instead of the underlying
+  error so the work is not lost. The underlying error is `__cause__`.
+
+  To resume, pass `continuation_token` to `interactions.create()`: with `store`
+  enabled (the default), also pass `interaction_id` as `previous_interaction_id`
+  and no `input`; with `store=False`, resend the original `input`.
+
+  Attributes:
+    partial_interaction: For unary calls, the interaction merged from the hops
+      that completed (status `requires_continuation`, with the resumable
+      `continuation_token`), or None if no hop completed. Always None for
+      streams, whose events were already yielded.
+    continuation_token: The latest resumable `continuation_token`. For streams
+      this may be a mid-hop checkpoint: resuming from it re-generates any
+      output yielded after the checkpoint.
+    interaction_id: The id of the stored interaction that issued
+      `continuation_token` (the value to send as `previous_interaction_id` when
+      `store` is enabled), or None when `store=False` or unknown.
+    continuation_ids: The ids of every hop created during the call, in order.
+  """
+
+  def __init__(
+      self,
+      message: str,
+      *,
+      partial_interaction: Any = None,
+      continuation_token: Optional[str] = None,
+      interaction_id: Optional[str] = None,
+      continuation_ids: Optional[list[str]] = None,
+  ):
+    super().__init__(message)
+    self.partial_interaction = partial_interaction
+    self.continuation_token = continuation_token
+    self.interaction_id = interaction_id
+    self.continuation_ids = list(continuation_ids or [])
+
 
 ExperimentalWarning = _common.ExperimentalWarning

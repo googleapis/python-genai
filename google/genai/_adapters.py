@@ -30,9 +30,11 @@ class McpToGenAiToolAdapter:
       self,
       session: "mcp.ClientSession",  # type: ignore # noqa: F821
       list_tools_result: "mcp_types.ListToolsResult",  # type: ignore
+      is_agent_platform: bool = False,
   ) -> None:
     self._mcp_session = session
     self._list_tools_result = list_tools_result
+    self._is_agent_platform = is_agent_platform
 
   async def call_tool(
       self, function_call: FunctionCall

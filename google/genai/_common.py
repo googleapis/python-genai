@@ -21,6 +21,8 @@ import datetime
 import enum
 import functools
 import logging
+import re
+import sys
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -34,11 +36,24 @@ logger = logging.getLogger('google_genai._common')
 StringDict: TypeAlias = dict[str, Any]
 
 
+def loaded_requests() -> Optional[Any]:
+  """Returns the `requests` module, or None if nothing has imported it.
+
+  Only the synchronous google-auth path uses `requests`, and importing it
+  costs around 300 modules. An object can only be an instance of a `requests`
+  class once that module is loaded, so callers doing an isinstance check
+  against one can consult this instead of importing it themselves.
+  """
+  return sys.modules.get('requests')
+
+
 class ExperimentalWarning(Warning):
   """Warning for experimental features."""
 
 
-def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: Any) -> None:
+def set_value_by_path(
+    data: Optional[dict[Any, Any]], keys: list[str], value: Any
+) -> None:
   """Examples:
 
   set_value_by_path({}, ['a', 'b'], v)
@@ -100,10 +115,19 @@ def set_value_by_path(data: Optional[dict[Any, Any]], keys: list[str], value: An
             f' Existing value: {existing_data}; New value: {value}.'
         )
     else:
-      data[keys[-1]] = value
+      if (
+          keys[-1] == '_self'
+          and isinstance(data, dict)
+          and isinstance(value, dict)
+      ):
+        data.update(value)
+      else:
+        data[keys[-1]] = value
 
 
-def get_value_by_path(data: Any, keys: list[str]) -> Any:
+def get_value_by_path(
+    data: Any, keys: list[str], *, default_value: Any = None
+) -> Any:
   """Examples:
 
   get_value_by_path({'a': {'b': v}}, ['a', 'b'])
@@ -115,36 +139,141 @@ def get_value_by_path(data: Any, keys: list[str]) -> Any:
     return data
   for i, key in enumerate(keys):
     if not data:
-      return None
+      return default_value
     if key.endswith('[]'):
       key_name = key[:-2]
       if key_name in data:
-        return [get_value_by_path(d, keys[i + 1 :]) for d in data[key_name]]
+        return [
+            get_value_by_path(d, keys[i + 1 :], default_value=default_value)
+            for d in data[key_name]
+        ]
       else:
-        return None
+        return default_value
     elif key.endswith('[0]'):
       key_name = key[:-3]
       if key_name in data and data[key_name]:
-        return get_value_by_path(data[key_name][0], keys[i + 1 :])
+        return get_value_by_path(
+            data[key_name][0], keys[i + 1 :], default_value=default_value
+        )
       else:
-        return None
+        return default_value
     else:
       if key in data:
         data = data[key]
       elif isinstance(data, BaseModel) and hasattr(data, key):
         data = getattr(data, key)
       else:
-        return None
+        return default_value
   return data
 
 
-def convert_to_dict(obj: object) -> Any:
+def move_value_by_path(data: Any, paths: dict[str, str]) -> None:
+  """Moves values from source paths to destination paths.
+
+  Examples:
+    move_value_by_path(
+      {'requests': [{'content': v1}, {'content': v2}]},
+      {'requests[].*': 'requests[].request.*'}
+    )
+      -> {'requests': [{'request': {'content': v1}}, {'request': {'content':
+      v2}}]}
+  """
+  for source_path, dest_path in paths.items():
+    source_keys = source_path.split('.')
+    dest_keys = dest_path.split('.')
+
+    # Determine keys to exclude from wildcard to avoid cyclic references
+    exclude_keys = set()
+    wildcard_idx = -1
+    for i, key in enumerate(source_keys):
+      if key == '*':
+        wildcard_idx = i
+        break
+
+    if wildcard_idx != -1 and len(dest_keys) > wildcard_idx:
+      # Extract the intermediate key between source and dest paths
+      # Example: source=['requests[]', '*'], dest=['requests[]', 'request', '*']
+      # We want to exclude 'request'
+      for i in range(wildcard_idx, len(dest_keys)):
+        key = dest_keys[i]
+        if key != '*' and not key.endswith('[]') and not key.endswith('[0]'):
+          exclude_keys.add(key)
+
+    # Move values recursively
+    _move_value_recursive(data, source_keys, dest_keys, 0, exclude_keys)
+
+
+def _move_value_recursive(
+    data: Any,
+    source_keys: list[str],
+    dest_keys: list[str],
+    key_idx: int,
+    exclude_keys: set[str],
+) -> None:
+  """Recursively moves values from source path to destination path."""
+  if key_idx >= len(source_keys):
+    return
+
+  key = source_keys[key_idx]
+
+  if key.endswith('[]'):
+    # Handle array iteration
+    key_name = key[:-2]
+    if key_name in data and isinstance(data[key_name], list):
+      for item in data[key_name]:
+        _move_value_recursive(
+            item, source_keys, dest_keys, key_idx + 1, exclude_keys
+        )
+  elif key == '*':
+    # Handle wildcard - move all fields
+    if isinstance(data, dict):
+      # Get all keys to move (excluding specified keys)
+      keys_to_move = [
+          k
+          for k in list(data.keys())
+          if not k.startswith('_') and k not in exclude_keys
+      ]
+
+      # Collect values to move
+      values_to_move = {k: data[k] for k in keys_to_move}
+
+      # Set values at destination
+      for k, v in values_to_move.items():
+        # Build destination keys with the field name
+        new_dest_keys = []
+        for dk in dest_keys[key_idx:]:
+          if dk == '*':
+            new_dest_keys.append(k)
+          else:
+            new_dest_keys.append(dk)
+        set_value_by_path(data, new_dest_keys, v)
+
+      # Delete from source
+      for k in keys_to_move:
+        del data[k]
+  else:
+    # Navigate to next level
+    if key in data:
+      _move_value_recursive(
+          data[key], source_keys, dest_keys, key_idx + 1, exclude_keys
+      )
+
+
+def maybe_snake_to_camel(snake_str: str, convert: bool = True) -> str:
+  """Converts a snake_case string to CamelCase, if convert is True."""
+  if not convert:
+    return snake_str
+  return re.sub(r'_([a-zA-Z])', lambda match: match.group(1).upper(), snake_str)
+
+
+def convert_to_dict(obj: object, convert_keys: bool = False) -> Any:
   """Recursively converts a given object to a dictionary.
 
   If the object is a Pydantic model, it uses the model's `model_dump()` method.
 
   Args:
     obj: The object to convert.
+    convert_keys: Whether to convert the keys from snake case to camel case.
 
   Returns:
     A dictionary representation of the object, a list of objects if a list is
@@ -152,17 +281,21 @@ def convert_to_dict(obj: object) -> Any:
     model.
   """
   if isinstance(obj, pydantic.BaseModel):
-    return obj.model_dump(exclude_none=True)
+    return convert_to_dict(obj.model_dump(exclude_none=True), convert_keys)
   elif isinstance(obj, dict):
-    return {key: convert_to_dict(value) for key, value in obj.items()}
+    return {
+        maybe_snake_to_camel(key, convert_keys): convert_to_dict(value)
+        for key, value in obj.items()
+    }
   elif isinstance(obj, list):
-    return [convert_to_dict(item) for item in obj]
+    return [convert_to_dict(item, convert_keys) for item in obj]
   else:
     return obj
 
 
 def _is_struct_type(annotation: type) -> bool:
   """Checks if the given annotation is list[dict[str, typing.Any]]
+
   or typing.List[typing.Dict[str, typing.Any]].
 
   This maps to Struct type in the API.
@@ -170,7 +303,7 @@ def _is_struct_type(annotation: type) -> bool:
   outer_origin = get_origin(annotation)
   outer_args = get_args(annotation)
 
-  if outer_origin is not list: # Python 3.9+ normalizes list
+  if outer_origin is not list:  # Python 3.9+ normalizes list
     return False
 
   if not outer_args or len(outer_args) != 1:
@@ -181,7 +314,7 @@ def _is_struct_type(annotation: type) -> bool:
   inner_origin = get_origin(inner_annotation)
   inner_args = get_args(inner_annotation)
 
-  if inner_origin is not dict: # Python 3.9+ normalizes to dict
+  if inner_origin is not dict:  # Python 3.9+ normalizes to dict
     return False
 
   if not inner_args or len(inner_args) != 2:
@@ -193,13 +326,43 @@ def _is_struct_type(annotation: type) -> bool:
   return key_type is str and value_type is typing.Any
 
 
-def _remove_extra_fields(
-    model: Any, response: dict[str, object]
-) -> None:
+def _as_base_model_type(
+    annotation: Any,
+) -> Optional[typing.Type[pydantic.BaseModel]]:
+  """Returns the BaseModel subclass an annotation refers to, or None.
+
+  `Annotated[Model, ...]` refers to `Model`: the metadata does not change the
+  fields to prune against.
+
+  Args:
+    annotation: A field type annotation, e.g. `Model`, `Annotated[Model, ...]`,
+      `Any` or `str`.
+
+  Returns:
+    The BaseModel subclass, or None if the annotation is not a model.
+  """
+  while typing.get_origin(annotation) is typing.Annotated:
+    annotation = typing.get_args(annotation)[0]
+  if isinstance(annotation, type) and issubclass(
+      annotation, pydantic.BaseModel
+  ):
+    return annotation
+  return None
+
+
+def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
   """Removes extra fields from the response that are not in the model.
 
   Mutates the response in place.
   """
+
+  # Models are built on first use (`defer_build`), and an unbuilt model's field
+  # annotations still hold the forward references they were declared with, e.g.
+  # the string 'Part' rather than the `Part` class. Building the model resolves
+  # them, and costs nothing extra here because the caller validates against
+  # this model immediately afterwards.
+  if isinstance(model, type) and issubclass(model, pydantic.BaseModel):
+    model.model_rebuild(raise_errors=False)
 
   key_values = list(response.items())
 
@@ -222,18 +385,26 @@ def _remove_extra_fields(
     if typing.get_origin(annotation) is Union:
       annotation = typing.get_args(annotation)[0]
 
-    # if dict, assume BaseModel but also check that field type is not dict
-    # example: FunctionCall.args
-    if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
-      _remove_extra_fields(annotation, value)
+    # Only recurse into dicts that map to a BaseModel. Fields typed `Any` (or
+    # `list[Any]`) carry free-form JSON, e.g. PredictResponse.predictions, and
+    # have no fields to prune against.
+    model_type = _as_base_model_type(annotation)
+    if isinstance(value, dict) and model_type is not None:
+      _remove_extra_fields(model_type, value)
     elif isinstance(value, list):
       if _is_struct_type(annotation):
         continue
 
+      item_type_args = typing.get_args(annotation)
+      item_type = _as_base_model_type(
+          item_type_args[0] if item_type_args else None
+      )
+      if item_type is None:
+        continue
       for item in value:
-        # assume a list of dict is list of BaseModel
         if isinstance(item, dict):
-          _remove_extra_fields(typing.get_args(annotation)[0], item)
+          _remove_extra_fields(item_type, item)
+
 
 T = typing.TypeVar('T', bound='BaseModel')
 
@@ -310,8 +481,15 @@ def _pretty_repr(
   elif isinstance(obj, collections.abc.Mapping):
     if not obj:
       return '{}'
+
+    # Check if the next level of recursion for keys/values will exceed the depth limit.
+    if depth <= 0:
+      item_count_str = f"{len(obj)} item{'s' if len(obj) != 1 else ''}"
+      return f'{{<... {item_count_str} at Max depth ...>}}'
+
     if len(obj) > max_items:
       return f'<dict len={len(obj)}>'
+
     items = []
     try:
       sorted_keys = sorted(obj.keys(), key=str)
@@ -367,47 +545,56 @@ def _format_collection(
     depth: int,
     visited: FrozenSet[int],
 ) -> str:
-    """Formats a collection (list, tuple, set)."""
-    if isinstance(obj, list):
-        brackets = ('[', ']')
-    elif isinstance(obj, tuple):
-        brackets = ('(', ')')
-    elif isinstance(obj, set):
-        obj = list(obj)
-        if obj:
-          brackets = ('{', '}')
-        else:
-          brackets = ('set(', ')')
+  """Formats a collection (list, tuple, set)."""
+  if isinstance(obj, list):
+    brackets = ('[', ']')
+    internal_obj = obj
+  elif isinstance(obj, tuple):
+    brackets = ('(', ')')
+    internal_obj = list(obj)
+  elif isinstance(obj, set):
+    internal_obj = list(obj)
+    if obj:
+      brackets = ('{', '}')
     else:
-        raise ValueError(f"Unsupported collection type: {type(obj)}")
+      brackets = ('set(', ')')
+  else:
+    raise ValueError(f'Unsupported collection type: {type(obj)}')
 
-    if not obj:
-        return brackets[0] + brackets[1]
+  if not internal_obj:
+    return brackets[0] + brackets[1]
 
-    indent = ' ' * indent_level
-    next_indent_str = ' ' * (indent_level + indent_delta)
-    elements = []
-    for i, elem in enumerate(obj):
-        if i >= max_items:
-            elements.append(
-                f'{next_indent_str}<... {len(obj) - max_items} more items ...>'
-            )
-            break
-        # Each element starts on a new line, fully indented
-        elements.append(
-            next_indent_str
-            + _pretty_repr(
-                elem,
-                indent_level=indent_level + indent_delta,
-                indent_delta=indent_delta,
-                max_len=max_len,
-                max_items=max_items,
-                depth=depth - 1,
-                visited=visited,
-            )
+  # If the call to _pretty_repr for elements will have depth < 0
+  if depth <= 0:
+    item_count_str = f"{len(internal_obj)} item{'s'*(len(internal_obj)!=1)}"
+    return f'{brackets[0]}<... {item_count_str} at Max depth ...>{brackets[1]}'
+
+  indent = ' ' * indent_level
+  next_indent_str = ' ' * (indent_level + indent_delta)
+  elements = []
+  num_to_show = min(len(internal_obj), max_items)
+
+  for i in range(num_to_show):
+    elem = internal_obj[i]
+    elements.append(
+        next_indent_str
+        + _pretty_repr(
+            elem,
+            indent_level=indent_level + indent_delta,
+            indent_delta=indent_delta,
+            max_len=max_len,
+            max_items=max_items,
+            depth=depth - 1,
+            visited=visited,
         )
+    )
 
-    return f'{brackets[0]}\n' + ',\n'.join(elements) + "," + f'\n{indent}{brackets[1]}'
+  if len(internal_obj) > max_items:
+    elements.append(
+        f'{next_indent_str}<... {len(internal_obj) - max_items} more items ...>'
+    )
+
+  return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
 
 class BaseModel(pydantic.BaseModel):
@@ -422,8 +609,51 @@ class BaseModel(pydantic.BaseModel):
       arbitrary_types_allowed=True,
       ser_json_bytes='base64',
       val_json_bytes='base64',
-      ignored_types=(typing.TypeVar,)
+      ignored_types=(typing.TypeVar,),
+      # Build each model's validator and serializer on first use rather than
+      # at import. `types` defines several hundred models and any one caller
+      # touches a small fraction of them, so building them all up front is
+      # most of what importing this package costs.
+      defer_build=True,
   )
+
+  @pydantic.model_validator(mode='before')
+  @classmethod
+  def _check_field_type_mismatches(cls, data: Any) -> Any:
+    """Check for type mismatches and warn before Pydantic processes the data."""
+    # Handle both dict and Pydantic model inputs
+    if not isinstance(data, (dict, pydantic.BaseModel)):
+      return data
+
+    for field_name, field_info in cls.model_fields.items():
+      if isinstance(data, dict):
+        value = data.get(field_name)
+      else:
+        value = getattr(data, field_name, None)
+
+      if value is None:
+        continue
+
+      expected_type = field_info.annotation
+      origin = get_origin(expected_type)
+
+      if origin is Union:
+        args = get_args(expected_type)
+        non_none_types = [arg for arg in args if arg is not type(None)]
+        if len(non_none_types) == 1:
+          expected_type = non_none_types[0]
+
+      if (isinstance(expected_type, type) and
+          get_origin(expected_type) is None and
+          issubclass(expected_type, pydantic.BaseModel) and
+          isinstance(value, pydantic.BaseModel) and
+          not isinstance(value, expected_type)):
+        logger.warning(
+            f"Type mismatch in {cls.__name__}.{field_name}: "
+            f"expected {expected_type.__name__}, got {type(value).__name__}"
+        )
+
+    return data
 
   def __repr__(self) -> str:
     try:
@@ -433,7 +663,10 @@ class BaseModel(pydantic.BaseModel):
 
   @classmethod
   def _from_response(
-      cls: typing.Type[T], *, response: dict[str, object], kwargs: dict[str, object]
+      cls: typing.Type[T],
+      *,
+      response: dict[str, object],
+      kwargs: dict[str, object],
   ) -> T:
     # To maintain forward compatibility, we need to remove extra fields from
     # the response.
@@ -443,11 +676,11 @@ class BaseModel(pydantic.BaseModel):
     # user may pass a dict that is not a subclass of BaseModel.
     # If more modules require we skip this, we may want a different approach
     should_skip_removing_fields = (
-        kwargs is not None and
-        'config' in kwargs and
-        kwargs['config'] is not None and
-        isinstance(kwargs['config'], dict) and
-        'include_all_fields' in kwargs['config']
+        kwargs is not None
+        and 'config' in kwargs
+        and kwargs['config'] is not None
+        and isinstance(kwargs['config'], dict)
+        and 'include_all_fields' in kwargs['config']
         and kwargs['config']['include_all_fields']
     )
 
@@ -471,7 +704,7 @@ class CaseInSensitiveEnum(str, enum.Enum):
       try:
         return cls[value.lower()]  # Try to access directly with lowercase
       except KeyError:
-        warnings.warn(f"{value} is not a valid {cls.__name__}")
+        warnings.warn(f'{value} is not a valid {cls.__name__}')
         try:
           # Creating a enum instance based on the value
           # We need to use super() to avoid infinite recursion.
@@ -532,10 +765,14 @@ def encode_unserializable_types(data: dict[str, object]) -> dict[str, object]:
   return processed_data
 
 
-def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def experimental_warning(
+    message: str,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
   """Experimental warning, only warns once."""
+
   def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
     warning_done = False
+
     @functools.wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
       nonlocal warning_done
@@ -547,13 +784,15 @@ def experimental_warning(message: str) -> Callable[[Callable[..., Any]], Callabl
             stacklevel=2,
         )
       return func(*args, **kwargs)
+
     return wrapper
+
   return decorator
 
 
 def _normalize_key_for_matching(key_str: str) -> str:
   """Normalizes a key for case-insensitive and snake/camel matching."""
-  return key_str.replace("_", "").lower()
+  return key_str.replace('_', '').lower()
 
 
 def align_key_case(
@@ -569,7 +808,9 @@ def align_key_case(
       A new dictionary with keys aligned to target_dict's key casing.
   """
   aligned_update_dict: StringDict = {}
-  target_keys_map = {_normalize_key_for_matching(key): key for key in target_dict.keys()}
+  target_keys_map = {
+      _normalize_key_for_matching(key): key for key in target_dict.keys()
+  }
 
   for key, value in update_dict.items():
     normalized_update_key = _normalize_key_for_matching(key)
@@ -579,9 +820,15 @@ def align_key_case(
     else:
       aligned_key = key
 
-    if isinstance(value, dict) and isinstance(target_dict.get(aligned_key), dict):
-      aligned_update_dict[aligned_key] = align_key_case(target_dict[aligned_key], value)
-    elif isinstance(value, list) and isinstance(target_dict.get(aligned_key), list):
+    if isinstance(value, dict) and isinstance(
+        target_dict.get(aligned_key), dict
+    ):
+      aligned_update_dict[aligned_key] = align_key_case(
+          target_dict[aligned_key], value
+      )
+    elif isinstance(value, list) and isinstance(
+        target_dict.get(aligned_key), list
+    ):
       # Direct assign as we treat update_dict list values as golden source.
       aligned_update_dict[aligned_key] = value
     else:
@@ -623,3 +870,34 @@ def recursive_dict_update(
       target_dict[key] = value
     else:
       target_dict[key] = value
+
+
+def is_duck_type_of(obj: Any, cls: type[pydantic.BaseModel]) -> bool:
+  """Checks if an object has all of the fields of a Pydantic model.
+
+  This is a duck-typing alternative to `isinstance` to solve dual-import
+  problems. It returns False for dictionaries, which should be handled by
+  `isinstance(obj, dict)`.
+
+  Args:
+    obj: The object to check.
+    cls: The Pydantic model class to duck-type against.
+
+  Returns:
+    True if the object has all the fields defined in the Pydantic model, False
+    otherwise.
+  """
+  if isinstance(obj, dict) or not hasattr(cls, 'model_fields'):
+    return False
+
+  # Check if the object has all of the Pydantic model's defined fields.
+  all_matched = all(hasattr(obj, field) for field in cls.model_fields)
+  if not all_matched and isinstance(obj, pydantic.BaseModel):
+    # Check the other way around if obj is a Pydantic model.
+    # Check if the Pydantic model has all of the object's defined fields.
+    try:
+      obj_private = cls()
+      all_matched = all(hasattr(obj_private, f) for f in type(obj).model_fields)
+    except ValueError:
+      return False
+  return all_matched

@@ -22,8 +22,8 @@ from ... import types
 from .. import pytest_helper
 
 
-_GEMINI_MODEL = 'gemini-1.5-flash-002'
-_EMBEDDING_MODEL = 'text-embedding-004'
+_GEMINI_MODEL = 'gemini-2.5-flash'
+_EMBEDDING_MODEL = 'gemini-embedding-001'
 _DISPLAY_NAME = 'test_batch'
 
 _GENERATE_CONTENT_BQ_OUTPUT_PREFIX = (
@@ -61,9 +61,54 @@ test_table: list[pytest_helper.TestTableItem] = [
                 'dest': 'invalid_dest',
             },
         ),
-        exception_if_mldev='not supported in Gemini API',
+        exception_if_mldev='supported',
         exception_if_vertex='Unsupported destination',
         has_union=True,
+    ),
+    pytest_helper.TestTableItem(
+        name='test_create_with_webhook_config',
+        parameters=types._CreateBatchJobParameters(
+            model=_GEMINI_MODEL,
+            src={
+                'inlined_requests': [
+                    {
+                        'contents': [
+                            {'parts': [{'text': 'say hello'}], 'role': 'user'}
+                        ]
+                    },
+                ]
+            },
+            config=types.CreateBatchJobConfig(
+                display_name=_DISPLAY_NAME,
+                webhook_config=types.WebhookConfig(
+                    uris=['https://example.com/webhook'],
+                    user_metadata={'batch_id': '123'},
+                ),
+            ),
+        ),
+        exception_if_vertex='supported',
+    ),
+    pytest_helper.TestTableItem(
+        name='test_create_with_webhook_config_dict',
+        parameters=types._CreateBatchJobParameters(
+            model=_GEMINI_MODEL,
+            src={
+                'inlined_requests': [
+                    {
+                        'contents': [
+                            {'parts': [{'text': 'say hello'}], 'role': 'user'}
+                        ]
+                    },
+                ]
+            },
+            config={
+                'display_name': _DISPLAY_NAME,
+                'webhook_config': {
+                    'uris': ['https://example.com/webhook'],
+                },
+            },
+        ),
+        exception_if_vertex='supported',
     ),
 ]
 
