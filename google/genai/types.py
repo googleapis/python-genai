@@ -21286,6 +21286,13 @@ class ProactivityConfig(_common.BaseModel):
         example, this allows the model to ignore out of context speech or to stay
         silent if the user did not make a request, yet.""",
   )
+  proactive_video: Optional[bool] = Field(
+      default=None,
+      description="""If enabled, the system might trigger a generation on each received
+      image. This requires that `proactive_audio` is enabled. The rate
+      of generation depends on the rate of incoming images and can cause a
+      significant increase in cost.""",
+  )
 
 
 class ProactivityConfigDict(TypedDict, total=False):
@@ -21295,6 +21302,12 @@ class ProactivityConfigDict(TypedDict, total=False):
   """If enabled, the model can reject responding to the last prompt. For
         example, this allows the model to ignore out of context speech or to stay
         silent if the user did not make a request, yet."""
+
+  proactive_video: Optional[bool]
+  """If enabled, the system might trigger a generation on each received
+      image. This requires that `proactive_audio` is enabled. The rate
+      of generation depends on the rate of incoming images and can cause a
+      significant increase in cost."""
 
 
 ProactivityConfigOrDict = Union[ProactivityConfig, ProactivityConfigDict]

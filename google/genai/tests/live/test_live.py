@@ -859,7 +859,7 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
               'mediaResolution': 'MEDIA_RESOLUTION_MEDIUM',
               'seed': 13,
           },
-          'proactivity': {'proactive_audio': True},
+          'proactivity': {'proactive_audio': True, 'proactive_video': True},
           'systemInstruction': {
               'parts': [
                   {
@@ -896,7 +896,7 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
           'language_code': 'en-US',
       },
       'enable_affective_dialog': True,
-      'proactivity': {'proactive_audio': True},
+      'proactivity': {'proactive_audio': True, 'proactive_video': True},
       'temperature': 0.7,
       'top_p': 0.8,
       'top_k': 9,
@@ -924,7 +924,9 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
           language_code='en-US',
       ),
       enable_affective_dialog=True,
-      proactivity=types.ProactivityConfig(proactive_audio=True),
+      proactivity=types.ProactivityConfig(
+          proactive_audio=True, proactive_video=True
+      ),
       temperature=0.7,
       top_p=0.8,
       top_k=9,
