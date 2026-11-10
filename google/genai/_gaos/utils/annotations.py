@@ -38,24 +38,24 @@ def get_discriminator(model: Any, fieldname: str, key: str) -> str:
     """
     upper_fieldname = fieldname.upper()
 
+    def to_discriminator(value: Any) -> str:
+        """Convert a discriminator value to a string, using the value of enum members."""
+        if isinstance(value, Enum):
+            return f"{value.value}"
+        return f"{value}"
+
     def get_field_discriminator(field: Any) -> Optional[str]:
         """Search for the discriminator attribute in a given field."""
 
         if isinstance(field, dict):
             if key in field:
-                return f"{field[key]}"
+                return to_discriminator(field[key])
 
         if hasattr(field, fieldname):
-            attr = getattr(field, fieldname)
-            if isinstance(attr, Enum):
-                return f"{attr.value}"
-            return f"{attr}"
+            return to_discriminator(getattr(field, fieldname))
 
         if hasattr(field, upper_fieldname):
-            attr = getattr(field, upper_fieldname)
-            if isinstance(attr, Enum):
-                return f"{attr.value}"
-            return f"{attr}"
+            return to_discriminator(getattr(field, upper_fieldname))
 
         return None
 
