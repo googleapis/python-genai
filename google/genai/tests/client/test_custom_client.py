@@ -72,7 +72,7 @@ def test_constructor_with_httpx_clients():
   assert not vertexai_client.models._api_client._async_httpx_client.trust_env
   # Expect aiohttp to be disabled when httpx clients are provided, regardless of
   # whether aiohttp is installed.
-  assert not mldev_client.models._api_client._use_aiohttp()
+  assert not vertexai_client.models._api_client._use_aiohttp()
 
 
 # Aiohttp
