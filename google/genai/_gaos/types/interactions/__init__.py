@@ -117,6 +117,7 @@ if TYPE_CHECKING:
         NetworkEnum,
         NetworkParam,
     )
+    from .environmentmode import EnvironmentMode
     from .environmentnetworkegressallowlist import (
         Allowlist,
         AllowlistParam,
@@ -525,6 +526,7 @@ __all__ = [
     "EnvVarParam",
     "Environment",
     "EnvironmentEnum",
+    "EnvironmentMode",
     "EnvironmentNetworkEgressAllowlist",
     "EnvironmentNetworkEgressAllowlistParam",
     "EnvironmentParam",
@@ -941,6 +943,7 @@ _dynamic_imports: dict[str, str] = {
     "Network": ".environment",
     "NetworkEnum": ".environment",
     "NetworkParam": ".environment",
+    "EnvironmentMode": ".environmentmode",
     "Allowlist": ".environmentnetworkegressallowlist",
     "AllowlistParam": ".environmentnetworkegressallowlist",
     "Disabled": ".environmentnetworkegressallowlist",

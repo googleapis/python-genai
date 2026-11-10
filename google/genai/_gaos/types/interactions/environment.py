@@ -31,6 +31,7 @@ from ..basemodel import (
     current_filtered_dump,
     current_serialization_methods_dump,
 )
+from .environmentmode import EnvironmentMode
 from .environmentnetworkegressallowlist import (
     EnvironmentNetworkEgressAllowlist,
     EnvironmentNetworkEgressAllowlistParam,
@@ -68,12 +69,19 @@ r"""Network configuration for the environment."""
 class EnvironmentParam(TypedDict):
     r"""Configuration for a custom environment."""
 
+    custom_config: NotRequired[Dict[str, Any]]
+    r"""Optional. Arbitrary customer-defined JSON configuration passed through
+    to the self-hosted environment poller. Only supported when `mode` is
+    `SELF_HOSTED`.
+    """
     env: NotRequired[Dict[str, EnvParam]]
     r"""Environment variables to set in the sandbox environment."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
+    mode: NotRequired[EnvironmentMode]
+    r"""The compute lifecycle mode for an environment."""
     network: NotRequired[NetworkParam]
     r"""Network configuration for the environment."""
     sources: NotRequired[List[SourceParam]]
@@ -83,6 +91,12 @@ class EnvironmentParam(TypedDict):
 class Environment(BaseModel):
     r"""Configuration for a custom environment."""
 
+    custom_config: Optional[Dict[str, Any]] = None
+    r"""Optional. Arbitrary customer-defined JSON configuration passed through
+    to the self-hosted environment poller. Only supported when `mode` is
+    `SELF_HOSTED`.
+    """
+
     env: Optional[Dict[str, Env]] = None
     r"""Environment variables to set in the sandbox environment."""
 
@@ -90,6 +104,9 @@ class Environment(BaseModel):
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
+
+    mode: Optional[EnvironmentMode] = None
+    r"""The compute lifecycle mode for an environment."""
 
     network: Optional[Network] = None
     r"""Network configuration for the environment."""
@@ -109,7 +126,9 @@ class Environment(BaseModel):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["env", "environment_id", "network", "sources"])
+        optional_fields = set(
+            ["custom_config", "env", "environment_id", "mode", "network", "sources"]
+        )
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False
