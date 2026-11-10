@@ -23,6 +23,7 @@ import asyncio
 from collections.abc import Generator
 import copy
 from dataclasses import dataclass
+import email.message
 import inspect
 import io
 import json
@@ -514,6 +515,14 @@ class HttpResponse:
     if isinstance(self.response_stream, _HTTPX_RESPONSE_TYPES):
       response_stream = self.response_stream.iter_lines()
     else:
+      # Default to UTF-8 when Content-Type omits an explicit charset, since
+      # requests falls back to ISO-8859-1 for text/event-stream (RFC 2616) and
+      # leaves encoding as None when Content-Type is absent.
+      msg = email.message.Message()
+      msg['content-type'] = (
+          self.response_stream.headers.get('content-type') or ''
+      )
+      self.response_stream.encoding = msg.get_content_charset() or 'utf-8'
       response_stream = self.response_stream.iter_lines(decode_unicode=True)
     for line in response_stream:
       if not line:
