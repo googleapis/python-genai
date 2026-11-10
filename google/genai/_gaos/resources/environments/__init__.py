@@ -25,7 +25,6 @@ from ...types.environments.getenvironmentfilesresponse import (
 )
 from ...types.environments.listenvironmentsresponse import ListEnvironmentsResponse
 from ...types.interactions.empty import Empty as EnvironmentDeleteResponse
-from ...types.interactions.environmentmode import EnvironmentMode
 
 EnvironmentListResponse = ListEnvironmentsResponse
 __all__ = [
@@ -34,7 +33,6 @@ __all__ = [
     "EnvironmentDeleteResponse",
     "EnvironmentFile",
     "EnvironmentListResponse",
-    "EnvironmentMode",
     "GetEnvironmentFilesResponse",
     "ListEnvironmentsResponse",
 ]
