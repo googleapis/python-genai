@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.1.0](https://github.com/googleapis/python-genai/compare/v3.0.0...v3.1.0) (2026-11-10)
+
+
+### Features
+
+* Add `gemini-omni-1.2-flash` and make it the `gemini-api video` default ([8e9cce3](https://github.com/googleapis/python-genai/commit/8e9cce37cfd6d10b62e7cbd3649ec96f1d63f6a4))
+* Add `proactive_video` to `ProactivityConfig` for the Live API. ([97d0678](https://github.com/googleapis/python-genai/commit/97d0678602c95caa268a819a1dffd01ce52c1580))
+* Add `xhigh` thinking level to Interactions ThinkingLevel ([0f29f4d](https://github.com/googleapis/python-genai/commit/0f29f4d16c1e37af293398b708d056f30599385d))
+* Add usage_metadata (including traffic_type) and truncated to EmbedContentResponse for Gemini Enterprise API ([2958fb1](https://github.com/googleapis/python-genai/commit/2958fb1a7ca559aa74329232ec3174ae09776143))
+* **interactions:** Add gemini-4-carbon and gemini-omni-1.2-flash to Model enum ([9610220](https://github.com/googleapis/python-genai/commit/96102204c4eb1d5b1612ca020dcfca1e547bd0bb))
+
+
+### Documentation
+
+* Update documentation links from ai.google.dev to aistudio.google.com. ([caf4c4f](https://github.com/googleapis/python-genai/commit/caf4c4f8203a116aa8822d48e12eb50ed146787b))
+
 ## [3.0.0](https://github.com/googleapis/python-genai/compare/v2.34.0...v3.0.0) (2026-11-06)
 
 
