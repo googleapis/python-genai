@@ -565,6 +565,7 @@ def test_python_environments_dedicated_module_and_from_environment():
   assert hasattr(environments, "EnvironmentFile")
   assert hasattr(environments, "GetEnvironmentFilesResponse")
   assert hasattr(environments, "EnvironmentStatus")
+  assert hasattr(environments, "EnvironmentMode")
   assert hasattr(environments, "EnvironmentListParams")
   assert hasattr(environments, "EnvironmentDeleteResponse")
 
@@ -580,3 +581,38 @@ def test_python_environments_dedicated_module_and_from_environment():
 
   req_dict = req.model_dump(exclude_unset=True, by_alias=True)
   assert req_dict == {"from_environment": "environments/env_abc_1234"}
+
+
+def test_python_environments_self_hosted_mode_and_key(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  """Tests BYOS mode, system_instruction, custom_config, and environment_key."""
+  mock_gaos_server.default_response = {
+      **ENVIRONMENT_BODY,
+      "mode": "self_hosted",
+      "custom_config": {"atespace": "team-a"},
+      "environment_key": "secret_env_key_123",
+  }
+  client = mock_gaos_server.client
+
+  created = client.environments.create(
+      mode="self_hosted",
+      system_instruction="Use custom runtime.",
+      custom_config={"atespace": "team-a"},
+  )
+  client.environments.list(mode="self_hosted")
+  client.environments.list(mode="on_demand")
+
+  assert created.mode == "self_hosted"
+  assert created.custom_config == {"atespace": "team-a"}
+  assert created.environment_key == "secret_env_key_123"
+  assert mock_gaos_server.captured_bodies[0] == {
+      "mode": "self_hosted",
+      "system_instruction": "Use custom runtime.",
+      "custom_config": {"atespace": "team-a"},
+  }
+  assert mock_gaos_server.captured == [
+      f"POST /{_API_VERSION}/environments",
+      f"GET /{_API_VERSION}/environments?mode=self_hosted",
+      f"GET /{_API_VERSION}/environments?mode=on_demand",
+  ]

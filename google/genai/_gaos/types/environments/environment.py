@@ -32,13 +32,14 @@ from ..basemodel import (
     current_serialization_methods_dump,
 )
 from ..interactions import (
+    environmentmode as interactions_environmentmode,
     environmentnetworkegressallowlist as interactions_environmentnetworkegressallowlist,
     source as interactions_source,
 )
 from pydantic import model_serializer
 from pydantic.functional_serializers import PlainSerializer
 from pydantic.functional_validators import BeforeValidator
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
@@ -84,12 +85,26 @@ class EnvironmentTypedDict(TypedDict):
     r"""Output only. The time at which the environment was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+    custom_config: NotRequired[Dict[str, Any]]
+    r"""Output only. Arbitrary customer-defined JSON configuration passed through to the
+    self-hosted environment poller. Only populated for `self_hosted`
+    environments when configured.
+    """
+    environment_key: NotRequired[str]
+    r"""Output only. Secret token generated upon environment creation for self_hosted
+    environments. Used by the self-hosted sandbox daemon to authenticate
+    polling and streaming requests. Only returned in the CreateEnvironment
+    response; omitted from subsequent GetEnvironment and ListEnvironments
+    calls.
+    """
     file_count: NotRequired[int]
     r"""Output only. The number of files in the environment, output only."""
     last_accessed: NotRequired[str]
     r"""Output only. The time at which the environment was last accessed in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+    mode: NotRequired[interactions_environmentmode.EnvironmentMode]
+    r"""The compute lifecycle mode for an environment."""
     network: NotRequired[EnvironmentNetworkUnionTypedDict]
     r"""Network configuration for the environment."""
     size_bytes: NotRequired[int]
@@ -115,6 +130,20 @@ class Environment(BaseModel):
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
+    custom_config: Optional[Dict[str, Any]] = None
+    r"""Output only. Arbitrary customer-defined JSON configuration passed through to the
+    self-hosted environment poller. Only populated for `self_hosted`
+    environments when configured.
+    """
+
+    environment_key: Optional[str] = None
+    r"""Output only. Secret token generated upon environment creation for self_hosted
+    environments. Used by the self-hosted sandbox daemon to authenticate
+    polling and streaming requests. Only returned in the CreateEnvironment
+    response; omitted from subsequent GetEnvironment and ListEnvironments
+    calls.
+    """
+
     file_count: Annotated[
         Optional[int],
         BeforeValidator(validate_int),
@@ -126,6 +155,9 @@ class Environment(BaseModel):
     r"""Output only. The time at which the environment was last accessed in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+
+    mode: Optional[interactions_environmentmode.EnvironmentMode] = None
+    r"""The compute lifecycle mode for an environment."""
 
     network: Optional[EnvironmentNetworkUnion] = None
     r"""Network configuration for the environment."""
@@ -156,8 +188,11 @@ class Environment(BaseModel):
         optional_fields = set(
             [
                 "created",
+                "custom_config",
+                "environment_key",
                 "file_count",
                 "last_accessed",
+                "mode",
                 "network",
                 "size_bytes",
                 "sources",
