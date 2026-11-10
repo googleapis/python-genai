@@ -112,6 +112,7 @@ if TYPE_CHECKING:
         Env,
         EnvParam,
         Environment,
+        EnvironmentMode,
         EnvironmentParam,
         Network,
         NetworkEnum,
@@ -140,7 +141,7 @@ if TYPE_CHECKING:
     )
     from .filesearchresultstep import FileSearchResultStep, FileSearchResultStepParam
     from .filter_ import Filter, FilterParam
-    from .findrequest import FindRequest, FindRequestParam, Mode
+    from .findrequest import FindRequest, FindRequestMode, FindRequestParam
     from .fixrequest import FixRequest, FixRequestParam
     from .function import Function, FunctionParam
     from .functioncallstep import FunctionCallStep, FunctionCallStepParam
@@ -525,6 +526,7 @@ __all__ = [
     "EnvVarParam",
     "Environment",
     "EnvironmentEnum",
+    "EnvironmentMode",
     "EnvironmentNetworkEgressAllowlist",
     "EnvironmentNetworkEgressAllowlistParam",
     "EnvironmentParam",
@@ -553,6 +555,7 @@ __all__ = [
     "Filter",
     "FilterParam",
     "FindRequest",
+    "FindRequestMode",
     "FindRequestParam",
     "FixRequest",
     "FixRequestParam",
@@ -680,7 +683,6 @@ __all__ = [
     "Method",
     "ModalityTokens",
     "ModalityTokensTypedDict",
-    "Mode",
     "Model",
     "ModelOutputStep",
     "ModelOutputStepParam",
@@ -937,6 +939,7 @@ _dynamic_imports: dict[str, str] = {
     "Env": ".environment",
     "EnvParam": ".environment",
     "Environment": ".environment",
+    "EnvironmentMode": ".environment",
     "EnvironmentParam": ".environment",
     "Network": ".environment",
     "NetworkEnum": ".environment",
@@ -973,8 +976,8 @@ _dynamic_imports: dict[str, str] = {
     "Filter": ".filter_",
     "FilterParam": ".filter_",
     "FindRequest": ".findrequest",
+    "FindRequestMode": ".findrequest",
     "FindRequestParam": ".findrequest",
-    "Mode": ".findrequest",
     "FixRequest": ".fixrequest",
     "FixRequestParam": ".fixrequest",
     "Function": ".function",
