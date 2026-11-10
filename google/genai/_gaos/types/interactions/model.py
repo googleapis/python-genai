@@ -90,6 +90,8 @@ Model = Union[
         "gemini-robotics-er-2-preview",
         # Our flagship music generation model, optimized for full-length songs with complex structural coherence.
         "lyria-3.5",
+        # Gemini Omni 1.2 Flash - Our latest multimodal model for fast, conversational video generation, editing, and cinematic control.
+        "gemini-omni-1.2-flash",
         # Our high-performance multimodal model designed for fast, conversational video generation, editing, and cinematic control.
         "gemini-omni-1.1-flash",
         # Preview release of our multimodal model for conversational video generation, editing, and cinematic control.
