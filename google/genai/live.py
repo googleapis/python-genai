@@ -20,6 +20,7 @@ import base64
 import contextlib
 import json
 import logging
+import sys
 import typing
 from typing import Any, AsyncIterator, Optional, Sequence, Union, get_args
 import warnings
@@ -35,9 +36,12 @@ from . import _mcp_utils
 from . import _transformers as t
 from . import errors
 from . import types
+from ._adapters import McpToGenAiToolAdapter
 from ._api_client import BaseApiClient
+from ._api_client import patch_http_options
 from ._common import get_value_by_path as getv
 from ._common import set_value_by_path as setv
+from ._mcp_utils import mcp_to_gemini_tool
 from .live_music import AsyncLiveMusic
 from .models import _Content_to_mldev
 
@@ -51,30 +55,27 @@ except ModuleNotFoundError:
   from websockets.client import ClientConnection  # type: ignore
   from websockets.client import connect as ws_connect  # type: ignore
 
-try:
-  from google.auth.transport import requests
-except ImportError:
-  requests = None  # type: ignore[assignment]
+
+def _auth_requests() -> Any:
+  """Returns google-auth's requests transport, or None if it is unavailable.
+
+  Resolved on use rather than at module scope, because importing it pulls in
+  the whole `requests` stack and only credential refresh below needs it.
+  """
+  try:
+    from google.auth.transport import requests
+
+    return requests
+  except ImportError:
+    return None
+
 
 if typing.TYPE_CHECKING:
   from mcp import ClientSession as McpClientSession
   from mcp.types import Tool as McpTool
-  from ._adapters import McpToGenAiToolAdapter
-  from ._mcp_utils import mcp_to_gemini_tool
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  McpToGenAiToolAdapter: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-    from ._adapters import McpToGenAiToolAdapter
-    from ._mcp_utils import mcp_to_gemini_tool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
-    McpToGenAiToolAdapter = None
-    mcp_to_gemini_tool = None
 
 logger = logging.getLogger('google_genai.live')
 
@@ -82,6 +83,26 @@ _FUNCTION_RESPONSE_REQUIRES_ID = (
     'FunctionResponse request must have an `id` field from the'
     ' response of a ToolCall.FunctionalCalls in Google AI.'
 )
+
+# The `LiveConnectConfig.http_options` fields that `connect()` supports.
+_LIVE_SESSION_HTTP_OPTIONS_FIELDS = frozenset(
+    {'base_url', 'api_version', 'headers'}
+)
+
+
+def _is_interaction_complete(
+    server_content: Optional[types.LiveServerContent],
+) -> bool:
+  """Returns True if the server_content indicates the interaction is complete."""
+  if not server_content:
+    return False
+  if (
+      server_content.interaction_status is not None
+      and server_content.interaction_status
+      != types.InteractionStatus.INTERACTION_STATUS_UNSPECIFIED
+  ):
+    return server_content.interaction_status == types.InteractionStatus.IDLE
+  return bool(server_content.turn_complete)
 
 
 class AsyncSession:
@@ -99,6 +120,8 @@ class AsyncSession:
     self.session_id = session_id
     self.setup_complete = setup_complete
 
+  # Note: `send` is deprecated. Do not add options here; use specific
+  # `send_*` methods instead.
   async def send(
       self,
       *,
@@ -428,7 +451,73 @@ class AsyncSession:
         if response.get('id') is None:
           raise ValueError(_FUNCTION_RESPONSE_REQUIRES_ID)
 
+    tool_response_dict = _common.encode_unserializable_types(tool_response_dict)
+
     await self._ws.send(json.dumps({'tool_response': tool_response_dict}))
+
+  async def send_context_update(
+      self,
+      *,
+      system_instruction: Optional[types.ContentUnion] = None,
+      tools: Optional[types.ToolListUnion] = None,
+  ) -> None:
+    """Send in-session context updates to the model.
+
+    Updates to the context of the current session. Only fields that are set will
+    be updated. Updates are guaranteed to be processed *in order* with the rest of
+    the inputs.
+
+    Note:
+      `system_instruction` and `tools` are part of the model preamble, so updating
+      them invalidates the prefix cache. Update them only when strictly necessary
+      as it might have a performance impact on model generation.
+
+    Args:
+      system_instruction: Updated system instruction for the model.
+      tools: An updated list of tools the model may use to generate subsequent
+        responses. Pass an empty list `[]` to clear all tools.
+
+    Example:
+
+    .. code-block:: python
+
+      # Update instructions:
+      await session.send_context_update(
+          system_instruction="You are now a technical expert. Be concise."
+      )
+
+      # Update tools:
+      await session.send_context_update(tools=[my_func])
+
+      # Clear tools:
+      await session.send_context_update(tools=[])
+    """
+    if system_instruction is None and tools is None:
+      raise ValueError(
+          'At least one of `system_instruction` or `tools` must be set.'
+      )
+
+    tools_wrapper: Optional[types.LiveClientContextUpdateTools] = None
+    if tools is not None:
+      tools_wrapper = types.LiveClientContextUpdateTools(tools=tools)
+
+    update = types.LiveClientContextUpdate(
+        system_instruction=system_instruction,
+        tools=tools_wrapper,
+    )
+
+    client_message = types.LiveClientMessage(context_update=update)
+    if self._api_client.vertexai:
+      message_dict = live_converters._LiveClientMessage_to_vertex(
+          self._api_client, client_message
+      )
+    else:
+      message_dict = live_converters._LiveClientMessage_to_mldev(
+          self._api_client, client_message
+      )
+    message_dict = _common.convert_to_dict(message_dict)
+    message_dict = _common.encode_unserializable_types(message_dict)
+    await self._ws.send(json.dumps(message_dict))
 
   async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
@@ -454,7 +543,7 @@ class AsyncSession:
     """
     # TODO(b/365983264) Handle intermittent issues for the user.
     while result := await self._receive():
-      if result.server_content and result.server_content.turn_complete:
+      if _is_interaction_complete(result.server_content):
         yield result
         break
       yield result
@@ -875,7 +964,6 @@ class AsyncSession:
               function_responses=function_response_list
           )
       )
-
     else:
       raise ValueError(
           f'Unsupported input type "{type(input)}" or input content "{input}"'
@@ -929,23 +1017,23 @@ class AsyncLive(_api_module.BaseModule):
 
     Args:
       model: The model to use for the live session.
-      config: The configuration for the live session.
+      config: The configuration for the live session. The `base_url`,
+        `api_version` and `headers` fields in the
+        `LiveConnectConfig.http_options` field can override the `base_url`,
+        `api_version` and `headers` fields in the `Client` class.
       **kwargs: additional keyword arguments.
 
     Yields:
       An AsyncSession object.
     """
-    # TODO(b/404946570): Support per request http options.
     if isinstance(config, dict):
       config = types.LiveConnectConfig(**config)
-    if config and config.http_options:
-      raise ValueError(
-          'google.genai.client.aio.live.connect() does not support'
-          ' http_options at request-level in LiveConnectConfig yet. Please use'
-          ' the client-level http_options configuration instead.'
-      )
+    session_http_options = config.http_options if config else None
+    http_options = _merge_live_http_options(
+        self._api_client._http_options, session_http_options
+    )
 
-    base_url = self._api_client._websocket_base_url()
+    base_url = self._api_client._websocket_base_url(http_options)
     if isinstance(base_url, bytes):
       base_url = base_url.decode('utf-8')
     transformed_model = t.t_model(self._api_client, model)  # type: ignore
@@ -953,10 +1041,10 @@ class AsyncLive(_api_module.BaseModule):
     parameter_model = await _t_live_connect_config(self._api_client, config)
 
     if self._api_client.api_key and not self._api_client.vertexai:
-      version = self._api_client._http_options.api_version
+      version = http_options.api_version
       api_key = self._api_client.api_key
       method = 'BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
+      original_headers = http_options.headers
       headers = original_headers.copy() if original_headers is not None else {}
       if api_key.startswith('auth_tokens/'):
         warnings.warn(
@@ -998,9 +1086,9 @@ class AsyncLive(_api_module.BaseModule):
     elif self._api_client.api_key and self._api_client.vertexai:
       # Headers already contains api key for express mode.
       api_key = self._api_client.api_key
-      version = self._api_client._http_options.api_version
+      version = http_options.api_version
       uri = f'{base_url}/ws/google.cloud.aiplatform.{version}.LlmBidiService/BidiGenerateContent'
-      original_headers = self._api_client._http_options.headers
+      original_headers = http_options.headers
       headers = original_headers.copy() if original_headers is not None else {}
 
       request_dict = _common.convert_to_dict(
@@ -1018,18 +1106,18 @@ class AsyncLive(_api_module.BaseModule):
 
       request = json.dumps(request_dict)
     else:
-      version = self._api_client._http_options.api_version
+      version = http_options.api_version
       has_sufficient_auth = (
           self._api_client.project and self._api_client.location
       )
       if self._api_client.custom_base_url and not has_sufficient_auth:
         # API gateway proxy can use the auth in custom headers, not url.
         # Enable custom url if auth is not sufficient.
-        uri = self._api_client.custom_base_url
+        uri = http_options.base_url or self._api_client.custom_base_url
         # Keep the model as is.
         transformed_model = model
         # Do not get credentials for custom url.
-        original_headers = self._api_client._http_options.headers
+        original_headers = http_options.headers
         headers = (
             original_headers.copy() if original_headers is not None else {}
         )
@@ -1047,18 +1135,21 @@ class AsyncLive(_api_module.BaseModule):
         # creds.valid is False, and creds.token is None
         # Need to refresh credentials to populate those
         if not (creds.token and creds.valid):
-          if requests is None:
+          auth_requests = _auth_requests()
+          if auth_requests is None:
             raise ValueError('The requests module is required to refresh google-auth credentials. Please install with `pip install google-auth[requests]`')
-          auth_req = requests.Request()  # type: ignore
+          auth_req = auth_requests.Request()
           creds.refresh(auth_req)  # type: ignore[no-untyped-call]
         bearer_token = creds.token
 
-        original_headers = self._api_client._http_options.headers
+        original_headers = http_options.headers
         headers = (
             original_headers.copy() if original_headers is not None else {}
         )
         if not headers.get('Authorization'):
           headers['Authorization'] = f'Bearer {bearer_token}'
+        if creds.quota_project_id and not headers.get('x-goog-user-project'):
+          headers['x-goog-user-project'] = creds.quota_project_id
 
       location = self._api_client.location
       project = self._api_client.project
@@ -1145,6 +1236,37 @@ class AsyncLive(_api_module.BaseModule):
       )
 
 
+def _merge_live_http_options(
+    client_http_options: types.HttpOptions,
+    session_http_options: Optional[types.HttpOptions],
+) -> types.HttpOptions:
+  """Returns the client's http options patched with the session-level ones.
+
+  Args:
+    client_http_options: The client-level http options.
+    session_http_options: The http options from `LiveConnectConfig`. Only the
+      fields in `_LIVE_SESSION_HTTP_OPTIONS_FIELDS` are supported.
+
+  Raises:
+    ValueError: If `session_http_options` sets an unsupported field.
+  """
+  if session_http_options is None:
+    return client_http_options
+  unsupported_fields = [
+      field
+      for field in type(session_http_options).model_fields
+      if field not in _LIVE_SESSION_HTTP_OPTIONS_FIELDS
+      and getattr(session_http_options, field) is not None
+  ]
+  if unsupported_fields:
+    raise ValueError(
+        'google.genai.client.aio.live.connect() only supports `base_url`,'
+        ' `api_version` and `headers` in LiveConnectConfig.http_options, but'
+        f' got: {", ".join(unsupported_fields)}.'
+    )
+  return patch_http_options(client_http_options, session_http_options)
+
+
 async def _t_live_connect_config(
     api_client: BaseApiClient,
     config: Optional[types.LiveConnectConfigOrDict],
@@ -1174,23 +1296,35 @@ async def _t_live_connect_config(
   parameter_model_copy = parameter_model.model_copy(update={'tools': None})
   if parameter_model.tools:
     parameter_model_copy.tools = []
-    for tool in parameter_model.tools:
-      if McpClientSession is not None and isinstance(tool, McpClientSession):
-        mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
-            tool, await tool.list_tools()
-        )
-        # Extend the config with the MCP session tools converted to GenAI tools.
-        parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
-      elif McpTool is not None and isinstance(tool, McpTool):
-        parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
-      else:
-        parameter_model_copy.tools.append(tool)
+    if not _mcp_utils._is_mcp_loaded():
+      # No MCP tools possible if `mcp` isn't loaded; pass through unchanged.
+      parameter_model_copy.tools.extend(parameter_model.tools)
+    else:
+      try:
+        from mcp import ClientSession as _McpClientSession  # pylint: disable=g-import-not-at-top
+        from mcp.types import Tool as _McpTool  # pylint: disable=g-import-not-at-top
+      except ImportError:
+        _McpClientSession = type('DummySession', (), {})  # type: ignore
+        _McpTool = type('DummyTool', (), {})  # type: ignore
+
+      for tool in parameter_model.tools:
+        if isinstance(tool, _McpClientSession):
+          mcp_to_genai_tool_adapter = McpToGenAiToolAdapter(
+              tool, await tool.list_tools()
+          )
+          # Extend the config with the MCP session tools converted to GenAI
+          # tools.
+          parameter_model_copy.tools.extend(mcp_to_genai_tool_adapter.tools)
+        elif isinstance(tool, _McpTool):
+          parameter_model_copy.tools.append(mcp_to_gemini_tool(tool))
+        else:
+          parameter_model_copy.tools.append(tool)
 
   if parameter_model_copy.generation_config is not None:
     warnings.warn(
         'Setting `LiveConnectConfig.generation_config` is deprecated, '
-        'please set the fields on `LiveConnectConfig` directly. This will '
-        'become an error in a future version (not before Q3 2025)',
+        'please set the fields on `LiveConnectConfig` directly. It will be '
+        'removed in the next major version (not before 7/31/2026).',
         DeprecationWarning,
         stacklevel=4,
     )

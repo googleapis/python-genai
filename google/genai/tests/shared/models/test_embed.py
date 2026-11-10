@@ -34,7 +34,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_embed_gemini_embedding_2',
         parameters=genai_types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents='Hello world!',
             config={
                 'output_dimensionality': 10,

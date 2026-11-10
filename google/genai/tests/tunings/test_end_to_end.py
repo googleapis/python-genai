@@ -47,7 +47,7 @@ def test_tune_until_success(client):
     )
   else:
     # Remove GenAI SDK test since it is deprecated:
-    # https://ai.google.dev/gemini-api/docs/model-tuning
+    # https://aistudio.google.com/docs/model-tuning
     return
 
   while not job.has_ended:

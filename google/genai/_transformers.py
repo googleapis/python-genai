@@ -27,6 +27,7 @@ import time
 import types as builtin_types
 import typing
 from typing import Any, GenericAlias, List, Optional, Sequence, Union  # type: ignore[attr-defined]
+from . import _mcp_utils
 from ._mcp_utils import mcp_to_gemini_tool
 from ._common import get_value_by_path as getv
 from ._common import is_duck_type_of
@@ -57,12 +58,6 @@ if typing.TYPE_CHECKING:
 else:
   McpClientSession: typing.Type = Any
   McpTool: typing.Type = Any
-  try:
-    from mcp import ClientSession as McpClientSession
-    from mcp.types import Tool as McpTool
-  except ImportError:
-    McpClientSession = None
-    McpTool = None
 
 
 metric_name_sdk_api_map = {
@@ -963,16 +958,21 @@ def t_tool(
     return types.Tool(
         function_declarations=[
             types.FunctionDeclaration.from_callable(
-                client=client, callable=origin
+                client=client, callable=origin, use_json_schema=True
             )
         ]
     )
-  elif McpTool is not None and is_duck_type_of(origin, McpTool):
-    return mcp_to_gemini_tool(origin)
-  elif isinstance(origin, dict):
+  if _mcp_utils._is_mcp_loaded():
+    try:
+      from mcp.types import Tool as _McpTool
+
+      if is_duck_type_of(origin, _McpTool):
+        return mcp_to_gemini_tool(origin)
+    except ImportError:
+      pass
+  if isinstance(origin, dict):
     return types.Tool.model_validate(origin)
-  else:
-    return origin
+  return origin
 
 
 def t_tools(
@@ -1393,3 +1393,7 @@ def t_is_vertex_embed_content_model(model: str) -> bool:
       # Open-source MaaS embedding models.
       or 'maas' in model
   )
+
+
+def t_json_schema(origin: Any) -> Any:
+  return origin

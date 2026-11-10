@@ -13,13 +13,17 @@
 # limitations under the License.
 #
 
+from __future__ import annotations
+
 import asyncio
 import os
-from typing import Any, Optional, Union
+from typing import Any, Optional, TYPE_CHECKING, Union
+import warnings
 
 import google.auth
 import pydantic
 
+from . import _common
 from ._api_client import BaseApiClient
 from ._base_url import get_base_url
 from ._replay_api_client import ReplayApiClient
@@ -35,24 +39,30 @@ from .tokens import AsyncTokens, Tokens
 from .tunings import AsyncTunings, Tunings
 from .types import HttpOptions, HttpOptionsDict, HttpRetryOptions
 
-import warnings
-
-from . import _common
-
-from ._gaos.google_genai import (
-    AsyncGeminiNextGenAgents,
-    AsyncGeminiNextGenInteractions,
-    AsyncGeminiNextGenWebhooks,
-    GeminiNextGenAgents,
-    GeminiNextGenInteractions,
-    GeminiNextGenWebhooks,
-    build_google_genai_async_client,
-    build_google_genai_client,
-)
-from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
-from ._gaos.sdk import GenAI as GeminiNextGenAPI
+if TYPE_CHECKING:
+  from ._gaos.google_genai import (
+      AsyncGeminiNextGenAgents,
+      AsyncGeminiNextGenCredentials,
+      AsyncGeminiNextGenEnvironments,
+      AsyncGeminiNextGenInteractions,
+      AsyncGeminiNextGenTriggers,
+      AsyncGeminiNextGenVoices,
+      AsyncGeminiNextGenWebhooks,
+      GeminiNextGenAgents,
+      GeminiNextGenCredentials,
+      GeminiNextGenEnvironments,
+      GeminiNextGenInteractions,
+      GeminiNextGenTriggers,
+      GeminiNextGenVoices,
+      GeminiNextGenWebhooks,
+  )
+  from ._gaos.sdk import AsyncGenAI as AsyncGeminiNextGenAPI
+  from ._gaos.sdk import GenAI as GeminiNextGenAPI
 
 _agent_experimental_warned = False
+_trigger_experimental_warned = False
+_environment_experimental_warned = False
+_credential_experimental_warned = False
 
 
 class AsyncClient:
@@ -74,10 +84,16 @@ class AsyncClient:
     self._agents: Optional[AsyncGeminiNextGenAgents] = None
     self._interactions: Optional[AsyncGeminiNextGenInteractions] = None
     self._webhooks: Optional[AsyncGeminiNextGenWebhooks] = None
+    self._triggers: Optional[AsyncGeminiNextGenTriggers] = None
+    self._environments: Optional[AsyncGeminiNextGenEnvironments] = None
+    self._credentials: Optional[AsyncGeminiNextGenCredentials] = None
+    self._voices: Optional[AsyncGeminiNextGenVoices] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
     if self._nextgen_client_instance is None:
+      from ._gaos.google_genai import build_google_genai_async_client
+
       self._nextgen_client_instance = build_google_genai_async_client(
           self._api_client
       )
@@ -86,12 +102,16 @@ class AsyncClient:
   @property
   def interactions(self) -> AsyncGeminiNextGenInteractions:
     if self._interactions is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenInteractions
+
       self._interactions = AsyncGeminiNextGenInteractions(self._api_client)
     return self._interactions
 
   @property
   def webhooks(self) -> AsyncGeminiNextGenWebhooks:
     if self._webhooks is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenWebhooks
+
       self._webhooks = AsyncGeminiNextGenWebhooks(self._api_client)
     return self._webhooks
 
@@ -106,8 +126,69 @@ class AsyncClient:
           stacklevel=1,
       )
     if self._agents is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenAgents
+
       self._agents = AsyncGeminiNextGenAgents(self._api_client)
     return self._agents
+
+  @property
+  def triggers(self) -> AsyncGeminiNextGenTriggers:
+    global _trigger_experimental_warned
+    if not _trigger_experimental_warned:
+      _trigger_experimental_warned = True
+      warnings.warn(
+          'Triggers usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    if self._triggers is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenTriggers
+
+      self._triggers = AsyncGeminiNextGenTriggers(self._api_client)
+    return self._triggers
+
+  @property
+  def environments(self) -> AsyncGeminiNextGenEnvironments:
+    """Environments resource."""
+    global _environment_experimental_warned
+    if not _environment_experimental_warned:
+      _environment_experimental_warned = True
+      warnings.warn(
+          'Environments usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    if self._environments is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenEnvironments
+
+      self._environments = AsyncGeminiNextGenEnvironments(self._api_client)
+    return self._environments
+
+  @property
+  def credentials(self) -> AsyncGeminiNextGenCredentials:
+    """Credentials resource."""
+    global _credential_experimental_warned
+    if not _credential_experimental_warned:
+      _credential_experimental_warned = True
+      warnings.warn(
+          'Credentials usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=1,
+      )
+    if self._credentials is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenCredentials
+
+      self._credentials = AsyncGeminiNextGenCredentials(self._api_client)
+    return self._credentials
+
+  @property
+  def voices(self) -> AsyncGeminiNextGenVoices:
+    """Voices resource."""
+    if self._voices is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenVoices
+
+      self._voices = AsyncGeminiNextGenVoices(self._api_client)
+    return self._voices
 
   @property
   def models(self) -> AsyncModels:
@@ -164,11 +245,11 @@ class AsyncClient:
           enterprise=True, project='my-project-id', location='us-central1'
       ).aio
       response_1 = await async_client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       response_2 = await async_client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       # Close the client to release resources.
@@ -225,13 +306,13 @@ class Client:
   `GOOGLE_CLOUD_LOCATION` environment variables.
 
   Attributes:
-    api_key: The `API key <https://ai.google.dev/gemini-api/docs/api-key>`_ to
-      use for authentication. Applies to the Gemini Developer API only.
+    api_key: The `API key <https://aistudio.google.com/docs/api-key>`_ to use
+      for authentication. Applies to the Gemini Developer API only.
     enterprise (bool): Indicates whether the client should use the Gemini
-      Enterprise Agent Platform endpoints (previously Vertex AI API).
-      Defaults to False (uses Gemini Developer API endpoints). When
-      `enterprise` and `vertexai` are both set, and they have conflicting
-      values, a `ValueError` will be raised.
+      Enterprise Agent Platform endpoints (previously Vertex AI API). Defaults
+      to False (uses Gemini Developer API endpoints). When `enterprise` and
+      `vertexai` are both set, and they have conflicting values, a `ValueError`
+      will be raised.
     vertexai (bool): Legacy flag for `enterprise`.
     credentials: The credentials to use for authentication when calling the
       Gemini Enterprise Agent Platform APIs. Credentials can be obtained from
@@ -242,8 +323,8 @@ class Client:
     project: The `Google Cloud project ID
       <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to use
       for quota. Can be obtained from environment variables (for example,
-      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-      Find your `Google Cloud project ID
+      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only. Find your
+      `Google Cloud project ID
       <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
     location: The `location
       <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
@@ -295,9 +376,8 @@ class Client:
          `enterprise` and `vertexai` are both set, and they have conflicting
          values, a `ValueError` will be raised.
        vertexai (bool): Legacy flag for `enterprise`.
-       api_key (str): The `API key
-         <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
-         authentication. Applies to the Gemini Developer API only.
+       api_key (str): The `API key <https://aistudio.google.com/docs/api-key>`_
+         to use for authentication. Applies to the Gemini Developer API only.
        credentials (google.auth.credentials.Credentials): The credentials to use
          for authentication when calling the Vertex AI APIs. Credentials can be
          obtained from environment variables and default credentials. For more
@@ -361,6 +441,10 @@ class Client:
     self._agents: Optional[GeminiNextGenAgents] = None
     self._interactions: Optional[GeminiNextGenInteractions] = None
     self._webhooks: Optional[GeminiNextGenWebhooks] = None
+    self._triggers: Optional[GeminiNextGenTriggers] = None
+    self._environments: Optional[GeminiNextGenEnvironments] = None
+    self._credentials: Optional[GeminiNextGenCredentials] = None
+    self._voices: Optional[GeminiNextGenVoices] = None
 
   @staticmethod
   def _get_api_client(
@@ -401,6 +485,8 @@ class Client:
   @property
   def _nextgen_client(self) -> GeminiNextGenAPI:
     if self._nextgen_client_instance is None:
+      from ._gaos.google_genai import build_google_genai_client
+
       self._nextgen_client_instance = build_google_genai_client(
           self._api_client
       )
@@ -409,12 +495,16 @@ class Client:
   @property
   def interactions(self) -> GeminiNextGenInteractions:
     if self._interactions is None:
+      from ._gaos.google_genai import GeminiNextGenInteractions
+
       self._interactions = GeminiNextGenInteractions(self._api_client)
     return self._interactions
 
   @property
   def webhooks(self) -> GeminiNextGenWebhooks:
     if self._webhooks is None:
+      from ._gaos.google_genai import GeminiNextGenWebhooks
+
       self._webhooks = GeminiNextGenWebhooks(self._api_client)
     return self._webhooks
 
@@ -429,8 +519,66 @@ class Client:
         stacklevel=2,
       )
     if self._agents is None:
+      from ._gaos.google_genai import GeminiNextGenAgents
+
       self._agents = GeminiNextGenAgents(self._api_client)
     return self._agents
+
+  @property
+  def triggers(self) -> GeminiNextGenTriggers:
+    global _trigger_experimental_warned
+    if not _trigger_experimental_warned:
+      _trigger_experimental_warned = True
+      warnings.warn(
+          'Triggers usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
+    if self._triggers is None:
+      from ._gaos.google_genai import GeminiNextGenTriggers
+
+      self._triggers = GeminiNextGenTriggers(self._api_client)
+    return self._triggers
+
+  @property
+  def environments(self) -> GeminiNextGenEnvironments:
+    global _environment_experimental_warned
+    if not _environment_experimental_warned:
+      _environment_experimental_warned = True
+      warnings.warn(
+          'Environments usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
+    if self._environments is None:
+      from ._gaos.google_genai import GeminiNextGenEnvironments
+
+      self._environments = GeminiNextGenEnvironments(self._api_client)
+    return self._environments
+
+  @property
+  def credentials(self) -> GeminiNextGenCredentials:
+    global _credential_experimental_warned
+    if not _credential_experimental_warned:
+      _credential_experimental_warned = True
+      warnings.warn(
+          'Credentials usage is experimental and may change in future versions.',
+          category=UserWarning,
+          stacklevel=2,
+      )
+    if self._credentials is None:
+      from ._gaos.google_genai import GeminiNextGenCredentials
+
+      self._credentials = GeminiNextGenCredentials(self._api_client)
+    return self._credentials
+
+  @property
+  def voices(self) -> GeminiNextGenVoices:
+    if self._voices is None:
+      from ._gaos.google_genai import GeminiNextGenVoices
+
+      self._voices = GeminiNextGenVoices(self._api_client)
+    return self._voices
 
   @property
   def chats(self) -> Chats:
@@ -489,14 +637,14 @@ class Client:
       from google.genai import Client
 
       client = Client(
-          vertexai=True, project='my-project-id', location='us-central1'
+          enterprise=True, project='my-project-id', location='us-central1'
       )
       response_1 = client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       response_2 = client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       # Close the client to release resources.

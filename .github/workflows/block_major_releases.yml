@@ -10,7 +10,10 @@ on:
 jobs:
   check-major-approval:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'release-please[bot]'
+    # Add a check to ensure the PR title indicates a major release (e.g., ends with .0.0)
+    if: >
+      github.event.pull_request.user.login == 'release-please[bot]' &&
+      endsWith(github.event.pull_request.title, '.0.0')
     permissions:
       pull-requests: read
     steps:
@@ -30,12 +33,6 @@ jobs:
 
             const version = versionMatch[0];
             console.log(`Extracted Version: ${version}`);
-
-            // 2. Identify if this is a major release (ends with .0.0)
-            if (!version.endsWith('.0.0')) {
-              console.log("This is a minor or patch version release. Skipping check.");
-              return;
-            }
 
             console.log(`MAJOR version release detected (${version})! Verifying approvals...`);
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 # pyformat: disable
+# pylint: skip-file
 
 from .asynctypes import AsyncHooks
 from .adapters import (

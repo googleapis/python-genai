@@ -22,12 +22,12 @@ import logging
 import os
 import ssl
 import sys
+import threading
 from unittest import mock
 
 import certifi
 import google.auth
 from google.auth import credentials
-import httpx
 import pytest
 import requests
 
@@ -36,6 +36,15 @@ from ... import _base_url as base_url
 from ... import _replay_api_client as replay_api_client
 from ... import Client
 from ... import types
+
+if api_client._get_http_client_backend() == "httpx2":
+  import httpx2 as httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpx2Client
+  _AsyncHttpxClient = api_client.AsyncHttpx2Client
+else:
+  import httpx  # pylint: disable=g-import-not-at-top
+  _SyncHttpxClient = api_client.SyncHttpxClient
+  _AsyncHttpxClient = api_client.AsyncHttpxClient
 
 try:
   import aiohttp
@@ -931,19 +940,37 @@ def test_vertexai_apikey_from_env_both_api_keys(monkeypatch, caplog):
   )
 
 
-def test_vertexai_apikey_invalid_constructor1():
-  # Vertex AI Express mode uses API key on Vertex AI.
+def test_gemini_project_location_invalid(monkeypatch):
+  monkeypatch.setenv("GOOGLE_API_KEY", "test_key")
+  with pytest.raises(
+      ValueError, match="Gemini API does not support project/location."
+  ):
+    Client(project="fake_project_id", vertexai=False)
+
+
+def test_vertexai_apikey_with_project_and_location(monkeypatch):
   api_key = "vertexai_api_key"
   project_id = "fake_project_id"
-  location = "fake-location"
+  location = "us-central1"
+  monkeypatch.setenv("GOOGLE_CLOUD_PROJECT", "")
+  monkeypatch.setenv("GOOGLE_CLOUD_LOCATION", "")
+  monkeypatch.setenv("GOOGLE_API_KEY", "")
 
-  with pytest.raises(ValueError):
-    Client(
-        api_key=api_key,
-        project=project_id,
-        location=location,
-        vertexai=True,
-    )
+  client = Client(
+      api_key=api_key,
+      project=project_id,
+      location=location,
+      vertexai=True,
+  )
+
+  assert client.models._api_client.vertexai
+  assert client.models._api_client.api_key == api_key
+  assert client.models._api_client.project == project_id
+  assert client.models._api_client.location == location
+  assert client._api_client._http_options.base_url == (
+      "https://us-central1-aiplatform.googleapis.com/"
+  )
+  assert isinstance(client.models._api_client, api_client.BaseApiClient)
 
 
 def test_vertexai_apikey_combo1(monkeypatch):
@@ -1168,6 +1195,45 @@ def test_client_ssl_context_explicit_initialization_async_args():
   except ImportError:
     assert async_client_args["verify"]
     assert isinstance(async_client_args["verify"], ssl.SSLContext)
+
+
+def test_client_initializes_httpx_clients_vertex_and_mldev():
+  """Verifies both Vertex and MLDev clients initialize non-null httpx clients with timeout=None."""
+  mldev_client = Client(api_key="fake-api-key")
+  assert mldev_client._api_client._httpx_client is not None
+  assert mldev_client._api_client._async_httpx_client is not None
+  assert mldev_client._api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert mldev_client._api_client._async_httpx_client.timeout == httpx.Timeout(None)
+
+  vertex_client = Client(
+      vertexai=True,
+      project="fake-proj",
+      location="us-central1",
+  )
+  assert vertex_client._api_client._httpx_client is not None
+  assert vertex_client._api_client._async_httpx_client is not None
+  assert vertex_client._api_client._httpx_client.timeout == httpx.Timeout(None)
+  assert vertex_client._api_client._async_httpx_client.timeout == httpx.Timeout(None)
+
+
+def test_client_respects_custom_httpx_client():
+  """Verifies that user-provided httpx_client and httpx_async_client are preserved."""
+  custom_sync = httpx.Client(timeout=42.0)
+  custom_async = httpx.AsyncClient(timeout=84.0)
+
+  client = Client(
+      vertexai=True,
+      project="fake-proj",
+      location="us-central1",
+      http_options={
+          "httpx_client": custom_sync,
+          "httpx_async_client": custom_async,
+      },
+  )
+  assert client._api_client._httpx_client is custom_sync
+  assert client._api_client._async_httpx_client is custom_async
+  assert client._api_client._httpx_client.timeout == httpx.Timeout(42.0)
+  assert client._api_client._async_httpx_client.timeout == httpx.Timeout(84.0)
 
 
 def test_constructor_with_base_url_from_http_options():
@@ -1492,7 +1558,7 @@ def test_threaded_generate_content_locking(monkeypatch):
         text='{"candidates": [{"content": {"parts": [{"text": "response"}]}}]}',
     )
     mock_request = mock.Mock(return_value=mock_httpx_response)
-    monkeypatch.setattr(api_client.SyncHttpxClient, "send", mock_request)
+    monkeypatch.setattr(_SyncHttpxClient, "send", mock_request)
 
   # Reset credentials to test initialization to ensure the sync lock is tested.
   client._api_client._credentials = None
@@ -1658,8 +1724,6 @@ async def test_get_async_auth_lock_doesnt_block_other_operations():
 @pytest.mark.asyncio
 async def test_get_async_auth_lock_creation_lock_lifecycle():
   """Tests the creation lock lifecycle and cleanup."""
-  import threading
-
   client = Client(
       vertexai=True, project="fake_project_id", location="fake-location"
   )
@@ -1929,3 +1993,573 @@ async def test_async_mtls_uses_refreshable_credentials(monkeypatch):
     assert passed_creds.valid == True
     mock_creds.expired = True
     assert passed_creds.valid == False
+
+
+def _run_on_fresh_loops(coro_fn, count):
+  """Runs coro_fn() count times, each on its own thread and its own loop.
+
+  This is the shape ADK's sync `Runner.run()` gives Agent Engine: every request
+  gets a new thread and a new `asyncio.run()` loop that is closed on the way
+  out, while the genai client itself is a long-lived singleton.
+
+  Args:
+    coro_fn: Zero-argument callable returning the coroutine to run.
+    count: How many loops to run it on, one after another.
+  """
+  for _ in range(count):
+    thread = threading.Thread(target=lambda: asyncio.run(coro_fn()))
+    thread.start()
+    thread.join()
+
+
+@requires_aiohttp
+def test_aiohttp_sessions_not_retained_for_closed_event_loops():
+  """Sessions belonging to finished loops must not accumulate. b/496663148."""
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  api_client.has_aiohttp = True
+  base_client = client._api_client
+
+  _run_on_fresh_loops(base_client._get_aiohttp_session, 10)
+
+  # Reaping happens on access, so the newest loop's entry survives until the
+  # next call. What matters is that the cache stays bounded by the number of
+  # live loops rather than growing once per request served.
+  assert len(base_client._aiohttp_sessions) <= 1
+
+
+def test_async_auth_locks_not_retained_for_closed_event_loops():
+  """Auth locks belonging to finished loops must not accumulate. b/496663148."""
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  base_client = client._api_client
+
+  _run_on_fresh_loops(base_client._get_async_auth_lock, 10)
+
+  assert len(base_client._async_auth_locks) <= 1
+
+
+@requires_aiohttp
+def test_aiohttp_session_kept_per_live_event_loop():
+  """Each live loop keeps its own session; reaping must not steal it.
+
+  Reusing one loop's session on another is what raised `RuntimeError: ... got
+  Future ... attached to a different loop` in b/496663148.
+  """
+  client = Client(
+      vertexai=True, project="fake_project_id", location="fake-location"
+  )
+  api_client.has_aiohttp = True
+  base_client = client._api_client
+  sessions = []
+  barrier = threading.Barrier(3)
+
+  def hold_loop_open():
+    async def run():
+      session = await base_client._get_aiohttp_session()
+      sessions.append(session)
+      # Keep this loop alive until every thread has its own session.
+      await asyncio.get_running_loop().run_in_executor(None, barrier.wait)
+      assert await base_client._get_aiohttp_session() is session
+
+    asyncio.run(run())
+
+  threads = [threading.Thread(target=hold_loop_open) for _ in range(3)]
+  for thread in threads:
+    thread.start()
+  for thread in threads:
+    thread.join()
+
+  assert len({id(session) for session in sessions}) == 3
+
+
+@pytest.mark.parametrize(
+    "url, expected",
+    [
+        (
+            "https://us-central1-aiplatform.googleapis.com/v1/models",
+            "https://us-central1-aiplatform.mtls.googleapis.com/v1/models",
+        ),
+        (
+            "https://secretmanager.us-central1.rep.googleapis.com/v1/secrets",
+            "https://secretmanager.us-central1.rep.mtls.googleapis.com/v1/secrets",
+        ),
+        (
+            "https://aiplatform.us.rep.googleapis.com/v1/models",
+            "https://aiplatform.us.rep.googleapis.com/v1/models",
+        ),
+        (
+            "https://aiplatform.eu.rep.googleapis.com/v1/models",
+            "https://aiplatform.eu.rep.googleapis.com/v1/models",
+        ),
+        (
+            "https://aiplatform.us.rep.sandbox.googleapis.com/v1/models",
+            "https://aiplatform.us.rep.sandbox.googleapis.com/v1/models",
+        ),
+        (
+            "https://aiplatform.eu.rep.sandbox.googleapis.com/v1/models",
+            "https://aiplatform.eu.rep.sandbox.googleapis.com/v1/models",
+        ),
+        (
+            "wss://aiplatform.googleapis.com/ws",
+            "wss://aiplatform.mtls.googleapis.com/ws",
+        ),
+        (
+            "https://foo.sandbox.googleapis.com/v1",
+            "https://foo.mtls.sandbox.googleapis.com/v1",
+        ),
+        (
+            "https://aiplatform.mtls.googleapis.com/v1",
+            "https://aiplatform.mtls.googleapis.com/v1",
+        ),
+        (
+            "https://foo.mtls.sandbox.googleapis.com/v1",
+            "https://foo.mtls.sandbox.googleapis.com/v1",
+        ),
+        (
+            "https://example.com/sandbox/googleapis.com",
+            "https://example.com/sandbox/googleapis.com",
+        ),
+    ],
+)
+def test_to_mtls_url(url, expected):
+  assert api_client.to_mtls_url(url) == expected
+
+
+@pytest.fixture
+def mock_client_cert(monkeypatch):
+  """Simulates an environment with a default client certificate configured."""
+  from google.auth.transport import mtls
+
+  monkeypatch.delenv("GOOGLE_API_USE_MTLS_ENDPOINT", raising=False)
+  monkeypatch.setattr(
+      mtls, "should_use_client_cert", lambda: True, raising=False
+  )
+  monkeypatch.setattr(mtls, "has_default_client_cert_source", lambda: True)
+  monkeypatch.setattr(
+      mtls, "get_default_ssl_context", lambda: ssl.create_default_context()
+  )
+  monkeypatch.setattr(
+      api_client.BaseApiClient, "_access_token", lambda self: "token"
+  )
+
+  async def _async_access_token(self):
+    return "token"
+
+  monkeypatch.setattr(
+      api_client.BaseApiClient, "_async_access_token", _async_access_token
+  )
+
+
+def _mtls_test_client(**http_options):
+  return Client(
+      vertexai=True,
+      project="fake-project",
+      location="us-central1",
+      http_options=http_options,
+  )
+
+
+def test_sync_httpx_uses_mtls_endpoint_with_client_cert(mock_client_cert):
+  # Custom client_args without an SSL context keep the SDK's SSL context, but
+  # route requests through httpx rather than AuthorizedSession.
+  client = _mtls_test_client(client_args={"follow_redirects": True})
+  assert not client._api_client._use_google_auth_sync()
+  mock_send = mock.Mock(return_value=httpx.Response(200, text="{}"))
+
+  with mock.patch.object(_SyncHttpxClient, "send", mock_send):
+    client._api_client.request("post", "models/gemini:generateContent", {})
+
+  assert mock_send.call_args[0][0].url.host == (
+      "us-central1-aiplatform.mtls.googleapis.com"
+  )
+
+
+@pytest.mark.asyncio
+async def test_async_httpx_uses_mtls_endpoint_with_client_cert(
+    mock_client_cert,
+):
+  api_client.has_aiohttp = False
+  client = _mtls_test_client()
+  mock_request = mock.AsyncMock(return_value=httpx.Response(200, text="{}"))
+
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
+    await client._api_client.async_request(
+        "post", "models/gemini:generateContent", {}
+    )
+
+  assert mock_request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.mtls.googleapis.com/"
+  )
+
+
+@pytest.mark.asyncio
+async def test_async_httpx_download_uses_mtls_endpoint_with_client_cert(
+    mock_client_cert,
+):
+  api_client.has_aiohttp = False
+  client = _mtls_test_client()
+  mock_request = mock.AsyncMock(return_value=httpx.Response(200, content=b""))
+
+  with mock.patch.object(_AsyncHttpxClient, "request", mock_request):
+    await client._api_client.async_download_file("files/abc:download")
+
+  assert mock_request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.mtls.googleapis.com/"
+  )
+
+
+def test_websocket_uses_mtls_endpoint_with_client_cert(mock_client_cert):
+  client = _mtls_test_client()
+  assert client._api_client._websocket_base_url() == (
+      "wss://us-central1-aiplatform.mtls.googleapis.com/"
+  )
+
+
+def test_mtls_endpoint_not_used_without_client_cert(monkeypatch):
+  from google.auth.transport import mtls
+
+  monkeypatch.delenv("GOOGLE_API_USE_MTLS_ENDPOINT", raising=False)
+  monkeypatch.setattr(
+      mtls, "should_use_client_cert", lambda: False, raising=False
+  )
+  client = _mtls_test_client()
+  assert client._api_client._websocket_base_url() == (
+      "wss://us-central1-aiplatform.googleapis.com/"
+  )
+  assert (
+      client._api_client._httpx_url(
+          "https://us-central1-aiplatform.googleapis.com/v1", is_async=True
+      )
+      == "https://us-central1-aiplatform.googleapis.com/v1"
+  )
+
+
+def test_mtls_endpoint_not_used_with_custom_transport(mock_client_cert):
+  client = _mtls_test_client(
+      httpx_async_client=httpx.AsyncClient(),
+      async_client_args={"ssl": ssl.create_default_context()},
+  )
+  url = "https://us-central1-aiplatform.googleapis.com/v1"
+  assert client._api_client._httpx_url(url, is_async=True) == url
+  assert not client._api_client._aiohttp_use_mtls_endpoint
+  assert client._api_client._websocket_base_url() == (
+      "wss://us-central1-aiplatform.googleapis.com/"
+  )
+
+
+@pytest.mark.parametrize(
+    "use_mtls_endpoint, expected_host",
+    [
+        ("always", "us-central1-aiplatform.mtls.googleapis.com"),
+        ("never", "us-central1-aiplatform.googleapis.com"),
+    ],
+)
+def test_mtls_endpoint_env_override(
+    mock_client_cert, monkeypatch, use_mtls_endpoint, expected_host
+):
+  monkeypatch.setenv("GOOGLE_API_USE_MTLS_ENDPOINT", use_mtls_endpoint)
+  client = _mtls_test_client(httpx_async_client=httpx.AsyncClient())
+  assert (
+      client._api_client._httpx_url(
+          "https://us-central1-aiplatform.googleapis.com/v1", is_async=True
+      )
+      == f"https://{expected_host}/v1"
+  )
+
+
+def test_mtls_endpoint_not_used_for_gemini_api(mock_client_cert):
+  client = Client(api_key="test-api-key")
+  assert client._api_client._websocket_base_url() == (
+      "wss://generativelanguage.googleapis.com/"
+  )
+
+
+@pytest.mark.parametrize(
+    "get_default_ssl_context",
+    [
+        lambda: None,
+        mock.Mock(side_effect=ValueError("malformed client certificate")),
+    ],
+)
+def test_mtls_endpoint_not_used_when_client_cert_fails_to_load(
+    mock_client_cert, monkeypatch, get_default_ssl_context
+):
+  from google.auth.transport import mtls
+
+  # The SDK falls back to a one-way SSL context, so the transports must not
+  # switch to the mTLS endpoint.
+  monkeypatch.setattr(mtls, "get_default_ssl_context", get_default_ssl_context)
+  client = _mtls_test_client()
+  url = "https://us-central1-aiplatform.googleapis.com/v1"
+  assert client._api_client._httpx_url(url, is_async=False) == url
+  assert client._api_client._httpx_url(url, is_async=True) == url
+  assert client._api_client._websocket_base_url() == (
+      "wss://us-central1-aiplatform.googleapis.com/"
+  )
+
+
+@pytest.mark.parametrize(
+    "client_args, async_client_args, sync_mtls, async_mtls",
+    [
+        # client_args without `verify` gets the SDK's SSL context even when
+        # async_client_args has a custom one.
+        ({"follow_redirects": True}, {"verify": "custom"}, True, False),
+        # With no client_args, the custom async `verify` is used for both.
+        (None, {"verify": "custom"}, False, False),
+        ({"verify": "custom"}, None, False, False),
+    ],
+)
+def test_httpx_mtls_endpoint_tracks_each_client_ssl_ctx(
+    mock_client_cert, client_args, async_client_args, sync_mtls, async_mtls
+):
+  custom_ctx = ssl.create_default_context()
+  for args in (client_args, async_client_args):
+    if args and args.get("verify") == "custom":
+      args["verify"] = custom_ctx
+  client = _mtls_test_client(
+      client_args=client_args, async_client_args=async_client_args
+  )
+  url = "https://us-central1-aiplatform.googleapis.com/v1"
+  mtls_url = "https://us-central1-aiplatform.mtls.googleapis.com/v1"
+  assert client._api_client._httpx_url(url, is_async=False) == (
+      mtls_url if sync_mtls else url
+  )
+  assert client._api_client._httpx_url(url, is_async=True) == (
+      mtls_url if async_mtls else url
+  )
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@pytest.mark.parametrize("call", ["request", "stream", "download"])
+async def test_aiohttp_uses_mtls_endpoint_without_google_auth_aio(
+    mock_client_cert, monkeypatch, call
+):
+  # Without google.auth.aio, requests go through a plain aiohttp session that
+  # presents the client certificate via the per-request `ssl` argument. Patch
+  # before constructing the client so initialization takes that path too.
+  api_client.has_aiohttp = True
+  monkeypatch.setattr(
+      api_client.BaseApiClient, "_use_google_auth_async", lambda self: False
+  )
+  client = _mtls_test_client()
+  base_client = client._api_client
+
+  mock_response = mock.create_autospec(aiohttp.ClientResponse, instance=True)
+  mock_response.status = 200
+  mock_response.headers = {}
+  mock_response.text.return_value = "{}"
+  mock_response.read.return_value = b""
+  mock_session = mock.create_autospec(aiohttp.ClientSession, instance=True)
+  mock_session.request = mock.AsyncMock(return_value=mock_response)
+
+  with mock.patch.object(
+      base_client, "_get_aiohttp_session", return_value=mock_session
+  ):
+    if call == "download":
+      await base_client.async_download_file("files/abc:download")
+    else:
+      http_request = base_client._build_request(
+          "post", "models/gemini:generateContent", {}, None
+      )
+      await base_client._async_request_once(
+          http_request, stream=call == "stream"
+      )
+
+  assert mock_session.request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.mtls.googleapis.com/"
+  )
+
+
+@pytest.fixture
+def mock_google_auth_aio(monkeypatch):
+  """Simulates an environment where google.auth.aio is installed."""
+  mock_auth_aio = mock.MagicMock()
+  monkeypatch.setitem(sys.modules, "google.auth.aio", mock_auth_aio)
+  monkeypatch.setitem(
+      sys.modules, "google.auth.aio.credentials", mock_auth_aio.credentials
+  )
+
+
+@requires_aiohttp
+def test_aiohttp_mtls_endpoint_kept_with_custom_aiohttp_client(
+    mock_client_cert, mock_google_auth_aio
+):
+  # A custom aiohttp_client is a plain aiohttp session, not a google-auth one,
+  # and still receives the SDK's SSL context through the per-request `ssl`
+  # argument.
+  api_client.has_aiohttp = True
+  client = _mtls_test_client(
+      aiohttp_client=mock.create_autospec(aiohttp.ClientSession, instance=True)
+  )
+  assert not client._api_client._use_google_auth_async()
+  assert client._api_client._aiohttp_use_mtls_endpoint
+
+
+@requires_aiohttp
+def test_google_auth_async_not_used_with_custom_ssl(
+    mock_client_cert, mock_google_auth_aio
+):
+  api_client.has_aiohttp = True
+  custom_ctx = ssl.create_default_context()
+  client = _mtls_test_client(async_client_args={"ssl": custom_ctx})
+  assert not client._api_client._use_google_auth_async()
+  assert client._api_client._async_client_session_request_args["ssl"] is (
+      custom_ctx
+  )
+  assert not client._api_client._aiohttp_use_mtls_endpoint
+
+
+@requires_aiohttp
+def test_google_auth_async_used_by_default(
+    mock_client_cert, mock_google_auth_aio
+):
+  api_client.has_aiohttp = True
+  client = _mtls_test_client()
+  assert client._api_client._use_google_auth_async()
+
+
+@pytest.mark.parametrize("call", ["request", "download"])
+def test_google_auth_sync_respects_mtls_endpoint_env_override(
+    mock_client_cert, monkeypatch, call
+):
+  monkeypatch.setenv("GOOGLE_API_USE_MTLS_ENDPOINT", "never")
+  client = _mtls_test_client()
+  base_client = client._api_client
+  assert base_client._use_google_auth_sync()
+
+  mock_response = mock.MagicMock()
+  mock_response.status_code = 200
+  mock_response.headers = {}
+  mock_response.text = "{}"
+  mock_response.content = b""
+  mock_session = mock.MagicMock()
+  mock_session._is_mtls = True
+  mock_session.request = mock.Mock(return_value=mock_response)
+  base_client._authorized_session = mock_session
+
+  if call == "download":
+    base_client.download_file("files/abc:download")
+  else:
+    base_client.request("post", "models/gemini:generateContent", {})
+
+  assert mock_session.request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.googleapis.com/"
+  )
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+@pytest.mark.parametrize("call", ["request", "stream", "download"])
+async def test_google_auth_async_respects_mtls_endpoint_env_override(
+    mock_client_cert, mock_google_auth_aio, monkeypatch, call
+):
+  from google.auth.transport import mtls
+
+  api_client.has_aiohttp = True
+  monkeypatch.setenv("GOOGLE_API_USE_MTLS_ENDPOINT", "never")
+  monkeypatch.setattr(mtls, "default_client_cert_source", lambda: None)
+  client = _mtls_test_client()
+  base_client = client._api_client
+  assert base_client._use_google_auth_async()
+
+  mock_response = mock.create_autospec(aiohttp.ClientResponse, instance=True)
+  mock_response.status = 200
+  mock_response.headers = {}
+  mock_response.text.return_value = "{}"
+  mock_response.read.return_value = b""
+  mock_session = mock.MagicMock()
+  mock_session._is_mtls = True
+  mock_session.configure_mtls_channel = mock.AsyncMock()
+  mock_session.request = mock.AsyncMock(return_value=mock_response)
+
+  with mock.patch.object(
+      base_client, "_get_aiohttp_session", return_value=mock_session
+  ):
+    if call == "download":
+      await base_client.async_download_file("files/abc:download")
+    else:
+      http_request = base_client._build_request(
+          "post", "models/gemini:generateContent", {}, None
+      )
+      await base_client._async_request_once(
+          http_request, stream=call == "stream"
+      )
+
+  assert mock_session.request.call_args.kwargs["url"].startswith(
+      "https://us-central1-aiplatform.googleapis.com/"
+  )
+
+
+def test_client_init_default_api_version(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(api_key="test-api-key")
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+
+
+def test_client_init_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(api_key="test-api-key")
+  assert client._api_client._http_options.api_version == "v1alpha"
+
+
+def test_client_init_vertexai_with_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  mldev_client = Client(api_key="test-api-key")
+  assert vertex_client._api_client._http_options.api_version == "v1"
+  assert mldev_client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_with_beta_env_api_version(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "beta")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  mldev_client = Client(api_key="test-api-key")
+  assert vertex_client._api_client._http_options.api_version == "v1beta1"
+  assert mldev_client._api_client._http_options.api_version == "v1beta"
+
+
+def test_client_init_http_options_api_version_overrides_env(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "v1alpha")
+  client = Client(
+      api_key="test-api-key", http_options={"api_version": "v1"}
+  )
+  vertex_client = Client(
+      vertexai=True,
+      project="test-project",
+      location="us-central1",
+      http_options={"api_version": "v1"},
+  )
+  assert client._api_client._http_options.api_version == "v1"
+  assert vertex_client._api_client._http_options.api_version == "v1"
+
+
+def test_client_init_empty_env_api_version_uses_default(monkeypatch):
+  monkeypatch.setenv("GOOGLE_GENAI_API_VERSION", "")
+  client = Client(api_key="test-api-key")
+  vertex_client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert (
+      client._api_client._http_options.api_version
+      == api_client.GOOGLE_AI_API_DEFAULT_VERSION
+  )
+  assert vertex_client._api_client._http_options.api_version == "v1beta1"
+
+
+def test_client_init_vertexai_default_api_version_unaffected(monkeypatch):
+  monkeypatch.delenv("GOOGLE_GENAI_API_VERSION", raising=False)
+  client = Client(
+      vertexai=True, project="test-project", location="us-central1"
+  )
+  assert client._api_client._http_options.api_version == "v1beta1"

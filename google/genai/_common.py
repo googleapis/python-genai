@@ -22,6 +22,7 @@ import enum
 import functools
 import logging
 import re
+import sys
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -33,6 +34,17 @@ from typing_extensions import TypeAlias
 logger = logging.getLogger('google_genai._common')
 
 StringDict: TypeAlias = dict[str, Any]
+
+
+def loaded_requests() -> Optional[Any]:
+  """Returns the `requests` module, or None if nothing has imported it.
+
+  Only the synchronous google-auth path uses `requests`, and importing it
+  costs around 300 modules. An object can only be an instance of a `requests`
+  class once that module is loaded, so callers doing an isinstance check
+  against one can consult this instead of importing it themselves.
+  """
+  return sys.modules.get('requests')
 
 
 class ExperimentalWarning(Warning):
@@ -314,11 +326,43 @@ def _is_struct_type(annotation: type) -> bool:
   return key_type is str and value_type is typing.Any
 
 
+def _as_base_model_type(
+    annotation: Any,
+) -> Optional[typing.Type[pydantic.BaseModel]]:
+  """Returns the BaseModel subclass an annotation refers to, or None.
+
+  `Annotated[Model, ...]` refers to `Model`: the metadata does not change the
+  fields to prune against.
+
+  Args:
+    annotation: A field type annotation, e.g. `Model`, `Annotated[Model, ...]`,
+      `Any` or `str`.
+
+  Returns:
+    The BaseModel subclass, or None if the annotation is not a model.
+  """
+  while typing.get_origin(annotation) is typing.Annotated:
+    annotation = typing.get_args(annotation)[0]
+  if isinstance(annotation, type) and issubclass(
+      annotation, pydantic.BaseModel
+  ):
+    return annotation
+  return None
+
+
 def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
   """Removes extra fields from the response that are not in the model.
 
   Mutates the response in place.
   """
+
+  # Models are built on first use (`defer_build`), and an unbuilt model's field
+  # annotations still hold the forward references they were declared with, e.g.
+  # the string 'Part' rather than the `Part` class. Building the model resolves
+  # them, and costs nothing extra here because the caller validates against
+  # this model immediately afterwards.
+  if isinstance(model, type) and issubclass(model, pydantic.BaseModel):
+    model.model_rebuild(raise_errors=False)
 
   key_values = list(response.items())
 
@@ -341,18 +385,25 @@ def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
     if typing.get_origin(annotation) is Union:
       annotation = typing.get_args(annotation)[0]
 
-    # if dict, assume BaseModel but also check that field type is not dict
-    # example: FunctionCall.args
-    if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
-      _remove_extra_fields(annotation, value)
+    # Only recurse into dicts that map to a BaseModel. Fields typed `Any` (or
+    # `list[Any]`) carry free-form JSON, e.g. PredictResponse.predictions, and
+    # have no fields to prune against.
+    model_type = _as_base_model_type(annotation)
+    if isinstance(value, dict) and model_type is not None:
+      _remove_extra_fields(model_type, value)
     elif isinstance(value, list):
       if _is_struct_type(annotation):
         continue
 
+      item_type_args = typing.get_args(annotation)
+      item_type = _as_base_model_type(
+          item_type_args[0] if item_type_args else None
+      )
+      if item_type is None:
+        continue
       for item in value:
-        # assume a list of dict is list of BaseModel
         if isinstance(item, dict):
-          _remove_extra_fields(typing.get_args(annotation)[0], item)
+          _remove_extra_fields(item_type, item)
 
 
 T = typing.TypeVar('T', bound='BaseModel')
@@ -559,6 +610,11 @@ class BaseModel(pydantic.BaseModel):
       ser_json_bytes='base64',
       val_json_bytes='base64',
       ignored_types=(typing.TypeVar,),
+      # Build each model's validator and serializer on first use rather than
+      # at import. `types` defines several hundred models and any one caller
+      # touches a small fraction of them, so building them all up front is
+      # most of what importing this package costs.
+      defer_build=True,
   )
 
   @pydantic.model_validator(mode='before')

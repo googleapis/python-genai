@@ -952,3 +952,112 @@ def test_check_field_type_mismatches_generic_type_no_error(caplog):
     TestModel.model_validate(data)
 
   assert len(caplog.records) == 0
+
+
+class _ForwardRefOuterModel(_common.BaseModel):
+  # Declared before the model it points at, the way the generated types
+  # sometimes are, so the annotation is a forward reference.
+  items: Optional[List["_ForwardRefInnerModel"]] = None
+
+
+class _ForwardRefInnerModel(_common.BaseModel):
+  value: Optional[str] = None
+
+
+def test_from_response_resolves_forward_references():
+  """Extra fields are pruned from nested models declared as forward references.
+
+  Models are built on first use, so until something builds the outer model its
+  `items` annotation holds an unresolved reference to `_ForwardRefInnerModel`
+  rather than the class, and the pruning walk has nothing to recurse into.
+  """
+  assert not _ForwardRefOuterModel.__pydantic_complete__
+
+  result = _ForwardRefOuterModel._from_response(
+      response={"items": [{"value": "a", "extraField": 1}]}, kwargs={}
+  )
+
+  assert result.items is not None
+  assert result.items[0].value == "a"
+
+
+class _PrunedNestedModel(_common.BaseModel):
+  name: Optional[str] = None
+
+
+class _FreeFormJsonModel(_common.BaseModel):
+  # Mirrors PredictResponse: model servers return arbitrary JSON here.
+  predictions: Optional[List[typing.Any]] = None
+  metadata: Optional[typing.Any] = None
+  nested: Optional[_PrunedNestedModel] = None
+  nested_list: Optional[List[_PrunedNestedModel]] = None
+
+
+@pytest.mark.parametrize(
+    "response,field,expected",
+    [
+        pytest.param(
+            {"predictions": [{"content": "a", "score": 0.9}]},
+            "predictions",
+            [{"content": "a", "score": 0.9}],
+            id="dicts_in_list_of_any",
+        ),
+        pytest.param(
+            {"predictions": ["a", {"content": "b"}, [0.1, 0.2]]},
+            "predictions",
+            ["a", {"content": "b"}, [0.1, 0.2]],
+            id="mixed_items_in_list_of_any",
+        ),
+        pytest.param(
+            {"metadata": {"tokens": 3, "extraField": True}},
+            "metadata",
+            {"tokens": 3, "extraField": True},
+            id="dict_in_any",
+        ),
+    ],
+)
+def test_from_response_keeps_free_form_json(response, field, expected):
+  """Dicts in `Any`-typed fields are free-form JSON and are kept verbatim."""
+  result = _FreeFormJsonModel._from_response(response=response, kwargs={})
+
+  assert getattr(result, field) == expected
+
+
+def test_from_response_still_prunes_nested_models_next_to_any_fields():
+  """Pruning still recurses into BaseModel fields alongside `Any` fields."""
+  result = _FreeFormJsonModel._from_response(
+      response={
+          "predictions": [{"content": "a"}],
+          "nested": {"name": "n", "extraField": 1},
+          "nestedList": [{"name": "m", "extraField": 2}],
+          "unknownTopLevel": 3,
+      },
+      kwargs={},
+  )
+
+  assert result.predictions == [{"content": "a"}]
+  assert result.nested.name == "n"
+  assert "extra_field" not in result.nested.model_dump()
+  assert result.nested_list[0].name == "m"
+  assert "unknown_top_level" not in result.model_dump()
+
+
+class _AnnotatedNestedModel(_common.BaseModel):
+  nested: Optional[typing.Annotated[_PrunedNestedModel, "metadata"]] = None
+  nested_list: Optional[
+      List[typing.Annotated[_PrunedNestedModel, "metadata"]]
+  ] = None
+
+
+def test_from_response_prunes_annotated_nested_models():
+  """`Annotated[Model, ...]` fields are pruned like `Model` fields."""
+  result = _AnnotatedNestedModel._from_response(
+      response={
+          "nested": {"name": "n", "extraField": 1},
+          "nestedList": [{"name": "m", "extraField": 2}],
+      },
+      kwargs={},
+  )
+
+  assert result.nested.name == "n"
+  assert result.nested_list[0].name == "m"

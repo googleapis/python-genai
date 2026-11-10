@@ -53,7 +53,6 @@ _GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES = {
     "gemini-3.5-flash": "gemma4",
     "gemini-3.1-flash-lite": "gemma4",
     "gemini-3.1-pro-preview": "gemma4",
-    "gemini-4-flash-preview": "gemma4",
 }
 
 GEMMA_TOKENIZER_TO_MODEL_NAMES = {
@@ -195,9 +194,9 @@ def _load_model_proto_bytes(tokenizer_name: str) -> bytes:
 @functools.lru_cache()
 def load_model_proto(
     tokenizer_name: str,
-) -> sentencepiece_model_pb2.ModelProto:
+) -> sentencepiece_model_pb2.ModelProto:  # type: ignore[name-defined]
   """Loads model proto from the given tokenizer name."""
-  model_proto = sentencepiece_model_pb2.ModelProto()
+  model_proto = sentencepiece_model_pb2.ModelProto()  # type: ignore[attr-defined]
   model_proto.ParseFromString(_load_model_proto_bytes(tokenizer_name))
   return model_proto
 
@@ -220,11 +219,11 @@ def get_huggingface_tokenizer(tokenizer_name: str) -> Any:
   # Load the processor which includes the tokenizer
   try:
     from transformers import AutoProcessor
-  except ImportError:
+  except ImportError as e:
     raise ImportError(
-        "Please install transformers to use huggingface tokenizer: pip install"
-        " transformers"
-    ) from ImportError
+        "The transformers library is required to tokenize this model. Install"
+        ' it with: pip install "google-genai[local-tokenizer-transformers]"'
+    ) from e
   processor = AutoProcessor.from_pretrained(  # type: ignore[no-untyped-call]
       GEMMA_TOKENIZER_TO_MODEL_NAMES[tokenizer_name]
   )

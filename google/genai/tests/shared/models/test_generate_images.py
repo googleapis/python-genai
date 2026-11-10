@@ -17,11 +17,12 @@
 from .... import types
 from ... import pytest_helper
 
-IMAGEN_MODEL_LATEST = 'imagen-4.0-generate-001'
+IMAGEN_MODEL_LATEST = 'imagen-4.0-fast-generate-001'
 
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_simple_prompt',
+        exception_if_mldev='only supported in Gemini Enterprise Agent Platform',
         parameters=types._GenerateImagesParameters(
             model=IMAGEN_MODEL_LATEST,
             prompt='Red skateboard',

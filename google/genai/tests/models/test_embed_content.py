@@ -79,7 +79,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_vertex_new_api_text_only_with_config',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 10,
@@ -97,7 +97,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_new_api_text_only',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents=t.t_contents('What is your name?'),
             config={
                 'output_dimensionality': 100,
@@ -121,7 +121,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_new_api_gcs_image_and_config',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents=[
                 types.Content(
                     parts=[
@@ -148,7 +148,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_new_api_inline_pdf',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents=[
                 types.Content(
                     parts=[
@@ -179,7 +179,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_vertex_inline_pdf_document_ocr',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents=[
                 types.Content(
                     parts=[
@@ -200,7 +200,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name='test_vertex_inline_video_audio_track_extraction',
         parameters=types.EmbedContentParameters(
-            model='gemini-embedding-2-preview',
+            model='gemini-embedding-2',
             contents=[
                 types.Content(
                     parts=[
@@ -302,7 +302,7 @@ async def test_async_gemini_embedding_2_text_list_stays_batched(
 
 def test_gemini_embedding_2_content_combination(client):
   response = client.models.embed_content(
-      model='gemini-embedding-2-preview',
+      model='gemini-embedding-2',
       contents=[
           'The jetpack is cool',
           types.Part.from_bytes(
@@ -320,6 +320,14 @@ def test_gemini_embedding_2_content_combination(client):
   assert response.embeddings is not None
   assert len(response.embeddings) == 1
   assert len(response.embeddings[0].values) == 100
+  if client._api_client.vertexai:
+    statistics = response.embeddings[0].statistics
+    assert statistics is not None
+    assert statistics.token_count is not None
+    assert statistics.tokens_details is not None
+    assert len(statistics.tokens_details) > 0
+    assert response.usage_metadata is not None
+    assert response.usage_metadata.traffic_type is not None
 
 
 @pytest.mark.asyncio
@@ -335,7 +343,7 @@ async def test_async(client):
 @pytest.mark.asyncio
 async def test_async_new_api(client):
   response = await client.aio.models.embed_content(
-      model='gemini-embedding-2-preview',
+      model='gemini-embedding-2',
       contents=t.t_contents('What is your name?'),
       config={'output_dimensionality': 10},
   )

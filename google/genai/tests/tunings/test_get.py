@@ -19,6 +19,14 @@
 from ... import types as genai_types
 from .. import pytest_helper
 
+
+# Autopush "us" multi-regional (REP) endpoint, used to record the
+# gcs_metrics_uri demonstration against a real completed tuning job.
+US_MREP_AUTOPUSH_HTTP_OPTIONS = {
+    "api_version": "v1",
+    "base_url": "https://autopush-aiplatform.us.rep.sandbox.googleapis.com/",
+}
+
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_vertexai",
@@ -65,3 +73,17 @@ def test_helper_properties(client):
 
   assert job.has_ended
   assert job.has_succeeded
+
+
+def test_gcs_metrics_uri(client):
+  """Verifies gcs_metrics_uri is parsed from a completed Vertex tuning job."""
+  if client._api_client.vertexai:
+    job = client.tunings.get(
+        name=(
+            "projects/801452371447/locations/us/tuningJobs/8841410493458415616"
+        ),
+        config=genai_types.GetTuningJobConfig(
+            http_options=US_MREP_AUTOPUSH_HTTP_OPTIONS
+        ),
+    )
+    assert job.gcs_metrics_uri
