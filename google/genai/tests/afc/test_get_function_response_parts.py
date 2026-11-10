@@ -16,8 +16,10 @@
 
 """Tests for get_function_response_parts."""
 
+import datetime
 import typing
 from typing import Any
+import uuid
 import pytest
 from ..._extra_utils import get_function_response_parts, get_function_response_parts_async
 from ...errors import UnsupportedFunctionError
@@ -158,6 +160,63 @@ def test_string_value():
     assert actual_part.model_dump_json(
         exclude_none=True
     ) == expected_part.model_dump_json(exclude_none=True)
+
+
+def _datetime_and_uuid_response() -> GenerateContentResponse:
+  return GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              name='func_under_test',
+                              args={
+                                  'when': '2026-11-10T09:30:00Z',
+                                  'job_id': (
+                                      '12345678-1234-5678-1234-567812345678'
+                                  ),
+                              },
+                          )
+                      )
+                  ]
+              )
+          )
+      ]
+  )
+
+
+def _datetime_and_uuid_func(when: datetime.datetime, job_id: uuid.UUID) -> str:
+  assert isinstance(when, datetime.datetime)
+  assert isinstance(job_id, uuid.UUID)
+  return f'{when.isoformat()} {job_id}'
+
+
+def test_datetime_and_uuid_values():
+  """The tool receives datetime and UUID objects parsed from JSON strings."""
+  function_map = {'func_under_test': _datetime_and_uuid_func}
+  actual_parts = get_function_response_parts(
+      _datetime_and_uuid_response(), function_map
+  )
+
+  assert len(actual_parts) == 1
+  assert actual_parts[0].function_response.response == {
+      'result': '2026-11-10T09:30:00+00:00 12345678-1234-5678-1234-567812345678'
+  }
+
+
+@pytest.mark.asyncio
+async def test_datetime_and_uuid_values_async():
+  """The async path parses datetime and UUID strings the same way."""
+  function_map = {'func_under_test': _datetime_and_uuid_func}
+  actual_parts = await get_function_response_parts_async(
+      _datetime_and_uuid_response(), function_map
+  )
+
+  assert len(actual_parts) == 1
+  assert actual_parts[0].function_response.response == {
+      'result': '2026-11-10T09:30:00+00:00 12345678-1234-5678-1234-567812345678'
+  }
 
 
 @pytest.mark.asyncio
