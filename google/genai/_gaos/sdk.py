@@ -44,6 +44,7 @@ import weakref
 if TYPE_CHECKING:
     from .agents import Agents, AsyncAgents
     from .credentials import AsyncCredentials, Credentials
+    from .decisions import AsyncDecisions, Decisions
     from .environments import AsyncEnvironments, Environments
     from .interactions import AsyncInteractions, Interactions
     from .triggers import AsyncTriggers, Triggers
@@ -65,6 +66,7 @@ class GenAI(BaseSDK):
     environments: "Environments"
     agents: "Agents"
     credentials: "Credentials"
+    decisions: "Decisions"
     interactions: "Interactions"
     triggers: "Triggers"
     voices: "Voices"
@@ -73,6 +75,7 @@ class GenAI(BaseSDK):
         "environments": (".environments", "Environments"),
         "agents": (".agents", "Agents"),
         "credentials": (".credentials", "Credentials"),
+        "decisions": (".decisions", "Decisions"),
         "interactions": (".interactions", "Interactions"),
         "triggers": (".triggers", "Triggers"),
         "voices": (".voices", "Voices"),
@@ -233,6 +236,10 @@ class GenAIWithRawResponse:
         return self._sdk.credentials.with_raw_response
 
     @property
+    def decisions(self):
+        return self._sdk.decisions.with_raw_response
+
+    @property
     def interactions(self):
         return self._sdk.interactions.with_raw_response
 
@@ -266,6 +273,10 @@ class GenAIWithStreamingResponse:
         return self._sdk.credentials.with_streaming_response
 
     @property
+    def decisions(self):
+        return self._sdk.decisions.with_streaming_response
+
+    @property
     def interactions(self):
         return self._sdk.interactions.with_streaming_response
 
@@ -296,6 +307,7 @@ class AsyncGenAI(AsyncBaseSDK):
     environments: "AsyncEnvironments"
     agents: "AsyncAgents"
     credentials: "AsyncCredentials"
+    decisions: "AsyncDecisions"
     interactions: "AsyncInteractions"
     triggers: "AsyncTriggers"
     voices: "AsyncVoices"
@@ -304,6 +316,7 @@ class AsyncGenAI(AsyncBaseSDK):
         "environments": (".environments", "AsyncEnvironments"),
         "agents": (".agents", "AsyncAgents"),
         "credentials": (".credentials", "AsyncCredentials"),
+        "decisions": (".decisions", "AsyncDecisions"),
         "interactions": (".interactions", "AsyncInteractions"),
         "triggers": (".triggers", "AsyncTriggers"),
         "voices": (".voices", "AsyncVoices"),
@@ -462,6 +475,10 @@ class AsyncGenAIWithRawResponse:
         return self._sdk.credentials.with_raw_response
 
     @property
+    def decisions(self):
+        return self._sdk.decisions.with_raw_response
+
+    @property
     def interactions(self):
         return self._sdk.interactions.with_raw_response
 
@@ -493,6 +510,10 @@ class AsyncGenAIWithStreamingResponse:
     @property
     def credentials(self):
         return self._sdk.credentials.with_streaming_response
+
+    @property
+    def decisions(self):
+        return self._sdk.decisions.with_streaming_response
 
     @property
     def interactions(self):

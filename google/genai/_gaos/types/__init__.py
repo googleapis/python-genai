@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from . import (
         agents,
         credentials,
+        decisions,
         environments,
         interactions,
         triggers,
@@ -69,6 +70,7 @@ _dynamic_imports: dict[str, str] = {
 _sub_packages = [
     "agents",
     "credentials",
+    "decisions",
     "environments",
     "interactions",
     "triggers",

@@ -19,6 +19,7 @@
 
 from . import agents
 from . import credentials
+from . import decisions
 from . import environments
 from . import interactions
 from . import triggers
@@ -28,6 +29,7 @@ from . import webhooks
 __all__ = [
     "agents",
     "credentials",
+    "decisions",
     "environments",
     "interactions",
     "triggers",

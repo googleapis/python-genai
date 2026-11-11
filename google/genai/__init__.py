@@ -29,6 +29,7 @@ __all__ = [
     'Client',
     'agents',
     'credentials',
+    'decisions',
     'environments',
     'interactions',
     'triggers',
@@ -42,6 +43,7 @@ def __getattr__(name: str) -> Any:
   if name in {
       'agents',
       'credentials',
+      'decisions',
       'environments',
       'interactions',
       'triggers',

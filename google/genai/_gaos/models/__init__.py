@@ -40,6 +40,12 @@ if TYPE_CHECKING:
         CreateCredentialRequest,
         CreateCredentialRequestParam,
     )
+    from .createdecision import (
+        CreateDecisionGlobals,
+        CreateDecisionGlobalsTypedDict,
+        CreateDecisionRequest,
+        CreateDecisionRequestParam,
+    )
     from .createenvironment import (
         CreateEnvironmentGlobals,
         CreateEnvironmentGlobalsTypedDict,
@@ -267,6 +273,10 @@ __all__ = [
     "CreateCredentialGlobalsTypedDict",
     "CreateCredentialRequest",
     "CreateCredentialRequestParam",
+    "CreateDecisionGlobals",
+    "CreateDecisionGlobalsTypedDict",
+    "CreateDecisionRequest",
+    "CreateDecisionRequestParam",
     "CreateEnvironmentGlobals",
     "CreateEnvironmentGlobalsTypedDict",
     "CreateEnvironmentRequest",
@@ -426,6 +436,10 @@ _dynamic_imports: dict[str, str] = {
     "CreateCredentialGlobalsTypedDict": ".createcredential",
     "CreateCredentialRequest": ".createcredential",
     "CreateCredentialRequestParam": ".createcredential",
+    "CreateDecisionGlobals": ".createdecision",
+    "CreateDecisionGlobalsTypedDict": ".createdecision",
+    "CreateDecisionRequest": ".createdecision",
+    "CreateDecisionRequestParam": ".createdecision",
     "CreateEnvironmentGlobals": ".createenvironment",
     "CreateEnvironmentGlobalsTypedDict": ".createenvironment",
     "CreateEnvironmentRequest": ".createenvironment",

@@ -74,6 +74,8 @@ from .credentials import AsyncCredentials as GeneratedAsyncCredentials
 from .credentials import Credentials as GeneratedCredentials
 from .voices import AsyncVoices as GeneratedAsyncVoices
 from .voices import Voices as GeneratedVoices
+from .decisions import AsyncDecisions as GeneratedAsyncDecisions
+from .decisions import Decisions as GeneratedDecisions
 from .files import AsyncFiles as GeneratedAsyncFiles
 from .files import Files as GeneratedFiles
 from ._internal import AsyncInternal as GeneratedAsyncInternal
@@ -1020,6 +1022,52 @@ class AsyncGeminiNextGenVoices(GeneratedAsyncVoices):
 
         async def delete(self, *args: Any, **kwargs: Any) -> Any:
             return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class GeminiNextGenDecisions(GeneratedDecisions):
+    """Decisions resource backed by the NextGen client.
+
+    Subclasses the generated resource so every public method is wrapped in
+    `wrap_sdk_call`, translating per-operation `GenAiError` raises into the
+    status-code `APIError` hierarchy exposed at the
+    `google.genai._interactions` import surface.
+    """
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+
+class AsyncGeminiNextGenDecisions(GeneratedAsyncDecisions):
+    """Async decisions resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_async_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
 
 
 class GeminiNextGenAgents(GeneratedAgents):

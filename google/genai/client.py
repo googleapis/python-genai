@@ -43,6 +43,7 @@ if TYPE_CHECKING:
   from ._gaos.google_genai import (
       AsyncGeminiNextGenAgents,
       AsyncGeminiNextGenCredentials,
+      AsyncGeminiNextGenDecisions,
       AsyncGeminiNextGenEnvironments,
       AsyncGeminiNextGenInteractions,
       AsyncGeminiNextGenTriggers,
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
       AsyncGeminiNextGenWebhooks,
       GeminiNextGenAgents,
       GeminiNextGenCredentials,
+      GeminiNextGenDecisions,
       GeminiNextGenEnvironments,
       GeminiNextGenInteractions,
       GeminiNextGenTriggers,
@@ -88,6 +90,7 @@ class AsyncClient:
     self._environments: Optional[AsyncGeminiNextGenEnvironments] = None
     self._credentials: Optional[AsyncGeminiNextGenCredentials] = None
     self._voices: Optional[AsyncGeminiNextGenVoices] = None
+    self._decisions: Optional[AsyncGeminiNextGenDecisions] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
@@ -189,6 +192,15 @@ class AsyncClient:
 
       self._voices = AsyncGeminiNextGenVoices(self._api_client)
     return self._voices
+
+  @property
+  def decisions(self) -> AsyncGeminiNextGenDecisions:
+    """Decisions resource."""
+    if self._decisions is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenDecisions
+
+      self._decisions = AsyncGeminiNextGenDecisions(self._api_client)
+    return self._decisions
 
   @property
   def models(self) -> AsyncModels:
@@ -445,6 +457,7 @@ class Client:
     self._environments: Optional[GeminiNextGenEnvironments] = None
     self._credentials: Optional[GeminiNextGenCredentials] = None
     self._voices: Optional[GeminiNextGenVoices] = None
+    self._decisions: Optional[GeminiNextGenDecisions] = None
 
   @staticmethod
   def _get_api_client(
@@ -579,6 +592,15 @@ class Client:
 
       self._voices = GeminiNextGenVoices(self._api_client)
     return self._voices
+
+  @property
+  def decisions(self) -> GeminiNextGenDecisions:
+    """Decisions resource."""
+    if self._decisions is None:
+      from ._gaos.google_genai import GeminiNextGenDecisions
+
+      self._decisions = GeminiNextGenDecisions(self._api_client)
+    return self._decisions
 
   @property
   def chats(self) -> Chats:
