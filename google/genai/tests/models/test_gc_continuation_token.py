@@ -892,6 +892,153 @@ def test_models_generate_content_recursive_metadata_and_parsed_schema_merging(
     ]
 
 
+class _Summary(pydantic.BaseModel):
+  title: str
+
+
+def _thought_hop() -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model',
+                  parts=[types.Part(text='thinking', thought=True)],
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok',
+          )
+      ]
+  )
+
+
+def _json_hop(parsed) -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='{"title": "x"}')]
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ],
+      parsed=parsed,
+  )
+
+
+@pytest.mark.parametrize(
+    'config, hop_parsed, expected',
+    [
+        (
+            {'response_json_schema': {'type': 'object'}},
+            {'title': 'x'},
+            {'title': 'x'},
+        ),
+        (
+            types.GenerateContentConfig(response_schema=_Summary),
+            _Summary(title='x'),
+            _Summary(title='x'),
+        ),
+        (
+            {'response_schema': _Summary},
+            _Summary(title='x'),
+            _Summary(title='x'),
+        ),
+    ],
+)
+def test_merge_continuation_responses_reparses_when_hop_has_parsed(
+    config, hop_parsed, expected
+):
+  """Merging hops that already carry `parsed` reparses instead of raising."""
+  merged = _extra_utils.merge_continuation_responses(
+      [_thought_hop(), _json_hop(hop_parsed)], config=config
+  )
+
+  assert merged.parsed == expected
+  assert merged.text == '{"title": "x"}'
+
+
+def test_merge_continuation_responses_replaces_stale_hop_parsed():
+  """`merged.parsed` comes from the merged text, not from a hop's `parsed`."""
+  hop1 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='{"title": "Long ')]
+              ),
+              finish_reason=types.FinishReason.CONTINUATION,
+              continuation_token=b'tok',
+          )
+      ],
+      parsed={'title': 'stale'},
+  )
+  hop2 = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part(text='Odyssey"}')]
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ],
+  )
+
+  merged = _extra_utils.merge_continuation_responses(
+      [hop1, hop2], config={'response_json_schema': {'type': 'object'}}
+  )
+
+  assert merged.parsed == {'title': 'Long Odyssey'}
+
+
+def test_models_generate_content_continuation_with_parsed_hop(
+    mock_api_client,
+):
+  """generate_content merges hops when the final hop already has `parsed`."""
+  models_module = models.Models(mock_api_client)
+
+  with mock.patch.object(
+      models.Models,
+      '_generate_content',
+      side_effect=[_thought_hop(), _json_hop(_Summary(title='x'))],
+  ):
+    response = models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Give me JSON',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True,
+            response_schema=_Summary,
+        ),
+    )
+
+  assert response.parsed == _Summary(title='x')
+  assert response.text == '{"title": "x"}'
+
+
+@pytest.mark.asyncio
+async def test_async_models_generate_content_continuation_with_parsed_hop(
+    mock_api_client,
+):
+  """AsyncModels.generate_content merges hops when a hop has `parsed`."""
+  models_module = models.AsyncModels(mock_api_client)
+
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content',
+      new_callable=mock.AsyncMock,
+      side_effect=[_thought_hop(), _json_hop(_Summary(title='x'))],
+  ):
+    response = await models_module.generate_content(
+        model='gemini-2.5-pro',
+        contents='Give me JSON',
+        config=types.GenerateContentConfig(
+            automatic_continuation=True,
+            response_schema=_Summary,
+        ),
+    )
+
+  assert response.parsed == _Summary(title='x')
+  assert response.text == '{"title": "x"}'
+
+
 def test_merge_continuation_responses_shifts_grounding_support_chunk_and_part_indices():
   """Merging responses across hops shifts GroundingSupport chunk and part indices."""
   hop1 = types.GenerateContentResponse(

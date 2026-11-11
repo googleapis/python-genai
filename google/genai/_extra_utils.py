@@ -1335,8 +1335,9 @@ def merge_continuation_responses(
           'response_schema': response_schema,
           'response_json_schema': response_json_schema,
       }
+      # `parsed` is client-side; the reparse recomputes it.
       reparsed = types.GenerateContentResponse._from_response(
-          response=merged.model_dump(exclude_none=True),
+          response=merged.model_dump(exclude_none=True, exclude={'parsed'}),
           kwargs={'config': config_dict},
       )
       merged.parsed = reparsed.parsed
