@@ -46,6 +46,7 @@ from ._gaos.types.environments.listenvironmentsresponse import (
     ListEnvironmentsResponse as EnvironmentListResponse,
 )
 from ._gaos.types.interactions.empty import Empty as EnvironmentDeleteResponse
+from ._gaos.types.interactions.environmentmode import EnvironmentMode
 
 __all__ = [
     "CreateEnvironmentRequest",
@@ -60,6 +61,7 @@ __all__ = [
     "EnvironmentFileType",
     "EnvironmentListParams",
     "EnvironmentListResponse",
+    "EnvironmentMode",
     "EnvironmentNetworkEnum",
     "EnvironmentNetworkUnion",
     "EnvironmentNetworkUnionTypedDict",
