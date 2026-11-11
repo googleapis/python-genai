@@ -392,6 +392,8 @@ class ThinkingLevel(_common.CaseInSensitiveEnum):
   """Medium thinking level."""
   HIGH = 'HIGH'
   """High thinking level."""
+  XHIGH = 'XHIGH'
+  """XHIGH thinking level."""
 
 
 class PersonGeneration(_common.CaseInSensitiveEnum):
