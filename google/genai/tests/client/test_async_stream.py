@@ -545,3 +545,54 @@ async def test_error_event_in_generate_content_stream_async(mock_transport):
 
   with pytest.raises(errors.ServerError):
     await anext(generated_response)
+
+
+@patch.object(httpx, 'AsyncBaseTransport')
+@pytest.mark.asyncio
+async def test_error_event_in_streamed_responses_async_closes_stream(
+    mock_transport,
+):
+  """An error event mid-stream closes the HTTP stream before the error surfaces.
+
+  The server sends the error event and leaves the connection open. The SDK
+  raises from inside the loop that reads the stream, so unless that loop closes
+  what it reads, the stream generators stay suspended until garbage collection,
+  and asyncio finalizes them later in a task of its own. The stream must already
+  be closed when the caller sees the ServerError.
+  """
+  mock_stream = MagicMock(spec=httpx.AsyncByteStream)
+
+  async def _aiter():
+    yield EVENT_STREAM_DATA_WITH_ERROR[0]
+    yield EVENT_STREAM_DATA_WITH_ERROR[1]
+    yield EVENT_STREAM_DATA_WITH_ERROR[2] + b'\n'
+    # The server has not ended the stream, so nothing closes it on exhaustion.
+    await asyncio.Event().wait()
+
+  mock_stream.__aiter__.side_effect = _aiter
+  mock_stream.aclose = AsyncMock()
+
+  async def _handle_async_request(_):
+    return httpx.Response(status_code=200, stream=mock_stream)
+
+  client = api_client.BaseApiClient(
+      api_key='test_api_key',
+      http_options=types.HttpOptions(
+          async_client_args={'transport': mock_transport}
+      ),
+  )
+  mock_transport.handle_async_request = _handle_async_request
+  mock_transport.aclose = AsyncMock()
+
+  resp = await client.async_request_streamed(
+      'POST', 'models/gemini-2.5-flash', {'key': 'value'}
+  )
+  await anext(resp)
+  mock_stream.aclose.assert_not_awaited()
+
+  with pytest.raises(errors.ServerError):
+    await anext(resp)
+
+  # No await between the raise and this check, so a close scheduled by the
+  # event loop's async generator finalizer cannot have run yet.
+  mock_stream.aclose.assert_awaited_once()
