@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.2.0](https://github.com/googleapis/python-genai/compare/v3.1.0...v3.2.0) (2026-11-11)
+
+
+### Features
+
+* Add the Decisions API (`client.decisions.create`) to the GenAI SDKs ([9efe1e4](https://github.com/googleapis/python-genai/commit/9efe1e4ac8831fd3bc793c0733320e6a0d3cd324))
+* **environments:** Introduce self-hosted BYOS mode, system_instruction, custom_config, and environment_key in SDKs and CLI ([96b79b3](https://github.com/googleapis/python-genai/commit/96b79b3a4434abedfa9953891e77a617acdd7c3f))
+
 ## [3.1.0](https://github.com/googleapis/python-genai/compare/v3.0.0...v3.1.0) (2026-11-10)
 
 
