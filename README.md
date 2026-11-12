@@ -15,19 +15,36 @@ the [Gemini Developer API](https://aistudio.google.com/docs) and
 APIs.
 
 > [!WARNING]
-> **Updates to Automatic Function Calling (AFC) in upcoming SDK version:**
-> We are changing AFC behavior in the next major version.
-> Specifically, users will not be able to
-> invoke AFC from direct calls to `Models.generate_content` or its stream and
-> async variants. Instead, users should invoke AFC from `Chats` modules.
 >
-> | Methods/fields to be removed | migration guide |
-> | --- | --- |
-> | `Live.send` | Use `send_client_content`, `send_realtime_input`, or `send_tool_response` instead |
-> | `Live.start_stream` | Use `receive` and `send_realtime_input` instead |
-> | `LiveConnectConfig.generation_config` | Set fields on `LiveConnectConfig` directly |
-> | `prompt`/`text`/`image` arguments in `Models.generate_videos` (and async variants) | Use `source` argument instead |
-> | `GenerationConfigThinkingConfig` | Use `ThinkingConfig` instead |
+> Major version 3 changes:
+>
+> * **Default Gemini Developer API version is now `v1` (was `v1beta`).**
+>   Enterprise (Vertex AI) clients are unaffected and still default to
+>   `v1beta1`.
+>     * The `gemini-flash-latest`, `gemini-flash-lite-latest` and
+>       `gemini-pro-latest` aliases exist only on `v1beta`. Use a specific
+>       model version, or switch back to `v1beta`.
+>     * To restore the previous default, set `GOOGLE_GENAI_API_VERSION=beta`
+>       (or an explicit version such as `v1beta`), or pass
+>       `types.HttpOptions(api_version='v1beta')`, which takes precedence.
+> * **Default HTTP client is now `httpx2` (was `httpx`), and `httpx` is no
+>   longer installed by default.**
+>     * To restore `httpx` as the default, do both: install
+>       `google-genai[httpx]` and set `GOOGLE_GENAI_HTTP_CLIENT=httpx`.
+>       Alternatively, pass `httpx_client` / `httpx_async_client` in
+>       `HttpOptions`.
+>     * To migrate to `httpx2`, `import httpx2 as httpx` is sufficient in most
+>       cases.
+>     * `httpx2` verifies SSL certificates against the OS trust store instead
+>       of `certifi` when `SSL_CERT_FILE` and `SSL_CERT_DIR` are not set.
+>     * Objects passed in `HttpOptions(client_args=..., async_client_args=...)`
+>       (such as `Timeout`, `Limits`, transports, `Auth` subclasses) and
+>       transport exceptions you catch (`TimeoutException`, `ConnectError`,
+>       `HTTPError`) must come from the active HTTP client package.
+> * **interactions:** `CodeExecutionResultStep.result` changes from `string`
+>   to the `CodeExecutionResultStepResult` union. Check which variant is
+>   present and read the string from it. The JSON for text-only results is
+>   unchanged.
 >
 > To avoid unexpected updates, pin the SDK version to `< 3.0.0`.
 

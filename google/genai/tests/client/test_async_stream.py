@@ -101,12 +101,6 @@ requires_aiohttp = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(autouse=True)
-def reset_has_aiohttp():
-  yield
-  api_client.has_aiohttp = False
-
-
 def test_invalid_response_stream_type(responses: api_client.HttpResponse):
   """Tests that an invalid response stream type raises an error."""
   api_client.has_aiohttp = False
