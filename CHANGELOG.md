@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.3.0](https://github.com/googleapis/python-genai/compare/v3.2.0...v3.3.0) (2026-11-12)
+
+
+### Features
+
+* Add --flavor=interactions-eap packaging and scrub private exports ([39f6abe](https://github.com/googleapis/python-genai/commit/39f6abee7ac9eb917f8b65b38e7f598ec510bfcd))
+* Add `XHIGH` and `xhigh` to `ThinkingLevel` across GenAI SDKs and CLI. ([300f12f](https://github.com/googleapis/python-genai/commit/300f12f060611cb92f2253e3cac31178ec870ca9))
+* Add missing enum values to FinishReason and ReinforcementTuningThinkingLevel ([b07a895](https://github.com/googleapis/python-genai/commit/b07a895b0e152fb2a71fc01c19fc9716a80df883))
+* **interactions:** Add gemini-4-hydrogen to Model enum ([4d868c5](https://github.com/googleapis/python-genai/commit/4d868c58585c1bf06a0d69a08dc7c2f9d706c8a5))
+
+
+### Documentation
+
+* Update README to reflect breaking changes in major version 3 ([9b13424](https://github.com/googleapis/python-genai/commit/9b1342402c931fd96b79636d5fd4e4080a4d7729))
+
 ## [3.2.0](https://github.com/googleapis/python-genai/compare/v3.1.0...v3.2.0) (2026-11-11)
 
 
