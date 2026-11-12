@@ -1,0 +1,36 @@
+name: Verify Sampling Parameters & Pydantic Config
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate-sampling-and-pydantic:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pydantic mypy
+          pip install -e .
+
+      - name: Validate Default top_p=0.95
+        run: |
+          python -c "from google.genai import types; assert types.GenerateContentConfig().top_p == 0.95, 'Default top_p is not 0.95'"
+
+      - name: Validate Pydantic Model Configs
+        run: |
+          python -c "from google.genai import types; cfg = types.GenerateContentConfig(top_p=0.95); assert cfg.top_p == 0.95"
