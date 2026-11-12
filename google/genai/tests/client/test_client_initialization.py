@@ -60,12 +60,6 @@ requires_aiohttp = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(autouse=True)
-def reset_has_aiohttp():
-  yield
-  api_client.has_aiohttp = False
-
-
 def test_ml_dev_from_gemini_env_only(monkeypatch):
   api_key = "gemini_api_key"
   monkeypatch.setenv("GEMINI_API_KEY", api_key)
@@ -1199,6 +1193,8 @@ def test_client_ssl_context_explicit_initialization_async_args():
 
 def test_client_initializes_httpx_clients_vertex_and_mldev():
   """Verifies both Vertex and MLDev clients initialize non-null httpx clients with timeout=None."""
+  # Keep the async path on httpx even when aiohttp is installed.
+  api_client.has_aiohttp = False
   mldev_client = Client(api_key="fake-api-key")
   assert mldev_client._api_client._httpx_client is not None
   assert mldev_client._api_client._async_httpx_client is not None
