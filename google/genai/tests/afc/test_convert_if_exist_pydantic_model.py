@@ -17,10 +17,10 @@
 """Test convert_if_exist_pydantic_model."""
 
 import inspect
-from typing import Optional, Union
+import sys
+from typing import Annotated, Any, Literal, Optional, Union
 import pydantic
 import pytest
-import sys
 from ... import errors
 from ..._extra_utils import convert_if_exist_pydantic_model
 
@@ -48,6 +48,136 @@ def test_builtin_types():
   assert convert_if_exist_pydantic_model(
       {'key1': 1, 'key2': 2}, dict[str, int], 'param_name', 'func_name'
   ) == {'key1': 1, 'key2': 2}
+
+
+def test_set_annotation():
+  assert convert_if_exist_pydantic_model(
+      ['a', 'b'], set[str], 'param_name', 'func_name'
+  ) == {'a', 'b'}
+
+
+def test_frozenset_annotation():
+  assert convert_if_exist_pydantic_model(
+      ['a'], frozenset[str], 'param_name', 'func_name'
+  ) == frozenset({'a'})
+
+
+def test_bare_set_annotation():
+  assert convert_if_exist_pydantic_model(
+      ['a'], set, 'param_name', 'func_name'
+  ) == {'a'}
+
+
+def test_fixed_length_tuple_annotation():
+  assert convert_if_exist_pydantic_model(
+      [1, 'x'], tuple[int, str], 'param_name', 'func_name'
+  ) == (1, 'x')
+
+
+def test_variadic_tuple_annotation():
+  assert convert_if_exist_pydantic_model(
+      [1, 2, 3], tuple[int, ...], 'param_name', 'func_name'
+  ) == (1, 2, 3)
+
+
+def test_nested_set_in_list():
+  assert convert_if_exist_pydantic_model(
+      [['a'], ['b']], list[set[str]], 'param_name', 'func_name'
+  ) == [{'a'}, {'b'}]
+
+
+def test_optional_set_annotation():
+  def foo(_: Optional[set[str]]):
+    pass
+
+  annotation = inspect.signature(foo).parameters['_'].annotation
+
+  assert convert_if_exist_pydantic_model(
+      ['a', 'b'], annotation, 'param_name', 'func_name'
+  ) == {'a', 'b'}
+
+
+def test_optional_dict_annotation():
+  def foo(_: Optional[dict[str, int]]):
+    pass
+
+  annotation = inspect.signature(foo).parameters['_'].annotation
+
+  assert convert_if_exist_pydantic_model(
+      {'key1': 1}, annotation, 'param_name', 'func_name'
+  ) == {'key1': 1}
+
+
+def test_union_with_list_and_non_list_value():
+  assert (
+      convert_if_exist_pydantic_model(
+          5, Union[list[str], int], 'param_name', 'func_name'
+      )
+      == 5
+  )
+
+
+def test_literal_annotation():
+  assert (
+      convert_if_exist_pydantic_model(
+          'a', Literal['a', 'b'], 'param_name', 'func_name'
+      )
+      == 'a'
+  )
+
+
+def test_any_annotation():
+  assert convert_if_exist_pydantic_model(
+      {'key1': 1}, Any, 'param_name', 'func_name'
+  ) == {'key1': 1}
+
+
+def test_annotated_annotation():
+  assert (
+      convert_if_exist_pydantic_model(
+          1, Annotated[int, 'desc'], 'param_name', 'func_name'
+      )
+      == 1
+  )
+
+
+def test_optional_annotated_annotation():
+  assert (
+      convert_if_exist_pydantic_model(
+          1, Optional[Annotated[int, 'desc']], 'param_name', 'func_name'
+      )
+      == 1
+  )
+
+
+def test_union_falls_back_to_later_sequence_type():
+  assert convert_if_exist_pydantic_model(
+      ['a', 'b'], Union[tuple[int, int], list[str]], 'param_name', 'func_name'
+  ) == ['a', 'b']
+
+
+def test_tuple_length_mismatch_raises():
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    convert_if_exist_pydantic_model(
+        [1], tuple[int, str], 'param_name', 'func_name'
+    )
+
+
+def test_literal_value_not_in_args_raises():
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    convert_if_exist_pydantic_model(
+        'c', Literal['a', 'b'], 'param_name', 'func_name'
+    )
+
+
+def test_set_of_unhashable_items_raises():
+  class SimpleModel(pydantic.BaseModel):
+    key1_simple: int
+
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    convert_if_exist_pydantic_model(
+        [{'key1_simple': 1}], set[SimpleModel], 'param_name', 'func_name'
+    )
 
 
 def test_value_int_annotation_float():

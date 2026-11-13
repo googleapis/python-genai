@@ -24,7 +24,7 @@ import mimetypes
 import os
 import sys
 import typing
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
+from typing import Annotated, Any, Callable, Literal, Optional, Type, TypeVar, Union, get_args, get_origin
 
 import pydantic
 
@@ -245,9 +245,74 @@ def is_annotation_pydantic_model(annotation: Any) -> bool:
     return False
 
 
+def _sequence_origin(annotation: Any) -> Optional[type[Any]]:
+  """Returns list, set, frozenset or tuple if the annotation is one of them."""
+  origin = get_origin(annotation) or annotation
+  return origin if origin in (list, set, frozenset, tuple) else None
+
+
+def _is_instance_of_annotation(value: Any, annotation: Any) -> bool:
+  """isinstance() that tolerates annotations that are not classes."""
+  if annotation is Any:
+    return True
+  if get_origin(annotation) is Annotated:
+    annotation = get_args(annotation)[0]
+  if get_origin(annotation) is Literal:
+    return any(
+        value == arg and type(value) is type(arg)
+        for arg in get_args(annotation)
+    )
+  origin = get_origin(annotation)
+  if origin is not None:
+    annotation = origin
+  try:
+    return isinstance(value, annotation)
+  except TypeError:
+    return False
+
+
+def _convert_sequence(
+    value: list[Any],
+    origin: type[Any],
+    annotation: Any,
+    param_name: str,
+    func_name: str,
+) -> Any:
+  """Converts a list value into the list, set, frozenset or tuple annotated."""
+  args = get_args(annotation)
+
+  def incompatible_error() -> errors.UnknownFunctionCallArgumentError:
+    return errors.UnknownFunctionCallArgumentError(
+        f'Failed to parse parameter {param_name} for function {func_name} from'
+        f' function call part because function call argument value {value} is'
+        f' not compatible with parameter annotation {annotation}.'
+    )
+
+  if origin is tuple and args and Ellipsis not in args:
+    if len(args) != len(value):
+      raise incompatible_error()
+    items = [
+        convert_if_exist_pydantic_model(item, arg, param_name, func_name)
+        for item, arg in zip(value, args)
+    ]
+  elif args:
+    items = [
+        convert_if_exist_pydantic_model(item, args[0], param_name, func_name)
+        for item in value
+    ]
+  else:
+    items = list(value)
+  try:
+    return origin(items)
+  except TypeError as e:
+    raise incompatible_error() from e
+
+
 def convert_if_exist_pydantic_model(
     value: Any, annotation: Any, param_name: str, func_name: str
 ) -> Any:
+  if get_origin(annotation) is Annotated:
+    annotation = get_args(annotation)[0]
   if isinstance(value, dict) and is_annotation_pydantic_model(annotation):
     try:
       return annotation(**value)
@@ -258,12 +323,10 @@ def convert_if_exist_pydantic_model(
           f' value {value} is not compatible with parameter annotation'
           f' {annotation}, due to error {e}'
       )
-  if isinstance(value, list) and get_origin(annotation) == list:
-    item_type = get_args(annotation)[0]
-    return [
-        convert_if_exist_pydantic_model(item, item_type, param_name, func_name)
-        for item in value
-    ]
+  if isinstance(value, list):
+    origin = _sequence_origin(annotation)
+    if origin is not None:
+      return _convert_sequence(value, origin, annotation, param_name, func_name)
   if isinstance(value, dict) and get_origin(annotation) == dict:
     _, value_type = get_args(annotation)
     return {
@@ -275,17 +338,20 @@ def convert_if_exist_pydantic_model(
   if get_origin(annotation) in (Union, UnionType):
     for arg in get_args(annotation):
       if (
-          (get_args(arg) and get_origin(arg) is list)
-          or isinstance(value, arg)
+          (isinstance(value, list) and _sequence_origin(arg) is not None)
+          or _is_instance_of_annotation(value, arg)
           or (isinstance(value, dict) and is_annotation_pydantic_model(arg))
       ):
         try:
           return convert_if_exist_pydantic_model(
               value, arg, param_name, func_name
           )
-        # do not raise here because there could be multiple pydantic model types
-        # in the union type.
-        except pydantic.ValidationError:
+        # do not raise here because a later type in the union, such as another
+        # pydantic model or sequence type, could still match.
+        except (
+            pydantic.ValidationError,
+            errors.UnknownFunctionCallArgumentError,
+        ):
           continue
     # if none of the union type is matched, raise error
     raise errors.UnknownFunctionCallArgumentError(
@@ -298,7 +364,7 @@ def convert_if_exist_pydantic_model(
   # float. see convert_number_values_for_function_call_args function for context
   if isinstance(value, int) and annotation is float:
     return value
-  if not isinstance(value, annotation):
+  if not _is_instance_of_annotation(value, annotation):
     raise errors.UnknownFunctionCallArgumentError(
         f'Failed to parse parameter {param_name} for function {func_name} from'
         f' function call part because function call argument value {value} is'
