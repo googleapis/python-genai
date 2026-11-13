@@ -69,7 +69,7 @@ except ModuleNotFoundError:
 
 
 has_aiohttp = False
-# aiohttp connection errors that HttpRetryOptions retries, like httpx.
+# aiohttp connection and timeout errors that HttpRetryOptions retries, like httpx.
 _AIOHTTP_TRANSIENT_EXC: tuple[type[Exception], ...] = ()
 try:
   import aiohttp
@@ -79,6 +79,8 @@ try:
       aiohttp.ClientConnectorError,
       aiohttp.ClientOSError,
       aiohttp.ServerDisconnectedError,
+      asyncio.TimeoutError,
+      auth_exceptions.TimeoutError,
   )
 except ImportError:
   pass
@@ -710,7 +712,11 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
       or isinstance(e, _HTTPX_TRANSIENT_EXC)
-      or isinstance(e, _AIOHTTP_TRANSIENT_EXC),
+      or isinstance(e, _AIOHTTP_TRANSIENT_EXC)
+      or (
+          isinstance(e, auth_exceptions.TransportError)
+          and isinstance(e.__cause__, _AIOHTTP_TRANSIENT_EXC)
+      ),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=_delay_or_default(options.initial_delay, _RETRY_INITIAL_DELAY),
