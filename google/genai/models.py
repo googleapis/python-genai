@@ -5933,20 +5933,26 @@ class Models(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
-      if 'gemini-embedding-2' in model:
+      if t.t_is_multimodal_embedding_model(model):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return self._embed_content(model=model, contents=contents, config=config)
 
     if t.t_is_vertex_embed_content_model(model):
-      normalized_contents = t.t_contents(contents)
+      normalized_contents = t.t_embed_contents(model, contents)
       if len(normalized_contents) > 1:
-        raise ValueError(
-            'The embedContent API for this model only supports one content at a'
-            ' time.'
+        if t.t_is_vertex_maas_model(model):
+          raise ValueError(
+              'The embedContent API for this model only supports one content at'
+              ' a time.'
+          )
+        return self._embed_content(
+            model=model,
+            batch_contents=normalized_contents,
+            embedding_api_type=types.EmbeddingApiType.BATCH_EMBED_CONTENTS,
+            config=config,
         )
       return self._embed_content(
           model=model,
-          contents=None,
           content=normalized_contents[0],
           embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
           config=config,
@@ -5954,7 +5960,6 @@ class Models(_api_module.BaseModule):
     else:
       return self._embed_content(
           model=model,
-          content=None,
           contents=contents,
           embedding_api_type=types.EmbeddingApiType.PREDICT,
           config=config,
@@ -9137,21 +9142,27 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
-      if 'gemini-embedding-2' in model:
+      if t.t_is_multimodal_embedding_model(model):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return await self._embed_content(
           model=model, contents=contents, config=config
       )
     if t.t_is_vertex_embed_content_model(model):
-      normalized_contents = t.t_contents(contents)
+      normalized_contents = t.t_embed_contents(model, contents)
       if len(normalized_contents) > 1:
-        raise ValueError(
-            'The embedContent API for this model only supports one content at a'
-            ' time.'
+        if t.t_is_vertex_maas_model(model):
+          raise ValueError(
+              'The embedContent API for this model only supports one content at'
+              ' a time.'
+          )
+        return await self._embed_content(
+            model=model,
+            batch_contents=normalized_contents,
+            embedding_api_type=types.EmbeddingApiType.BATCH_EMBED_CONTENTS,
+            config=config,
         )
       return await self._embed_content(
           model=model,
-          contents=contents,
           content=normalized_contents[0],
           embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
           config=config,

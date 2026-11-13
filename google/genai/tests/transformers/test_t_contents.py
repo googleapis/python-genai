@@ -396,3 +396,150 @@ def test_list_of_text_part_list():
           ]
       ),
   ]
+
+
+def test_t_embed_contents_gemini_embedding_001_splits_list_elements():
+  """gemini-embedding-001 makes one Content per list element."""
+  assert t.t_embed_contents('gemini-embedding-001', ['hello', 'world']) == [
+      types.UserContent(parts='hello'),
+      types.UserContent(parts='world'),
+  ]
+  assert t.t_embed_contents(
+      'publishers/google/models/gemini-embedding-001', ['hello', 'world']
+  ) == [
+      types.UserContent(parts='hello'),
+      types.UserContent(parts='world'),
+  ]
+  assert t.t_embed_contents(
+      'gemini-embedding-001',
+      [
+          types.Part.from_text(text='hello'),
+          types.Part.from_text(text='world'),
+      ],
+  ) == [
+      types.UserContent(parts=[types.Part(text='hello')]),
+      types.UserContent(parts=[types.Part(text='world')]),
+  ]
+  assert t.t_embed_contents(
+      'gemini-embedding-001',
+      [
+          types.Content(parts=[types.Part.from_text(text='hello')]),
+          types.Content(parts=[types.Part.from_text(text='world')]),
+      ],
+  ) == [
+      types.Content(parts=[types.Part(text='hello')]),
+      types.Content(parts=[types.Part(text='world')]),
+  ]
+
+
+def test_t_embed_contents_gemini_embedding_001_keeps_content_whole():
+  """gemini-embedding-001 never splits the Parts of a Content."""
+  assert t.t_embed_contents(
+      'gemini-embedding-001',
+      types.Content(
+          parts=[
+              types.Part.from_text(text='hello'),
+              types.Part.from_text(text='world'),
+          ]
+      ),
+  ) == [
+      types.Content(parts=[types.Part(text='hello'), types.Part(text='world')]),
+  ]
+  assert t.t_embed_contents(
+      'gemini-embedding-001',
+      [
+          types.Content(
+              parts=[
+                  types.Part.from_text(text='hello'),
+                  types.Part.from_text(text='world'),
+              ]
+          ),
+          types.Content(parts=[types.Part.from_text(text='again')]),
+      ],
+  ) == [
+      types.Content(parts=[types.Part(text='hello'), types.Part(text='world')]),
+      types.Content(parts=[types.Part(text='again')]),
+  ]
+
+
+def test_t_embed_contents_multimodal_merges_parts_and_keeps_contents():
+  """Multimodal models merge strings and Parts but keep Contents."""
+  assert t.t_embed_contents('gemini-embedding-2', ['hello', 'world']) == [
+      types.UserContent(
+          parts=[
+              types.Part(text='hello'),
+              types.Part(text='world'),
+          ]
+      )
+  ]
+  assert t.t_embed_contents(
+      'gemini-embedding-2',
+      [
+          types.Part.from_text(text='hello'),
+          types.Part.from_text(text='world'),
+      ],
+  ) == [
+      types.UserContent(
+          parts=[
+              types.Part(text='hello'),
+              types.Part(text='world'),
+          ]
+      )
+  ]
+  assert t.t_embed_contents(
+      'gemini-embedding-2',
+      [
+          'hello',
+          types.Part.from_uri(
+              file_uri='gs://cloud-samples-data/generative-ai/audio/Chirp-3-Docs-Dive.mp3',
+              mime_type='audio/mpeg',
+          ),
+      ],
+  ) == [
+      types.UserContent(
+          parts=[
+              types.Part(text='hello'),
+              types.Part.from_uri(
+                  file_uri='gs://cloud-samples-data/generative-ai/audio/Chirp-3-Docs-Dive.mp3',
+                  mime_type='audio/mpeg',
+              ),
+          ]
+      )
+  ]
+  assert t.t_embed_contents(
+      'gemini-embedding-2',
+      [
+          types.Content(parts=[types.Part.from_text(text='hello')]),
+          types.Content(parts=[types.Part.from_text(text='world')]),
+      ],
+  ) == [
+      types.Content(parts=[types.Part(text='hello')]),
+      types.Content(parts=[types.Part(text='world')]),
+  ]
+  assert t.t_embed_contents('gemini-embedding-2', [['hello'], ['world']]) == [
+      types.UserContent(parts=['hello']),
+      types.UserContent(parts=['world']),
+  ]
+
+
+def test_t_embed_contents_maas_merges_parts_and_keeps_contents():
+  """MaaS models merge strings and Parts but keep Contents."""
+  maas_model = 'publishers/intfloat/models/multilingual-e5-large-instruct-maas'
+  assert t.t_embed_contents(maas_model, ['hello', 'world']) == [
+      types.UserContent(
+          parts=[
+              types.Part(text='hello'),
+              types.Part(text='world'),
+          ]
+      )
+  ]
+  assert t.t_embed_contents(
+      maas_model,
+      [
+          types.Content(parts=[types.Part.from_text(text='hello')]),
+          types.Content(parts=[types.Part.from_text(text='world')]),
+      ],
+  ) == [
+      types.Content(parts=[types.Part(text='hello')]),
+      types.Content(parts=[types.Part(text='world')]),
+  ]
