@@ -654,6 +654,16 @@ def _raise_for_unsupported_mldev_properties(
     raise ValueError('additionalProperties is only supported in Gemini Enterprise Agent Platform mode, , not in Gemini Developer API mode.')
 
 
+# Field-level annotations that override the referenced definition's values
+# when a '$ref' is inlined.
+_REF_SIBLING_ANNOTATIONS = ('description', 'title')
+
+
+def _ref_sibling_annotations(schema: _common.StringDict) -> _common.StringDict:
+  """Returns the annotations that `schema` declares beside its '$ref'."""
+  return {key: schema[key] for key in _REF_SIBLING_ANNOTATIONS if key in schema}
+
+
 def process_schema(
     schema: _common.StringDict,
     client: Optional[_api_client.BaseApiClient],
@@ -766,11 +776,15 @@ def process_schema(
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
   if (ref := schema.pop('$ref', None)) is not None:
+    annotations = _ref_sibling_annotations(schema)
     schema.update(defs[ref.split('defs/')[-1]])
+    schema.update(annotations)
 
   def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
+    annotations: _common.StringDict = {}
     if (ref := sub_schema.pop('$ref', None)) is not None:
+      annotations = _ref_sibling_annotations(sub_schema)
       sub_schema = defs[ref.split('defs/')[-1]]
       if id(sub_schema) in visited_dicts_path:
         return {}
@@ -782,6 +796,9 @@ def process_schema(
         order_properties=order_properties,
         visited_dicts_path=visited_dicts_path,
     )
+    if annotations:
+      # Copy, since the definition is shared by every reference.
+      return {**sub_schema, **annotations}
     return sub_schema
 
   if (any_of := schema.get('anyOf')) is not None:
