@@ -138,6 +138,43 @@ def test_factory_method_function_response_part_from_uri():
   assert isinstance(my_part, SubFunctionResponsePart)
 
 
+def test_factory_method_function_response_part_from_bytes_display_name():
+  my_part = SubFunctionResponsePart.from_bytes(
+      data=b'123', mime_type='image/png', display_name='chart.png'
+  )
+  assert my_part.inline_data.display_name == 'chart.png'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_uri_display_name():
+  my_part = SubFunctionResponsePart.from_uri(
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+      display_name='scones.jpg',
+  )
+  assert my_part.file_data.mime_type == 'image/jpeg'
+  assert my_part.file_data.display_name == 'scones.jpg'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+@pytest.mark.parametrize(
+    'file_uri',
+    [
+        'https://generativelanguage.googleapis.com/v1beta/files/abc123',
+        'files/abc123',
+    ],
+)
+def test_factory_method_function_response_part_from_files_api_uri(file_uri):
+  my_part = SubFunctionResponsePart.from_uri(file_uri=file_uri)
+  assert my_part.file_data.file_uri == file_uri
+  assert my_part.file_data.mime_type is None
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_uri_unknown_mime_type():
+  with pytest.raises(ValueError, match='Failed to determine mime type'):
+    SubFunctionResponsePart.from_uri(file_uri='gs://bucket/no_extension')
+
+
 def test_factory_method_from_executable_code_part():
   my_part = SubPart.from_executable_code(
       code='print("hello")', language='PYTHON'

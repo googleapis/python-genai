@@ -1606,6 +1606,23 @@ def _Part_to_mldev(
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
 
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
+
   return to_object
 
 
