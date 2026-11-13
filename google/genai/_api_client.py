@@ -20,7 +20,9 @@ The BaseApiClient is intended to be a private module and is subject to change.
 """
 
 import asyncio
+from collections.abc import AsyncGenerator
 from collections.abc import Generator
+import contextlib
 import copy
 from dataclasses import dataclass
 import inspect
@@ -462,7 +464,7 @@ class HttpResponse:
       for chunk in self._iter_response_stream():
         yield self._load_json_from_response(chunk)
 
-  async def async_segments(self) -> AsyncIterator[Any]:
+  async def async_segments(self) -> AsyncGenerator[Any, None]:
     if isinstance(self.response_stream, list):
       # list of objects retrieved from replay or from non-streaming API.
       for chunk in self.response_stream:
@@ -471,9 +473,12 @@ class HttpResponse:
       async for c in []:  # type: ignore[attr-defined]
         yield c
     else:
-      # Iterator of objects retrieved from the API.
-      async for chunk in self._aiter_response_stream():
-        yield self._load_json_from_response(chunk)
+      # Iterator of objects retrieved from the API. Close the stream if this
+      # generator is closed early, so the connection is released here rather
+      # than when the garbage collector finalizes a suspended generator.
+      async with contextlib.aclosing(self._aiter_response_stream()) as stream:
+        async for chunk in stream:
+          yield self._load_json_from_response(chunk)
 
   def byte_segments(self) -> Generator[Union[bytes, Any], None, None]:
     if isinstance(self.byte_stream, list):
@@ -548,7 +553,7 @@ class HttpResponse:
     if data_buffer:
       yield '\n'.join(data_buffer)
 
-  async def _aiter_response_stream(self) -> AsyncIterator[str]:
+  async def _aiter_response_stream(self) -> AsyncGenerator[str, None]:
     """Asynchronously iterates over chunks retrieved from the API."""
     is_valid_response = isinstance(
         self.response_stream, _HTTPX_RESPONSE_TYPES
@@ -2244,22 +2249,26 @@ class BaseApiClient:
     )
 
     async def async_generator():  # type: ignore[no-untyped-def]
-      async for chunk in response:
-        chunk_dump = json.dumps(chunk)
-        try:
-          if chunk_dump.startswith('{"error":'):
-            chunk_json = json.loads(chunk_dump)
-            await errors.APIError.raise_error_async(
-                chunk_json.get('error', {}).get('code'),
-                chunk_json,
-                response,
+      # An error event raises from inside this loop. Close the segments on the
+      # way out, so the stream is released before the error reaches the caller.
+      async with contextlib.aclosing(response.async_segments()) as segments:
+        async for chunk in segments:
+          chunk_dump = json.dumps(chunk)
+          try:
+            if chunk_dump.startswith('{"error":'):
+              chunk_json = json.loads(chunk_dump)
+              await errors.APIError.raise_error_async(
+                  chunk_json.get('error', {}).get('code'),
+                  chunk_json,
+                  response,
+              )
+          except json.decoder.JSONDecodeError:
+            logger.debug(
+                'Failed to decode chunk that contains an error: %s'
+                % chunk_dump
             )
-        except json.decoder.JSONDecodeError:
-          logger.debug(
-              'Failed to decode chunk that contains an error: %s' % chunk_dump
-          )
-          pass
-        yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
+            pass
+          yield SdkHttpResponse(headers=response.headers, body=chunk_dump)
 
     return async_generator()  # type: ignore[no-untyped-call]
 
