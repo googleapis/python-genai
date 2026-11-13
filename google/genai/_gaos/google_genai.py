@@ -106,6 +106,28 @@ def get_google_genai_api_version(api_client: Any) -> str:
     return api_version
 
 
+# Gemini Developer API webhooks are currently served only on v1beta.
+# A client that inherits the GA default (`v1`) would otherwise call
+# `/v1/webhooks` and get 404. Vertex paths keep their version+project prefix.
+_WEBHOOKS_DEVELOPER_API_VERSION = 'v1beta'
+
+
+def get_webhooks_api_version(api_client: Any) -> str:
+    """API version used to route webhook management requests.
+
+    On the Gemini Developer API, remap a missing or GA `v1` version to
+    `v1beta` so `client.webhooks` reaches the deployed surface. Any other
+    explicit version (`v1alpha`, `v1beta`, ...) is left unchanged. Vertex
+    routing is unchanged.
+    """
+    if getattr(api_client, 'vertexai', False):
+        return get_google_genai_api_version(api_client)
+    version = getattr(api_client._http_options, 'api_version', None) or ''
+    if version in ('', 'v1'):
+        return _WEBHOOKS_DEVELOPER_API_VERSION
+    return version
+
+
 def _get_google_genai_default_headers(
     api_client: Any,
 ) -> Optional[dict[str, str]]:
@@ -816,7 +838,9 @@ class GeminiNextGenWebhooks(GeneratedWebhooks):
     """
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_client(api_client)
+        sdk = build_google_genai_client(
+            api_client, api_version=get_webhooks_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
@@ -854,7 +878,9 @@ class AsyncGeminiNextGenWebhooks(GeneratedAsyncWebhooks):
     """Async public webhooks resource backed by the NextGen client."""
 
     def __init__(self, api_client: Any):
-        sdk = build_google_genai_async_client(api_client)
+        sdk = build_google_genai_async_client(
+            api_client, api_version=get_webhooks_api_version(api_client)
+        )
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
 
     if not TYPE_CHECKING:
