@@ -415,3 +415,115 @@ def test_from_json_schema_logs_only_once(caplog):
   assert schema3.type == types.Type('OBJECT')
 
   types_module._from_json_schema_warning_logged = False
+
+
+def _assert_both_api_options(json_schema, expected_schema):
+  assert types.Schema.from_json_schema(json_schema=json_schema) == (
+      expected_schema
+  )
+  assert (
+      types.Schema.from_json_schema(
+          json_schema=json_schema, api_option='VERTEX_AI'
+      )
+      == expected_schema
+  )
+
+
+def test_nullable_any_of_preserves_description_and_title():
+  """Unwrapping a [type, null] anyOf keeps the outer description and title."""
+  json_schema = types.JSONSchema(
+      any_of=[types.JSONSchema(type='string'), types.JSONSchema(type='null')],
+      description='xxx',
+      title='ttt',
+  )
+  _assert_both_api_options(
+      json_schema,
+      types.Schema(
+          type='STRING', nullable=True, description='xxx', title='ttt'
+      ),
+  )
+
+
+def test_nullable_any_of_null_first_preserves_annotations():
+  """Unwrapping keeps outer annotations when the null branch comes first."""
+  json_schema = types.JSONSchema(
+      any_of=[types.JSONSchema(type='null'), types.JSONSchema(type='integer')],
+      description='d',
+      title='t',
+      default=3,
+  )
+  _assert_both_api_options(
+      json_schema,
+      types.Schema(
+          type='INTEGER',
+          nullable=True,
+          default=3,
+          description='d',
+          title='t',
+      ),
+  )
+
+
+def test_nullable_any_of_outer_description_overrides_branch():
+  """The outer description wins over the description of the type branch."""
+  json_schema = types.JSONSchema(
+      any_of=[
+          types.JSONSchema(type='string', description='inner'),
+          types.JSONSchema(type='null'),
+      ],
+      description='outer',
+  )
+  _assert_both_api_options(
+      json_schema,
+      types.Schema(type='STRING', nullable=True, description='outer'),
+  )
+
+
+def test_nullable_any_of_keeps_branch_annotations_when_outer_unset():
+  """Without outer annotations, the type branch keeps its own."""
+  json_schema = types.JSONSchema(
+      any_of=[
+          types.JSONSchema(type='string', description='inner', title='it'),
+          types.JSONSchema(type='null'),
+      ],
+  )
+  _assert_both_api_options(
+      json_schema,
+      types.Schema(
+          type='STRING', nullable=True, description='inner', title='it'
+      ),
+  )
+
+
+def test_nullable_any_of_property_preserves_description():
+  """An optional object property, as Pydantic emits it, keeps its annotations."""
+  json_schema = types.JSONSchema(
+      type='object',
+      properties={
+          'f': types.JSONSchema(
+              any_of=[
+                  types.JSONSchema(
+                      type='array', items=types.JSONSchema(type='string')
+                  ),
+                  types.JSONSchema(type='null'),
+              ],
+              description='fd',
+              title='F',
+          ),
+      },
+  )
+  _assert_both_api_options(
+      json_schema,
+      types.Schema(
+          type='OBJECT',
+          properties={
+              'f': types.Schema(
+                  type='ARRAY',
+                  items=types.Schema(type='STRING'),
+                  nullable=True,
+                  description='fd',
+                  title='F',
+              ),
+          },
+      ),
+  )
