@@ -34,8 +34,8 @@ DecisionInputContentParam = TypeAliasType(
     "DecisionInputContentParam",
     Union[
         interactions_textcontent.TextContentParam,
-        interactions_documentcontent.DocumentContentParam,
         interactions_imagecontent.ImageContentParam,
+        interactions_documentcontent.DocumentContentParam,
         interactions_audiocontent.AudioContentParam,
         interactions_videocontent.VideoContentParam,
     ],
