@@ -106,7 +106,12 @@ def _is_interaction_complete(
 
 
 class AsyncSession:
-  """[Preview] AsyncSession."""
+  """[Preview] AsyncSession.
+
+  `receive()` yields one model turn and then ends. Call it again for the next
+  turn, or pass `multi_turn=True` to keep reading across turns. A closed
+  connection, including a normal close, raises `errors.APIError`.
+  """
 
   def __init__(
       self,
@@ -519,16 +524,27 @@ class AsyncSession:
     message_dict = _common.encode_unserializable_types(message_dict)
     await self._ws.send(json.dumps(message_dict))
 
-  async def receive(self) -> AsyncIterator[types.LiveServerMessage]:
+  async def receive(
+      self, *, multi_turn: bool = False
+  ) -> AsyncIterator[types.LiveServerMessage]:
     """Receive model responses from the server.
 
-    The method will yield the model responses from the server. The returned
-    responses will represent a complete model turn. When the returned message
-    is function call, user must call `send` with the function response to
-    continue the turn.
+    The method will yield the model responses from the server. By default the
+    returned responses represent one complete model turn, and the iterator ends
+    with that turn. Call `receive` again to read the next turn. When the
+    returned message is function call, user must call `send` with the function
+    response to continue the turn.
+
+    Args:
+      multi_turn: If true, the iterator continues past the end of a model turn
+        and yields the responses of every following turn. It does not end on
+        its own; stop iterating when you are done.
 
     Yields:
       The model responses from the server.
+
+    Raises:
+      errors.APIError: When the connection closes, including a normal close.
 
     Example usage:
 
@@ -540,13 +556,25 @@ class AsyncSession:
         await session.send(input='Hello world!', end_of_turn=True)
         async for message in session.receive():
           print(message)
+
+    Example usage with more than one turn on one iterator:
+
+    .. code-block:: python
+
+      client = genai.Client(api_key=API_KEY)
+
+      async with client.aio.live.connect(model='...') as session:
+        await session.send(input='Hello world!', end_of_turn=True)
+        async for message in session.receive(multi_turn=True):
+          print(message)
+          if message.server_content and message.server_content.turn_complete:
+            await session.send(input='Tell me more.', end_of_turn=True)
     """
     # TODO(b/365983264) Handle intermittent issues for the user.
     while result := await self._receive():
-      if _is_interaction_complete(result.server_content):
-        yield result
-        break
       yield result
+      if not multi_turn and _is_interaction_complete(result.server_content):
+        break
 
   async def start_stream(
       self, *, stream: AsyncIterator[bytes], mime_type: str
