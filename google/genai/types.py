@@ -1165,6 +1165,8 @@ class EmbeddingApiType(_common.CaseInSensitiveEnum):
   """predict API endpoint (default)"""
   EMBED_CONTENT = 'EMBED_CONTENT'
   """embedContent API Endpoint"""
+  BATCH_EMBED_CONTENTS = 'BATCH_EMBED_CONTENTS'
+  """batchEmbedContents API Endpoint"""
 
 
 class SafetyFilterLevel(_common.CaseInSensitiveEnum):
@@ -9298,6 +9300,11 @@ class _EmbedContentParametersPrivate(_common.BaseModel):
       description="""The Gemini Enterprise Agent Platform embedding API to use.
       """,
   )
+  batch_contents: Optional[ContentListUnion] = Field(
+      default=None,
+      description="""The multiple contents to embed.
+      """,
+  )
   config: Optional[EmbedContentConfig] = Field(
       default=None,
       description="""Configuration that contains optional parameters.
@@ -9322,6 +9329,10 @@ class _EmbedContentParametersPrivateDict(TypedDict, total=False):
 
   embedding_api_type: Optional[EmbeddingApiType]
   """The Gemini Enterprise Agent Platform embedding API to use.
+      """
+
+  batch_contents: Optional[ContentListUnionDict]
+  """The multiple contents to embed.
       """
 
   config: Optional[EmbedContentConfigDict]
