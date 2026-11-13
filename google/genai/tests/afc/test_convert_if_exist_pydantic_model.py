@@ -17,10 +17,11 @@
 """Test convert_if_exist_pydantic_model."""
 
 import inspect
+import sys
+import typing
 from typing import Optional, Union
 import pydantic
 import pytest
-import sys
 from ... import errors
 from ..._extra_utils import convert_if_exist_pydantic_model
 
@@ -307,3 +308,33 @@ def test_incompatible_value_and_annotation():
         'param_name',
         'func_name',
     )
+
+
+def test_unsubscripted_typing_list():
+  """Bare typing.List has no item type, so the value passes through."""
+  assert convert_if_exist_pydantic_model(
+      [1, 'a'], typing.List, 'param_name', 'func_name'
+  ) == [1, 'a']
+
+
+def test_unsubscripted_typing_dict():
+  """Bare typing.Dict has no value type, so the value passes through."""
+  assert convert_if_exist_pydantic_model(
+      {'key1': 1}, typing.Dict, 'param_name', 'func_name'
+  ) == {'key1': 1}
+
+
+def test_unsubscripted_typing_in_union():
+  """Bare typing.List and typing.Dict inside a union pass through."""
+  assert convert_if_exist_pydantic_model(
+      [1], Optional[typing.List], 'param_name', 'func_name'
+  ) == [1]
+  assert convert_if_exist_pydantic_model(
+      {'key1': 1}, Union[typing.Dict, int], 'param_name', 'func_name'
+  ) == {'key1': 1}
+
+
+def test_unsubscripted_typing_list_rejects_non_list():
+  """A non-list value for bare typing.List still raises."""
+  with pytest.raises(errors.UnknownFunctionCallArgumentError):
+    convert_if_exist_pydantic_model('a', typing.List, 'param_name', 'func_name')
