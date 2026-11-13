@@ -18305,7 +18305,7 @@ class ClaudeFile(_common.BaseModel):
   )
   filename: Optional[str] = Field(
       default=None,
-      description="""Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\/` are not accepted.""",
+      description="""Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\\/` are not accepted.""",
   )
   id: Optional[str] = Field(
       default=None,
@@ -18343,7 +18343,7 @@ class ClaudeFileDict(TypedDict, total=False):
   """Output only. The time at which the file expires and is deleted, set from the `expires_in_seconds` upload form field. Unset for files that do not expire, which is serialised as `null`."""
 
   filename: Optional[str]
-  """Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\/` are not accepted."""
+  """Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\\/` are not accepted."""
 
   id: Optional[str]
   """Output only. The server-assigned identifier of the file, for example `file_abc123`. This is the ID to pass in subsequent model requests."""
