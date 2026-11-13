@@ -11846,7 +11846,7 @@ class GenerationConfig(_common.BaseModel):
   )
   stop_sequences: Optional[list[str]] = Field(
       default=None,
-      description="""Optional. A list of character sequences that will stop the model from generating further tokens. If a stop sequence is generated, the output will end at that point. This is useful for controlling the length and structure of the output. For example, you can use ["\n", "###"] to stop generation at a new line or a specific marker.""",
+      description="""Optional. A list of character sequences that will stop the model from generating further tokens. If a stop sequence is generated, the output will end at that point. This is useful for controlling the length and structure of the output. For example, you can use ["\\n", "###"] to stop generation at a new line or a specific marker.""",
   )
   temperature: Optional[float] = Field(
       default=None,
@@ -11939,7 +11939,7 @@ class GenerationConfigDict(TypedDict, total=False):
   """Optional. The speech generation config."""
 
   stop_sequences: Optional[list[str]]
-  """Optional. A list of character sequences that will stop the model from generating further tokens. If a stop sequence is generated, the output will end at that point. This is useful for controlling the length and structure of the output. For example, you can use ["\n", "###"] to stop generation at a new line or a specific marker."""
+  """Optional. A list of character sequences that will stop the model from generating further tokens. If a stop sequence is generated, the output will end at that point. This is useful for controlling the length and structure of the output. For example, you can use ["\\n", "###"] to stop generation at a new line or a specific marker."""
 
   temperature: Optional[float]
   """Optional. Controls the randomness of the output. A higher temperature results in more creative and diverse responses, while a lower temperature makes the output more predictable and focused. The valid range is (0.0, 2.0]."""
@@ -18305,7 +18305,7 @@ class ClaudeFile(_common.BaseModel):
   )
   filename: Optional[str] = Field(
       default=None,
-      description="""Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\/` are not accepted.""",
+      description="""Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\\/` are not accepted.""",
   )
   id: Optional[str] = Field(
       default=None,
@@ -18343,7 +18343,7 @@ class ClaudeFileDict(TypedDict, total=False):
   """Output only. The time at which the file expires and is deleted, set from the `expires_in_seconds` upload form field. Unset for files that do not expire, which is serialised as `null`."""
 
   filename: Optional[str]
-  """Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\/` are not accepted."""
+  """Output only. The original name of the uploaded file, taken from the `Content-Disposition` header on upload. Between 1 and 255 characters. Control characters and the characters `<>:"|?*\\/` are not accepted."""
 
   id: Optional[str]
   """Output only. The server-assigned identifier of the file, for example `file_abc123`. This is the ID to pass in subsequent model requests."""
