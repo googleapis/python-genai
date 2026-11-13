@@ -479,13 +479,13 @@ def test_request_content_list_is_sent_as_content(
 
 def test_unknown_field_set_to_none_is_sent_as_null():
   body = gaos_utils.marshal_json(
-      interactions.DocumentContent(uri=_URI, resolution=None),
+      interactions.DocumentContent(uri=_URI, future_field=None),
       interactions.DocumentContent,
   )
   assert json.loads(body) == {
       "type": "document",
       "uri": _URI,
-      "resolution": None,
+      "future_field": None,
   }
 
 
@@ -502,7 +502,7 @@ def test_api_rejection_of_unknown_field_surfaces_as_bad_request(
         body=json.dumps({
             "error": {
                 "code": 400,
-                "message": "Unknown name \"resolution\".",
+                "message": "Unknown name \"future_field\".",
                 "status": "INVALID_ARGUMENT",
             }
         }).encode("utf-8"),
@@ -513,10 +513,10 @@ def test_api_rejection_of_unknown_field_surfaces_as_bad_request(
   with pytest.raises(_interactions.BadRequestError):
     mock_gaos_server.client.interactions.create(
         model=_MODEL,
-        input=[{"type": "document", "uri": _URI, "resolution": None}],
+        input=[{"type": "document", "uri": _URI, "future_field": None}],
     )
   assert mock_gaos_server.captured_bodies[-1]["input"][0]["content"][0] == {
       "type": "document",
       "uri": _URI,
-      "resolution": None,
+      "future_field": None,
   }

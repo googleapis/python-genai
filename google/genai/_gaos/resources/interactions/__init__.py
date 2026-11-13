@@ -34,6 +34,7 @@ from ...types.interactions.annotation import Annotation
 from ...types.interactions.antigravityagentconfig import AntigravityAgentConfig
 from ...types.interactions.audiocontent import AudioContent
 from ...types.interactions.audioresponseformat import AudioResponseFormat
+from ...types.interactions.audiostaticmediaprocessing import AudioStaticMediaProcessing
 from ...types.interactions.codeexecutioncallarguments import CodeExecutionCallArguments
 from ...types.interactions.codeexecutioncallstep import CodeExecutionCallStep
 from ...types.interactions.codeexecutionresultstep import CodeExecutionResultStep
@@ -47,6 +48,9 @@ from ...types.interactions.createmodelinteraction import (
 )
 from ...types.interactions.deepresearchagentconfig import DeepResearchAgentConfig
 from ...types.interactions.documentcontent import DocumentContent
+from ...types.interactions.documentstaticmediaprocessing import (
+    DocumentStaticMediaProcessing,
+)
 from ...types.interactions.dynamicagentconfig import DynamicAgentConfig
 from ...types.interactions.empty import Empty as InteractionDeleteResponse
 from ...types.interactions.environment import Environment
@@ -77,8 +81,10 @@ from ...types.interactions.interactionsseevent import InteractionSSEEvent
 from ...types.interactions.interactionstatusupdate import InteractionStatusUpdate
 from ...types.interactions.mcpservertoolcallstep import MCPServerToolCallStep
 from ...types.interactions.mcpservertoolresultstep import MCPServerToolResultStep
+from ...types.interactions.mediaresolution import MediaResolution
 from ...types.interactions.model import Model
 from ...types.interactions.modeloutputstep import ModelOutputStep
+from ...types.interactions.pageprocessingoptions import PageProcessingOptions
 from ...types.interactions.placecitation import PlaceCitation
 from ...types.interactions.processingcallstep import ProcessingCallStep
 from ...types.interactions.processingresultstep import ProcessingResultStep
@@ -89,6 +95,9 @@ from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
 from ...types.interactions.retrievalresultstep import RetrievalResultStep
 from ...types.interactions.safetysetting import SafetySetting
 from ...types.interactions.speechconfig import SpeechConfig
+from ...types.interactions.spreadsheetprocessingoptions import (
+    SpreadsheetProcessingOptions,
+)
 from ...types.interactions.step import Step
 from ...types.interactions.stepdelta import StepDelta
 from ...types.interactions.stepstart import StepStart
@@ -143,6 +152,7 @@ __all__ = [
     "AntigravityAgentConfig",
     "AudioContent",
     "AudioResponseFormat",
+    "AudioStaticMediaProcessing",
     "CodeExecutionCallArguments",
     "CodeExecutionCallStep",
     "CodeExecutionResultStep",
@@ -154,6 +164,7 @@ __all__ = [
     "CreateModelInteractionParamsStreaming",
     "DeepResearchAgentConfig",
     "DocumentContent",
+    "DocumentStaticMediaProcessing",
     "DynamicAgentConfig",
     "Environment",
     "Error",
@@ -188,8 +199,10 @@ __all__ = [
     "InteractionStatusUpdate",
     "MCPServerToolCallStep",
     "MCPServerToolResultStep",
+    "MediaResolution",
     "Model",
     "ModelOutputStep",
+    "PageProcessingOptions",
     "PlaceCitation",
     "ProcessingCallStep",
     "ProcessingResultStep",
@@ -200,6 +213,7 @@ __all__ = [
     "RetrievalResultStep",
     "SafetySetting",
     "SpeechConfig",
+    "SpreadsheetProcessingOptions",
     "Step",
     "StepDelta",
     "StepStart",
