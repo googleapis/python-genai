@@ -15,13 +15,15 @@
 
 """[Experimental] Auth Tokens API client."""
 
+# pylint: disable=protected-access
+
 import json
 import logging
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 from . import _api_module
 from . import _common
-from . import _tokens_converters as tokens_converters
+from . import _converters
 from . import types
 
 logger = logging.getLogger('google_genai.tokens')
@@ -221,7 +223,7 @@ class Tokens(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
+      request_dict = _converters._CreateAuthTokenParameters_to_mldev(
           self._api_client,
           parameter_model
       )
@@ -316,7 +318,7 @@ class AsyncTokens(_api_module.BaseModule):
           'This method is only supported in the Gemini Developer client.'
       )
     else:
-      request_dict = tokens_converters._CreateAuthTokenParameters_to_mldev(
+      request_dict = _converters._CreateAuthTokenParameters_to_mldev(
           self._api_client,
           parameter_model
       )
