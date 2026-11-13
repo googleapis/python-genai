@@ -35,6 +35,7 @@ except ImportError:
   StaticCredentials = mock.MagicMock()
   AsyncAuthorizedSession = mock.MagicMock()
 
+from google.auth import exceptions as auth_exceptions
 from google.oauth2 import credentials
 import tenacity
 
@@ -217,10 +218,54 @@ def test_retry_args_retries_httpx_transport_errors():
   assert not retry.predicate(ValueError('not a transport error'))
 
 
+def test_retry_args_retries_auth_transport_errors():
+  # Google Auth reports a network failure during a credential refresh as
+  # TransportError. The refresh runs inside the retried request, so the
+  # predicate must retry it when HttpRetryOptions is configured.
+  args = api_client.retry_args(types.HttpRetryOptions())
+  retry = args['retry']
+
+  assert retry.predicate(auth_exceptions.TransportError('refresh failed'))
+
+  # Permanent authentication failures are not retried.
+  assert not retry.predicate(auth_exceptions.RefreshError('bad key'))
+  assert not retry.predicate(auth_exceptions.DefaultCredentialsError('no adc'))
+
+
 def _patch_auth_default():
   return mock.patch(
       'google.auth.default',
       return_value=(credentials.Credentials('magic_token'), 'test_project'),
+      autospec=True,
+  )
+
+
+class _FailingCredentials(credentials.Credentials):
+  """Credentials whose refresh raises `error` instead of using the network.
+
+  The credentials start without a token, so the client refreshes them on the
+  first request. When `recover` is True the second refresh succeeds, which is
+  what a transient network failure looks like to the client.
+  """
+
+  def __init__(self, error: Exception, recover: bool = False):
+    super().__init__(None)
+    self._error = error
+    self._recover = recover
+    self.refresh_count = 0
+
+  def refresh(self, request):
+    self.refresh_count += 1
+    if self._recover and self.refresh_count > 1:
+      self.token = 'magic_token'
+      return
+    raise self._error
+
+
+def _patch_auth_default_with(creds):
+  return mock.patch(
+      'google.auth.default',
+      return_value=(creds, 'test_project'),
       autospec=True,
   )
 
@@ -437,6 +482,54 @@ def test_retries_failed_request_retries_unsuccessfully_at_request_level():
     mock_transport.handle_request.assert_called()
 
 
+def test_retries_credential_refresh_transport_error_retries_successfully():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.return_value = _httpx_response(200)
+  creds = _FailingCredentials(
+      auth_exceptions.TransportError('refresh failed'), recover=True
+  )
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default_with(creds):
+    response = client.request(http_method='GET', path='path', request_dict={})
+
+    assert creds.refresh_count == 2
+    assert mock_transport.handle_request.call_count == 1
+    assert response.headers['status-code'] == '200'
+
+
+def test_retries_credential_refresh_refresh_error_is_not_retried():
+  mock_transport = mock.Mock(spec=httpx.BaseTransport)
+  mock_transport.handle_request.return_value = _httpx_response(200)
+  creds = _FailingCredentials(auth_exceptions.RefreshError('bad key'))
+
+  client = api_client.BaseApiClient(
+      vertexai=True,
+      project='test_project',
+      location='global',
+      http_options=_transport_options(
+          http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+          transport=mock_transport,
+      ),
+  )
+
+  with _patch_auth_default_with(creds):
+    with pytest.raises(auth_exceptions.RefreshError, match='bad key'):
+      client.request(http_method='GET', path='path', request_dict={})
+
+    assert creds.refresh_count == 1
+    assert mock_transport.handle_request.call_count == 0
+
+
 # Async httpx
 
 
@@ -646,6 +739,38 @@ def test_async_retries_failed_request_retries_unsuccessfully_at_request_level():
       except errors.APIError as e:
         assert e.code == 504
       mock_transport.handle_async_request.assert_called()
+
+  asyncio.run(run())
+
+
+def test_async_retries_credential_refresh_transport_error_retries_successfully():
+  api_client.has_aiohttp = False
+
+  async def run():
+    mock_transport = mock.Mock(spec=httpx.AsyncBaseTransport)
+    mock_transport.handle_async_request.return_value = _httpx_response(200)
+    creds = _FailingCredentials(
+        auth_exceptions.TransportError('refresh failed'), recover=True
+    )
+
+    client = api_client.BaseApiClient(
+        vertexai=True,
+        project='test_project',
+        location='global',
+        http_options=_transport_options(
+            http_options=types.HttpOptions(retry_options=_RETRY_OPTIONS),
+            async_transport=mock_transport,
+        ),
+    )
+
+    with _patch_auth_default_with(creds):
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+
+      assert creds.refresh_count == 2
+      assert mock_transport.handle_async_request.call_count == 1
+      assert response.headers['status-code'] == '200'
 
   asyncio.run(run())
 

@@ -710,7 +710,12 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
       or isinstance(e, _HTTPX_TRANSIENT_EXC)
-      or isinstance(e, _AIOHTTP_TRANSIENT_EXC),
+      or isinstance(e, _AIOHTTP_TRANSIENT_EXC)
+      # Google Auth reports a network failure during a credential refresh as
+      # TransportError. The refresh runs inside the retried request, so the
+      # predicate must accept it. RefreshError is a sibling class, so permanent
+      # authentication failures stay non-retryable.
+      or isinstance(e, auth_exceptions.TransportError),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=_delay_or_default(options.initial_delay, _RETRY_INITIAL_DELAY),
