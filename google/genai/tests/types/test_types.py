@@ -15,6 +15,7 @@
 
 
 import copy
+import enum
 import json
 import sys
 import typing
@@ -839,6 +840,47 @@ def test_default_value_generic_alias_literal():
 
   assert actual_schema_vertex == expected_schema
   assert actual_schema_mldev == expected_schema
+
+
+def test_function_with_int_enum_param():
+  """Test that an IntEnum parameter produces string enum values."""
+
+  class DaysEnum(enum.IntEnum):
+    ONE = 1
+    FIVE = 5
+    TEN = 10
+
+  def func_under_test(days: DaysEnum) -> str:
+    """test int enum."""
+    return str(days)
+
+  expected_schema_mldev = types.FunctionDeclaration(
+      name='func_under_test',
+      description='test int enum.',
+      parameters=types.Schema(
+          type='OBJECT',
+          properties={
+              'days': types.Schema(
+                  type='INTEGER',
+                  enum=['1', '5', '10'],
+                  title='DaysEnum',
+              ),
+          },
+          required=['days'],
+      ),
+  )
+  expected_schema_vertex = copy.deepcopy(expected_schema_mldev)
+  expected_schema_vertex.response = types.Schema(type='STRING')
+
+  actual_schema_mldev = types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test
+  )
+  actual_schema_vertex = types.FunctionDeclaration.from_callable(
+      client=vertex_client, callable=func_under_test
+  )
+
+  assert actual_schema_mldev == expected_schema_mldev
+  assert actual_schema_vertex == expected_schema_vertex
 
 
 def test_default_value_generic_alias_literal():

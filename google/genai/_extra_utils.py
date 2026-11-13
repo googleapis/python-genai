@@ -17,6 +17,7 @@
 
 import asyncio
 import dataclasses
+import enum
 import inspect
 import io
 import logging
@@ -245,6 +246,34 @@ def is_annotation_pydantic_model(annotation: Any) -> bool:
     return False
 
 
+def _is_annotation_enum(annotation: Any) -> bool:
+  try:
+    return inspect.isclass(annotation) and issubclass(annotation, enum.Enum)
+  except TypeError:
+    return False
+
+
+def _convert_to_enum(
+    value: Any, annotation: Type[enum.Enum], param_name: str, func_name: str
+) -> enum.Enum:
+  """Converts a function call argument value to a member of an Enum class."""
+  try:
+    return annotation(value)
+  except ValueError:
+    pass
+  # Schema.enum holds the values as strings, so the model can return "5" for a
+  # member whose value is 5.
+  if isinstance(value, str):
+    for member in annotation:
+      if str(member.value) == value:
+        return member
+  raise errors.UnknownFunctionCallArgumentError(
+      f'Failed to parse parameter {param_name} for function {func_name} from'
+      f' function call part because function call argument value {value} is'
+      f' not a valid value of enum {annotation}.'
+  )
+
+
 def convert_if_exist_pydantic_model(
     value: Any, annotation: Any, param_name: str, func_name: str
 ) -> Any:
@@ -270,10 +299,18 @@ def convert_if_exist_pydantic_model(
         k: convert_if_exist_pydantic_model(v, value_type, param_name, func_name)
         for k, v in value.items()
     }
+  if _is_annotation_enum(annotation):
+    return _convert_to_enum(value, annotation, param_name, func_name)
   # example 1: typing.Union[int, float]
   # example 2: int | float equivalent to UnionType[int, float]
   if get_origin(annotation) in (Union, UnionType):
     for arg in get_args(annotation):
+      if _is_annotation_enum(arg):
+        try:
+          return _convert_to_enum(value, arg, param_name, func_name)
+        # do not raise here because a later type in the union can match.
+        except errors.UnknownFunctionCallArgumentError:
+          continue
       if (
           (get_args(arg) and get_origin(arg) is list)
           or isinstance(value, arg)
