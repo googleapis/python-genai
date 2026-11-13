@@ -23,6 +23,7 @@ import asyncio
 from collections.abc import Generator
 import copy
 from dataclasses import dataclass
+import functools
 import inspect
 import io
 import json
@@ -30,6 +31,7 @@ import logging
 import math
 import os
 import random
+import socket
 import ssl
 import sys
 import threading
@@ -37,6 +39,7 @@ import time
 from typing import Any, AsyncIterator, Iterator, Optional, TYPE_CHECKING, Tuple, Union, cast, overload
 from urllib.parse import urlparse
 from urllib.parse import urlunparse
+import urllib.request
 import warnings
 import weakref
 
@@ -727,6 +730,95 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   }
 
 
+_TCP_KEEPALIVE_IDLE = 60  # seconds
+_TCP_KEEPALIVE_INTERVAL = 15  # seconds
+_TCP_KEEPALIVE_PROBE_COUNT = 4
+
+
+@functools.lru_cache(maxsize=None)
+def _tcp_keepalive_socket_options() -> tuple[tuple[int, int, int], ...]:
+  """Returns the TCP keepalive socket options this platform accepts.
+
+  A kernel can reject an option that Python defines (e.g. gVisor, WSL1 or older
+  Windows), and httpcore applies socket options with a plain setsockopt at
+  connect time, so a rejected option would fail every request. Each option is
+  therefore probed once on a throwaway socket, and only the accepted ones are
+  returned. Returns an empty tuple if SO_KEEPALIVE itself is rejected.
+  """
+  candidates = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
+  for name, value in (
+      ('TCP_KEEPIDLE', _TCP_KEEPALIVE_IDLE),
+      ('TCP_KEEPALIVE', _TCP_KEEPALIVE_IDLE),  # macOS spelling.
+      ('TCP_KEEPINTVL', _TCP_KEEPALIVE_INTERVAL),
+      ('TCP_KEEPCNT', _TCP_KEEPALIVE_PROBE_COUNT),
+  ):
+    option = getattr(socket, name, None)
+    if option is not None:
+      candidates.append((socket.IPPROTO_TCP, option, value))
+
+  options: list[tuple[int, int, int]] = []
+  try:
+    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  except OSError:
+    return ()
+  with probe:
+    for level, option, value in candidates:
+      try:
+        probe.setsockopt(level, option, value)
+      except OSError:
+        if not options:
+          return ()  # SO_KEEPALIVE itself was rejected.
+        continue
+      options.append((level, option, value))
+  return tuple(options)
+
+
+def _install_keepalive_transport(
+    kwargs: dict[str, Any],
+    transport_cls: Any,
+) -> None:
+  """Installs a keepalive transport unless the caller configured one.
+
+  Args:
+    kwargs: The keyword arguments for the httpx or httpx2 client constructor.
+      Updated in place.
+    transport_cls: The `HTTPTransport` or `AsyncHTTPTransport` class of the same
+      package (httpx or httpx2) as the client.
+  """
+  if 'transport' in kwargs:
+    return
+  if kwargs.get('trust_env', True):
+    # An explicit transport turns off httpx's env proxy handling.
+    env_proxies = urllib.request.getproxies()
+    if any(env_proxies.get(scheme) for scheme in ('http', 'https', 'all')):
+      return
+  socket_options = _tcp_keepalive_socket_options()
+  if not socket_options:
+    return
+  params = inspect.signature(transport_cls.__init__).parameters
+  kwargs['transport'] = transport_cls(
+      **{k: v for k, v in kwargs.items() if k in params},
+      socket_options=socket_options,
+  )
+
+
+def _keepalive_socket_factory(
+    addr_info: tuple[
+        socket.AddressFamily, socket.SocketKind, int, str, tuple[Any, ...]
+    ],
+) -> socket.socket:
+  """Creates an aiohttp connector socket with TCP keepalive enabled."""
+  family, type_, proto, _, _ = addr_info
+  sock = socket.socket(family=family, type=type_, proto=proto)
+  for level, option, value in _tcp_keepalive_socket_options():
+    try:
+      sock.setsockopt(level, option, value)
+    except OSError:
+      # A kernel can reject an option that Python defines.
+      pass
+  return sock
+
+
 if TYPE_CHECKING:
 
   class SyncHttpxClient(httpx.Client):
@@ -750,6 +842,7 @@ else:
       def __init__(self, **kwargs: Any) -> None:
         """Initializes the httpx client."""
         kwargs.setdefault('follow_redirects', True)
+        _install_keepalive_transport(kwargs, httpx.HTTPTransport)
         super().__init__(**kwargs)
 
       def __del__(self) -> None:
@@ -771,6 +864,7 @@ else:
       def __init__(self, **kwargs: Any) -> None:
         """Initializes the httpx client."""
         kwargs.setdefault('follow_redirects', True)
+        _install_keepalive_transport(kwargs, httpx.AsyncHTTPTransport)
         super().__init__(**kwargs)
 
       def __del__(self) -> None:
@@ -797,6 +891,7 @@ else:
       def __init__(self, **kwargs: Any) -> None:
         """Initializes the httpx2 client."""
         kwargs.setdefault('follow_redirects', True)
+        _install_keepalive_transport(kwargs, httpx2.HTTPTransport)
         super().__init__(**kwargs)
 
       def __del__(self) -> None:
@@ -818,6 +913,7 @@ else:
       def __init__(self, **kwargs: Any) -> None:
         """Initializes the httpx2 client."""
         kwargs.setdefault('follow_redirects', True)
+        _install_keepalive_transport(kwargs, httpx2.AsyncHTTPTransport)
         super().__init__(**kwargs)
 
       def __del__(self) -> None:
@@ -1415,8 +1511,15 @@ class BaseApiClient:
               context['source_traceback'] = self._source_traceback
             # Remove this self._loop.call_exception_handler(context)
 
+        connector_args: dict[str, Any] = {'limit': 0}
+        if (
+            'socket_factory'
+            in inspect.signature(aiohttp.TCPConnector.__init__).parameters
+        ):
+          connector_args['socket_factory'] = _keepalive_socket_factory
+
         session = AiohttpClientSession(
-            connector=AiohttpTCPConnector(limit=0),
+            connector=AiohttpTCPConnector(**connector_args),
             trust_env=True,
             read_bufsize=READ_BUFFER_SIZE,
         )
