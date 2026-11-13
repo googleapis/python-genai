@@ -79,6 +79,10 @@ try:
       aiohttp.ClientConnectorError,
       aiohttp.ClientOSError,
       aiohttp.ServerDisconnectedError,
+      # ClientTimeout and aiohttp's ServerTimeoutError family raise this.
+      asyncio.TimeoutError,
+      # google.auth.aio converts aiohttp timeouts into this.
+      auth_exceptions.TimeoutError,
   )
 except ImportError:
   pass
@@ -691,6 +695,16 @@ def _delay_or_default(value: Optional[float], default: float) -> float:
   return default if value is None else value
 
 
+def _is_transient_transport_error(e: BaseException) -> bool:
+  """Returns whether HttpRetryOptions should retry a transport exception."""
+  if isinstance(e, _HTTPX_TRANSIENT_EXC + _AIOHTTP_TRANSIENT_EXC):
+    return True
+  # google.auth.aio re-raises aiohttp errors as TransportError from them.
+  return isinstance(e, auth_exceptions.TransportError) and isinstance(
+      e.__cause__, _AIOHTTP_TRANSIENT_EXC
+  )
+
+
 def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   """Returns the retry args for the given http retry options.
 
@@ -709,8 +723,7 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
   retriable_codes = options.http_status_codes or _RETRY_HTTP_STATUS_CODES
   retry = tenacity.retry_if_exception(
       lambda e: (isinstance(e, errors.APIError) and e.code in retriable_codes)
-      or isinstance(e, _HTTPX_TRANSIENT_EXC)
-      or isinstance(e, _AIOHTTP_TRANSIENT_EXC),
+      or _is_transient_transport_error(e),
   )
   wait = tenacity.wait_exponential_jitter(
       initial=_delay_or_default(options.initial_delay, _RETRY_INITIAL_DELAY),
