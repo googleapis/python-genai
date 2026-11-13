@@ -17,6 +17,7 @@
 
 import base64
 from collections.abc import Iterable, Mapping
+import copy
 from enum import Enum, EnumMeta
 import inspect
 import io
@@ -661,6 +662,7 @@ def process_schema(
     *,
     order_properties: bool = True,
     visited_dicts_path: Optional[set[int]] = None,
+    visited_refs: Optional[set[str]] = None,
 ) -> None:
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
@@ -724,6 +726,8 @@ def process_schema(
   """
   if visited_dicts_path is None:
     visited_dicts_path = set()
+  if visited_refs is None:
+    visited_refs = set()
 
   if id(schema) in visited_dicts_path:
     return
@@ -748,17 +752,25 @@ def process_schema(
 
   if defs is None:
     defs = schema.pop('$defs', {})
-    for _, sub_schema in defs.items():
-      # We can skip the '$ref' check, because JSON schema forbids a '$ref' from
-      # directly referencing another '$ref':
-      # https://json-schema.org/understanding-json-schema/structuring#recursion
+
+  def _resolve_ref(ref: str) -> Optional[_common.StringDict]:
+    ref_name = ref.split('defs/')[-1]
+    if ref_name in visited_refs:
+      return None
+    ref_schema: _common.StringDict = copy.deepcopy(defs[ref_name])
+    visited_refs.add(ref_name)
+    try:
       process_schema(
-          sub_schema,
+          ref_schema,
           client,
           defs,
           order_properties=order_properties,
           visited_dicts_path=visited_dicts_path,
+          visited_refs=visited_refs,
       )
+    finally:
+      visited_refs.remove(ref_name)
+    return ref_schema
 
   handle_null_fields(schema)
 
@@ -766,14 +778,16 @@ def process_schema(
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
   if (ref := schema.pop('$ref', None)) is not None:
-    schema.update(defs[ref.split('defs/')[-1]])
+    if (resolved := _resolve_ref(ref)) is not None:
+      schema.update(resolved)
+    visited_dicts_path.remove(id(schema))
+    return
 
   def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
-      sub_schema = defs[ref.split('defs/')[-1]]
-      if id(sub_schema) in visited_dicts_path:
-        return {}
+      resolved = _resolve_ref(ref)
+      return {} if resolved is None else resolved
 
     process_schema(
         sub_schema,
@@ -781,6 +795,7 @@ def process_schema(
         defs,
         order_properties=order_properties,
         visited_dicts_path=visited_dicts_path,
+        visited_refs=visited_refs,
     )
     return sub_schema
 

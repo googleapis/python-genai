@@ -17,6 +17,7 @@
 """Tests schema processing methods in the _transformers module."""
 
 import copy
+import json
 from typing import Union
 
 import pydantic
@@ -636,6 +637,141 @@ def test_process_schema_with_cycle(client):
               }
           }
       }
+  }
+  assert schema == expected
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_with_recursive_union(client):  # pylint: disable=redefined-outer-name
+  """Tests process_schema resolves recursive anyOf unions per path."""
+  schema = {
+      '$ref': '#/$defs/Node',
+      '$defs': {
+          'Leaf': {
+              'type': 'OBJECT',
+              'properties': {'value': {'type': 'INTEGER'}},
+          },
+          'UnaryOp': {
+              'type': 'OBJECT',
+              'properties': {'operand': {'$ref': '#/$defs/Node'}},
+          },
+          'Node': {
+              'anyOf': [
+                  {'$ref': '#/$defs/Leaf'},
+                  {'$ref': '#/$defs/UnaryOp'},
+              ],
+          },
+      },
+  }
+
+  _transformers.process_schema(schema, client)
+
+  expected = {
+      'anyOf': [
+          {'type': 'OBJECT', 'properties': {'value': {'type': 'INTEGER'}}},
+          {'type': 'OBJECT', 'properties': {'operand': {}}},
+      ],
+  }
+  assert schema == expected
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_with_optional_self_reference(client):  # pylint: disable=redefined-outer-name
+  """A back-edge reached via a direct '$ref' (after null handling) terminates.
+
+  `handle_null_fields` turns `anyOf: [{$ref: Node}, {type: null}]` into
+  `{'$ref': Node, 'nullable': True}`, which used to be expanded without any
+  cycle check and produced a self-referential dict.
+  """
+  schema = {
+      '$ref': '#/$defs/Node',
+      '$defs': {
+          'Node': {
+              'type': 'OBJECT',
+              'properties': {
+                  'value': {'type': 'INTEGER'},
+                  'next': {
+                      'anyOf': [{'$ref': '#/$defs/Node'}, {'type': 'null'}],
+                      'default': None,
+                  },
+              },
+          },
+      },
+  }
+
+  _transformers.process_schema(schema, client)
+
+  expected = {
+      'type': 'OBJECT',
+      'properties': {
+          'value': {'type': 'INTEGER'},
+          'next': {'default': None, 'nullable': True},
+      },
+      'property_ordering': ['value', 'next'],
+  }
+  assert schema == expected
+  # Guards against the old cyclic-dict failure mode.
+  json.dumps(schema)
+  types.Schema.model_validate(schema)
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_process_schema_shared_def_is_expanded_per_reference(client):  # pylint: disable=redefined-outer-name
+  """A def referenced from several non-cyclic sites is fully expanded at each.
+
+  `Shared` is used by both union branches and `A` also has a back-edge to
+  `Root`; resolving the back-edge must not damage `Shared` or `B`.
+  """
+  shared = {
+      'type': 'OBJECT',
+      'properties': {'a': {'type': 'STRING'}, 'b': {'type': 'STRING'}},
+  }
+  schema = {
+      '$ref': '#/$defs/Root',
+      '$defs': {
+          'Shared': copy.deepcopy(shared),
+          'A': {
+              'type': 'OBJECT',
+              'properties': {
+                  's': {'$ref': '#/$defs/Shared'},
+                  'root': {'$ref': '#/$defs/Root'},
+              },
+          },
+          'B': {
+              'type': 'OBJECT',
+              'properties': {'s': {'$ref': '#/$defs/Shared'}},
+          },
+          'Root': {
+              'anyOf': [
+                  {'$ref': '#/$defs/A'},
+                  {'$ref': '#/$defs/B'},
+              ],
+          },
+      },
+  }
+
+  _transformers.process_schema(schema, client)
+
+  expected_shared = {
+      'type': 'OBJECT',
+      'properties': {'a': {'type': 'STRING'}, 'b': {'type': 'STRING'}},
+      'property_ordering': ['a', 'b'],
+  }
+  expected = {
+      'anyOf': [
+          {
+              'type': 'OBJECT',
+              'properties': {
+                  's': copy.deepcopy(expected_shared),
+                  'root': {},
+              },
+              'property_ordering': ['s', 'root'],
+          },
+          {
+              'type': 'OBJECT',
+              'properties': {'s': copy.deepcopy(expected_shared)},
+          },
+      ],
   }
   assert schema == expected
 
