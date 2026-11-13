@@ -1149,6 +1149,16 @@ def _FunctionCallingConfig_to_mldev(
   return to_object
 
 
+def _is_text_embedding_batch(
+    contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+) -> bool:
+  return (
+      isinstance(contents, list)
+      and bool(contents)
+      and all(isinstance(content, str) for content in contents)
+  )
+
+
 def _FunctionResponsePart_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -5845,7 +5855,9 @@ class Models(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
-      if 'gemini-embedding-2' in model:
+      if 'gemini-embedding-2' in model and not _is_text_embedding_batch(
+          contents
+      ):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return self._embed_content(model=model, contents=contents, config=config)
 
@@ -9034,7 +9046,9 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
-      if 'gemini-embedding-2' in model:
+      if 'gemini-embedding-2' in model and not _is_text_embedding_batch(
+          contents
+      ):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return await self._embed_content(
           model=model, contents=contents, config=config
