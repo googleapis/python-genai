@@ -1,0 +1,99 @@
+diff --git a/src/google/genai/interactions.py b/src/google/genai/interactions.py
+--- a/src/google/genai/interactions.py
++++ b/src/google/genai/interactions.py
+@@ -31,6 +31,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
+         r"""Creates a new interaction.
+ 
+@@ -70,6 +71,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> interactions.Interaction:
+         r"""Creates a new interaction.
+ 
+@@ -137,6 +139,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> Stream[interactions.InteractionSSEEvent]:
+         r"""Creates a new interaction.
+ 
+@@ -203,6 +206,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> interactions.Interaction:
+         r"""Creates a new interaction.
+ 
+@@ -268,6 +272,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> Stream[interactions.InteractionSSEEvent]:
+         r"""Creates a new interaction.
+ 
+@@ -318,6 +323,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+         **body_kwargs: Any,
+     ) -> Union[interactions.Interaction, Stream[interactions.InteractionSSEEvent]]:
+         r"""Creates a new interaction.
+@@ -1300,6 +1306,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
+         r"""Creates a new interaction.
+ 
+@@ -1339,6 +1346,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> interactions.Interaction:
+         r"""Creates a new interaction.
+ 
+@@ -1406,6 +1414,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> AsyncStream[interactions.InteractionSSEEvent]:
+         r"""Creates a new interaction.
+ 
+@@ -1472,6 +1481,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> interactions.Interaction:
+         r"""Creates a new interaction.
+ 
+@@ -1537,6 +1547,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+     ) -> AsyncStream[interactions.InteractionSSEEvent]:
+         r"""Creates a new interaction.
+ 
+@@ -1587,6 +1598,7 @@
+         extra_query: Optional[Mapping[str, Any]] = None,
+         extra_body: Optional[Mapping[str, Any]] = None,
+         timeout: Optional[Union[float, httpx.Timeout]] = None,
++        automatic_continuation: Optional[bool] = None,
+         **body_kwargs: Any,
+     ) -> Union[interactions.Interaction, AsyncStream[interactions.InteractionSSEEvent]]:
+         r"""Creates a new interaction.
