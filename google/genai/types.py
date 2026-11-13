@@ -1120,6 +1120,30 @@ class ToolType(_common.CaseInSensitiveEnum):
   """Media processing tool."""
 
 
+class DocumentMetadataContentLayer(_common.CaseInSensitiveEnum):
+  """Content layers to extract from a document."""
+
+  CONTENT_LAYER_UNSPECIFIED = 'CONTENT_LAYER_UNSPECIFIED'
+  """Default value."""
+  PAGE_IMAGE = 'PAGE_IMAGE'
+  """Rendered page images."""
+  PAGE_TEXT = 'PAGE_TEXT'
+  """Extracted page text."""
+
+
+class SpreadsheetMetadataContentLayer(_common.CaseInSensitiveEnum):
+  """Content layers to extract from a spreadsheet."""
+
+  CONTENT_LAYER_UNSPECIFIED = 'CONTENT_LAYER_UNSPECIFIED'
+  """Default value."""
+  DATA = 'DATA'
+  """Cell values, merges, and formats."""
+  FORMULAS = 'FORMULAS'
+  """Formula expressions and their computed results."""
+  VISUAL = 'VISUAL'
+  """A rendered image of the sheet."""
+
+
 class ResourceScope(_common.CaseInSensitiveEnum):
   """Resource scope."""
 
@@ -1547,6 +1571,19 @@ class LiveMusicPlaybackControl(_common.CaseInSensitiveEnum):
       Retains the current prompts and config."""
 
 
+class VideoMetadataContentLayer(_common.CaseInSensitiveEnum):
+  """Content layers to extract from a video."""
+
+  CONTENT_LAYER_UNSPECIFIED = 'CONTENT_LAYER_UNSPECIFIED'
+  """Default value."""
+  FRAMES = 'FRAMES'
+  """Extract video frames."""
+  AUDIO = 'AUDIO'
+  """Extract audio track."""
+  TRANSCRIPT = 'TRANSCRIPT'
+  """Extract audio transcript."""
+
+
 class PartMediaResolution(_common.BaseModel):
   """Media resolution for the input media."""
 
@@ -1693,6 +1730,140 @@ class SpeechMetadataDict(TypedDict, total=False):
 
 
 SpeechMetadataOrDict = Union[SpeechMetadata, SpeechMetadataDict]
+
+
+class DocumentMetadata(_common.BaseModel):
+  """Metadata describes the input document content.
+
+  Set this in `Part.document_metadata` or
+  `FunctionResponsePart.document_metadata` when `inline_data` or `file_data`
+  contains a document to configure static document preprocessing.
+  """
+
+  start_page: Optional[int] = Field(
+      default=None, description="""1-indexed inclusive start page."""
+  )
+  end_page: Optional[int] = Field(
+      default=None, description="""1-indexed inclusive end page."""
+  )
+  content_layers: Optional[list[DocumentMetadataContentLayer]] = Field(
+      default=None,
+      description="""Content layers to return. If empty, defaults to [PAGE_IMAGE] when
+      DocumentMetadata is set. When DocumentMetadata is not set, default
+      document processing is used (for example, page images for PDFs).""",
+  )
+
+
+class DocumentMetadataDict(TypedDict, total=False):
+  """Metadata describes the input document content.
+
+  Set this in `Part.document_metadata` or
+  `FunctionResponsePart.document_metadata` when `inline_data` or `file_data`
+  contains a document to configure static document preprocessing.
+  """
+
+  start_page: Optional[int]
+  """1-indexed inclusive start page."""
+
+  end_page: Optional[int]
+  """1-indexed inclusive end page."""
+
+  content_layers: Optional[list[DocumentMetadataContentLayer]]
+  """Content layers to return. If empty, defaults to [PAGE_IMAGE] when
+      DocumentMetadata is set. When DocumentMetadata is not set, default
+      document processing is used (for example, page images for PDFs)."""
+
+
+DocumentMetadataOrDict = Union[DocumentMetadata, DocumentMetadataDict]
+
+
+class SpreadsheetMetadata(_common.BaseModel):
+  """Metadata describes the input spreadsheet content.
+
+  Set this in `Part.spreadsheet_metadata` or
+  `FunctionResponsePart.spreadsheet_metadata` when `inline_data` or `file_data`
+  contains a spreadsheet to configure static spreadsheet preprocessing.
+  """
+
+  visible_cells: Optional[str] = Field(
+      default=None,
+      description="""The range of cells to extract, in A1 notation (e.g. "A1:D10").
+      If not set, the full occupied area of the sheet is used.""",
+  )
+  sheet_index: Optional[int] = Field(
+      default=None,
+      description="""The 1-indexed index of the sheet to extract, in workbook order. If
+      not set, the first sheet is used.""",
+  )
+  content_layers: Optional[list[SpreadsheetMetadataContentLayer]] = Field(
+      default=None,
+      description="""Content layers to return. If empty, defaults to [DATA, FORMULAS]
+      when SpreadsheetMetadata is set.""",
+  )
+
+
+class SpreadsheetMetadataDict(TypedDict, total=False):
+  """Metadata describes the input spreadsheet content.
+
+  Set this in `Part.spreadsheet_metadata` or
+  `FunctionResponsePart.spreadsheet_metadata` when `inline_data` or `file_data`
+  contains a spreadsheet to configure static spreadsheet preprocessing.
+  """
+
+  visible_cells: Optional[str]
+  """The range of cells to extract, in A1 notation (e.g. "A1:D10").
+      If not set, the full occupied area of the sheet is used."""
+
+  sheet_index: Optional[int]
+  """The 1-indexed index of the sheet to extract, in workbook order. If
+      not set, the first sheet is used."""
+
+  content_layers: Optional[list[SpreadsheetMetadataContentLayer]]
+  """Content layers to return. If empty, defaults to [DATA, FORMULAS]
+      when SpreadsheetMetadata is set."""
+
+
+SpreadsheetMetadataOrDict = Union[SpreadsheetMetadata, SpreadsheetMetadataDict]
+
+
+class AudioMetadata(_common.BaseModel):
+  """Metadata describes the input audio content.
+
+  Set this in `Part.audio_metadata` or `FunctionResponsePart.audio_metadata`
+  when `inline_data` or `file_data` contains audio to configure static audio
+  preprocessing.
+  """
+
+  start_offset: Optional[str] = Field(
+      default=None,
+      description="""The start offset of the audio, relative to the start of the audio
+      stream.""",
+  )
+  end_offset: Optional[str] = Field(
+      default=None,
+      description="""The end offset of the audio, relative to the start of the audio
+      stream.""",
+  )
+
+
+class AudioMetadataDict(TypedDict, total=False):
+  """Metadata describes the input audio content.
+
+  Set this in `Part.audio_metadata` or `FunctionResponsePart.audio_metadata`
+  when `inline_data` or `file_data` contains audio to configure static audio
+  preprocessing.
+  """
+
+  start_offset: Optional[str]
+  """The start offset of the audio, relative to the start of the audio
+      stream."""
+
+  end_offset: Optional[str]
+  """The end offset of the audio, relative to the start of the audio
+      stream."""
+
+
+AudioMetadataOrDict = Union[AudioMetadata, AudioMetadataDict]
 
 
 class CodeExecutionResult(_common.BaseModel):
@@ -1995,6 +2166,44 @@ FunctionResponseFileDataOrDict = Union[
 ]
 
 
+class VideoMetadata(_common.BaseModel):
+  """Provides metadata for a video, including the start and end offsets for clipping and the frame rate."""
+
+  end_offset: Optional[str] = Field(
+      default=None, description="""Optional. The end offset of the video."""
+  )
+  fps: Optional[float] = Field(
+      default=None,
+      description="""Optional. The frame rate of the video sent to the model. If not specified, the default value is 1.0. The valid range is (0.0, 24.0].""",
+  )
+  start_offset: Optional[str] = Field(
+      default=None, description="""Optional. The start offset of the video."""
+  )
+  content_layers: Optional[list[VideoMetadataContentLayer]] = Field(
+      default=None,
+      description="""Content layers to return. If empty, defaults to [FRAMES, AUDIO].""",
+  )
+
+
+class VideoMetadataDict(TypedDict, total=False):
+  """Provides metadata for a video, including the start and end offsets for clipping and the frame rate."""
+
+  end_offset: Optional[str]
+  """Optional. The end offset of the video."""
+
+  fps: Optional[float]
+  """Optional. The frame rate of the video sent to the model. If not specified, the default value is 1.0. The valid range is (0.0, 24.0]."""
+
+  start_offset: Optional[str]
+  """Optional. The start offset of the video."""
+
+  content_layers: Optional[list[VideoMetadataContentLayer]]
+  """Content layers to return. If empty, defaults to [FRAMES, AUDIO]."""
+
+
+VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
+
+
 class FunctionResponsePart(_common.BaseModel):
   """A datatype containing media that is part of a `FunctionResponse` message.
 
@@ -2014,6 +2223,29 @@ class FunctionResponsePart(_common.BaseModel):
   media_processing: Optional[MediaProcessing] = Field(
       default=None,
       description="""Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field. This field is not supported in Vertex AI.""",
+  )
+  media_resolution: Optional[PartMediaResolution] = Field(
+      default=None, description="""Media resolution for the input media."""
+  )
+  video_metadata: Optional[VideoMetadata] = Field(
+      default=None,
+      description="""Video metadata. The metadata should only be specified while the
+      video data is presented in inline_data or file_data.""",
+  )
+  document_metadata: Optional[DocumentMetadata] = Field(
+      default=None,
+      description="""Document metadata. The metadata should only be specified while the
+      document data is presented in inline_data or file_data.""",
+  )
+  spreadsheet_metadata: Optional[SpreadsheetMetadata] = Field(
+      default=None,
+      description="""Spreadsheet metadata. The metadata should only be specified while
+      the spreadsheet data is presented in inline_data or file_data.""",
+  )
+  audio_metadata: Optional[AudioMetadata] = Field(
+      default=None,
+      description="""Audio metadata. The metadata should only be specified while the
+      audio data is presented in inline_data or file_data.""",
   )
 
   @classmethod
@@ -2069,6 +2301,25 @@ class FunctionResponsePartDict(TypedDict, total=False):
 
   media_processing: Optional[MediaProcessing]
   """Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field. This field is not supported in Vertex AI."""
+
+  media_resolution: Optional[PartMediaResolutionDict]
+  """Media resolution for the input media."""
+
+  video_metadata: Optional[VideoMetadataDict]
+  """Video metadata. The metadata should only be specified while the
+      video data is presented in inline_data or file_data."""
+
+  document_metadata: Optional[DocumentMetadataDict]
+  """Document metadata. The metadata should only be specified while the
+      document data is presented in inline_data or file_data."""
+
+  spreadsheet_metadata: Optional[SpreadsheetMetadataDict]
+  """Spreadsheet metadata. The metadata should only be specified while
+      the spreadsheet data is presented in inline_data or file_data."""
+
+  audio_metadata: Optional[AudioMetadataDict]
+  """Audio metadata. The metadata should only be specified while the
+      audio data is presented in inline_data or file_data."""
 
 
 FunctionResponsePartOrDict = Union[
@@ -2207,37 +2458,6 @@ class BlobDict(TypedDict, total=False):
 
 
 BlobOrDict = Union[Blob, BlobDict]
-
-
-class VideoMetadata(_common.BaseModel):
-  """Provides metadata for a video, including the start and end offsets for clipping and the frame rate."""
-
-  end_offset: Optional[str] = Field(
-      default=None, description="""Optional. The end offset of the video."""
-  )
-  fps: Optional[float] = Field(
-      default=None,
-      description="""Optional. The frame rate of the video sent to the model. If not specified, the default value is 1.0. The valid range is (0.0, 24.0].""",
-  )
-  start_offset: Optional[str] = Field(
-      default=None, description="""Optional. The start offset of the video."""
-  )
-
-
-class VideoMetadataDict(TypedDict, total=False):
-  """Provides metadata for a video, including the start and end offsets for clipping and the frame rate."""
-
-  end_offset: Optional[str]
-  """Optional. The end offset of the video."""
-
-  fps: Optional[float]
-  """Optional. The frame rate of the video sent to the model. If not specified, the default value is 1.0. The valid range is (0.0, 24.0]."""
-
-  start_offset: Optional[str]
-  """Optional. The start offset of the video."""
-
-
-VideoMetadataOrDict = Union[VideoMetadata, VideoMetadataDict]
 
 
 class WordInfo(_common.BaseModel):
@@ -2424,6 +2644,21 @@ class Part(_common.BaseModel):
       default=None,
       description="""Extra metadata associated with the part for speech synthesis, such
       as speaker and style. Only valid when `Part.data` is set to `text`.""",
+  )
+  document_metadata: Optional[DocumentMetadata] = Field(
+      default=None,
+      description="""Document metadata. The metadata should only be specified while the
+      document data is presented in inline_data or file_data.""",
+  )
+  spreadsheet_metadata: Optional[SpreadsheetMetadata] = Field(
+      default=None,
+      description="""Spreadsheet metadata. The metadata should only be specified while
+      the spreadsheet data is presented in inline_data or file_data.""",
+  )
+  audio_metadata: Optional[AudioMetadata] = Field(
+      default=None,
+      description="""Audio metadata. The metadata should only be specified while the
+      audio data is presented in inline_data or file_data.""",
   )
 
   def __init__(
@@ -2665,6 +2900,18 @@ class PartDict(TypedDict, total=False):
   speech_metadata: Optional[SpeechMetadataDict]
   """Extra metadata associated with the part for speech synthesis, such
       as speaker and style. Only valid when `Part.data` is set to `text`."""
+
+  document_metadata: Optional[DocumentMetadataDict]
+  """Document metadata. The metadata should only be specified while the
+      document data is presented in inline_data or file_data."""
+
+  spreadsheet_metadata: Optional[SpreadsheetMetadataDict]
+  """Spreadsheet metadata. The metadata should only be specified while
+      the spreadsheet data is presented in inline_data or file_data."""
+
+  audio_metadata: Optional[AudioMetadataDict]
+  """Audio metadata. The metadata should only be specified while the
+      audio data is presented in inline_data or file_data."""
 
 
 PartOrDict = Union[Part, PartDict]
