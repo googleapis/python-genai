@@ -8077,57 +8077,61 @@ GroundingSupportOrDict = Union[GroundingSupport, GroundingSupportDict]
 
 
 class RetrievalMetadata(_common.BaseModel):
-  """Metadata returned to client when grounding is enabled."""
+  """Metadata related to the retrieval grounding source.
+
+  This is part of the `GroundingMetadata` returned when grounding is enabled.
+  """
 
   google_search_dynamic_retrieval_score: Optional[float] = Field(
       default=None,
-      description="""Optional. Score indicating how likely information from google
-      search could help answer the prompt. The score is in the range [0, 1],
-      where 0 is the least likely and 1 is the most likely. This score is only
-      populated when google search grounding and dynamic retrieval is enabled.
-      It will be compared to the threshold to determine whether to trigger
-      Google search.""",
+      description="""Optional. A score indicating how likely it is that a Google Search query could help answer the prompt. The score is in the range of `[0, 1]`. A score of 1 means the model is confident that a search will be helpful, and 0 means it is not. This score is populated only when Google Search grounding and dynamic retrieval are enabled. The score is used to determine whether to trigger a search.""",
   )
 
 
 class RetrievalMetadataDict(TypedDict, total=False):
-  """Metadata returned to client when grounding is enabled."""
+  """Metadata related to the retrieval grounding source.
+
+  This is part of the `GroundingMetadata` returned when grounding is enabled.
+  """
 
   google_search_dynamic_retrieval_score: Optional[float]
-  """Optional. Score indicating how likely information from google
-      search could help answer the prompt. The score is in the range [0, 1],
-      where 0 is the least likely and 1 is the most likely. This score is only
-      populated when google search grounding and dynamic retrieval is enabled.
-      It will be compared to the threshold to determine whether to trigger
-      Google search."""
+  """Optional. A score indicating how likely it is that a Google Search query could help answer the prompt. The score is in the range of `[0, 1]`. A score of 1 means the model is confident that a search will be helpful, and 0 means it is not. This score is populated only when Google Search grounding and dynamic retrieval are enabled. The score is used to determine whether to trigger a search."""
 
 
 RetrievalMetadataOrDict = Union[RetrievalMetadata, RetrievalMetadataDict]
 
 
 class SearchEntryPoint(_common.BaseModel):
-  """The entry point used to search for grounding sources."""
+  """An entry point for displaying Google Search results.
+
+  A `SearchEntryPoint` is populated when the grounding source for a model's
+  response is Google Search. It provides information that you can use to display
+  the search results in your application.
+  """
 
   rendered_content: Optional[str] = Field(
       default=None,
-      description="""Optional. Web content snippet that can be embedded in a web page
-      or an app webview.""",
+      description="""Optional. An HTML snippet that can be embedded in a web page or an application's webview. This snippet displays a search result, including the title, URL, and a brief description of the search result.""",
   )
   sdk_blob: Optional[bytes] = Field(
       default=None,
-      description="""Optional. JSON representing array of tuples.""",
+      description="""Optional. A base64-encoded JSON object that contains a list of search queries and their corresponding search URLs. This information can be used to build a custom search UI.""",
   )
 
 
 class SearchEntryPointDict(TypedDict, total=False):
-  """The entry point used to search for grounding sources."""
+  """An entry point for displaying Google Search results.
+
+  A `SearchEntryPoint` is populated when the grounding source for a model's
+  response is Google Search. It provides information that you can use to display
+  the search results in your application.
+  """
 
   rendered_content: Optional[str]
-  """Optional. Web content snippet that can be embedded in a web page
-      or an app webview."""
+  """Optional. An HTML snippet that can be embedded in a web page or an application's webview. This snippet displays a search result, including the title, URL, and a brief description of the search result."""
 
   sdk_blob: Optional[bytes]
-  """Optional. JSON representing array of tuples."""
+  """Optional. A base64-encoded JSON object that contains a list of search queries and their corresponding search URLs. This information can be used to build a custom search UI."""
 
 
 SearchEntryPointOrDict = Union[SearchEntryPoint, SearchEntryPointDict]
@@ -13929,64 +13933,6 @@ SingleReinforcementTuningRewardConfigOrDict = Union[
 ]
 
 
-class CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
-    _common.BaseModel
-):
-  """Composite reinforcement tuning reward config weighted reward config."""
-
-  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
-      default=None, description="""Single reward configuration."""
-  )
-  weight: Optional[float] = Field(
-      default=None,
-      description="""How much this single reward contributes to the total overall reward. Total reward is a linear combination of single rewards with their corresponding weights, i.e., ``` total_reward = ( weight_a * reward_a + weight_b * reward_b + ... ) / (weight_a + weight_b + ...) ```""",
-  )
-
-
-class CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict(
-    TypedDict, total=False
-):
-  """Composite reinforcement tuning reward config weighted reward config."""
-
-  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
-  """Single reward configuration."""
-
-  weight: Optional[float]
-  """How much this single reward contributes to the total overall reward. Total reward is a linear combination of single rewards with their corresponding weights, i.e., ``` total_reward = ( weight_a * reward_a + weight_b * reward_b + ... ) / (weight_a + weight_b + ...) ```"""
-
-
-CompositeReinforcementTuningRewardConfigWeightedRewardConfigOrDict = Union[
-    CompositeReinforcementTuningRewardConfigWeightedRewardConfig,
-    CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict,
-]
-
-
-class CompositeReinforcementTuningRewardConfig(_common.BaseModel):
-  """Composite reinforcement tuning reward config."""
-
-  weighted_reward_configs: Optional[
-      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfig]
-  ] = Field(
-      default=None,
-      description="""List of reward function configurations with weights.""",
-  )
-
-
-class CompositeReinforcementTuningRewardConfigDict(TypedDict, total=False):
-  """Composite reinforcement tuning reward config."""
-
-  weighted_reward_configs: Optional[
-      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict]
-  ]
-  """List of reward function configurations with weights."""
-
-
-CompositeReinforcementTuningRewardConfigOrDict = Union[
-    CompositeReinforcementTuningRewardConfig,
-    CompositeReinforcementTuningRewardConfigDict,
-]
-
-
 class ReinforcementTuningHyperParameters(_common.BaseModel):
   """Hyperparameters for Reinforcement Tuning."""
 
@@ -14075,6 +14021,78 @@ class ReinforcementTuningHyperParametersDict(TypedDict, total=False):
 
 ReinforcementTuningHyperParametersOrDict = Union[
     ReinforcementTuningHyperParameters, ReinforcementTuningHyperParametersDict
+]
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfig(
+    _common.BaseModel
+):
+  """Reward function configuration with a weight.
+
+  The weight is used to combine the reward with other rewards. This data type is
+  not supported in Gemini API.
+  """
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfig] = Field(
+      default=None, description="""Single reward configuration."""
+  )
+  weight: Optional[float] = Field(
+      default=None,
+      description="""How much this single reward contributes to the total overall reward. Total reward is a linear combination of single rewards with their corresponding weights, i.e., ``` total_reward = ( weight_a * reward_a + weight_b * reward_b + ... ) / (weight_a + weight_b + ...) ```""",
+  )
+
+
+class CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict(
+    TypedDict, total=False
+):
+  """Reward function configuration with a weight.
+
+  The weight is used to combine the reward with other rewards. This data type is
+  not supported in Gemini API.
+  """
+
+  reward_config: Optional[SingleReinforcementTuningRewardConfigDict]
+  """Single reward configuration."""
+
+  weight: Optional[float]
+  """How much this single reward contributes to the total overall reward. Total reward is a linear combination of single rewards with their corresponding weights, i.e., ``` total_reward = ( weight_a * reward_a + weight_b * reward_b + ... ) / (weight_a + weight_b + ...) ```"""
+
+
+CompositeReinforcementTuningRewardConfigWeightedRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfig,
+    CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict,
+]
+
+
+class CompositeReinforcementTuningRewardConfig(_common.BaseModel):
+  """Composite reward function configuration for reinforcement tuning.
+
+  This data type is not supported in Gemini API.
+  """
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfig]
+  ] = Field(
+      default=None,
+      description="""List of reward function configurations with weights.""",
+  )
+
+
+class CompositeReinforcementTuningRewardConfigDict(TypedDict, total=False):
+  """Composite reward function configuration for reinforcement tuning.
+
+  This data type is not supported in Gemini API.
+  """
+
+  weighted_reward_configs: Optional[
+      list[CompositeReinforcementTuningRewardConfigWeightedRewardConfigDict]
+  ]
+  """List of reward function configurations with weights."""
+
+
+CompositeReinforcementTuningRewardConfigOrDict = Union[
+    CompositeReinforcementTuningRewardConfig,
+    CompositeReinforcementTuningRewardConfigDict,
 ]
 
 
