@@ -24,6 +24,7 @@ import pytest
 
 from ... import _transformers
 from ... import client as google_genai_client_module
+from ... import models as models_module
 from ... import types
 
 
@@ -88,6 +89,39 @@ def client(use_vertex):
     yield google_genai_client_module.Client(
         vertexai=use_vertex, api_key='test-api-key'
     )
+
+
+def _get_response_schema_from_generate_content_config(
+    client, config: types.GenerateContentConfig
+) -> types.Schema:
+  if client.vertexai:
+    request = models_module._GenerateContentConfig_to_vertex(
+        client._api_client, config, {}
+    )
+  else:
+    request = models_module._GenerateContentConfig_to_mldev(
+        client._api_client, config, {}
+    )
+  return request['responseSchema']
+
+
+def _assert_no_property_ordering(schema: types.Schema) -> None:
+  assert schema.property_ordering is None
+
+  for sub_schema in (getattr(schema, 'properties', None) or {}).values():
+    _assert_no_property_ordering(sub_schema)
+
+  if getattr(schema, 'items', None) is not None:
+    _assert_no_property_ordering(schema.items)
+
+  for sub_schema in getattr(schema, 'prefix_items', None) or []:
+    _assert_no_property_ordering(sub_schema)
+
+  for sub_schema in getattr(schema, 'any_of', None) or []:
+    _assert_no_property_ordering(sub_schema)
+
+  if isinstance(getattr(schema, 'additional_properties', None), types.Schema):
+    _assert_no_property_ordering(schema.additional_properties)
 
 
 @pytest.mark.parametrize('use_vertex', [True, False])
@@ -693,3 +727,48 @@ def test_t_schema_sets_property_ordering_for_schema_type(client):
 
   transformed_schema = _transformers.t_schema(client, schema)
   assert transformed_schema.property_ordering == ['name', 'population']
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+@pytest.mark.parametrize('response_schema_property_ordering', [None, True])
+def test_generate_content_config_defaults_to_property_ordering(
+    client, response_schema_property_ordering
+):
+  config_args = {'response_schema': CountryInfo}
+  if response_schema_property_ordering is not None:
+    config_args['response_schema_property_ordering'] = (
+        response_schema_property_ordering
+    )
+
+  schema = _get_response_schema_from_generate_content_config(
+      client,
+      types.GenerateContentConfig(**config_args),
+  )
+
+  assert schema.property_ordering == list(country_info_fields.keys())
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_generate_content_config_can_disable_property_ordering(client):
+  schema = _get_response_schema_from_generate_content_config(
+      client,
+      types.GenerateContentConfig(
+          response_schema=CountryInfo,
+          response_schema_property_ordering=False,
+      ),
+  )
+
+  assert schema.property_ordering is None
+
+
+@pytest.mark.parametrize('use_vertex', [True, False])
+def test_generate_content_config_disables_nested_property_ordering(client):
+  schema = _get_response_schema_from_generate_content_config(
+      client,
+      types.GenerateContentConfig(
+          response_schema=CountryInfoWithCurrency,
+          response_schema_property_ordering=False,
+      ),
+  )
+
+  _assert_no_property_ordering(schema)
