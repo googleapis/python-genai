@@ -23,6 +23,7 @@ import functools
 import logging
 import re
 import sys
+import threading
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
@@ -597,6 +598,10 @@ def _format_collection(
   return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
 
+# Pydantic's model_rebuild() is not thread-safe; defer_build calls it lazily.
+_MODEL_BUILD_LOCK = threading.RLock()
+
+
 class BaseModel(pydantic.BaseModel):
 
   model_config = pydantic.ConfigDict(
@@ -616,6 +621,30 @@ class BaseModel(pydantic.BaseModel):
       # most of what importing this package costs.
       defer_build=True,
   )
+
+  @classmethod
+  def model_rebuild(
+      cls,
+      *,
+      force: bool = False,
+      raise_errors: bool = True,
+      _parent_namespace_depth: int = 2,
+      _types_namespace: Optional[collections.abc.Mapping[str, Any]] = None,
+  ) -> Optional[bool]:
+    """Builds the model like Pydantic, but one thread at a time."""
+    # Pydantic sets `__pydantic_complete__` last, after the validator.
+    if not force and cls.__pydantic_complete__:
+      return None
+    with _MODEL_BUILD_LOCK:
+      return super().model_rebuild(
+          force=force,
+          raise_errors=raise_errors,
+          # This override adds one frame between the caller and Pydantic.
+          _parent_namespace_depth=(
+              _parent_namespace_depth + 1 if _parent_namespace_depth > 0 else 0
+          ),
+          _types_namespace=_types_namespace,
+      )
 
   @pydantic.model_validator(mode='before')
   @classmethod
