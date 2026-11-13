@@ -1519,6 +1519,13 @@ def _GenerateContentConfig_to_mldev(
   if getv(from_object, ['store']) is not None:
     setv(parent_object, ['store'], getv(from_object, ['store']))
 
+  if getv(from_object, ['test_github_actions_field']) is not None:
+    setv(
+        parent_object,
+        ['testGithubActionsField'],
+        getv(from_object, ['test_github_actions_field']),
+    )
+
   return to_object
 
 
@@ -1734,6 +1741,13 @@ def _GenerateContentConfig_to_vertex(
     raise ValueError(
         'store parameter is only supported in Gemini Developer API mode, not in'
         ' Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['test_github_actions_field']) is not None:
+    setv(
+        parent_object,
+        ['testGithubActionsField'],
+        getv(from_object, ['test_github_actions_field']),
     )
 
   return to_object

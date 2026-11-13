@@ -7145,6 +7145,12 @@ class GenerateContentConfig(_common.BaseModel):
       supported in Gemini Enterprise Agent Platform.
       """,
   )
+  test_github_actions_field: Optional[str] = Field(
+      default=None,
+      description="""Temporary test field to trigger Copybara GitHub PRs and verify
+      GitHub Actions.
+      """,
+  )
 
   @pydantic.field_validator('response_schema', mode='before')
   @classmethod
@@ -7388,6 +7394,11 @@ class GenerateContentConfigDict(TypedDict, total=False):
   """Configures the logging behavior for a given request. If set, it
       takes precedence over the project-level logging config. This field is not
       supported in Gemini Enterprise Agent Platform.
+      """
+
+  test_github_actions_field: Optional[str]
+  """Temporary test field to trigger Copybara GitHub PRs and verify
+      GitHub Actions.
       """
 
 
