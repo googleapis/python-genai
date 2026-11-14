@@ -2019,37 +2019,69 @@ class FunctionResponsePart(_common.BaseModel):
   )
 
   @classmethod
-  def from_bytes(cls, *, data: bytes, mime_type: str) -> 'FunctionResponsePart':
+  def from_bytes(
+      cls,
+      *,
+      data: bytes,
+      mime_type: str,
+      display_name: Optional[str] = None,
+  ) -> 'FunctionResponsePart':
     """Creates a FunctionResponsePart from bytes and mime type.
 
     Args:
       data (bytes): The bytes of the data
       mime_type (str): mime_type: The MIME type of the data.
+      display_name (str): Optional display name of the data.
     """
     inline_data = FunctionResponseBlob(
         data=data,
         mime_type=mime_type,
+        display_name=display_name,
     )
     return cls(inline_data=inline_data)
 
   @classmethod
   def from_uri(
-      cls, *, file_uri: str, mime_type: Optional[str] = None
+      cls,
+      *,
+      file_uri: str,
+      mime_type: Optional[str] = None,
+      display_name: Optional[str] = None,
   ) -> 'FunctionResponsePart':
     """Creates a FunctionResponsePart from a file uri.
 
     Args:
       file_uri (str): The uri of the file
       mime_type (str): mime_type: The MIME type of the file. If not provided,
-        the MIME type will be automatically determined.
+        the MIME type will be automatically determined. For Files API URIs, the
+        MIME type is left unset and the API uses the MIME type of the uploaded
+        file.
+      display_name (str): Optional display name of the file.
     """
     if mime_type is None:
       import mimetypes
 
       mime_type, _ = mimetypes.guess_type(file_uri)
-      if not mime_type:
+      # Files API URIs (for example
+      # https://generativelanguage.googleapis.com/v1beta/files/abc123) have no
+      # file extension. The API reads the MIME type from the uploaded file.
+      # Resource names such as `files/abc123` are not URIs, and the API
+      # rejects them, so they still need a MIME type.
+      import re
+
+      is_files_api_uri = re.match(
+          r'https://(?:[a-z0-9-]+-)?generativelanguage(?:\.sandbox)?'
+          r'\.googleapis\.com/(?:v1|v1beta|v1alpha|v1main)/files/[a-z0-9-]+'
+          r'(?::download(?:\?alt=media)?)?$',
+          file_uri,
+      )
+      if not mime_type and not is_files_api_uri:
         raise ValueError(f'Failed to determine mime type for file: {file_uri}')
-    file_data = FunctionResponseFileData(file_uri=file_uri, mime_type=mime_type)
+    file_data = FunctionResponseFileData(
+        file_uri=file_uri,
+        mime_type=mime_type,
+        display_name=display_name,
+    )
     return cls(file_data=file_data)
 
 
