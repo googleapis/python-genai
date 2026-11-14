@@ -147,10 +147,10 @@ def _get_google_genai_security(api_client: Any) -> Optional[Any]:
     return None
 
 
-# Default backoff shape (ms): 0.5s initial, 8s cap, base 2. Individual fields
-# are overridden by the matching `retry_options` value when set.
-_DEFAULT_INITIAL_INTERVAL_MS = 500
-_DEFAULT_MAX_INTERVAL_MS = 8000
+# Default backoff shape: initial delay, max delay and jitter come from
+# `_api_client` (`_RETRY_INITIAL_DELAY`, `_RETRY_MAX_DELAY`, `_RETRY_JITTER`),
+# shared with the rest of the SDK; base 2. Individual fields are overridden
+# by the matching `retry_options` value when set.
 _DEFAULT_EXPONENT = 2
 _MAX_ELAPSED_TIME_MS = 30000
 
@@ -163,7 +163,8 @@ def _translate_retry_config(http_options: Any) -> RetryConfig:
     `_api_client._RETRY_ATTEMPTS`, shared with the rest of the SDK). The
     delay-shaping options (`initial_delay`,
     `max_delay`, `exp_base`, `jitter`) and `http_status_codes` are honored when
-    provided, each defaulting to the built-in behavior when omitted.
+    provided, each defaulting to the `_api_client` retry defaults
+    (`_RETRY_INITIAL_DELAY`, `_RETRY_MAX_DELAY`, `_RETRY_JITTER`) when omitted.
     """
     options = getattr(http_options, 'retry_options', None)
 
@@ -172,10 +173,10 @@ def _translate_retry_config(http_options: Any) -> RetryConfig:
         attempts = _api_client._RETRY_ATTEMPTS
     max_retries = max(attempts - 1, 0)
 
-    initial_interval = _DEFAULT_INITIAL_INTERVAL_MS
-    max_interval = _DEFAULT_MAX_INTERVAL_MS
+    initial_interval = int(_api_client._RETRY_INITIAL_DELAY * 1000)
+    max_interval = int(_api_client._RETRY_MAX_DELAY * 1000)
     exponent = _DEFAULT_EXPONENT
-    jitter_ms = None
+    jitter_ms = int(_api_client._RETRY_JITTER * 1000)
     status_codes_override = None
 
     if options is not None:
