@@ -36,7 +36,7 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypedDict
 
 
-Mode = Union[
+FindRequestMode = Union[
     Literal[
         "scan",
         "verify",
@@ -60,7 +60,7 @@ class FindRequestParam(TypedDict):
     VERIFY mode to focus the agent's execution-based validation on a single
     vulnerability.
     """
-    mode: NotRequired[Mode]
+    mode: NotRequired[FindRequestMode]
     r"""The mode of the find session."""
     source_files: NotRequired[List[FileContentParam]]
     r"""A list of source files to provide as context for the scan."""
@@ -82,7 +82,7 @@ class FindRequest(BaseModel):
     vulnerability.
     """
 
-    mode: Optional[Mode] = None
+    mode: Optional[FindRequestMode] = None
     r"""The mode of the find session."""
 
     source_files: Optional[List[FileContent]] = None

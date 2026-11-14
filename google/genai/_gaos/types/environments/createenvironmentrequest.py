@@ -33,6 +33,13 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
+CreateEnvironmentRequestMode = Literal[
+    "on_demand",
+    "self_hosted",
+]
+r"""The compute lifecycle mode for this environment."""
+
+
 CreateEnvironmentRequestNetworkEnum = Literal["disabled",]
 
 
@@ -64,10 +71,17 @@ class CreateEnvironmentRequestParam(TypedDict):
     Format: `environments/{environment_id}` or `{environment_id}`.
     When specified, `sources` and `env` must be empty.
     """
+    mode: NotRequired[CreateEnvironmentRequestMode]
+    r"""The compute lifecycle mode for this environment."""
     network: NotRequired[CreateEnvironmentRequestNetworkUnionParam]
     r"""Network configuration for the environment."""
     sources: NotRequired[List[interactions_source.SourceParam]]
     r"""Sources to be mounted into the environment."""
+    system_instruction: NotRequired[str]
+    r"""Optional. System instruction applied to interactions running in this
+    environment. Only supported for `SELF_HOSTED` environments, where it is
+    recommended.
+    """
 
 
 class CreateEnvironmentRequest(BaseModel):
@@ -79,18 +93,29 @@ class CreateEnvironmentRequest(BaseModel):
     When specified, `sources` and `env` must be empty.
     """
 
+    mode: Optional[CreateEnvironmentRequestMode] = None
+    r"""The compute lifecycle mode for this environment."""
+
     network: Optional[CreateEnvironmentRequestNetworkUnion] = None
     r"""Network configuration for the environment."""
 
     sources: Optional[List[interactions_source.Source]] = None
     r"""Sources to be mounted into the environment."""
 
+    system_instruction: Optional[str] = None
+    r"""Optional. System instruction applied to interactions running in this
+    environment. Only supported for `SELF_HOSTED` environments, where it is
+    recommended.
+    """
+
     @model_serializer(mode="wrap")
     def _serialize_model_with_info(self, handler, info):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["from_environment", "network", "sources"])
+        optional_fields = set(
+            ["from_environment", "mode", "network", "sources", "system_instruction"]
+        )
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False
