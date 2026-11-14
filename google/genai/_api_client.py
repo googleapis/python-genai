@@ -763,6 +763,91 @@ if TYPE_CHECKING:
     """Async httpx2 client."""
 
 else:
+
+  class _PerLoopAsyncClientMixin:
+    """Keeps one connection pool per event loop for an async httpx client.
+
+    Pooled connections are bound to the loop that opened them, so reusing them
+    from another loop fails with `RuntimeError: Event loop is closed`. Requests
+    are therefore sent through one inner client per running loop. The inner
+    clients are built from the construction-time kwargs and share the outer
+    client's cookie jar. Headers, params, cookies and timeout set on the outer
+    client later still apply, because the outer `build_request` adds them to
+    each request, but later changes to its `auth` or `event_hooks` do not reach
+    the inner clients.
+
+    Subclasses set `_inner_client_cls` and list this mixin before the httpx or
+    httpx2 `AsyncClient` base.
+    """
+
+    _inner_client_cls: Any
+
+    def __init__(self, **kwargs: Any) -> None:
+      """Initializes the client."""
+      kwargs.setdefault('follow_redirects', True)
+      # In per-loop mode the transport and pool built here are never used: the
+      # outer client only builds requests and holds the shared cookie jar.
+      super().__init__(**kwargs)
+      self._client_kwargs = kwargs
+      # A caller-supplied transport owns its pool.
+      self._per_loop = 'transport' not in kwargs and 'mounts' not in kwargs
+      self._loop_clients: dict[asyncio.AbstractEventLoop, Any] = {}
+      self._loop_clients_lock = threading.Lock()
+
+    def _client_for_running_loop(self) -> Any:
+      """Returns the running loop's inner client, creating it if needed."""
+      loop = asyncio.get_running_loop()
+      with self._loop_clients_lock:
+        BaseApiClient._discard_closed_loop_entries(self._loop_clients)
+        client = self._loop_clients.get(loop)
+        if client is None:
+          client = self._inner_client_cls(
+              **{**self._client_kwargs, 'cookies': self.cookies.jar}
+          )
+          self._loop_clients[loop] = client
+        return client
+
+    async def send(self, request: Any, **kwargs: Any) -> Any:
+      """Sends the request through the running loop's connection pool."""
+      if not self._per_loop:
+        return await super().send(request, **kwargs)
+      if self.is_closed:
+        raise RuntimeError(
+            'Cannot send a request, as the client has been closed.'
+        )
+      return await self._client_for_running_loop().send(request, **kwargs)
+
+    async def aclose(self) -> None:
+      """Closes the connection pools of every loop that is still running."""
+      with self._loop_clients_lock:
+        loop_clients, self._loop_clients = self._loop_clients, {}
+      try:
+        current_loop = asyncio.get_running_loop()
+      except RuntimeError:
+        current_loop = None
+      for loop, client in loop_clients.items():
+        if loop is current_loop:
+          await client.aclose()
+        elif loop.is_running():
+          try:
+            asyncio.run_coroutine_threadsafe(client.aclose(), loop)
+          except RuntimeError:
+            pass  # The loop closed during the call.
+        # Otherwise the close cannot run: a closed loop never runs again, and
+        # an idle loop cannot be run from this thread while `current_loop` is
+        # running. As in `_discard_closed_loop_entries`, dropping the client
+        # lets the garbage collector release its sockets.
+      await super().aclose()
+
+    async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
+      """Closes every loop's connection pool, like the base class's aclose().
+
+      The base `__aexit__` only closes the unused outer transport, so `async
+      with` would otherwise leak the inner per-loop pools.
+      """
+      del args, kwargs
+      await self.aclose()
+
   if httpx is not None:
 
     class SyncHttpxClient(httpx.Client):
@@ -786,13 +871,10 @@ else:
           pass
 
 
-    class AsyncHttpxClient(httpx.AsyncClient):
-      """Async httpx client."""
+    class AsyncHttpxClient(_PerLoopAsyncClientMixin, httpx.AsyncClient):
+      """Async httpx client that keeps one connection pool per event loop."""
 
-      def __init__(self, **kwargs: Any) -> None:
-        """Initializes the httpx client."""
-        kwargs.setdefault('follow_redirects', True)
-        super().__init__(**kwargs)
+      _inner_client_cls = httpx.AsyncClient
 
       def __del__(self) -> None:
         try:
@@ -833,13 +915,10 @@ else:
           pass
 
 
-    class AsyncHttpx2Client(httpx2.AsyncClient):
-      """Async httpx2 client."""
+    class AsyncHttpx2Client(_PerLoopAsyncClientMixin, httpx2.AsyncClient):
+      """Async httpx2 client that keeps one connection pool per event loop."""
 
-      def __init__(self, **kwargs: Any) -> None:
-        """Initializes the httpx2 client."""
-        kwargs.setdefault('follow_redirects', True)
-        super().__init__(**kwargs)
+      _inner_client_cls = httpx2.AsyncClient
 
       def __del__(self) -> None:
         try:
