@@ -1455,3 +1455,4 @@ def t_embed_contents(
 
 def t_json_schema(origin: Any) -> Any:
   return origin
+
