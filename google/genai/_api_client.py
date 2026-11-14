@@ -3059,6 +3059,20 @@ class BaseApiClient:
           except RuntimeError:
             pass  # Handle case where the loop was closed during the call
 
+  def _async_resources_are_closed(self) -> bool:
+    """Returns True when no async resource needs an awaited close."""
+    if (
+        self._async_httpx_client is not None
+        and not self._http_options.httpx_async_client
+        and not self._async_httpx_client.is_closed
+    ):
+      return False
+    if self._aiohttp_sessions and not self._http_options.aiohttp_client:
+      for session in self._aiohttp_sessions.values():
+        if not self._is_session_closed(session):
+          return False
+    return True
+
   def __del__(self) -> None:
     """Closes the API client when the object is garbage collected.
 
@@ -3073,6 +3087,8 @@ class BaseApiClient:
       pass
 
     try:
+      if self._async_resources_are_closed():
+        return
       asyncio.get_running_loop().create_task(self.aclose())
     except Exception:  # pylint: disable=broad-except
       pass
