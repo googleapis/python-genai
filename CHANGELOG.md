@@ -1,5 +1,27 @@
 # Changelog
 
+## [3.4.0](https://github.com/googleapis/python-genai/compare/v3.3.0...v3.4.0) (2026-11-14)
+
+
+### Features
+
+* Deprecate non-interactions names in google.genai.interactions. ([f551f8f](https://github.com/googleapis/python-genai/commit/f551f8f5ecec428856877054b2c4acc22c66a384))
+* Support batch inputs and usage metadata for Gemini embedding models on Gemini Enterprise API ([a5f860d](https://github.com/googleapis/python-genai/commit/a5f860d1437d6a6ce93adbed6d36b7de0fb1f99f))
+
+
+### Bug Fixes
+
+* Await asyncio.sleep in async HTTPX upload retry backoff ([f0504ad](https://github.com/googleapis/python-genai/commit/f0504adab6dc2168b43eeb715911b3ec24519b4a)), refs [#2938](https://github.com/googleapis/python-genai/issues/2938)
+* Escape backslashes and delimiter-breaking quotes in generated Python docstrings ([e2f8345](https://github.com/googleapis/python-genai/commit/e2f8345c93350387b087292c781b2a679a002605))
+* Ignore braces inside JSON strings when buffering raw stream lines ([74ff9fe](https://github.com/googleapis/python-genai/commit/74ff9febe45d821ec32aa2cde058bdcecc9eb649)), refs [#2042](https://github.com/googleapis/python-genai/issues/2042)
+* Keep one httpx connection pool per event loop in AsyncHttpxClient and AsyncHttpx2Client ([411bb6f](https://github.com/googleapis/python-genai/commit/411bb6f3c614e8e613ea19afa35646f86624d9d2)), refs [#3157](https://github.com/googleapis/python-genai/issues/3157)
+* Merge case variants of User-Agent and x-goog-api-client headers ([e7f9ad3](https://github.com/googleapis/python-genai/commit/e7f9ad3cb33ad477b3ef40d0cba1474eb1ca06e9)), refs [#2309](https://github.com/googleapis/python-genai/issues/2309)
+* Remove the per-line length cap when reading aiohttp SSE streams ([a3d04bd](https://github.com/googleapis/python-genai/commit/a3d04bd5edc0e131267425506b025576de2d0242)), refs [#3244](https://github.com/googleapis/python-genai/issues/3244)
+* Resolve `$defs` references per path in `process_schema` for recursive union schemas ([8a9c9fd](https://github.com/googleapis/python-genai/commit/8a9c9fd1f7012346210b3ca8cfd9ba80f41aa4c7))
+* Resolve Vertex Live connect auth off the event loop and cache ADC credentials ([b027a42](https://github.com/googleapis/python-genai/commit/b027a422b5982a1edef9a46d63a4260cac09d8dd))
+* Split SSE stream lines on CR, LF and CRLF only ([6ae3ad1](https://github.com/googleapis/python-genai/commit/6ae3ad1b0ee47e24815631873472ef89ce5d9bae)), refs [#3243](https://github.com/googleapis/python-genai/issues/3243)
+* Stop the async client finalizer from scheduling an unawaited aclose task ([5c20251](https://github.com/googleapis/python-genai/commit/5c202514be96e17a1de82a65ebc637d39a3dfb1d)), refs [#1709](https://github.com/googleapis/python-genai/issues/1709)
+
 ## [3.3.0](https://github.com/googleapis/python-genai/compare/v3.2.0...v3.3.0) (2026-11-12)
 
 
