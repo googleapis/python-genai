@@ -1,0 +1,108 @@
+# Generates the GAOS (Interactions) SDK once per run and then runs mypy and the
+# import test against it.
+#
+# Note: the job ids (`mypy`, `test-import`) determine the check-run names
+# ("mypy (3.11)", "test-import (3.11)", ...) that copy.bara.sky requires, so
+# keep them stable.
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  generate-gaos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate GAOS SDK
+        uses: ./.github/actions/generate-gaos
+        with:
+          speakeasy-license-token: ${{ secrets.SPEAKEASY_LICENSE_TOKEN }}
+
+      - name: Upload GAOS SDK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gaos-sdk
+          path: google/genai/_gaos/
+          if-no-files-found: error
+          retention-days: 1
+
+  mypy:
+    needs: generate-gaos
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Replace GAOS SDK with the generated one
+        run: rm -rf google/genai/_gaos
+
+      - name: Download GAOS SDK
+        uses: actions/download-artifact@v4
+        with:
+          name: gaos-sdk
+          path: google/genai/_gaos
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy
+          sudo apt-get update && sudo apt-get install -y libjpeg-dev zlib1g-dev
+          pip install -r requirements.txt
+
+      - name: Run mypy  ${{ matrix.python-version }}
+        run: mypy google/genai/
+
+  test-import:
+    needs: generate-gaos
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Replace GAOS SDK with the generated one
+        run: rm -rf google/genai/_gaos
+
+      - name: Download GAOS SDK
+        uses: actions/download-artifact@v4
+        with:
+          name: gaos-sdk
+          path: google/genai/_gaos
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+          pip install pytest
+          pip install .
+
+      - name: Run import test
+        run: |
+          pytest google/genai/tests/imports/test_no_optional_imports.py
