@@ -36,8 +36,8 @@ ContentParam = TypeAliasType(
     "ContentParam",
     Union[
         TextContentParam,
-        DocumentContentParam,
         ImageContentParam,
+        DocumentContentParam,
         AudioContentParam,
         VideoContentParam,
     ],

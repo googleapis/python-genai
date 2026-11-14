@@ -33,11 +33,16 @@ from ..basemodel import (
     current_filtered_dump,
     current_serialization_methods_dump,
 )
+from .documentmediaprocessing import (
+    DocumentMediaProcessing,
+    DocumentMediaProcessingParam,
+)
+from .mediaresolution import MediaResolution
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
 from typing import Any, Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 DocumentContentMimeType = Union[
@@ -60,6 +65,22 @@ DocumentContentMimeType = Union[
 r"""The mime type of the document."""
 
 
+DocumentProcessingEnum = Union[Literal["static",], UnrecognizedStr]
+
+
+DocumentProcessingParam = TypeAliasType(
+    "DocumentProcessingParam",
+    Union[DocumentMediaProcessingParam, DocumentProcessingEnum],
+)
+r"""How the model processes this document for understanding."""
+
+
+DocumentProcessing = TypeAliasType(
+    "DocumentProcessing", Union[DocumentMediaProcessing, DocumentProcessingEnum]
+)
+r"""How the model processes this document for understanding."""
+
+
 class DocumentContentParam(TypedDict):
     r"""A document content block."""
 
@@ -67,6 +88,9 @@ class DocumentContentParam(TypedDict):
     r"""The document content."""
     mime_type: NotRequired[DocumentContentMimeType]
     r"""The mime type of the document."""
+    processing: NotRequired[DocumentProcessingParam]
+    r"""How the model processes this document for understanding."""
+    resolution: NotRequired[MediaResolution]
     type: Literal["document"]
     uri: NotRequired[str]
     r"""The URI of the document."""
@@ -80,6 +104,11 @@ class DocumentContent(BaseModel):
 
     mime_type: Optional[DocumentContentMimeType] = None
     r"""The mime type of the document."""
+
+    processing: Optional[DocumentProcessing] = None
+    r"""How the model processes this document for understanding."""
+
+    resolution: Optional[MediaResolution] = None
 
     type: Annotated[
         Annotated[Literal["document"], AfterValidator(validate_const("document"))],
@@ -97,7 +126,7 @@ class DocumentContent(BaseModel):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["data", "mime_type", "uri"])
+        optional_fields = set(["data", "mime_type", "processing", "resolution", "uri"])
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False
