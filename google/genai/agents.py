@@ -20,7 +20,10 @@ from ._gaos.models.createagent import (
 from ._gaos.models.listagents import (
     ListAgentsRequestParam as AgentListParams,
 )
-from ._gaos.types.agents.agent import (
+# Import from the package rather than the `agent` module: the public (`_gaos`)
+# and private (`_gaos_private`, exported as `_gaos`) generated code define
+# these types in different submodules, but both packages export them.
+from ._gaos.types.agents import (
     Agent,
     AgentConfig,
     AgentConfigParam,
