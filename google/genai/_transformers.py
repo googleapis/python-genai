@@ -1401,8 +1401,15 @@ def t_metrics(
     return metrics_payload
 
 
-def t_is_vertex_embed_content_model(model: str) -> bool:
+def t_is_vertex_embed_content_model(
+    model: str, location: Optional[str] = None
+) -> bool:
   model_id = model.rsplit('/', 1)[-1]
+  # The global endpoint does not serve embedContent for gemini-embedding-001,
+  # so it stays on predict there. Regional endpoints serve it, and Provisioned
+  # Throughput needs it (b/580981789).
+  if location == 'global' and model_id.startswith('gemini-embedding-001'):
+    return False
   return 'gemini' in model_id or 'maas' in model_id
 
 

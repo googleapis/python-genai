@@ -643,3 +643,125 @@ async def test_async_endpoint_routing(use_vertex, replays_prefix, http_options):
   assert len(ge1_batch_resp.embeddings) == 2
   assert len(ge2_str_list_resp.embeddings) == 1
   assert len(ge2_batch_resp.embeddings) == 2
+
+
+def test_ge1_location_check(use_vertex, replays_prefix, http_options):
+  """Tests the location check for gemini-embedding-001."""
+  del use_vertex, replays_prefix, http_options
+  assert not t.t_is_vertex_embed_content_model('gemini-embedding-001', 'global')
+  assert not t.t_is_vertex_embed_content_model(
+      'publishers/google/models/gemini-embedding-001', 'global'
+  )
+  assert t.t_is_vertex_embed_content_model(
+      'gemini-embedding-001', 'us-central1'
+  )
+  assert t.t_is_vertex_embed_content_model('gemini-embedding-001', None)
+  assert t.t_is_vertex_embed_content_model('gemini-embedding-2', 'global')
+  assert t.t_is_vertex_embed_content_model(
+      'publishers/intfloat/models/multilingual-e5-large-instruct-maas',
+      'global',
+  )
+  assert not t.t_is_vertex_embed_content_model('text-embedding-005', 'global')
+
+
+def _fake_embed_payload(path, request_dict):
+  if path.endswith(':embedContent'):
+    return {'embedding': {'values': [0.1, 0.2]}}
+  if path.endswith(':batchEmbedContents'):
+    return {
+        'embeddings': [
+            {'values': [0.1, 0.2]} for _ in request_dict.get('requests', [])
+        ]
+    }
+  return {
+      'predictions': [
+          {'embeddings': {'values': [0.5, 0.6]}}
+          for _ in request_dict.get('instances', [])
+      ]
+  }
+
+
+@pytest.mark.parametrize(
+    'location, model, contents, want_suffix, want_embeddings',
+    [
+        ('global', 'gemini-embedding-001', 'hello', ':predict', 1),
+        ('global', 'gemini-embedding-001', ['hello', 'world'], ':predict', 2),
+        ('us-central1', 'gemini-embedding-001', 'hello', ':embedContent', 1),
+        (
+            'us-central1',
+            'gemini-embedding-001',
+            ['hello', 'world'],
+            ':batchEmbedContents',
+            2,
+        ),
+        ('global', 'gemini-embedding-2', 'hello', ':embedContent', 1),
+    ],
+)
+def test_location_routing(
+    use_vertex,
+    replays_prefix,
+    http_options,
+    location,
+    model,
+    contents,
+    want_suffix,
+    want_embeddings,
+):
+  """Tests that gemini-embedding-001 uses predict on the global endpoint."""
+  del use_vertex, replays_prefix, http_options
+  vertex_client = client_lib.Client(
+      vertexai=True, project='test-project', location=location
+  )
+  captured: list[tuple[str, dict[str, object]]] = []
+
+  def fake_request(http_method, path, request_dict, http_opts=None):
+    del http_method, http_opts
+    captured.append((path, request_dict))
+    return types.HttpResponse(
+        headers={}, body=json.dumps(_fake_embed_payload(path, request_dict))
+    )
+
+  with mock.patch.object(
+      vertex_client._api_client, 'request', side_effect=fake_request
+  ):
+    resp = vertex_client.models.embed_content(model=model, contents=contents)
+
+  assert len(captured) == 1
+  assert captured[0][0].endswith(f'{model}{want_suffix}')
+  if want_suffix == ':predict':
+    assert len(captured[0][1]['instances']) == want_embeddings
+  assert len(resp.embeddings) == want_embeddings
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'location, want_suffix',
+    [('global', ':predict'), ('us-central1', ':embedContent')],
+)
+async def test_async_location_routing(
+    use_vertex, replays_prefix, http_options, location, want_suffix
+):
+  """Tests that async gemini-embedding-001 uses predict on the global endpoint."""
+  del use_vertex, replays_prefix, http_options
+  vertex_client = client_lib.Client(
+      vertexai=True, project='test-project', location=location
+  )
+  captured: list[str] = []
+
+  async def fake_async_request(http_method, path, request_dict, http_opts=None):
+    del http_method, http_opts
+    captured.append(path)
+    return types.HttpResponse(
+        headers={}, body=json.dumps(_fake_embed_payload(path, request_dict))
+    )
+
+  with mock.patch.object(
+      vertex_client._api_client, 'async_request', side_effect=fake_async_request
+  ):
+    resp = await vertex_client.aio.models.embed_content(
+        model='gemini-embedding-001', contents='hello'
+    )
+
+  assert len(captured) == 1
+  assert captured[0].endswith(f'gemini-embedding-001{want_suffix}')
+  assert len(resp.embeddings) == 1

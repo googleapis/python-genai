@@ -5937,7 +5937,7 @@ class Models(_api_module.BaseModule):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return self._embed_content(model=model, contents=contents, config=config)
 
-    if t.t_is_vertex_embed_content_model(model):
+    if t.t_is_vertex_embed_content_model(model, self._api_client.location):
       normalized_contents = t.t_embed_contents(model, contents)
       if len(normalized_contents) > 1:
         if t.t_is_vertex_maas_model(model):
@@ -9147,7 +9147,7 @@ class AsyncModels(_api_module.BaseModule):
       return await self._embed_content(
           model=model, contents=contents, config=config
       )
-    if t.t_is_vertex_embed_content_model(model):
+    if t.t_is_vertex_embed_content_model(model, self._api_client.location):
       normalized_contents = t.t_embed_contents(model, contents)
       if len(normalized_contents) > 1:
         if t.t_is_vertex_maas_model(model):
