@@ -390,6 +390,18 @@ if TYPE_CHECKING:
     from .tool import Tool, ToolParam, UnknownTool
     from .toolchoiceconfig import ToolChoiceConfig, ToolChoiceConfigParam
     from .toolchoicetype import ToolChoiceType
+    from .toolsearch import Execution, ToolSearch, ToolSearchParam
+    from .toolsearchcalldelta import ToolSearchCallDelta, ToolSearchCallDeltaTypedDict
+    from .toolsearchcallstep import ToolSearchCallStep, ToolSearchCallStepParam
+    from .toolsearchcallsteparguments import (
+        ToolSearchCallStepArguments,
+        ToolSearchCallStepArgumentsParam,
+    )
+    from .toolsearchresultdelta import (
+        ToolSearchResultDelta,
+        ToolSearchResultDeltaTypedDict,
+    )
+    from .toolsearchresultstep import ToolSearchResultStep, ToolSearchResultStepParam
     from .transcriptionconfig import (
         TranscriptionConfig,
         TranscriptionConfigMode,
@@ -534,6 +546,7 @@ __all__ = [
     "ErrorTypedDict",
     "ExaAISearchConfig",
     "ExaAISearchConfigParam",
+    "Execution",
     "FileCitation",
     "FileCitationParam",
     "FileContent",
@@ -795,6 +808,18 @@ __all__ = [
     "ToolChoiceParam",
     "ToolChoiceType",
     "ToolParam",
+    "ToolSearch",
+    "ToolSearchCallDelta",
+    "ToolSearchCallDeltaTypedDict",
+    "ToolSearchCallStep",
+    "ToolSearchCallStepArguments",
+    "ToolSearchCallStepArgumentsParam",
+    "ToolSearchCallStepParam",
+    "ToolSearchParam",
+    "ToolSearchResultDelta",
+    "ToolSearchResultDeltaTypedDict",
+    "ToolSearchResultStep",
+    "ToolSearchResultStepParam",
     "TranscriptionConfig",
     "TranscriptionConfigMode",
     "TranscriptionConfigModeEnum",
@@ -1213,6 +1238,19 @@ _dynamic_imports: dict[str, str] = {
     "ToolChoiceConfig": ".toolchoiceconfig",
     "ToolChoiceConfigParam": ".toolchoiceconfig",
     "ToolChoiceType": ".toolchoicetype",
+    "Execution": ".toolsearch",
+    "ToolSearch": ".toolsearch",
+    "ToolSearchParam": ".toolsearch",
+    "ToolSearchCallDelta": ".toolsearchcalldelta",
+    "ToolSearchCallDeltaTypedDict": ".toolsearchcalldelta",
+    "ToolSearchCallStep": ".toolsearchcallstep",
+    "ToolSearchCallStepParam": ".toolsearchcallstep",
+    "ToolSearchCallStepArguments": ".toolsearchcallsteparguments",
+    "ToolSearchCallStepArgumentsParam": ".toolsearchcallsteparguments",
+    "ToolSearchResultDelta": ".toolsearchresultdelta",
+    "ToolSearchResultDeltaTypedDict": ".toolsearchresultdelta",
+    "ToolSearchResultStep": ".toolsearchresultstep",
+    "ToolSearchResultStepParam": ".toolsearchresultstep",
     "TranscriptionConfig": ".transcriptionconfig",
     "TranscriptionConfigMode": ".transcriptionconfig",
     "TranscriptionConfigModeEnum": ".transcriptionconfig",

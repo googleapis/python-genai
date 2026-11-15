@@ -127,6 +127,7 @@ from . import googlesearchresultstep
 from . import placecitation
 from . import retrievalcalldelta
 from . import retrievalcallstep
+from . import step
 from . import stepdelta
 from . import tool
 from . import transcriptionmode
@@ -238,6 +239,7 @@ __all__ = [
     "placecitation",
     "retrievalcalldelta",
     "retrievalcallstep",
+    "step",
     "stepdelta",
     "tool",
     "transcriptionmode",

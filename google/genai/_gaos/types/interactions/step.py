@@ -44,6 +44,8 @@ from .processingresultstep import ProcessingResultStep, ProcessingResultStepPara
 from .retrievalcallstep import RetrievalCallStep, RetrievalCallStepParam
 from .retrievalresultstep import RetrievalResultStep, RetrievalResultStepParam
 from .thoughtstep import ThoughtStep, ThoughtStepParam
+from .toolsearchcallstep import ToolSearchCallStep, ToolSearchCallStepParam
+from .toolsearchresultstep import ToolSearchResultStep, ToolSearchResultStepParam
 from .urlcontextcallstep import URLContextCallStep, URLContextCallStepParam
 from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
 from .userinputstep import UserInputStep, UserInputStepParam
@@ -61,18 +63,20 @@ StepParam = TypeAliasType(
         ThoughtStepParam,
         FileSearchCallStepParam,
         FileSearchResultStepParam,
-        ModelOutputStepParam,
         ProcessingResultStepParam,
         ProcessingCallStepParam,
+        ModelOutputStepParam,
         GoogleMapsCallStepParam,
+        ToolSearchResultStepParam,
+        ToolSearchCallStepParam,
+        CodeExecutionCallStepParam,
         GoogleMapsResultStepParam,
         RetrievalResultStepParam,
-        CodeExecutionCallStepParam,
         URLContextCallStepParam,
         FunctionCallStepParam,
         MCPServerToolCallStepParam,
-        MCPServerToolResultStepParam,
         RetrievalCallStepParam,
+        MCPServerToolResultStepParam,
         GoogleSearchResultStepParam,
         GoogleSearchCallStepParam,
         FunctionResultStepParam,
@@ -116,6 +120,8 @@ _STEP_VARIANTS: dict[str, Any] = {
     "retrieval_call": RetrievalCallStep,
     "retrieval_result": RetrievalResultStep,
     "thought": ThoughtStep,
+    "tool_search_call": ToolSearchCallStep,
+    "tool_search_result": ToolSearchResultStep,
     "url_context_call": URLContextCallStep,
     "url_context_result": URLContextResultStep,
     "user_input": UserInputStep,
@@ -142,6 +148,8 @@ Step = Annotated[
         RetrievalCallStep,
         RetrievalResultStep,
         ThoughtStep,
+        ToolSearchCallStep,
+        ToolSearchResultStep,
         URLContextCallStep,
         URLContextResultStep,
         UserInputStep,

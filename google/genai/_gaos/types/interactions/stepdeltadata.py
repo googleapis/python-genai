@@ -58,6 +58,8 @@ from .textannotationdelta import TextAnnotationDelta, TextAnnotationDeltaTypedDi
 from .textdelta import TextDelta, TextDeltaTypedDict
 from .thoughtsignaturedelta import ThoughtSignatureDelta, ThoughtSignatureDeltaTypedDict
 from .thoughtsummarydelta import ThoughtSummaryDelta, ThoughtSummaryDeltaTypedDict
+from .toolsearchcalldelta import ToolSearchCallDelta, ToolSearchCallDeltaTypedDict
+from .toolsearchresultdelta import ToolSearchResultDelta, ToolSearchResultDeltaTypedDict
 from .urlcontextcalldelta import URLContextCallDelta, URLContextCallDeltaTypedDict
 from .urlcontextresultdelta import URLContextResultDelta, URLContextResultDeltaTypedDict
 from .videodelta import VideoDelta, VideoDeltaTypedDict
@@ -71,28 +73,30 @@ from typing_extensions import Annotated, TypeAliasType
 StepDeltaDataTypedDict = TypeAliasType(
     "StepDeltaDataTypedDict",
     Union[
-        ProcessingCallDeltaTypedDict,
         ThoughtSummaryDeltaTypedDict,
-        ThoughtSignatureDeltaTypedDict,
-        TextDeltaTypedDict,
-        TextAnnotationDeltaTypedDict,
-        FileSearchCallDeltaTypedDict,
-        ArgumentsDeltaTypedDict,
         ProcessingResultDeltaTypedDict,
-        RetrievalResultDeltaTypedDict,
-        GoogleMapsCallDeltaTypedDict,
-        GoogleSearchCallDeltaTypedDict,
-        URLContextCallDeltaTypedDict,
-        CodeExecutionCallDeltaTypedDict,
+        ProcessingCallDeltaTypedDict,
+        TextAnnotationDeltaTypedDict,
+        TextDeltaTypedDict,
+        FileSearchCallDeltaTypedDict,
+        ThoughtSignatureDeltaTypedDict,
+        ArgumentsDeltaTypedDict,
+        ToolSearchCallDeltaTypedDict,
         GoogleMapsResultDeltaTypedDict,
+        GoogleSearchCallDeltaTypedDict,
+        GoogleMapsCallDeltaTypedDict,
         FileSearchResultDeltaTypedDict,
-        MCPServerToolCallDeltaTypedDict,
+        RetrievalResultDeltaTypedDict,
+        ToolSearchResultDeltaTypedDict,
+        CodeExecutionCallDeltaTypedDict,
+        URLContextCallDeltaTypedDict,
         FunctionResultDeltaTypedDict,
         RetrievalCallDeltaTypedDict,
         MCPServerToolResultDeltaTypedDict,
+        MCPServerToolCallDeltaTypedDict,
+        GoogleSearchResultDeltaTypedDict,
         DocumentDeltaTypedDict,
         CodeExecutionResultDeltaTypedDict,
-        GoogleSearchResultDeltaTypedDict,
         URLContextResultDeltaTypedDict,
         ImageDeltaTypedDict,
         VideoDeltaTypedDict,
@@ -139,6 +143,8 @@ _STEP_DELTA_DATA_VARIANTS: dict[str, Any] = {
     "text": TextDelta,
     "thought_signature": ThoughtSignatureDelta,
     "thought_summary": ThoughtSummaryDelta,
+    "tool_search_call": ToolSearchCallDelta,
+    "tool_search_result": ToolSearchResultDelta,
     "url_context_call": URLContextCallDelta,
     "url_context_result": URLContextResultDelta,
     "video": VideoDelta,
@@ -170,6 +176,8 @@ StepDeltaData = Annotated[
         TextDelta,
         ThoughtSignatureDelta,
         ThoughtSummaryDelta,
+        ToolSearchCallDelta,
+        ToolSearchResultDelta,
         URLContextCallDelta,
         URLContextResultDelta,
         VideoDelta,

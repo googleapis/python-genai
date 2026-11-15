@@ -35,6 +35,8 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class FunctionParam(TypedDict):
     r"""A tool that can be used by the model."""
 
+    defer_loading: NotRequired[bool]
+    r"""If true, the function's loading is deferred."""
     description: NotRequired[str]
     r"""A description of the function."""
     name: NotRequired[str]
@@ -46,11 +48,18 @@ class FunctionParam(TypedDict):
     `minProperties`, `maxProperties`, `uniqueItems`, `contains`,
     `minContains`, and `maxContains` are ignored and not enforced.
     """
+    short_description: NotRequired[str]
+    r"""A brief description of the function, shown to the model as a
+    short summary of functions with `defer_loading` set to true.
+    """
     type: Literal["function"]
 
 
 class Function(BaseModel):
     r"""A tool that can be used by the model."""
+
+    defer_loading: Optional[bool] = None
+    r"""If true, the function's loading is deferred."""
 
     description: Optional[str] = None
     r"""A description of the function."""
@@ -66,6 +75,11 @@ class Function(BaseModel):
     `minContains`, and `maxContains` are ignored and not enforced.
     """
 
+    short_description: Optional[str] = None
+    r"""A brief description of the function, shown to the model as a
+    short summary of functions with `defer_loading` set to true.
+    """
+
     type: Annotated[
         Annotated[Literal["function"], AfterValidator(validate_const("function"))],
         pydantic.Field(alias="type"),
@@ -79,7 +93,9 @@ class Function(BaseModel):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["description", "name", "parameters"])
+        optional_fields = set(
+            ["defer_loading", "description", "name", "parameters", "short_description"]
+        )
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False
