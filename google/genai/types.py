@@ -2224,7 +2224,7 @@ class FunctionResponsePart(_common.BaseModel):
   )
   media_processing: Optional[MediaProcessing] = Field(
       default=None,
-      description="""Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field. This field is not supported in Vertex AI.""",
+      description="""Optional. Processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field.""",
   )
   media_resolution: Optional[PartMediaResolution] = Field(
       default=None, description="""Media resolution for the input media."""
@@ -2334,7 +2334,7 @@ class FunctionResponsePartDict(TypedDict, total=False):
   """URI based data."""
 
   media_processing: Optional[MediaProcessing]
-  """Optional. How the model processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field. This field is not supported in Vertex AI."""
+  """Optional. Processes this part's media for understanding. Only meaningful for video parts (`inline_data` or `file_data` with video mime). Non-video parts ignore this field."""
 
   media_resolution: Optional[PartMediaResolutionDict]
   """Media resolution for the input media."""
@@ -4233,7 +4233,8 @@ GoogleMapsPlacesOrDict = Union[GoogleMapsPlaces, GoogleMapsPlacesDict]
 class GoogleMapsRouting(_common.BaseModel):
   """Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).
 
-  This data type is not supported in Gemini API.
+  Also enabled by default for Gemini 4 and later models when no grounding type
+  is specified. This data type is not supported in Gemini API.
   """
 
   pass
@@ -4242,7 +4243,8 @@ class GoogleMapsRouting(_common.BaseModel):
 class GoogleMapsRoutingDict(TypedDict, total=False):
   """Grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).
 
-  This data type is not supported in Gemini API.
+  Also enabled by default for Gemini 4 and later models when no grounding type
+  is specified. This data type is not supported in Gemini API.
   """
 
   pass
@@ -4263,7 +4265,7 @@ class GoogleMapsGroundingTypes(_common.BaseModel):
   )
   routing: Optional[GoogleMapsRouting] = Field(
       default=None,
-      description="""Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute).""",
+      description="""Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute). Also enabled by default for Gemini 4 and later models when no `GroundingTypes` are specified.""",
   )
 
 
@@ -4277,7 +4279,7 @@ class GoogleMapsGroundingTypesDict(TypedDict, total=False):
   """Optional. Enables grounding with Google Maps Places. This is the default grounding type when no `GroundingTypes` are specified."""
 
   routing: Optional[GoogleMapsRoutingDict]
-  """Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute)."""
+  """Optional. Enables grounding with Google Maps Routing APIs (ComputeRoutes and SearchAlongRoute). Also enabled by default for Gemini 4 and later models when no `GroundingTypes` are specified."""
 
 
 GoogleMapsGroundingTypesOrDict = Union[
@@ -4298,7 +4300,7 @@ class GoogleMaps(_common.BaseModel):
   )
   grounding_types: Optional[GoogleMapsGroundingTypes] = Field(
       default=None,
-      description="""Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset. This field is not supported in Gemini API.""",
+      description="""Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset, and to `places` and `routing` for Gemini 4 and later models. When set, only the listed types are enabled; for example, setting only `places` disables routing. This field is not supported in Gemini API.""",
   )
 
 
@@ -4312,7 +4314,7 @@ class GoogleMapsDict(TypedDict, total=False):
   """Deprecated. The Google Maps contextual widget behavior in Grounding with Google Maps is being deprecated; this field is planned for removal and no longer has any effect once removed. Optional. Whether to return a widget context token in the GroundingMetadata of the response."""
 
   grounding_types: Optional[GoogleMapsGroundingTypesDict]
-  """Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset. This field is not supported in Gemini API."""
+  """Optional. Specifies the types of Google Maps grounding to enable. Defaults to `places` when unset, and to `places` and `routing` for Gemini 4 and later models. When set, only the listed types are enabled; for example, setting only `places` disables routing. This field is not supported in Gemini API."""
 
 
 GoogleMapsOrDict = Union[GoogleMaps, GoogleMapsDict]
@@ -16140,6 +16142,84 @@ class VeoLoraTuningSpecDict(TypedDict, total=False):
 VeoLoraTuningSpecOrDict = Union[VeoLoraTuningSpec, VeoLoraTuningSpecDict]
 
 
+class OmniHyperParameters(_common.BaseModel):
+  """Hyperparameters for Omni LoRA tuning.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize] = Field(
+      default=None,
+      description="""Optional. Adapter size for Omni LoRA tuning.""",
+  )
+  epoch_count: Optional[int] = Field(
+      default=None,
+      description="""Optional. Number of complete passes the model makes over the entire training dataset during training.""",
+  )
+  learning_rate_multiplier: Optional[float] = Field(
+      default=None,
+      description="""Optional. Multiplier for adjusting the default learning rate.""",
+  )
+  tuning_task: Optional[TuningTask] = Field(
+      default=None,
+      description="""Optional. The tuning task for Omni LoRA tuning.""",
+  )
+
+
+class OmniHyperParametersDict(TypedDict, total=False):
+  """Hyperparameters for Omni LoRA tuning.
+
+  This data type is not supported in Gemini API.
+  """
+
+  adapter_size: Optional[AdapterSize]
+  """Optional. Adapter size for Omni LoRA tuning."""
+
+  epoch_count: Optional[int]
+  """Optional. Number of complete passes the model makes over the entire training dataset during training."""
+
+  learning_rate_multiplier: Optional[float]
+  """Optional. Multiplier for adjusting the default learning rate."""
+
+  tuning_task: Optional[TuningTask]
+  """Optional. The tuning task for Omni LoRA tuning."""
+
+
+OmniHyperParametersOrDict = Union[OmniHyperParameters, OmniHyperParametersDict]
+
+
+class OmniLoraTuningSpec(_common.BaseModel):
+  """Tuning Spec for Omni LoRA Model Tuning.
+
+  This data type is not supported in Gemini API.
+  """
+
+  hyper_parameters: Optional[OmniHyperParameters] = Field(
+      default=None,
+      description="""Optional. Hyperparameters for Omni LoRA tuning.""",
+  )
+  training_dataset_uri: Optional[str] = Field(
+      default=None,
+      description="""Required. Cloud Storage path to the file containing training dataset for Omni LoRA tuning. The dataset must be formatted as a JSONL file.""",
+  )
+
+
+class OmniLoraTuningSpecDict(TypedDict, total=False):
+  """Tuning Spec for Omni LoRA Model Tuning.
+
+  This data type is not supported in Gemini API.
+  """
+
+  hyper_parameters: Optional[OmniHyperParametersDict]
+  """Optional. Hyperparameters for Omni LoRA tuning."""
+
+  training_dataset_uri: Optional[str]
+  """Required. Cloud Storage path to the file containing training dataset for Omni LoRA tuning. The dataset must be formatted as a JSONL file."""
+
+
+OmniLoraTuningSpecOrDict = Union[OmniLoraTuningSpec, OmniLoraTuningSpecDict]
+
+
 class TuningJob(_common.BaseModel):
   """A tuning job."""
 
@@ -16271,6 +16351,10 @@ class TuningJob(_common.BaseModel):
       default=None,
       description="""Output only. The Cloud Storage metrics URI associated with this TuningJob.""",
   )
+  omni_lora_tuning_spec: Optional[OmniLoraTuningSpec] = Field(
+      default=None,
+      description="""Optional. Tuning Spec for Omni LoRA Tuning.""",
+  )
 
   @property
   def has_ended(self) -> bool:
@@ -16390,6 +16474,9 @@ class TuningJobDict(TypedDict, total=False):
 
   gcs_metrics_uri: Optional[str]
   """Output only. The Cloud Storage metrics URI associated with this TuningJob."""
+
+  omni_lora_tuning_spec: Optional[OmniLoraTuningSpecDict]
+  """Optional. Tuning Spec for Omni LoRA Tuning."""
 
 
 TuningJobOrDict = Union[TuningJob, TuningJobDict]
