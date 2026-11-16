@@ -37,10 +37,10 @@ FunctionResultSubcontentParam = TypeAliasType(
     "FunctionResultSubcontentParam",
     Union[
         TextContentParam,
-        DocumentContentParam,
         ImageContentParam,
-        AudioContentParam,
+        DocumentContentParam,
         FunctionParam,
+        AudioContentParam,
         VideoContentParam,
     ],
 )

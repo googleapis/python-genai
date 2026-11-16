@@ -164,7 +164,7 @@ def test_unknown_document_content_field_is_forwarded(
               "type": "document",
               "uri": "https://example.com/report.pdf",
               "mime_type": "application/pdf",
-              "resolution": "low",
+              "future_field": "low",
           },
           {"type": "text", "text": "Summarize this document."},
       ],
@@ -176,8 +176,37 @@ def test_unknown_document_content_field_is_forwarded(
       "type": "document",
       "uri": "https://example.com/report.pdf",
       "mime_type": "application/pdf",
-      "resolution": "low",
+      "future_field": "low",
   }
+
+
+def test_supported_document_processing_fields_are_sent(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  """Positive control: known `resolution` and `processing` fields are sent."""
+  mock_gaos_server.default_response = _INTERACTION_BODY
+  document = {
+      "type": "document",
+      "uri": "https://example.com/report.pdf",
+      "mime_type": "application/pdf",
+      "resolution": "low",
+      "processing": {
+          "type": "static",
+          "page_options": {
+              "start_page": 1,
+              "end_page": 3,
+              "content_layers": ["page_text"],
+          },
+      },
+  }
+
+  mock_gaos_server.client.interactions.create(
+      model="gemini-3.5-flash",
+      input=[document, {"type": "text", "text": "Summarize this document."}],
+  )
+
+  (body,) = mock_gaos_server.captured_bodies
+  assert body["input"][0]["content"][0] == document
 
 
 def test_unknown_response_fields_survive_parsing_and_serialization(

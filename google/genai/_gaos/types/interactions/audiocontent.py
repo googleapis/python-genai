@@ -33,11 +33,12 @@ from ..basemodel import (
     current_filtered_dump,
     current_serialization_methods_dump,
 )
+from .audiomediaprocessing import AudioMediaProcessing, AudioMediaProcessingParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
 from typing import Any, Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 AudioContentMimeType = Union[
@@ -61,6 +62,21 @@ AudioContentMimeType = Union[
 r"""The mime type of the audio."""
 
 
+AudioProcessingEnum = Union[Literal["static",], UnrecognizedStr]
+
+
+AudioProcessingParam = TypeAliasType(
+    "AudioProcessingParam", Union[AudioMediaProcessingParam, AudioProcessingEnum]
+)
+r"""How the model processes this audio for understanding."""
+
+
+AudioProcessing = TypeAliasType(
+    "AudioProcessing", Union[AudioMediaProcessing, AudioProcessingEnum]
+)
+r"""How the model processes this audio for understanding."""
+
+
 class AudioContentParam(TypedDict):
     r"""An audio content block."""
 
@@ -70,6 +86,8 @@ class AudioContentParam(TypedDict):
     r"""The audio content."""
     mime_type: NotRequired[AudioContentMimeType]
     r"""The mime type of the audio."""
+    processing: NotRequired[AudioProcessingParam]
+    r"""How the model processes this audio for understanding."""
     sample_rate: NotRequired[int]
     r"""The sample rate of the audio."""
     type: Literal["audio"]
@@ -88,6 +106,9 @@ class AudioContent(BaseModel):
 
     mime_type: Optional[AudioContentMimeType] = None
     r"""The mime type of the audio."""
+
+    processing: Optional[AudioProcessing] = None
+    r"""How the model processes this audio for understanding."""
 
     sample_rate: Optional[int] = None
     r"""The sample rate of the audio."""
@@ -108,7 +129,9 @@ class AudioContent(BaseModel):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["channels", "data", "mime_type", "sample_rate", "uri"])
+        optional_fields = set(
+            ["channels", "data", "mime_type", "processing", "sample_rate", "uri"]
+        )
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False
