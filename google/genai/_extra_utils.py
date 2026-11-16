@@ -17,6 +17,7 @@
 
 import asyncio
 import dataclasses
+import datetime
 import inspect
 import io
 import logging
@@ -25,6 +26,7 @@ import os
 import sys
 import typing
 from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, get_args, get_origin
+import uuid
 
 import pydantic
 
@@ -245,6 +247,31 @@ def is_annotation_pydantic_model(annotation: Any) -> bool:
     return False
 
 
+# Function declarations describe these as strings with a JSON schema format.
+_STRING_ENCODED_TYPES = (
+    datetime.datetime,
+    datetime.date,
+    datetime.time,
+    datetime.timedelta,
+    uuid.UUID,
+)
+
+
+def _convert_string_encoded_value(
+    value: str, annotation: Any, param_name: str, func_name: str
+) -> Any:
+  """Parses a string argument into one of _STRING_ENCODED_TYPES."""
+  try:
+    return pydantic.TypeAdapter(annotation).validate_python(value)
+  except pydantic.ValidationError as e:
+    raise errors.UnknownFunctionCallArgumentError(
+        f'Failed to parse parameter {param_name} for function'
+        f' {func_name} from function call part because function call argument'
+        f' value {value} is not compatible with parameter annotation'
+        f' {annotation}, due to error {e}'
+    ) from e
+
+
 def convert_if_exist_pydantic_model(
     value: Any, annotation: Any, param_name: str, func_name: str
 ) -> Any:
@@ -274,6 +301,14 @@ def convert_if_exist_pydantic_model(
   # example 2: int | float equivalent to UnionType[int, float]
   if get_origin(annotation) in (Union, UnionType):
     for arg in get_args(annotation):
+      if isinstance(value, str) and arg in _STRING_ENCODED_TYPES:
+        try:
+          return _convert_string_encoded_value(
+              value, arg, param_name, func_name
+          )
+        # do not raise here because a later type in the union can match.
+        except errors.UnknownFunctionCallArgumentError:
+          continue
       if (
           (get_args(arg) and get_origin(arg) is list)
           or isinstance(value, arg)
@@ -293,6 +328,10 @@ def convert_if_exist_pydantic_model(
         f' {func_name} from function call part because function call argument'
         f' value {value} cannot be converted to parameter annotation'
         f' {annotation}.'
+    )
+  if isinstance(value, str) and annotation in _STRING_ENCODED_TYPES:
+    return _convert_string_encoded_value(
+        value, annotation, param_name, func_name
     )
   # the only exception for value and annotation type to be different is int and
   # float. see convert_number_values_for_function_call_args function for context

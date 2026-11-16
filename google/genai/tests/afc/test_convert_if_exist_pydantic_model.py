@@ -16,11 +16,13 @@
 
 """Test convert_if_exist_pydantic_model."""
 
+import datetime
 import inspect
+import sys
 from typing import Optional, Union
+import uuid
 import pydantic
 import pytest
-import sys
 from ... import errors
 from ..._extra_utils import convert_if_exist_pydantic_model
 
@@ -306,4 +308,114 @@ def test_incompatible_value_and_annotation():
         str,
         'param_name',
         'func_name',
+    )
+
+
+def test_string_encoded_types():
+  """Strings for date, time, duration and UUID annotations are parsed."""
+  assert convert_if_exist_pydantic_model(
+      '2026-11-10T09:30:00Z', datetime.datetime, 'param_name', 'func_name'
+  ) == datetime.datetime(2026, 11, 10, 9, 30, tzinfo=datetime.timezone.utc)
+  assert convert_if_exist_pydantic_model(
+      '2026-11-10T09:30:00', datetime.datetime, 'param_name', 'func_name'
+  ) == datetime.datetime(2026, 11, 10, 9, 30)
+  assert convert_if_exist_pydantic_model(
+      '12345678-1234-5678-1234-567812345678',
+      uuid.UUID,
+      'param_name',
+      'func_name',
+  ) == uuid.UUID('12345678-1234-5678-1234-567812345678')
+  assert convert_if_exist_pydantic_model(
+      '2026-11-10', datetime.date, 'param_name', 'func_name'
+  ) == datetime.date(2026, 11, 10)
+  assert convert_if_exist_pydantic_model(
+      '09:30:00', datetime.time, 'param_name', 'func_name'
+  ) == datetime.time(9, 30)
+  assert convert_if_exist_pydantic_model(
+      'PT1H', datetime.timedelta, 'param_name', 'func_name'
+  ) == datetime.timedelta(hours=1)
+  value = datetime.datetime(2026, 11, 10, 9, 30)
+  assert (
+      convert_if_exist_pydantic_model(
+          value, datetime.datetime, 'param_name', 'func_name'
+      )
+      is value
+  )
+
+
+def test_string_encoded_types_in_containers_and_unions():
+  """Parsing applies inside list, dict and union annotations."""
+  assert convert_if_exist_pydantic_model(
+      '2026-11-10T09:30:00Z',
+      Optional[datetime.datetime],
+      'param_name',
+      'func_name',
+  ) == datetime.datetime(2026, 11, 10, 9, 30, tzinfo=datetime.timezone.utc)
+  assert (
+      convert_if_exist_pydantic_model(
+          None, Optional[uuid.UUID], 'param_name', 'func_name'
+      )
+      is None
+  )
+  if sys.version_info >= (3, 10):
+    assert convert_if_exist_pydantic_model(
+        '12345678-1234-5678-1234-567812345678',
+        uuid.UUID | None,
+        'param_name',
+        'func_name',
+    ) == uuid.UUID('12345678-1234-5678-1234-567812345678')
+  assert convert_if_exist_pydantic_model(
+      ['2026-11-10', '2026-11-11'],
+      list[datetime.date],
+      'param_name',
+      'func_name',
+  ) == [datetime.date(2026, 11, 10), datetime.date(2026, 11, 11)]
+  assert convert_if_exist_pydantic_model(
+      {'a': '12345678-1234-5678-1234-567812345678'},
+      dict[str, uuid.UUID],
+      'param_name',
+      'func_name',
+  ) == {'a': uuid.UUID('12345678-1234-5678-1234-567812345678')}
+  assert (
+      convert_if_exist_pydantic_model(
+          'not a date',
+          Union[datetime.datetime, str],
+          'param_name',
+          'func_name',
+      )
+      == 'not a date'
+  )
+  assert (
+      convert_if_exist_pydantic_model(
+          '2026-11-10', Union[str, datetime.date], 'param_name', 'func_name'
+      )
+      == '2026-11-10'
+  )
+
+
+def test_invalid_string_encoded_value_raises():
+  """Unparseable or non-string values for these annotations raise."""
+  with pytest.raises(
+      errors.UnknownFunctionCallArgumentError, match='due to error'
+  ):
+    convert_if_exist_pydantic_model(
+        'not a date', datetime.datetime, 'param_name', 'func_name'
+    )
+  with pytest.raises(
+      errors.UnknownFunctionCallArgumentError, match='due to error'
+  ):
+    convert_if_exist_pydantic_model(
+        'nope', uuid.UUID, 'param_name', 'func_name'
+    )
+  with pytest.raises(
+      errors.UnknownFunctionCallArgumentError, match='not compatible'
+  ):
+    convert_if_exist_pydantic_model(
+        1700000000, datetime.datetime, 'param_name', 'func_name'
+    )
+  with pytest.raises(
+      errors.UnknownFunctionCallArgumentError, match='cannot be converted'
+  ):
+    convert_if_exist_pydantic_model(
+        'bad', Optional[uuid.UUID], 'param_name', 'func_name'
     )
