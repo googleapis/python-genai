@@ -47,8 +47,20 @@ from .agents import AsyncAgents as GeneratedAsyncAgents
 from .agents import Agents as GeneratedAgents
 from .interactions import AsyncInteractions as GeneratedAsyncInteractions
 from .interactions import Interactions as GeneratedInteractions
+from .interactions_websocket import (
+    APIWebSocketError as APIWebSocketError,
+    AsyncAuthTokens as GeneratedAsyncAuthTokens,
+    AuthTokens as GeneratedAuthTokens,
+    ClientEvent as ClientEvent,
+    InteractionWebSocketConnection as InteractionWebSocketConnection,
+    InteractionWebSocketConnectionContext,
+    ServerEvent as ServerEvent,
+    _warn_live_interactions_experimental,
+)
 from .lib import compat_errors
 from .lib.compat_errors import (
+    APIConnectionError as APIConnectionError,
+    APIError as APIError,
     _AsyncRawResponseAccessorProxy,
     _RawResponseAccessorProxy,
     async_wrap_sdk_call,
@@ -239,6 +251,76 @@ def build_google_genai_async_client(
     return sdk
 
 
+class GeminiNextGenAuthTokens(GeneratedAuthTokens):
+    """Public interaction auth_tokens sub-resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class AsyncGeminiNextGenAuthTokens(GeneratedAsyncAuthTokens):
+    """Async public interaction auth_tokens sub-resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+
 class GeminiNextGenInteractions(GeneratedInteractions):
     """Public interactions resource backed by the NextGen client.
 
@@ -251,9 +333,17 @@ class GeminiNextGenInteractions(GeneratedInteractions):
     runtime stub here.
     """
 
+    auth_tokens: GeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+        self._init_sdks()
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = GeminiNextGenAuthTokens(
+            self.sdk_configuration, parent_ref=self.parent_ref
+        )
 
     if not TYPE_CHECKING:
         @property
@@ -530,9 +620,59 @@ class GeminiNextGenInteractions(GeneratedInteractions):
 class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
     """Async public interactions resource backed by the NextGen client."""
 
+    auth_tokens: AsyncGeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
+        self._api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+        self._init_sdks()
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = AsyncGeminiNextGenAuthTokens(
+            self.sdk_configuration, parent_ref=self.parent_ref
+        )
+
+    def connect(
+        self,
+        id: str,
+        *,
+        api_version: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 30.0,
+    ) -> InteractionWebSocketConnectionContext:
+        """Connect to an existing live interaction over WebSocket.
+
+        If the client was created with an auth token
+        (``Client(api_key="auth_tokens/...")``), the token is sent in the
+        ``x-goog-api-key`` header on the WebSocket handshake, and any
+        ``Authorization`` header is omitted.
+
+        Terminal server events (``interaction.completed``,
+        ``interaction.canceled``, or ``reconnection_required``),
+        ``await connection.cancel()``, and fatal transport or protocol errors
+        automatically close the local WebSocket. Exiting an ``async with``
+        block (or calling ``await connection.detach()``) while the session is
+        still active detaches early (sending ``interaction.disconnect`` and
+        closing the local transport) without ending the server-side
+        interaction, leaving it alive and resumable for a later ``connect(id)``.
+
+        To end the server-side interaction before exiting:
+        - Call ``await connection.complete()`` and consume ``connection.receive()``
+          until ``interaction.completed`` to finish and persist the interaction.
+        - Call ``await connection.cancel()`` to abort the interaction.
+
+        Experimental: Live Interactions SDK support is experimental and may
+        change in future versions.
+        """
+        _warn_live_interactions_experimental(stacklevel=2)
+        return InteractionWebSocketConnectionContext(
+            self._api_client,
+            id,
+            api_version=api_version,
+            extra_headers=extra_headers,
+            timeout=timeout,
+        )
 
     if not TYPE_CHECKING:
         @property
