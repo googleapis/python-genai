@@ -26,7 +26,7 @@ from ..types.basemodel import (
 )
 from ..utils import FieldMetadata, PathParamMetadata, QueryParamMetadata
 from pydantic import model_serializer
-from typing import Optional
+from typing import Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -76,9 +76,18 @@ class ListEnvironmentsGlobals(BaseModel):
         return m
 
 
+Mode = Literal[
+    "on_demand",
+    "self_hosted",
+]
+r"""Optional. Filter environments by compute lifecycle mode."""
+
+
 class ListEnvironmentsRequestParam(TypedDict):
     api_version: NotRequired[str]
     r"""API version for request routing."""
+    mode: NotRequired[Mode]
+    r"""Optional. Filter environments by compute lifecycle mode."""
     page_size: NotRequired[int]
     r"""Optional. Maximum number of environments to return.
     If unspecified, defaults to 50. Maximum is 1000.
@@ -93,6 +102,12 @@ class ListEnvironmentsRequest(BaseModel):
         FieldMetadata(path=PathParamMetadata(style="simple", explode=False)),
     ] = None
     r"""API version for request routing."""
+
+    mode: Annotated[
+        Optional[Mode],
+        FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
+    ] = None
+    r"""Optional. Filter environments by compute lifecycle mode."""
 
     page_size: Annotated[
         Optional[int],
@@ -113,7 +128,7 @@ class ListEnvironmentsRequest(BaseModel):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["api_version", "page_size", "page_token"])
+        optional_fields = set(["api_version", "mode", "page_size", "page_token"])
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False

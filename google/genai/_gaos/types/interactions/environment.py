@@ -50,6 +50,16 @@ EnvParam = TypeAliasType("EnvParam", Union[EnvVarParam, str])
 Env = TypeAliasType("Env", Union[EnvVar, str])
 
 
+EnvironmentMode = Union[
+    Literal[
+        "on_demand",
+        "self_hosted",
+    ],
+    UnrecognizedStr,
+]
+r"""The compute lifecycle mode for this environment."""
+
+
 NetworkEnum = Union[Literal["disabled",], UnrecognizedStr]
 
 
@@ -74,6 +84,8 @@ class EnvironmentParam(TypedDict):
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
+    mode: NotRequired[EnvironmentMode]
+    r"""The compute lifecycle mode for this environment."""
     network: NotRequired[NetworkParam]
     r"""Network configuration for the environment."""
     sources: NotRequired[List[SourceParam]]
@@ -90,6 +102,9 @@ class Environment(BaseModel):
     r"""Optional. The environment ID for the interaction. If specified, the request will
     update the existing environment instead of creating a new one.
     """
+
+    mode: Optional[EnvironmentMode] = None
+    r"""The compute lifecycle mode for this environment."""
 
     network: Optional[Network] = None
     r"""Network configuration for the environment."""
@@ -109,7 +124,7 @@ class Environment(BaseModel):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["env", "environment_id", "network", "sources"])
+        optional_fields = set(["env", "environment_id", "mode", "network", "sources"])
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False

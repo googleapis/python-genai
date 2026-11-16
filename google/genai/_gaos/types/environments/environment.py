@@ -42,6 +42,16 @@ from typing import List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
+EnvironmentMode = Union[
+    Literal[
+        "on_demand",
+        "self_hosted",
+    ],
+    UnrecognizedStr,
+]
+r"""Output only. The compute lifecycle mode for this environment."""
+
+
 EnvironmentNetworkEnum = Union[Literal["disabled",], UnrecognizedStr]
 
 
@@ -84,12 +94,21 @@ class EnvironmentTypedDict(TypedDict):
     r"""Output only. The time at which the environment was created in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+    environment_key: NotRequired[str]
+    r"""Output only. OUTPUT_ONLY. Secret token generated upon environment creation for
+    self_hosted environments. Used by the sandbox daemon to authenticate
+    LeaseInteractions and CreateInteractionBidiStream. Only returned in the
+    response of CreateEnvironment; never exposed in subsequent GetEnvironment
+    calls.
+    """
     file_count: NotRequired[int]
     r"""Output only. The number of files in the environment, output only."""
     last_accessed: NotRequired[str]
     r"""Output only. The time at which the environment was last accessed in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+    mode: NotRequired[EnvironmentMode]
+    r"""Output only. The compute lifecycle mode for this environment."""
     network: NotRequired[EnvironmentNetworkUnionTypedDict]
     r"""Network configuration for the environment."""
     size_bytes: NotRequired[int]
@@ -115,6 +134,14 @@ class Environment(BaseModel):
     (YYYY-MM-DDThh:mm:ssZ).
     """
 
+    environment_key: Optional[str] = None
+    r"""Output only. OUTPUT_ONLY. Secret token generated upon environment creation for
+    self_hosted environments. Used by the sandbox daemon to authenticate
+    LeaseInteractions and CreateInteractionBidiStream. Only returned in the
+    response of CreateEnvironment; never exposed in subsequent GetEnvironment
+    calls.
+    """
+
     file_count: Annotated[
         Optional[int],
         BeforeValidator(validate_int),
@@ -126,6 +153,9 @@ class Environment(BaseModel):
     r"""Output only. The time at which the environment was last accessed in ISO 8601 format
     (YYYY-MM-DDThh:mm:ssZ).
     """
+
+    mode: Optional[EnvironmentMode] = None
+    r"""Output only. The compute lifecycle mode for this environment."""
 
     network: Optional[EnvironmentNetworkUnion] = None
     r"""Network configuration for the environment."""
@@ -156,8 +186,10 @@ class Environment(BaseModel):
         optional_fields = set(
             [
                 "created",
+                "environment_key",
                 "file_count",
                 "last_accessed",
+                "mode",
                 "network",
                 "size_bytes",
                 "sources",

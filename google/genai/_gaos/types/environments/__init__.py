@@ -24,6 +24,7 @@ from ...utils.dynamic_imports import lazy_getattr, lazy_dir
 if TYPE_CHECKING:
     from .createenvironmentrequest import (
         CreateEnvironmentRequest,
+        CreateEnvironmentRequestMode,
         CreateEnvironmentRequestNetworkEnum,
         CreateEnvironmentRequestNetworkUnion,
         CreateEnvironmentRequestNetworkUnionParam,
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
     )
     from .environment import (
         Environment,
+        EnvironmentMode,
         EnvironmentNetworkEnum,
         EnvironmentNetworkUnion,
         EnvironmentNetworkUnionTypedDict,
@@ -49,6 +51,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     "CreateEnvironmentRequest",
+    "CreateEnvironmentRequestMode",
     "CreateEnvironmentRequestNetworkEnum",
     "CreateEnvironmentRequestNetworkUnion",
     "CreateEnvironmentRequestNetworkUnionParam",
@@ -56,6 +59,7 @@ __all__ = [
     "Environment",
     "EnvironmentFile",
     "EnvironmentFileTypedDict",
+    "EnvironmentMode",
     "EnvironmentNetworkEnum",
     "EnvironmentNetworkUnion",
     "EnvironmentNetworkUnionTypedDict",
@@ -70,11 +74,13 @@ __all__ = [
 
 _dynamic_imports: dict[str, str] = {
     "CreateEnvironmentRequest": ".createenvironmentrequest",
+    "CreateEnvironmentRequestMode": ".createenvironmentrequest",
     "CreateEnvironmentRequestNetworkEnum": ".createenvironmentrequest",
     "CreateEnvironmentRequestNetworkUnion": ".createenvironmentrequest",
     "CreateEnvironmentRequestNetworkUnionParam": ".createenvironmentrequest",
     "CreateEnvironmentRequestParam": ".createenvironmentrequest",
     "Environment": ".environment",
+    "EnvironmentMode": ".environment",
     "EnvironmentNetworkEnum": ".environment",
     "EnvironmentNetworkUnion": ".environment",
     "EnvironmentNetworkUnionTypedDict": ".environment",

@@ -64,6 +64,7 @@ class Environments(BaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
+        mode: Optional[models.Mode] = None,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -73,6 +74,7 @@ class Environments(BaseSDK):
         r"""Lists environments.
 
         :param api_version: API version for request routing.
+        :param mode: Optional. Filter environments by compute lifecycle mode.
         :param page_size: Optional. Maximum number of environments to return.
             If unspecified, defaults to 50. Maximum is 1000.
         :param page_token: Optional. Pagination token.
@@ -96,6 +98,7 @@ class Environments(BaseSDK):
 
         request = models.ListEnvironmentsRequest(
             api_version=api_version,
+            mode=mode,
             page_size=page_size,
             page_token=page_token,
         )
@@ -219,6 +222,9 @@ class Environments(BaseSDK):
         *,
         api_version: Optional[str] = None,
         from_environment: Optional[str] = None,
+        mode: Optional[
+            environments_createenvironmentrequest.CreateEnvironmentRequestMode
+        ] = None,
         network: Optional[
             Union[
                 environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
@@ -231,6 +237,7 @@ class Environments(BaseSDK):
                 Iterable[interactions_source.SourceParam],
             ]
         ] = None,
+        system_instruction: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -242,8 +249,12 @@ class Environments(BaseSDK):
         :param from_environment: Optional. The source environment to copy/fork from.
             Format: `environments/{environment_id}` or `{environment_id}`.
             When specified, `sources` and `env` must be empty.
+        :param mode: The compute lifecycle mode for this environment.
         :param network: Network configuration for the environment.
         :param sources: Sources to be mounted into the environment.
+        :param system_instruction: Optional. System instruction applied to interactions running in this
+            environment. Only supported for `SELF_HOSTED` environments, where it is
+            recommended.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -267,12 +278,14 @@ class Environments(BaseSDK):
             api_version=api_version,
             body=environments.CreateEnvironmentRequest(
                 from_environment=from_environment,
+                mode=mode,
                 network=utils.get_pydantic_model(
                     network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
                 ),
                 sources=utils.get_pydantic_model(
                     sources, Optional[List[interactions.Source]]
                 ),
+                system_instruction=system_instruction,
             ),
         )
 
@@ -780,6 +793,7 @@ class AsyncEnvironments(AsyncBaseSDK):
         self,
         *,
         api_version: Optional[str] = None,
+        mode: Optional[models.Mode] = None,
         page_size: Optional[int] = None,
         page_token: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
@@ -789,6 +803,7 @@ class AsyncEnvironments(AsyncBaseSDK):
         r"""Lists environments.
 
         :param api_version: API version for request routing.
+        :param mode: Optional. Filter environments by compute lifecycle mode.
         :param page_size: Optional. Maximum number of environments to return.
             If unspecified, defaults to 50. Maximum is 1000.
         :param page_token: Optional. Pagination token.
@@ -812,6 +827,7 @@ class AsyncEnvironments(AsyncBaseSDK):
 
         request = models.ListEnvironmentsRequest(
             api_version=api_version,
+            mode=mode,
             page_size=page_size,
             page_token=page_token,
         )
@@ -938,6 +954,9 @@ class AsyncEnvironments(AsyncBaseSDK):
         *,
         api_version: Optional[str] = None,
         from_environment: Optional[str] = None,
+        mode: Optional[
+            environments_createenvironmentrequest.CreateEnvironmentRequestMode
+        ] = None,
         network: Optional[
             Union[
                 environments_createenvironmentrequest.CreateEnvironmentRequestNetworkUnion,
@@ -950,6 +969,7 @@ class AsyncEnvironments(AsyncBaseSDK):
                 Iterable[interactions_source.SourceParam],
             ]
         ] = None,
+        system_instruction: Optional[str] = None,
         extra_headers: Optional[Mapping[str, str]] = None,
         extra_query: Optional[Mapping[str, Any]] = None,
         extra_body: Optional[Mapping[str, Any]] = None,
@@ -961,8 +981,12 @@ class AsyncEnvironments(AsyncBaseSDK):
         :param from_environment: Optional. The source environment to copy/fork from.
             Format: `environments/{environment_id}` or `{environment_id}`.
             When specified, `sources` and `env` must be empty.
+        :param mode: The compute lifecycle mode for this environment.
         :param network: Network configuration for the environment.
         :param sources: Sources to be mounted into the environment.
+        :param system_instruction: Optional. System instruction applied to interactions running in this
+            environment. Only supported for `SELF_HOSTED` environments, where it is
+            recommended.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param extra_body: Additional JSON object fields to merge into request bodies.
@@ -986,12 +1010,14 @@ class AsyncEnvironments(AsyncBaseSDK):
             api_version=api_version,
             body=environments.CreateEnvironmentRequest(
                 from_environment=from_environment,
+                mode=mode,
                 network=utils.get_pydantic_model(
                     network, Optional[environments.CreateEnvironmentRequestNetworkUnion]
                 ),
                 sources=utils.get_pydantic_model(
                     sources, Optional[List[interactions.Source]]
                 ),
+                system_instruction=system_instruction,
             ),
         )
 
