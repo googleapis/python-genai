@@ -54,6 +54,7 @@ from ...types.interactions.documentstaticmediaprocessing import (
 from ...types.interactions.dynamicagentconfig import DynamicAgentConfig
 from ...types.interactions.empty import Empty as InteractionDeleteResponse
 from ...types.interactions.environment import Environment
+from ...types.interactions.environmentmode import EnvironmentMode
 from ...types.interactions.error import Error
 from ...types.interactions.errorevent import ErrorEvent
 from ...types.interactions.filecitation import FileCitation
@@ -168,6 +169,7 @@ __all__ = [
     "DocumentStaticMediaProcessing",
     "DynamicAgentConfig",
     "Environment",
+    "EnvironmentMode",
     "Error",
     "ErrorEvent",
     "FileCitation",

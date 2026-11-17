@@ -25,11 +25,12 @@ from ..basemodel import (
     current_serialization_methods_dump,
 )
 from ..interactions import (
+    environmentmode as interactions_environmentmode,
     environmentnetworkegressallowlist as interactions_environmentnetworkegressallowlist,
     source as interactions_source,
 )
 from pydantic import model_serializer
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
@@ -59,19 +60,37 @@ r"""Network configuration for the environment."""
 class CreateEnvironmentRequestParam(TypedDict):
     r"""Request for `CreateEnvironment`."""
 
+    custom_config: NotRequired[Dict[str, Any]]
+    r"""Optional. Arbitrary customer-defined JSON configuration passed through
+    to the self-hosted environment poller. Only supported when `mode` is
+    `SELF_HOSTED`.
+    """
     from_environment: NotRequired[str]
     r"""Optional. The source environment to copy/fork from.
     Format: `environments/{environment_id}` or `{environment_id}`.
     When specified, `sources` and `env` must be empty.
     """
+    mode: NotRequired[interactions_environmentmode.EnvironmentMode]
+    r"""The compute lifecycle mode for an environment."""
     network: NotRequired[CreateEnvironmentRequestNetworkUnionParam]
     r"""Network configuration for the environment."""
     sources: NotRequired[List[interactions_source.SourceParam]]
     r"""Sources to be mounted into the environment."""
+    system_instruction: NotRequired[str]
+    r"""Optional. System instruction applied to interactions running in this
+    environment. Only supported for `SELF_HOSTED` environments, where it is
+    recommended.
+    """
 
 
 class CreateEnvironmentRequest(BaseModel):
     r"""Request for `CreateEnvironment`."""
+
+    custom_config: Optional[Dict[str, Any]] = None
+    r"""Optional. Arbitrary customer-defined JSON configuration passed through
+    to the self-hosted environment poller. Only supported when `mode` is
+    `SELF_HOSTED`.
+    """
 
     from_environment: Optional[str] = None
     r"""Optional. The source environment to copy/fork from.
@@ -79,18 +98,36 @@ class CreateEnvironmentRequest(BaseModel):
     When specified, `sources` and `env` must be empty.
     """
 
+    mode: Optional[interactions_environmentmode.EnvironmentMode] = None
+    r"""The compute lifecycle mode for an environment."""
+
     network: Optional[CreateEnvironmentRequestNetworkUnion] = None
     r"""Network configuration for the environment."""
 
     sources: Optional[List[interactions_source.Source]] = None
     r"""Sources to be mounted into the environment."""
 
+    system_instruction: Optional[str] = None
+    r"""Optional. System instruction applied to interactions running in this
+    environment. Only supported for `SELF_HOSTED` environments, where it is
+    recommended.
+    """
+
     @model_serializer(mode="wrap")
     def _serialize_model_with_info(self, handler, info):
         return serialize_with_info(self.serialize_model, handler, info)
 
     def serialize_model(self, handler):
-        optional_fields = set(["from_environment", "network", "sources"])
+        optional_fields = set(
+            [
+                "custom_config",
+                "from_environment",
+                "mode",
+                "network",
+                "sources",
+                "system_instruction",
+            ]
+        )
         exclude_none = current_exclude_none()
         by_alias = current_by_alias()
         use_field_names = by_alias is False
