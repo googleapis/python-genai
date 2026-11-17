@@ -34,6 +34,24 @@ from ._gaos.types.interactions import (
     CreateModelInteractionParam,
 )
 from ._gaos.types.interactions.model import Model as ModelParam
+from ._interactions_websocket import (
+    APIWebSocketError,
+    InteractionWebSocketConnection,
+    InteractionWebSocketConnectionContext,
+)
+
+_INTERNAL_LIVE_NAMES = frozenset({
+    "ClientEventBatch",
+    "ClientEventBatchTypedDict",
+    "ClientEventList",
+    "ClientEventListTypedDict",
+})
+for _internal_name in _INTERNAL_LIVE_NAMES:
+    globals().pop(_internal_name, None)
+del _internal_name
+_interactions_all = [
+    _name for _name in _interactions_all if _name not in _INTERNAL_LIVE_NAMES
+]
 
 # Deprecated names: names that this module exported before only the
 # interactions namespace was exported here. The imports below are the single
@@ -198,6 +216,7 @@ def __dir__() -> list[str]:
 
 
 __all__ = [
+    "APIWebSocketError",
     "CreateAgentInteractionParamsNonStreaming",
     "CreateAgentInteractionParamsStreaming",
     "CreateModelInteractionParamsNonStreaming",
@@ -207,12 +226,17 @@ __all__ = [
     "InteractionGetParamsBase",
     "InteractionGetParamsNonStreaming",
     "InteractionGetParamsStreaming",
+    "InteractionWebSocketConnection",
+    "InteractionWebSocketConnectionContext",
     "ModelParam",
 ]
 # Deprecated names stay in `__all__` so that wildcard imports keep working.
 __all__ = sorted(
-    set(__all__)
-    | set(_resources_all)
-    | set(_interactions_all)
-    | set(_DEPRECATED_NAMES)
+    (
+        set(__all__)
+        | set(_resources_all)
+        | set(_interactions_all)
+        | set(_DEPRECATED_NAMES)
+    )
+    - _INTERNAL_LIVE_NAMES
 )

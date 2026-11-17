@@ -56,6 +56,13 @@ if TYPE_CHECKING:
         AudioStaticMediaProcessing,
         AudioStaticMediaProcessingParam,
     )
+    from .cancelinteractionevent import (
+        CancelInteractionEvent,
+        CancelInteractionEventTypedDict,
+    )
+    from .clientevent import ClientEvent, ClientEventTypedDict
+    from .clienteventbatch import ClientEventBatch, ClientEventBatchTypedDict
+    from .clienteventlist import ClientEventList, ClientEventListTypedDict
     from .codeexecution import CodeExecution, CodeExecutionParam
     from .codeexecutioncallarguments import (
         CodeExecutionCallArguments,
@@ -78,6 +85,10 @@ if TYPE_CHECKING:
         CodeExecutionResultStepResultParam,
     )
     from .codemenderagentconfig import CodeMenderAgentConfig, CodeMenderAgentConfigParam
+    from .completeinteractionevent import (
+        CompleteInteractionEvent,
+        CompleteInteractionEventTypedDict,
+    )
     from .computeruse import (
         ComputerUse,
         ComputerUseParam,
@@ -95,6 +106,10 @@ if TYPE_CHECKING:
         CreateAgentInteractionResponseFormat,
         CreateAgentInteractionResponseFormatParam,
     )
+    from .createinteractionevent import (
+        CreateInteractionEvent,
+        CreateInteractionEventTypedDict,
+    )
     from .createmodelinteraction import (
         CreateModelInteraction,
         CreateModelInteractionEnvironment,
@@ -108,6 +123,7 @@ if TYPE_CHECKING:
         DeepResearchAgentConfigParam,
         Visualization,
     )
+    from .disconnectevent import DisconnectEvent, DisconnectEventTypedDict
     from .documentcontent import (
         DocumentContent,
         DocumentContentMimeType,
@@ -260,6 +276,7 @@ if TYPE_CHECKING:
         ImageResponseFormatMimeType,
         ImageResponseFormatParam,
     )
+    from .inputevent import InputEvent, InputEventTypedDict
     from .interaction import (
         Interaction,
         InteractionAgentConfig,
@@ -272,6 +289,18 @@ if TYPE_CHECKING:
         InteractionTypedDict,
         UnknownInteractionAgentConfig,
     )
+    from .interactionauthtoken import (
+        InteractionAuthToken,
+        InteractionAuthTokenTypedDict,
+    )
+    from .interactionauthtokencreateparams import (
+        InteractionAuthTokenCreateParams,
+        InteractionAuthTokenCreateParamsParam,
+    )
+    from .interactioncancelledevent import (
+        InteractionCancelledEvent,
+        InteractionCancelledEventTypedDict,
+    )
     from .interactioncompletedevent import (
         InteractionCompletedEvent,
         InteractionCompletedEventTypedDict,
@@ -279,6 +308,10 @@ if TYPE_CHECKING:
     from .interactioncreatedevent import (
         InteractionCreatedEvent,
         InteractionCreatedEventTypedDict,
+    )
+    from .interactionreconnectedevent import (
+        InteractionReconnectedEvent,
+        InteractionReconnectedEventTypedDict,
     )
     from .interactionsinput import InteractionsInput, InteractionsInputParam
     from .interactionsseevent import (
@@ -299,6 +332,14 @@ if TYPE_CHECKING:
         InteractionStatusUpdate,
         InteractionStatusUpdateStatus,
         InteractionStatusUpdateTypedDict,
+    )
+    from .liveinteractioncompletedevent import (
+        LiveInteractionCompletedEvent,
+        LiveInteractionCompletedEventTypedDict,
+    )
+    from .liveinteractioncreatedevent import (
+        LiveInteractionCreatedEvent,
+        LiveInteractionCreatedEventTypedDict,
     )
     from .mcpserver import MCPServer, MCPServerParam
     from .mcpservertoolcalldelta import (
@@ -349,6 +390,10 @@ if TYPE_CHECKING:
     from .ragstoreconfig import RagStoreConfig, RagStoreConfigParam
     from .ranking import Ranking, RankingParam
     from .rankservice import RankService, RankServiceParam
+    from .reconnectinteractionevent import (
+        ReconnectInteractionEvent,
+        ReconnectInteractionEventTypedDict,
+    )
     from .responseformat import ResponseFormat, ResponseFormatParam
     from .responsemodality import ResponseModality
     from .retrieval import Retrieval, RetrievalParam, RetrievalRetrievalType
@@ -373,6 +418,7 @@ if TYPE_CHECKING:
     from .retrievalresultstep import RetrievalResultStep, RetrievalResultStepParam
     from .reviewsnippet import ReviewSnippet, ReviewSnippetParam
     from .safetysetting import Method, SafetySetting, SafetySettingParam, Threshold
+    from .serverevent import ServerEvent, ServerEventTypedDict
     from .servicetier import ServiceTier
     from .sessionconfig import SessionConfig, SessionConfigParam
     from .smarttranscriptionmode import (
@@ -471,6 +517,14 @@ if TYPE_CHECKING:
     )
     from .urlcontextresultstep import URLContextResultStep, URLContextResultStepParam
     from .usage import Usage, UsageTypedDict
+    from .useractioninput import (
+        UserActionInput,
+        UserActionInputTypedDict,
+        UserActionKey,
+        UserActionTarget,
+        UserActionTargetTypedDict,
+        UserActionType,
+    )
     from .userinputstep import UserInputStep, UserInputStepParam
     from .verbatimtranscriptionmode import (
         VerbatimTranscriptionMode,
@@ -496,6 +550,14 @@ if TYPE_CHECKING:
     )
     from .webhookconfig import WebhookConfig, WebhookConfigParam
     from .wordinfo import WordInfo, WordInfoParam
+    from .worldpromptcontent import WorldPromptContent, WorldPromptContentTypedDict
+    from .worldreferenceimage import WorldReferenceImage, WorldReferenceImageTypedDict
+    from .worldsetupevent import (
+        WorldPrompt,
+        WorldPromptTypedDict,
+        WorldSetupEvent,
+        WorldSetupEventTypedDict,
+    )
 
 __all__ = [
     "AgentOption",
@@ -528,6 +590,14 @@ __all__ = [
     "AudioResponseFormatParam",
     "AudioStaticMediaProcessing",
     "AudioStaticMediaProcessingParam",
+    "CancelInteractionEvent",
+    "CancelInteractionEventTypedDict",
+    "ClientEvent",
+    "ClientEventBatch",
+    "ClientEventBatchTypedDict",
+    "ClientEventList",
+    "ClientEventListTypedDict",
+    "ClientEventTypedDict",
     "CodeExecution",
     "CodeExecutionCallArguments",
     "CodeExecutionCallArgumentsParam",
@@ -544,6 +614,8 @@ __all__ = [
     "CodeExecutionResultStepResultParam",
     "CodeMenderAgentConfig",
     "CodeMenderAgentConfigParam",
+    "CompleteInteractionEvent",
+    "CompleteInteractionEventTypedDict",
     "ComputerUse",
     "ComputerUseParam",
     "Content",
@@ -556,6 +628,8 @@ __all__ = [
     "CreateAgentInteractionParam",
     "CreateAgentInteractionResponseFormat",
     "CreateAgentInteractionResponseFormatParam",
+    "CreateInteractionEvent",
+    "CreateInteractionEventTypedDict",
     "CreateModelInteraction",
     "CreateModelInteractionEnvironment",
     "CreateModelInteractionEnvironmentParam",
@@ -566,6 +640,8 @@ __all__ = [
     "DeepResearchAgentConfigParam",
     "Disabled",
     "DisabledSafetyPolicy",
+    "DisconnectEvent",
+    "DisconnectEventTypedDict",
     "DocumentContent",
     "DocumentContentMimeType",
     "DocumentContentParam",
@@ -696,15 +772,25 @@ __all__ = [
     "ImageResponseFormatImageSize",
     "ImageResponseFormatMimeType",
     "ImageResponseFormatParam",
+    "InputEvent",
+    "InputEventTypedDict",
     "Interaction",
     "InteractionAgentConfig",
     "InteractionAgentConfigTypedDict",
+    "InteractionAuthToken",
+    "InteractionAuthTokenCreateParams",
+    "InteractionAuthTokenCreateParamsParam",
+    "InteractionAuthTokenTypedDict",
+    "InteractionCancelledEvent",
+    "InteractionCancelledEventTypedDict",
     "InteractionCompletedEvent",
     "InteractionCompletedEventTypedDict",
     "InteractionCreatedEvent",
     "InteractionCreatedEventTypedDict",
     "InteractionEnvironment",
     "InteractionEnvironmentTypedDict",
+    "InteractionReconnectedEvent",
+    "InteractionReconnectedEventTypedDict",
     "InteractionResponseFormat",
     "InteractionResponseFormatTypedDict",
     "InteractionSSEEvent",
@@ -722,6 +808,10 @@ __all__ = [
     "InteractionsInput",
     "InteractionsInputParam",
     "Language",
+    "LiveInteractionCompletedEvent",
+    "LiveInteractionCompletedEventTypedDict",
+    "LiveInteractionCreatedEvent",
+    "LiveInteractionCreatedEventTypedDict",
     "MCPServer",
     "MCPServerParam",
     "MCPServerToolCallDelta",
@@ -781,6 +871,8 @@ __all__ = [
     "RankServiceParam",
     "Ranking",
     "RankingParam",
+    "ReconnectInteractionEvent",
+    "ReconnectInteractionEventTypedDict",
     "Resolution",
     "ResponseFormat",
     "ResponseFormatParam",
@@ -804,6 +896,8 @@ __all__ = [
     "ReviewSnippetParam",
     "SafetySetting",
     "SafetySettingParam",
+    "ServerEvent",
+    "ServerEventTypedDict",
     "ServiceTier",
     "SessionConfig",
     "SessionConfigParam",
@@ -918,6 +1012,12 @@ __all__ = [
     "UnknownTranscriptionMode",
     "Usage",
     "UsageTypedDict",
+    "UserActionInput",
+    "UserActionInputTypedDict",
+    "UserActionKey",
+    "UserActionTarget",
+    "UserActionTargetTypedDict",
+    "UserActionType",
     "UserInputStep",
     "UserInputStepParam",
     "VerbatimTranscriptionMode",
@@ -941,6 +1041,14 @@ __all__ = [
     "WebhookConfigParam",
     "WordInfo",
     "WordInfoParam",
+    "WorldPrompt",
+    "WorldPromptContent",
+    "WorldPromptContentTypedDict",
+    "WorldPromptTypedDict",
+    "WorldReferenceImage",
+    "WorldReferenceImageTypedDict",
+    "WorldSetupEvent",
+    "WorldSetupEventTypedDict",
 ]
 
 _dynamic_imports: dict[str, str] = {
@@ -975,6 +1083,14 @@ _dynamic_imports: dict[str, str] = {
     "AudioResponseFormatParam": ".audioresponseformat",
     "AudioStaticMediaProcessing": ".audiostaticmediaprocessing",
     "AudioStaticMediaProcessingParam": ".audiostaticmediaprocessing",
+    "CancelInteractionEvent": ".cancelinteractionevent",
+    "CancelInteractionEventTypedDict": ".cancelinteractionevent",
+    "ClientEvent": ".clientevent",
+    "ClientEventTypedDict": ".clientevent",
+    "ClientEventBatch": ".clienteventbatch",
+    "ClientEventBatchTypedDict": ".clienteventbatch",
+    "ClientEventList": ".clienteventlist",
+    "ClientEventListTypedDict": ".clienteventlist",
     "CodeExecution": ".codeexecution",
     "CodeExecutionParam": ".codeexecution",
     "CodeExecutionCallArguments": ".codeexecutioncallarguments",
@@ -992,6 +1108,8 @@ _dynamic_imports: dict[str, str] = {
     "CodeExecutionResultStepResultParam": ".codeexecutionresultstep",
     "CodeMenderAgentConfig": ".codemenderagentconfig",
     "CodeMenderAgentConfigParam": ".codemenderagentconfig",
+    "CompleteInteractionEvent": ".completeinteractionevent",
+    "CompleteInteractionEventTypedDict": ".completeinteractionevent",
     "ComputerUse": ".computeruse",
     "ComputerUseParam": ".computeruse",
     "DisabledSafetyPolicy": ".computeruse",
@@ -1007,6 +1125,8 @@ _dynamic_imports: dict[str, str] = {
     "CreateAgentInteractionParam": ".createagentinteraction",
     "CreateAgentInteractionResponseFormat": ".createagentinteraction",
     "CreateAgentInteractionResponseFormatParam": ".createagentinteraction",
+    "CreateInteractionEvent": ".createinteractionevent",
+    "CreateInteractionEventTypedDict": ".createinteractionevent",
     "CreateModelInteraction": ".createmodelinteraction",
     "CreateModelInteractionEnvironment": ".createmodelinteraction",
     "CreateModelInteractionEnvironmentParam": ".createmodelinteraction",
@@ -1016,6 +1136,8 @@ _dynamic_imports: dict[str, str] = {
     "DeepResearchAgentConfig": ".deepresearchagentconfig",
     "DeepResearchAgentConfigParam": ".deepresearchagentconfig",
     "Visualization": ".deepresearchagentconfig",
+    "DisconnectEvent": ".disconnectevent",
+    "DisconnectEventTypedDict": ".disconnectevent",
     "DocumentContent": ".documentcontent",
     "DocumentContentMimeType": ".documentcontent",
     "DocumentContentParam": ".documentcontent",
@@ -1156,6 +1278,8 @@ _dynamic_imports: dict[str, str] = {
     "ImageResponseFormatImageSize": ".imageresponseformat",
     "ImageResponseFormatMimeType": ".imageresponseformat",
     "ImageResponseFormatParam": ".imageresponseformat",
+    "InputEvent": ".inputevent",
+    "InputEventTypedDict": ".inputevent",
     "Interaction": ".interaction",
     "InteractionAgentConfig": ".interaction",
     "InteractionAgentConfigTypedDict": ".interaction",
@@ -1166,10 +1290,18 @@ _dynamic_imports: dict[str, str] = {
     "InteractionStatus": ".interaction",
     "InteractionTypedDict": ".interaction",
     "UnknownInteractionAgentConfig": ".interaction",
+    "InteractionAuthToken": ".interactionauthtoken",
+    "InteractionAuthTokenTypedDict": ".interactionauthtoken",
+    "InteractionAuthTokenCreateParams": ".interactionauthtokencreateparams",
+    "InteractionAuthTokenCreateParamsParam": ".interactionauthtokencreateparams",
+    "InteractionCancelledEvent": ".interactioncancelledevent",
+    "InteractionCancelledEventTypedDict": ".interactioncancelledevent",
     "InteractionCompletedEvent": ".interactioncompletedevent",
     "InteractionCompletedEventTypedDict": ".interactioncompletedevent",
     "InteractionCreatedEvent": ".interactioncreatedevent",
     "InteractionCreatedEventTypedDict": ".interactioncreatedevent",
+    "InteractionReconnectedEvent": ".interactionreconnectedevent",
+    "InteractionReconnectedEventTypedDict": ".interactionreconnectedevent",
     "InteractionsInput": ".interactionsinput",
     "InteractionsInputParam": ".interactionsinput",
     "InteractionSSEEvent": ".interactionsseevent",
@@ -1183,6 +1315,10 @@ _dynamic_imports: dict[str, str] = {
     "InteractionStatusUpdate": ".interactionstatusupdate",
     "InteractionStatusUpdateStatus": ".interactionstatusupdate",
     "InteractionStatusUpdateTypedDict": ".interactionstatusupdate",
+    "LiveInteractionCompletedEvent": ".liveinteractioncompletedevent",
+    "LiveInteractionCompletedEventTypedDict": ".liveinteractioncompletedevent",
+    "LiveInteractionCreatedEvent": ".liveinteractioncreatedevent",
+    "LiveInteractionCreatedEventTypedDict": ".liveinteractioncreatedevent",
     "MCPServer": ".mcpserver",
     "MCPServerParam": ".mcpserver",
     "MCPServerToolCallDelta": ".mcpservertoolcalldelta",
@@ -1234,6 +1370,8 @@ _dynamic_imports: dict[str, str] = {
     "RankingParam": ".ranking",
     "RankService": ".rankservice",
     "RankServiceParam": ".rankservice",
+    "ReconnectInteractionEvent": ".reconnectinteractionevent",
+    "ReconnectInteractionEventTypedDict": ".reconnectinteractionevent",
     "ResponseFormat": ".responseformat",
     "ResponseFormatParam": ".responseformat",
     "ResponseModality": ".responsemodality",
@@ -1258,6 +1396,8 @@ _dynamic_imports: dict[str, str] = {
     "SafetySetting": ".safetysetting",
     "SafetySettingParam": ".safetysetting",
     "Threshold": ".safetysetting",
+    "ServerEvent": ".serverevent",
+    "ServerEventTypedDict": ".serverevent",
     "ServiceTier": ".servicetier",
     "SessionConfig": ".sessionconfig",
     "SessionConfigParam": ".sessionconfig",
@@ -1360,6 +1500,12 @@ _dynamic_imports: dict[str, str] = {
     "URLContextResultStepParam": ".urlcontextresultstep",
     "Usage": ".usage",
     "UsageTypedDict": ".usage",
+    "UserActionInput": ".useractioninput",
+    "UserActionInputTypedDict": ".useractioninput",
+    "UserActionKey": ".useractioninput",
+    "UserActionTarget": ".useractioninput",
+    "UserActionTargetTypedDict": ".useractioninput",
+    "UserActionType": ".useractioninput",
     "UserInputStep": ".userinputstep",
     "UserInputStepParam": ".userinputstep",
     "VerbatimTranscriptionMode": ".verbatimtranscriptionmode",
@@ -1387,6 +1533,14 @@ _dynamic_imports: dict[str, str] = {
     "WebhookConfigParam": ".webhookconfig",
     "WordInfo": ".wordinfo",
     "WordInfoParam": ".wordinfo",
+    "WorldPromptContent": ".worldpromptcontent",
+    "WorldPromptContentTypedDict": ".worldpromptcontent",
+    "WorldReferenceImage": ".worldreferenceimage",
+    "WorldReferenceImageTypedDict": ".worldreferenceimage",
+    "WorldPrompt": ".worldsetupevent",
+    "WorldPromptTypedDict": ".worldsetupevent",
+    "WorldSetupEvent": ".worldsetupevent",
+    "WorldSetupEventTypedDict": ".worldsetupevent",
 }
 
 

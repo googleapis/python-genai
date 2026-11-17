@@ -22,12 +22,13 @@ Backs `google.genai._interactions` imports of `BadRequestError`,
 
 The generated SDK raises `GenAiError` (and per-operation subclasses thereof).
 The bridge layer in `google_genai.py` translates those into the status-code
-classes defined here via `wrap_sdk_error` / `wrap_sdk_call`.
+classes re-exported here from `google.genai._interactions_errors` via
+`wrap_sdk_error` / `wrap_sdk_call`.
 """
 
 import inspect
 import json
-from typing import Any, Awaitable, Callable, Optional, TypeVar, cast
+from typing import Any, Awaitable, Callable, Optional, TypeVar
 
 try:
     import httpx2
@@ -50,6 +51,25 @@ _HTTPX_HTTP_ERRORS = (
     else (httpx.HTTPError, httpx2.HTTPError)
 )
 
+from ..._interactions_errors import (
+    APIConnectionError,
+    APIResponseValidationError,
+    APIStatusError,
+    APITimeoutError,
+    APIWebSocketError,
+    AuthenticationError,
+    BadRequestError,
+    ConflictError,
+    GeminiNextGenAPIClientError,
+    APIError,
+    InternalServerError,
+    NotFoundError,
+    PermissionDeniedError,
+    RateLimitError,
+    UnprocessableEntityError,
+    _compose_message,
+    _status_class,
+)
 from ..errors.genaierror import GenAiError
 from ..errors.no_response_error import NoResponseError
 from ..errors.responsevalidationerror import ResponseValidationError
@@ -57,180 +77,6 @@ from ..utils.eventstreaming import AsyncStream, Stream
 
 
 T = TypeVar("T")
-
-
-class GeminiNextGenAPIClientError(Exception):
-    """Root of the GenAI error hierarchy."""
-
-
-class APIError(GeminiNextGenAPIClientError):
-    """General errors raised by the GenAI API.
-
-    Carries `message`, `request`, `body`. Status-code subclasses add
-    `response` and override `status_code` to a concrete value.
-    """
-
-    message: str
-    request: httpx.Request
-    body: object
-    status_code: Optional[int] = None
-
-    def __init__(
-        self,
-        message: str,
-        request: httpx.Request,
-        *,
-        body: object,
-    ) -> None:
-        super().__init__(message)
-        self.request = request
-        self.message = message
-        self.body = body
-
-    def __str__(self) -> str:
-        return self.message
-
-    @classmethod
-    def generate(
-        cls,
-        status_code: Optional[int],
-        body: object,
-        message: Optional[str],
-        response: Optional[httpx.Response],
-    ) -> "APIError":
-        """Return the most specific APIError subclass for the given status."""
-        target_cls = _status_class(status_code)
-        msg = message if message is not None else _compose_message(status_code, body)
-        if issubclass(target_cls, APIStatusError):
-            if response is None:
-                raise ValueError(
-                    "APIStatusError subclasses require a response object."
-                )
-            status_cls = cast(type[APIStatusError], target_cls)
-            return status_cls(msg, response=response, body=body)
-        # Plain APIError fallback (status_code None or unexpected success
-        # status like 201). Attach status_code to the instance for callers
-        # that need to inspect it; not part of the Stainless contract for
-        # APIError but covers the unexpected-status path.
-        request = response.request if response is not None else None
-        err = target_cls(msg, request, body=body)  # type: ignore[arg-type]
-        if status_code is not None:
-            err.status_code = status_code
-        return err
-
-
-class APIResponseValidationError(APIError):
-    response: httpx.Response
-
-    def __init__(
-        self,
-        response: httpx.Response,
-        body: object,
-        *,
-        message: Optional[str] = None,
-    ) -> None:
-        super().__init__(
-            message or "Data returned by API invalid for expected schema.",
-            response.request,
-            body=body,
-        )
-        self.response = response
-        self.status_code = response.status_code
-
-
-class APIStatusError(APIError):
-    """Raised when an API response has a 4xx or 5xx status code."""
-
-    response: httpx.Response
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        response: httpx.Response,
-        body: object,
-    ) -> None:
-        super().__init__(message, response.request, body=body)
-        self.response = response
-        self.status_code = response.status_code
-
-
-class APIConnectionError(APIError):
-    def __init__(
-        self,
-        *,
-        message: str = "Connection error.",
-        request: httpx.Request,
-    ) -> None:
-        super().__init__(message, request, body=None)
-
-
-class APITimeoutError(APIConnectionError):
-    def __init__(self, request: httpx.Request) -> None:
-        super().__init__(
-            message=(
-                "Request timed out. This is a client-side timeout. You can "
-                "increase the timeout by setting the `timeout` argument on "
-                "your request or in the client http options."
-            ),
-            request=request,
-        )
-
-
-class BadRequestError(APIStatusError):
-    status_code: int = 400  # type: ignore[assignment]
-
-
-class AuthenticationError(APIStatusError):
-    status_code: int = 401  # type: ignore[assignment]
-
-
-class PermissionDeniedError(APIStatusError):
-    status_code: int = 403  # type: ignore[assignment]
-
-
-class NotFoundError(APIStatusError):
-    status_code: int = 404  # type: ignore[assignment]
-
-
-class ConflictError(APIStatusError):
-    status_code: int = 409  # type: ignore[assignment]
-
-
-class UnprocessableEntityError(APIStatusError):
-    status_code: int = 422  # type: ignore[assignment]
-
-
-class RateLimitError(APIStatusError):
-    status_code: int = 429  # type: ignore[assignment]
-
-
-class InternalServerError(APIStatusError):
-    pass
-
-
-_STATUS_MAP = {
-    400: BadRequestError,
-    401: AuthenticationError,
-    403: PermissionDeniedError,
-    404: NotFoundError,
-    409: ConflictError,
-    422: UnprocessableEntityError,
-    429: RateLimitError,
-}
-
-
-def _status_class(status_code: Optional[int]) -> type[APIError]:
-    if status_code is None:
-        return APIError
-    cls = _STATUS_MAP.get(status_code)
-    if cls is not None:
-        return cls
-    if 500 <= status_code < 600:
-        return InternalServerError
-    if 400 <= status_code < 500:
-        return APIStatusError
-    return APIError
 
 
 def _parse_body(body: Any) -> Any:
@@ -246,22 +92,6 @@ def _parse_body(body: Any) -> Any:
         return json.loads(text)
     except (ValueError, TypeError):
         return text
-
-
-def _compose_message(status_code: Optional[int], body: Any) -> str:
-    """Build an error message in `Error code: {status} - {body}` form.
-
-    JSON body → `Error code: {status} - {body}`.
-    Text body → raw text.
-    Empty body → `Error code: {status}`.
-    """
-    if isinstance(body, (dict, list)):
-        return f"Error code: {status_code} - {body}"
-    if isinstance(body, str) and body.strip():
-        return body.strip()
-    if status_code is not None:
-        return f"Error code: {status_code}"
-    return "An error occurred"
 
 
 def _wrap_validation_error(error: ResponseValidationError) -> APIResponseValidationError:
@@ -592,6 +422,7 @@ __all__ = [
     "APIResponseValidationError",
     "APIStatusError",
     "APITimeoutError",
+    "APIWebSocketError",
     "AuthenticationError",
     "BadRequestError",
     "ConflictError",

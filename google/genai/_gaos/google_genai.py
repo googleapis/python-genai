@@ -36,19 +36,30 @@ try:
     import httpx
 except ImportError:
     import httpx2 as httpx
+from pydantic import ValidationError
 
 from .. import _api_client
 from .. import _interactions_continuation
+from .._live_interactions_experimental import _warn_live_interactions_experimental
+from .._interactions_websocket import (
+    APIWebSocketError as APIWebSocketError,
+    InteractionWebSocketConnection as InteractionWebSocketConnection,
+    InteractionWebSocketConnectionContext,
+)
 from ._hooks.google_genai_auth import (
     GOOGLE_GENAI_API_REVISION as _GOOGLE_GENAI_API_REVISION,
     GoogleGenAISecurityProvider,
 )
 from .agents import AsyncAgents as GeneratedAsyncAgents
 from .agents import Agents as GeneratedAgents
+from .auth_tokens import AsyncAuthTokens as GeneratedAsyncAuthTokens
+from .auth_tokens import AuthTokens as GeneratedAuthTokens
 from .interactions import AsyncInteractions as GeneratedAsyncInteractions
 from .interactions import Interactions as GeneratedInteractions
 from .lib import compat_errors
 from .lib.compat_errors import (
+    APIConnectionError as APIConnectionError,
+    APIError as APIError,
     _AsyncRawResponseAccessorProxy,
     _RawResponseAccessorProxy,
     async_wrap_sdk_call,
@@ -58,12 +69,18 @@ from .lib.compat_errors import (
     wrap_stream_errors,
 )
 from .sdk import AsyncGenAI, GenAI
+from .types import BaseModel
 from .types import environments
 from .types import credentials
 from .types import interactions
+from .types.interactions import (
+    ClientEvent as ClientEvent,
+    ClientEventTypedDict as ClientEventTypedDict,
+    ServerEvent as ServerEvent,
+)
 from .types.basemodel import Unset
 from .types.security import Security
-from .utils import BackoffStrategy, RetryConfig, eventstreaming
+from .utils import BackoffStrategy, RetryConfig, eventstreaming, unmarshal
 from .triggers import AsyncTriggers as GeneratedAsyncTriggers
 from .triggers import Triggers as GeneratedTriggers
 from .webhooks import AsyncWebhooks as GeneratedAsyncWebhooks
@@ -85,6 +102,29 @@ from ._internal import Internal as GeneratedInternal
 GOOGLE_GENAI_API_REVISION = _GOOGLE_GENAI_API_REVISION
 _LEGACY_LYRIA_MODELS = frozenset({'lyria-3-pro-preview', 'lyria-3-clip-preview'})
 ModelT = TypeVar('ModelT')
+
+
+def _parse_server_event(
+    payload: dict[str, Any],
+) -> Union[ServerEvent, interactions.ErrorEvent]:
+    """Unmarshal a raw server event dict into a typed ``ServerEvent`` or ``ErrorEvent``."""
+    target_type: Any = (
+        interactions.ErrorEvent
+        if payload.get('event_type') == 'error'
+        else interactions.ServerEvent
+    )
+    try:
+        return cast(
+            Union[ServerEvent, interactions.ErrorEvent],
+            unmarshal(
+                payload, target_type, allow_unknown_union_variants=True
+            ),
+        )
+    except ValidationError:
+        return cast(
+            Union[ServerEvent, interactions.ErrorEvent],
+            BaseModel.model_validate(payload),
+        )
 
 
 def get_google_genai_server_url(api_client: Any) -> str:
@@ -239,6 +279,153 @@ def build_google_genai_async_client(
     return sdk
 
 
+def _normalize_auth_token_delete_args(
+    args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> tuple[tuple[Any, ...], dict[str, Any]]:
+    if (
+        len(args) >= 2
+        and isinstance(args[1], str)
+        and args[1].startswith('auth_tokens/')
+    ):
+        args = (args[0], args[1][len('auth_tokens/') :], *args[2:])
+    if isinstance(kwargs.get('auth_token'), str) and kwargs[
+        'auth_token'
+    ].startswith('auth_tokens/'):
+        kwargs = {
+            **kwargs,
+            'auth_token': kwargs['auth_token'][len('auth_tokens/') :],
+        }
+    return args, kwargs
+
+
+def _check_auth_tokens_gemini_only(api_client: Any) -> None:
+    if getattr(api_client, 'vertexai', False) is True:
+        raise ValueError('Live Interactions is currently Gemini API only.')
+
+
+class _AuthTokensAccessorProxy:
+    """Applies the auth_tokens warning, Gemini-only guard, and prefix strip.
+
+    Wraps the `with_raw_response` / `with_streaming_response` accessors so
+    `create` and `delete` behave like the plain methods: they emit the
+    experimental warning, Vertex clients are rejected, and `delete` accepts the
+    `auth_tokens/<token>` form returned by `create`.
+    """
+
+    __slots__ = ('_inner', '_api_client')
+
+    def __init__(self, inner: Any, api_client: Any) -> None:
+        object.__setattr__(self, '_inner', inner)
+        object.__setattr__(self, '_api_client', api_client)
+
+    def __getattr__(self, name: str) -> Any:
+        attr = getattr(object.__getattribute__(self, '_inner'), name)
+        if name not in ('create', 'delete'):
+            return attr
+        api_client = object.__getattribute__(self, '_api_client')
+
+        def _wrapped(*args: Any, **kwargs: Any) -> Any:
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(api_client)
+            if name == 'delete':
+                args, kwargs = _normalize_auth_token_delete_args(args, kwargs)
+            return attr(*args, **kwargs)
+
+        return _wrapped
+
+
+class GeminiNextGenAuthTokens(GeneratedAuthTokens):
+    """Public interaction auth_tokens sub-resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    def __init__(self, *args: Any, api_client: Any = None, **kwargs: Any) -> None:
+        self._api_client = api_client
+        super().__init__(*args, **kwargs)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AuthTokensAccessorProxy(
+                _RawResponseAccessorProxy(super().with_raw_response), self._api_client
+            )
+
+        @property
+        def with_streaming_response(self):
+            return _AuthTokensAccessorProxy(
+                _RawResponseAccessorProxy(super().with_streaming_response), self._api_client
+            )
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            args, kwargs = _normalize_auth_token_delete_args(args, kwargs)
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class AsyncGeminiNextGenAuthTokens(GeneratedAsyncAuthTokens):
+    """Async public interaction auth_tokens sub-resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    def __init__(self, *args: Any, api_client: Any = None, **kwargs: Any) -> None:
+        self._api_client = api_client
+        super().__init__(*args, **kwargs)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AuthTokensAccessorProxy(
+                _AsyncRawResponseAccessorProxy(super().with_raw_response), self._api_client
+            )
+
+        @property
+        def with_streaming_response(self):
+            return _AuthTokensAccessorProxy(
+                _AsyncRawResponseAccessorProxy(super().with_streaming_response), self._api_client
+            )
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            args, kwargs = _normalize_auth_token_delete_args(args, kwargs)
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+
 class GeminiNextGenInteractions(GeneratedInteractions):
     """Public interactions resource backed by the NextGen client.
 
@@ -251,9 +438,19 @@ class GeminiNextGenInteractions(GeneratedInteractions):
     runtime stub here.
     """
 
+    auth_tokens: GeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
+        self._api_client = api_client
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = GeminiNextGenAuthTokens(
+            self.sdk_configuration,
+            parent_ref=self.parent_ref,
+            api_client=self._api_client,
+        )
 
     if not TYPE_CHECKING:
         @property
@@ -530,9 +727,65 @@ class GeminiNextGenInteractions(GeneratedInteractions):
 class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
     """Async public interactions resource backed by the NextGen client."""
 
+    auth_tokens: AsyncGeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
+        self._api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = AsyncGeminiNextGenAuthTokens(
+            self.sdk_configuration,
+            parent_ref=self.parent_ref,
+            api_client=self._api_client,
+        )
+
+    def connect(
+        self,
+        id: str,
+        *,
+        api_version: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 30.0,
+    ) -> InteractionWebSocketConnectionContext[
+        Union[ClientEvent, ClientEventTypedDict],
+        Union[ServerEvent, interactions.ErrorEvent],
+    ]:
+        """Connect to an existing live interaction over WebSocket.
+
+        If the client was created with an auth token
+        (``Client(api_key="auth_tokens/...")``), the token is sent in the
+        ``x-goog-api-key`` header on the WebSocket handshake, and any
+        ``Authorization`` header is omitted.
+
+        Terminal server events (``interaction.completed``,
+        ``interaction.canceled``, or ``reconnection_required``),
+        ``await connection.cancel()``, and fatal transport or protocol errors
+        automatically close the local WebSocket. Exiting an ``async with``
+        block (or calling ``await connection.detach()``) while the session is
+        still active detaches early (sending ``interaction.disconnect`` and
+        closing the local transport) without ending the server-side
+        interaction, leaving it alive and resumable for a later ``connect(id)``.
+
+        To end the server-side interaction before exiting:
+        - Call ``await connection.complete()`` and consume ``connection.receive()``
+          until ``interaction.completed`` to finish and persist the interaction.
+        - Call ``await connection.cancel()`` to abort the interaction.
+
+        Experimental: Live Interactions SDK support is experimental and may
+        change in future versions.
+        """
+        _warn_live_interactions_experimental(stacklevel=2)
+        return InteractionWebSocketConnectionContext(
+            self._api_client,
+            id,
+            api_version=api_version,
+            extra_headers=extra_headers,
+            timeout=timeout,
+            api_revision=GOOGLE_GENAI_API_REVISION,
+            event_parser=_parse_server_event,
+        )
 
     if not TYPE_CHECKING:
         @property

@@ -19,7 +19,9 @@
 
 from . import errors, models, types, utils
 from ._hooks import AfterParseErrorContext, HookContext, ResponseContext
+from .auth_tokens import AsyncAuthTokens, AuthTokens
 from .basesdk import AsyncBaseSDK, BaseSDK
+from .sdkconfiguration import SDKConfiguration
 from .types import BaseModel, OptionalNullable, UNSET, interactions
 from .utils import get_security_from_env, response_helpers
 from .utils.eventstreaming import AsyncStream, Stream
@@ -39,6 +41,20 @@ class Interactions(BaseSDK):
     @property
     def with_streaming_response(self):
         return InteractionsWithStreamingResponse(self)
+
+    auth_tokens: AuthTokens
+
+    def __init__(
+        self, sdk_config: SDKConfiguration, parent_ref: Optional[object] = None
+    ) -> None:
+        BaseSDK.__init__(self, sdk_config, parent_ref=parent_ref)
+        self.sdk_configuration = sdk_config
+        self._init_sdks()
+
+    def _init_sdks(self):
+        self.auth_tokens = AuthTokens(
+            self.sdk_configuration, parent_ref=self.parent_ref
+        )
 
     @overload
     def create(
@@ -1288,6 +1304,10 @@ class InteractionsWithRawResponse:
             sdk.cancel, "extra_headers"
         )
 
+    @property
+    def auth_tokens(self):
+        return self._sdk.auth_tokens.with_raw_response
+
 
 class InteractionsWithStreamingResponse:
     def __init__(self, sdk: Interactions) -> None:
@@ -1305,6 +1325,10 @@ class InteractionsWithStreamingResponse:
             sdk.cancel, "extra_headers"
         )
 
+    @property
+    def auth_tokens(self):
+        return self._sdk.auth_tokens.with_streaming_response
+
 
 class AsyncInteractions(AsyncBaseSDK):
     @property
@@ -1314,6 +1338,20 @@ class AsyncInteractions(AsyncBaseSDK):
     @property
     def with_streaming_response(self):
         return AsyncInteractionsWithStreamingResponse(self)
+
+    auth_tokens: AsyncAuthTokens
+
+    def __init__(
+        self, sdk_config: SDKConfiguration, parent_ref: Optional[object] = None
+    ) -> None:
+        AsyncBaseSDK.__init__(self, sdk_config, parent_ref=parent_ref)
+        self.sdk_configuration = sdk_config
+        self._init_sdks()
+
+    def _init_sdks(self):
+        self.auth_tokens = AsyncAuthTokens(
+            self.sdk_configuration, parent_ref=self.parent_ref
+        )
 
     @overload
     async def create(
@@ -2577,6 +2615,10 @@ class AsyncInteractionsWithRawResponse:
             sdk.cancel, "extra_headers"
         )
 
+    @property
+    def auth_tokens(self):
+        return self._sdk.auth_tokens.with_raw_response
+
 
 class AsyncInteractionsWithStreamingResponse:
     def __init__(self, sdk: AsyncInteractions) -> None:
@@ -2593,3 +2635,7 @@ class AsyncInteractionsWithStreamingResponse:
         self.cancel = response_helpers.async_to_streamed_response_wrapper(
             sdk.cancel, "extra_headers"
         )
+
+    @property
+    def auth_tokens(self):
+        return self._sdk.auth_tokens.with_streaming_response
