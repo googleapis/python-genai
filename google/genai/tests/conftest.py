@@ -64,6 +64,19 @@ def _with_shared_test_retry_options(http_options):
   )
 
 
+def _with_api_version(http_options, api_version: str):
+  """Sets api_version when not already configured by the test."""
+  if http_options is None:
+    return types.HttpOptions(api_version=api_version)
+  if isinstance(http_options, dict):
+    if http_options.get('api_version') or http_options.get('apiVersion'):
+      return http_options
+    return {**http_options, 'api_version': api_version}
+  if getattr(http_options, 'api_version', None):
+    return http_options
+  return http_options.model_copy(update={'api_version': api_version})
+
+
 def pytest_addoption(parser):
   parser.addoption(
       '--mode',
@@ -181,6 +194,9 @@ def client(use_vertex, replays_prefix, http_options, request, location_override)
 
   if not use_vertex:
     location_override = None
+    if 'caches' in replays_prefix:
+      # The Gemini API only serves cachedContents on v1beta.
+      http_options = _with_api_version(http_options, 'v1beta')
   elif location_override is None and 'tunings' in replays_prefix:
     # Tuning jobs are not supported on the global endpoint.
     if os.environ.get('GOOGLE_CLOUD_LOCATION') == 'global':
