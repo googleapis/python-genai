@@ -6426,6 +6426,7 @@ class Models(_api_module.BaseModule):
           model_output.append(chunk.candidates[0].content)
 
         yield chunk
+      model_output = _extra_utils.merge_streamed_contents(model_output)
 
       if is_last_remote_call_afc:
         break
@@ -8776,6 +8777,7 @@ class AsyncModels(_api_module.BaseModule):
               model_output.append(chunk.candidates[0].content)
 
             yield chunk
+          model_output = _extra_utils.merge_streamed_contents(model_output)
 
           if is_last_remote_call_afc:
             break
