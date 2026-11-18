@@ -18,6 +18,7 @@
 import asyncio
 from unittest import mock
 
+from google.auth import exceptions as auth_exceptions
 from google.oauth2 import credentials
 import pytest
 
@@ -218,5 +219,200 @@ def test_aiohttp_without_retry_options_reconnects_once(mock_request):
       )
     assert mock_request.call_count == 2
     assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+def _wrapped_transport_error(cause):
+  """Builds a TransportError the way google.auth.aio wraps aiohttp errors."""
+  error = auth_exceptions.TransportError('Failed to send request')
+  error.__cause__ = cause
+  return error
+
+
+def test_retry_args_retries_aiohttp_timeouts():
+  """HttpRetryOptions retries aiohttp and google.auth.aio timeouts."""
+
+  retry = api_client.retry_args(types.HttpRetryOptions())['retry']
+
+  assert retry.predicate(asyncio.TimeoutError())
+  assert retry.predicate(aiohttp.ServerTimeoutError())
+  assert retry.predicate(aiohttp.ConnectionTimeoutError())
+  assert retry.predicate(aiohttp.SocketTimeoutError())
+  assert retry.predicate(auth_exceptions.TimeoutError('timed out'))
+
+
+def test_retry_args_retries_wrapped_aiohttp_transport_errors():
+  """A TransportError caused by a transient aiohttp error is retried."""
+
+  retry = api_client.retry_args(types.HttpRetryOptions())['retry']
+
+  assert retry.predicate(
+      _wrapped_transport_error(aiohttp.ServerDisconnectedError())
+  )
+  assert retry.predicate(_wrapped_transport_error(aiohttp.ClientOSError()))
+
+
+def test_retry_args_does_not_retry_non_transient_auth_errors():
+  """Bare, payload-caused and refresh auth errors stay non-retriable."""
+
+  retry = api_client.retry_args(types.HttpRetryOptions())['retry']
+
+  assert not retry.predicate(
+      auth_exceptions.TransportError('session is closed.')
+  )
+  assert not retry.predicate(
+      _wrapped_transport_error(aiohttp.ClientPayloadError())
+  )
+  assert not retry.predicate(auth_exceptions.RefreshError('bad token'))
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_timeout_error_up_to_attempts(mock_request):
+  """A timed-out aiohttp request is retried up to `attempts`."""
+
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = asyncio.TimeoutError()
+    client = _client(
+        types.HttpRetryOptions(
+            attempts=3, initial_delay=0, max_delay=0, jitter=0
+        )
+    )
+
+    with _patch_auth_default():
+      with pytest.raises(asyncio.TimeoutError):
+        await client.async_request(
+            http_method='POST', path='path', request_dict={}
+        )
+    assert mock_request.call_count == 3
+
+  asyncio.run(run())
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_timeout_error_retries_successfully(mock_request):
+  """A timeout followed by a success returns the successful response."""
+
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = (
+        asyncio.TimeoutError(),
+        _aiohttp_async_response(200),
+    )
+    client = _client(
+        types.HttpRetryOptions(
+            attempts=2, initial_delay=0, max_delay=0, jitter=0
+        )
+    )
+
+    with _patch_auth_default():
+      response = await client.async_request(
+          http_method='GET', path='path', request_dict={}
+      )
+    assert mock_request.call_count == 2
+    assert response.headers['status-code'] == '200'
+
+  asyncio.run(run())
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_wrapped_transport_error_up_to_attempts(mock_request):
+  """A TransportError re-raised from the aiohttp branch reaches tenacity."""
+
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = _wrapped_transport_error(
+        aiohttp.ServerDisconnectedError()
+    )
+    client = _client(
+        types.HttpRetryOptions(
+            attempts=3, initial_delay=0, max_delay=0, jitter=0
+        )
+    )
+
+    with _patch_auth_default():
+      with pytest.raises(auth_exceptions.TransportError):
+        await client.async_request(
+            http_method='POST', path='path', request_dict={}
+        )
+    assert mock_request.call_count == 3
+
+  asyncio.run(run())
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_retries_auth_timeout_error_up_to_attempts(mock_request):
+  """A google.auth.aio TimeoutError is retried up to `attempts`."""
+
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = auth_exceptions.TimeoutError('timed out')
+    client = _client(
+        types.HttpRetryOptions(
+            attempts=3, initial_delay=0, max_delay=0, jitter=0
+        )
+    )
+
+    with _patch_auth_default():
+      with pytest.raises(auth_exceptions.TimeoutError):
+        await client.async_request(
+            http_method='POST', path='path', request_dict={}
+        )
+    assert mock_request.call_count == 3
+
+  asyncio.run(run())
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_timeout_with_request_level_retry_options(mock_request):
+  """Request-level retry options also retry aiohttp timeouts."""
+
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = asyncio.TimeoutError()
+    client = _client()
+
+    with _patch_auth_default():
+      with pytest.raises(asyncio.TimeoutError):
+        await client.async_request(
+            http_method='POST',
+            path='path',
+            request_dict={},
+            http_options={
+                'retry_options': {
+                    'attempts': 2,
+                    'initial_delay': 0,
+                    'max_delay': 0,
+                    'jitter': 0,
+                }
+            },
+        )
+    assert mock_request.call_count == 2
+
+  asyncio.run(run())
+
+
+@mock.patch.object(aiohttp.ClientSession, 'request', autospec=True)
+def test_aiohttp_without_retry_options_does_not_retry_timeout(mock_request):
+  """Without retry options, a timeout fails on the first attempt."""
+
+  api_client.has_aiohttp = True
+
+  async def run():
+    mock_request.side_effect = asyncio.TimeoutError()
+    client = _client()
+
+    with _patch_auth_default():
+      with pytest.raises(asyncio.TimeoutError):
+        await client.async_request(
+            http_method='POST', path='path', request_dict={}
+        )
+    assert mock_request.call_count == 1
 
   asyncio.run(run())
