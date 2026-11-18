@@ -39,12 +39,15 @@ except ImportError:
 
 from .. import _api_client
 from .. import _interactions_continuation
+from .._live_interactions_experimental import _warn_live_interactions_experimental
 from ._hooks.google_genai_auth import (
     GOOGLE_GENAI_API_REVISION as _GOOGLE_GENAI_API_REVISION,
     GoogleGenAISecurityProvider,
 )
 from .agents import AsyncAgents as GeneratedAsyncAgents
 from .agents import Agents as GeneratedAgents
+from .auth_tokens import AsyncAuthTokens as GeneratedAsyncAuthTokens
+from .auth_tokens import AuthTokens as GeneratedAuthTokens
 from .interactions import AsyncInteractions as GeneratedAsyncInteractions
 from .interactions import Interactions as GeneratedInteractions
 from .lib import compat_errors
@@ -239,6 +242,92 @@ def build_google_genai_async_client(
     return sdk
 
 
+class _AuthTokensAccessorProxy:
+    """Applies the auth_tokens experimental warning to raw/streaming accessors.
+
+    Wraps the `with_raw_response` / `with_streaming_response` accessors so
+    their `create` and `delete` warn like the plain methods.
+    """
+
+    __slots__ = ('_inner',)
+
+    def __init__(self, inner: Any) -> None:
+        object.__setattr__(self, '_inner', inner)
+
+    def __getattr__(self, name: str) -> Any:
+        attr = getattr(object.__getattribute__(self, '_inner'), name)
+        if name not in ('create', 'delete'):
+            return attr
+
+        def _wrapped(*args: Any, **kwargs: Any) -> Any:
+            _warn_live_interactions_experimental(stacklevel=2)
+            return attr(*args, **kwargs)
+
+        return _wrapped
+
+
+class GeminiNextGenAuthTokens(GeneratedAuthTokens):
+    """Interaction auth tokens resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AuthTokensAccessorProxy(
+                _RawResponseAccessorProxy(super().with_raw_response)
+            )
+
+        @property
+        def with_streaming_response(self):
+            return _AuthTokensAccessorProxy(
+                _RawResponseAccessorProxy(super().with_streaming_response)
+            )
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction."""
+            _warn_live_interactions_experimental(stacklevel=2)
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction."""
+            _warn_live_interactions_experimental(stacklevel=2)
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class AsyncGeminiNextGenAuthTokens(GeneratedAsyncAuthTokens):
+    """Async interaction auth tokens resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AuthTokensAccessorProxy(
+                _AsyncRawResponseAccessorProxy(super().with_raw_response)
+            )
+
+        @property
+        def with_streaming_response(self):
+            return _AuthTokensAccessorProxy(
+                _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+            )
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction."""
+            _warn_live_interactions_experimental(stacklevel=2)
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction."""
+            _warn_live_interactions_experimental(stacklevel=2)
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+
 class GeminiNextGenInteractions(GeneratedInteractions):
     """Public interactions resource backed by the NextGen client.
 
@@ -251,9 +340,16 @@ class GeminiNextGenInteractions(GeneratedInteractions):
     runtime stub here.
     """
 
+    auth_tokens: GeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = GeminiNextGenAuthTokens(
+            self.sdk_configuration, parent_ref=self.parent_ref
+        )
 
     if not TYPE_CHECKING:
         @property
@@ -530,9 +626,16 @@ class GeminiNextGenInteractions(GeneratedInteractions):
 class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
     """Async public interactions resource backed by the NextGen client."""
 
+    auth_tokens: AsyncGeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = AsyncGeminiNextGenAuthTokens(
+            self.sdk_configuration, parent_ref=self.parent_ref
+        )
 
     if not TYPE_CHECKING:
         @property

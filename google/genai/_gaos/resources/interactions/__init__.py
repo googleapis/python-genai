@@ -35,18 +35,24 @@ from ...types.interactions.antigravityagentconfig import AntigravityAgentConfig
 from ...types.interactions.audiocontent import AudioContent
 from ...types.interactions.audioresponseformat import AudioResponseFormat
 from ...types.interactions.audiostaticmediaprocessing import AudioStaticMediaProcessing
+from ...types.interactions.cancelinteractionevent import CancelInteractionEvent
+from ...types.interactions.clientevent import ClientEvent
 from ...types.interactions.codeexecutioncallarguments import CodeExecutionCallArguments
 from ...types.interactions.codeexecutioncallstep import CodeExecutionCallStep
 from ...types.interactions.codeexecutionresultstep import CodeExecutionResultStep
 from ...types.interactions.codemenderagentconfig import CodeMenderAgentConfig
+from ...types.interactions.completeinteractionevent import CompleteInteractionEvent
+from ...types.interactions.connectinteractionevent import ConnectInteractionEvent
 from ...types.interactions.content import Content
 from ...types.interactions.createagentinteraction import (
     CreateAgentInteractionParam as CreateAgentInteractionParamsNonStreaming,
 )
+from ...types.interactions.createinteractionevent import CreateInteractionEvent
 from ...types.interactions.createmodelinteraction import (
     CreateModelInteractionParam as CreateModelInteractionParamsNonStreaming,
 )
 from ...types.interactions.deepresearchagentconfig import DeepResearchAgentConfig
+from ...types.interactions.disconnectevent import DisconnectEvent
 from ...types.interactions.documentcontent import DocumentContent
 from ...types.interactions.documentstaticmediaprocessing import (
     DocumentStaticMediaProcessing,
@@ -75,11 +81,21 @@ from ...types.interactions.googlesearchresultstep import GoogleSearchResultStep
 from ...types.interactions.harmcategory import HarmCategory
 from ...types.interactions.imagecontent import ImageContent
 from ...types.interactions.imageresponseformat import ImageResponseFormat
+from ...types.interactions.inputevent import InputEvent
 from ...types.interactions.interaction import Interaction
+from ...types.interactions.interactionauthtoken import InteractionAuthToken
+from ...types.interactions.interactioncancelledevent import InteractionCancelledEvent
 from ...types.interactions.interactioncompletedevent import InteractionCompletedEvent
+from ...types.interactions.interactionconnectedevent import InteractionConnectedEvent
 from ...types.interactions.interactioncreatedevent import InteractionCreatedEvent
 from ...types.interactions.interactionsseevent import InteractionSSEEvent
 from ...types.interactions.interactionstatusupdate import InteractionStatusUpdate
+from ...types.interactions.liveinteractioncompletedevent import (
+    LiveInteractionCompletedEvent,
+)
+from ...types.interactions.liveinteractioncreatedevent import (
+    LiveInteractionCreatedEvent,
+)
 from ...types.interactions.mcpservertoolcallstep import MCPServerToolCallStep
 from ...types.interactions.mcpservertoolresultstep import MCPServerToolResultStep
 from ...types.interactions.mediaresolution import MediaResolution
@@ -95,6 +111,7 @@ from ...types.interactions.retrievalcallstep import RetrievalCallStep
 from ...types.interactions.retrievalresultdelta import RetrievalResultDelta
 from ...types.interactions.retrievalresultstep import RetrievalResultStep
 from ...types.interactions.safetysetting import SafetySetting
+from ...types.interactions.serverevent import ServerEvent
 from ...types.interactions.speechconfig import SpeechConfig
 from ...types.interactions.spreadsheetprocessingoptions import (
     SpreadsheetProcessingOptions,
@@ -118,13 +135,18 @@ from ...types.interactions.urlcontextcallstep import URLContextCallStep
 from ...types.interactions.urlcontextresult import URLContextResult
 from ...types.interactions.urlcontextresultstep import URLContextResultStep
 from ...types.interactions.usage import Usage
+from ...types.interactions.useractioninput import UserActionInput
 from ...types.interactions.userinputstep import UserInputStep
 from ...types.interactions.videoconfig import VideoConfig
 from ...types.interactions.videocontent import VideoContent
 from ...types.interactions.videoresponseformat import VideoResponseFormat
 from ...types.interactions.webhookconfig import WebhookConfig
 from ...types.interactions.wordinfo import WordInfo
+from ...types.interactions.worldpromptcontent import WorldPromptContent
+from ...types.interactions.worldreferenceimage import WorldReferenceImage
+from ...types.interactions.worldsetupevent import WorldSetupEvent
 from . import annotation
+from . import auth_tokens
 from . import codeexecutioncallstep
 from . import codemenderagentconfig
 from . import environment
@@ -134,6 +156,7 @@ from . import googlemapsresult
 from . import googlemapsresultstep
 from . import googlesearchcallstep
 from . import googlesearchresultstep
+from . import liveinteractioncompletedevent
 from . import placecitation
 from . import retrievalcalldelta
 from . import retrievalcallstep
@@ -155,16 +178,22 @@ __all__ = [
     "AudioContent",
     "AudioResponseFormat",
     "AudioStaticMediaProcessing",
+    "CancelInteractionEvent",
+    "ClientEvent",
     "CodeExecutionCallArguments",
     "CodeExecutionCallStep",
     "CodeExecutionResultStep",
     "CodeMenderAgentConfig",
+    "CompleteInteractionEvent",
+    "ConnectInteractionEvent",
     "Content",
     "CreateAgentInteractionParamsNonStreaming",
     "CreateAgentInteractionParamsStreaming",
+    "CreateInteractionEvent",
     "CreateModelInteractionParamsNonStreaming",
     "CreateModelInteractionParamsStreaming",
     "DeepResearchAgentConfig",
+    "DisconnectEvent",
     "DocumentContent",
     "DocumentStaticMediaProcessing",
     "DynamicAgentConfig",
@@ -190,9 +219,13 @@ __all__ = [
     "HarmCategory",
     "ImageContent",
     "ImageResponseFormat",
+    "InputEvent",
     "Interaction",
+    "InteractionAuthToken",
     "InteractionCancelParams",
+    "InteractionCancelledEvent",
     "InteractionCompletedEvent",
+    "InteractionConnectedEvent",
     "InteractionCreateParams",
     "InteractionCreatedEvent",
     "InteractionDeleteParams",
@@ -200,6 +233,8 @@ __all__ = [
     "InteractionGetParams",
     "InteractionSSEEvent",
     "InteractionStatusUpdate",
+    "LiveInteractionCompletedEvent",
+    "LiveInteractionCreatedEvent",
     "MCPServerToolCallStep",
     "MCPServerToolResultStep",
     "MediaResolution",
@@ -215,6 +250,7 @@ __all__ = [
     "RetrievalResultDelta",
     "RetrievalResultStep",
     "SafetySetting",
+    "ServerEvent",
     "SpeechConfig",
     "SpreadsheetProcessingOptions",
     "Step",
@@ -236,13 +272,18 @@ __all__ = [
     "URLContextResult",
     "URLContextResultStep",
     "Usage",
+    "UserActionInput",
     "UserInputStep",
     "VideoConfig",
     "VideoContent",
     "VideoResponseFormat",
     "WebhookConfig",
     "WordInfo",
+    "WorldPromptContent",
+    "WorldReferenceImage",
+    "WorldSetupEvent",
     "annotation",
+    "auth_tokens",
     "codeexecutioncallstep",
     "codemenderagentconfig",
     "environment",
@@ -252,6 +293,7 @@ __all__ = [
     "googlemapsresultstep",
     "googlesearchcallstep",
     "googlesearchresultstep",
+    "liveinteractioncompletedevent",
     "placecitation",
     "retrievalcalldelta",
     "retrievalcallstep",

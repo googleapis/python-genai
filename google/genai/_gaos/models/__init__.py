@@ -62,6 +62,12 @@ if TYPE_CHECKING:
         CreateInteractionResponse,
         CreateInteractionResponseTypedDict,
     )
+    from .createinteractionauthtoken import (
+        CreateInteractionAuthTokenGlobals,
+        CreateInteractionAuthTokenGlobalsTypedDict,
+        CreateInteractionAuthTokenRequest,
+        CreateInteractionAuthTokenRequestParam,
+    )
     from .createtrigger import (
         CreateTriggerGlobals,
         CreateTriggerGlobalsTypedDict,
@@ -103,6 +109,12 @@ if TYPE_CHECKING:
         DeleteInteractionGlobalsTypedDict,
         DeleteInteractionRequest,
         DeleteInteractionRequestParam,
+    )
+    from .deleteinteractionauthtoken import (
+        DeleteInteractionAuthTokenGlobals,
+        DeleteInteractionAuthTokenGlobalsTypedDict,
+        DeleteInteractionAuthTokenRequest,
+        DeleteInteractionAuthTokenRequestParam,
     )
     from .deletetrigger import (
         DeleteTriggerGlobals,
@@ -281,6 +293,10 @@ __all__ = [
     "CreateEnvironmentGlobalsTypedDict",
     "CreateEnvironmentRequest",
     "CreateEnvironmentRequestParam",
+    "CreateInteractionAuthTokenGlobals",
+    "CreateInteractionAuthTokenGlobalsTypedDict",
+    "CreateInteractionAuthTokenRequest",
+    "CreateInteractionAuthTokenRequestParam",
     "CreateInteractionGlobals",
     "CreateInteractionGlobalsTypedDict",
     "CreateInteractionRequest",
@@ -313,6 +329,10 @@ __all__ = [
     "DeleteEnvironmentGlobalsTypedDict",
     "DeleteEnvironmentRequest",
     "DeleteEnvironmentRequestParam",
+    "DeleteInteractionAuthTokenGlobals",
+    "DeleteInteractionAuthTokenGlobalsTypedDict",
+    "DeleteInteractionAuthTokenRequest",
+    "DeleteInteractionAuthTokenRequestParam",
     "DeleteInteractionGlobals",
     "DeleteInteractionGlobalsTypedDict",
     "DeleteInteractionRequest",
@@ -452,6 +472,10 @@ _dynamic_imports: dict[str, str] = {
     "CreateInteractionRequestParam": ".createinteraction",
     "CreateInteractionResponse": ".createinteraction",
     "CreateInteractionResponseTypedDict": ".createinteraction",
+    "CreateInteractionAuthTokenGlobals": ".createinteractionauthtoken",
+    "CreateInteractionAuthTokenGlobalsTypedDict": ".createinteractionauthtoken",
+    "CreateInteractionAuthTokenRequest": ".createinteractionauthtoken",
+    "CreateInteractionAuthTokenRequestParam": ".createinteractionauthtoken",
     "CreateTriggerGlobals": ".createtrigger",
     "CreateTriggerGlobalsTypedDict": ".createtrigger",
     "CreateTriggerRequest": ".createtrigger",
@@ -480,6 +504,10 @@ _dynamic_imports: dict[str, str] = {
     "DeleteInteractionGlobalsTypedDict": ".deleteinteraction",
     "DeleteInteractionRequest": ".deleteinteraction",
     "DeleteInteractionRequestParam": ".deleteinteraction",
+    "DeleteInteractionAuthTokenGlobals": ".deleteinteractionauthtoken",
+    "DeleteInteractionAuthTokenGlobalsTypedDict": ".deleteinteractionauthtoken",
+    "DeleteInteractionAuthTokenRequest": ".deleteinteractionauthtoken",
+    "DeleteInteractionAuthTokenRequestParam": ".deleteinteractionauthtoken",
     "DeleteTriggerGlobals": ".deletetrigger",
     "DeleteTriggerGlobalsTypedDict": ".deletetrigger",
     "DeleteTriggerRequest": ".deletetrigger",
