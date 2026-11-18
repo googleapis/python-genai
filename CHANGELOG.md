@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.1](https://github.com/googleapis/python-genai/compare/v3.6.0...v3.6.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* Update sdk enum ([4c4ab16](https://github.com/googleapis/python-genai/commit/4c4ab16bc8229415c548519a4cf400cd85936e91))
+
 ## [3.6.0](https://github.com/googleapis/python-genai/compare/v3.5.0...v3.6.0) (2026-11-18)
 
 
