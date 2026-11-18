@@ -46,9 +46,9 @@ ToolParam = TypeAliasType(
         FileSearchParam,
         GoogleMapsParam,
         ComputerUseParam,
-        MCPServerParam,
         ToolSearchParam,
         FunctionParam,
+        MCPServerParam,
         RetrievalParam,
     ],
 )

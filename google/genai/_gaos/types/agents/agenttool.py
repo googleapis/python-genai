@@ -40,8 +40,8 @@ AgentToolParam = TypeAliasType(
         interactions_codeexecution.CodeExecutionParam,
         interactions_urlcontext.URLContextParam,
         interactions_googlesearch.GoogleSearchParam,
-        interactions_mcpserver.MCPServerParam,
         interactions_function.FunctionParam,
+        interactions_mcpserver.MCPServerParam,
     ],
 )
 r"""A tool that the agent can use."""

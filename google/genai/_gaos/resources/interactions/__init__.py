@@ -127,6 +127,11 @@ from ...types.interactions.thoughtstep import ThoughtStep
 from ...types.interactions.tool import Tool
 from ...types.interactions.toolchoiceconfig import ToolChoiceConfig
 from ...types.interactions.toolchoicetype import ToolChoiceType
+from ...types.interactions.toolsearchcallstep import ToolSearchCallStep
+from ...types.interactions.toolsearchcallsteparguments import (
+    ToolSearchCallStepArguments,
+)
+from ...types.interactions.toolsearchresultstep import ToolSearchResultStep
 from ...types.interactions.transcriptionconfig import TranscriptionConfig
 from ...types.interactions.transcriptionmode import TranscriptionMode
 from ...types.interactions.urlcitation import URLCitation
@@ -160,7 +165,6 @@ from . import liveinteractioncompletedevent
 from . import placecitation
 from . import retrievalcalldelta
 from . import retrievalcallstep
-from . import step
 from . import stepdelta
 from . import tool
 from . import transcriptionmode
@@ -264,6 +268,9 @@ __all__ = [
     "Tool",
     "ToolChoiceConfig",
     "ToolChoiceType",
+    "ToolSearchCallStep",
+    "ToolSearchCallStepArguments",
+    "ToolSearchResultStep",
     "TranscriptionConfig",
     "TranscriptionMode",
     "URLCitation",
@@ -297,7 +304,6 @@ __all__ = [
     "placecitation",
     "retrievalcalldelta",
     "retrievalcallstep",
-    "step",
     "stepdelta",
     "tool",
     "transcriptionmode",
