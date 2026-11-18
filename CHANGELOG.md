@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.6.0](https://github.com/googleapis/python-genai/compare/v3.5.0...v3.6.0) (2026-11-18)
+
+
+### Features
+
+* **sdk:** Add tool retrieval and function result schemas in public SDK ([34e62b1](https://github.com/googleapis/python-genai/commit/34e62b1c476959d0217fb5d53ec26e75f9fb2751))
+
+
+### Bug Fixes
+
+* **api_client:** Retry google.auth TransportError when retries are enabled ([6fc8357](https://github.com/googleapis/python-genai/commit/6fc835765bc6f16187719aa910dae1e7a0eb1499)), refs [#2869](https://github.com/googleapis/python-genai/issues/2869)
+* Exclude derived parsed field when reparsing merged continuation responses ([bbdca2a](https://github.com/googleapis/python-genai/commit/bbdca2a0d4aff88e4643ee431d7a01bed6e333b6)), refs [#3350](https://github.com/googleapis/python-genai/issues/3350)
+* Keep the response when parsed JSON has an oversized integer ([f32137d](https://github.com/googleapis/python-genai/commit/f32137da9614524430bfbbb363aef57662f38417)), refs [#2542](https://github.com/googleapis/python-genai/issues/2542)
+
 ## [3.5.0](https://github.com/googleapis/python-genai/compare/v3.4.0...v3.5.0) (2026-11-18)
 
 
