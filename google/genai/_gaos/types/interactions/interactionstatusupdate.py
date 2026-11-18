@@ -49,6 +49,7 @@ InteractionStatusUpdateStatus = Union[
         "incomplete",
         "budget_exceeded",
         "queued",
+        "idle",
         "requires_continuation",
     ],
     UnrecognizedStr,
