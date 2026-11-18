@@ -78,6 +78,8 @@ Model = Union[
         "gemini-4-carbon",
         # Gemini 4 Hydrogen - A model with frontier-level intelligence, built for fast, dependable execution across coding, agentic workflows, and multimodal knowledge work.
         "gemini-4-hydrogen",
+        # Gemini 4 Neon - Frontier-level intelligence with fast end-to-end task completion across complex software engineering, analytical, and science workflows.
+        "gemini-4-neon",
         # Gemini 3.8 Flash TTS - Flagship TTS model for Voice Design and dual-speaker screenplay control. Prompt custom vocal personas, direct line-by-line delivery, and add vocal bursts.
         "gemini-3.8-flash-tts",
         # Gemini 3.8 Flash Lite TTS - High-speed and cost-efficient, ideal for rapid dubbing, media localization, and high-throughput voice agents. Direct replacement for gemini-3.1-flash-tts-preview.
