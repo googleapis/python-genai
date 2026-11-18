@@ -1,0 +1,25 @@
+diff --git a/src/google/genai/_hooks/sdkhooks.py b/src/google/genai/_hooks/sdkhooks.py
+--- a/src/google/genai/_hooks/sdkhooks.py
++++ b/src/google/genai/_hooks/sdkhooks.py
+@@ -14,6 +14,8 @@
+     Hooks,
+ )
+ from .registration import init_hooks
++from .google_genai_auth import GoogleGenAIAuthHook
++from ..lib.compat_errors import CompatErrorHook
+-from typing import List, Optional, Tuple
++from typing import cast, List, Optional, Tuple
+ from ..sdkconfiguration import SDKConfiguration
+ 
+@@ -26,6 +28,11 @@
+         self.after_error_hooks: List[AfterErrorHook] = []
+         self.after_parse_error_hooks: List[AfterParseErrorHook] = []
+         init_hooks(self)
++        self.register_before_request_hook(GoogleGenAIAuthHook())
++        self.register_after_error_hook(cast(AfterErrorHook, CompatErrorHook()))
++        self.register_after_parse_error_hook(
++            cast(AfterParseErrorHook, CompatErrorHook())
++        )
+ 
+     def register_sdk_init_hook(self, hook: SDKInitHook) -> None:
+         self.sdk_init_hooks.append(hook)
