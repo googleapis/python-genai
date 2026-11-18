@@ -1,5 +1,24 @@
 # Changelog
 
+## [3.5.0](https://github.com/googleapis/python-genai/compare/v3.4.0...v3.5.0) (2026-11-18)
+
+
+### Features
+
+* **environments:** Introduce self-hosted BYOS mode, system_instruction, custom_config, and environment_key in SDKs and CLI ([d76a21d](https://github.com/googleapis/python-genai/commit/d76a21dafd22c99206579674222e9b0e0e87b4e8))
+* Generate Live Interactions types and auth-token client in the public SDKs. ([f209666](https://github.com/googleapis/python-genai/commit/f2096662fcfc958d8c30a08a71d812c2da46ca22))
+* **interactions:** Add experimental Live Interactions (WebSocket and WebRTC) SDK support ([8acd4f0](https://github.com/googleapis/python-genai/commit/8acd4f006437325ce917e97c74a10b47778f9686))
+
+
+### Bug Fixes
+
+* Parse datetime, date, time, timedelta and UUID string arguments in automatic function calling ([517fab7](https://github.com/googleapis/python-genai/commit/517fab7b23dbe611721e4c63679c22637e00d348)), refs [#3331](https://github.com/googleapis/python-genai/issues/3331)
+
+
+### Documentation
+
+* Note that the Live API and caches are not available on v1 ([384ef01](https://github.com/googleapis/python-genai/commit/384ef01a55c643cb69bb9ff52eb44b6e5914bfc7))
+
 ## [3.4.0](https://github.com/googleapis/python-genai/compare/v3.3.0...v3.4.0) (2026-11-16)
 
 
