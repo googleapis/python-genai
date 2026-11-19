@@ -1182,6 +1182,19 @@ class FeatureSelectionPreference(_common.CaseInSensitiveEnum):
   PRIORITIZE_COST = 'PRIORITIZE_COST'
 
 
+class TextNormalization(_common.CaseInSensitiveEnum):
+  """Text normalization mode for speech synthesis."""
+
+  TEXT_NORMALIZATION_UNSPECIFIED = 'TEXT_NORMALIZATION_UNSPECIFIED'
+  """Unspecified text normalization mode. Defaults to `AUTO`."""
+  AUTO = 'AUTO'
+  """Automatically determines whether to apply text normalization based on the model and speech mode."""
+  ENABLED = 'ENABLED'
+  """Enables text normalization for numbers, currencies, dates, and units."""
+  DISABLED = 'DISABLED'
+  """Disables text normalization for pre-normalized or phonetic inputs."""
+
+
 class EmbeddingApiType(_common.CaseInSensitiveEnum):
   """Enum representing the Gemini Enterprise Agent Platform embedding API to use."""
 
@@ -6049,6 +6062,10 @@ class SpeechConfig(_common.BaseModel):
       default=None,
       description="""The configuration for a multi-speaker text-to-speech request. This field is mutually exclusive with `voice_config`.""",
   )
+  text_normalization: Optional[TextNormalization] = Field(
+      default=None,
+      description="""Optional. Controls text normalization before speech synthesis. This field is not supported in Vertex AI.""",
+  )
 
 
 class SpeechConfigDict(TypedDict, total=False):
@@ -6062,6 +6079,9 @@ class SpeechConfigDict(TypedDict, total=False):
 
   multi_speaker_voice_config: Optional[MultiSpeakerVoiceConfigDict]
   """The configuration for a multi-speaker text-to-speech request. This field is mutually exclusive with `voice_config`."""
+
+  text_normalization: Optional[TextNormalization]
+  """Optional. Controls text normalization before speech synthesis. This field is not supported in Vertex AI."""
 
 
 SpeechConfigOrDict = Union[SpeechConfig, SpeechConfigDict]

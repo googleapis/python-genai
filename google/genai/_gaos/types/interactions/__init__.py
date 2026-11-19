@@ -426,7 +426,7 @@ if TYPE_CHECKING:
         SmartTranscriptionModeParam,
     )
     from .source import Source, SourceParam, SourceType
-    from .speakerconfig import SpeakerConfig, SpeakerConfigParam
+    from .speakerconfig import SpeakerConfig, SpeakerConfigParam, TextNormalization
     from .speechannotation import SpeechAnnotation, SpeechAnnotationParam
     from .speechconfig import SpeechConfig, SpeechConfigParam
     from .spreadsheetprocessingoptions import (
@@ -941,6 +941,7 @@ __all__ = [
     "TextContentParam",
     "TextDelta",
     "TextDeltaTypedDict",
+    "TextNormalization",
     "TextResponseFormat",
     "TextResponseFormatMimeType",
     "TextResponseFormatParam",
@@ -1408,6 +1409,7 @@ _dynamic_imports: dict[str, str] = {
     "SourceType": ".source",
     "SpeakerConfig": ".speakerconfig",
     "SpeakerConfigParam": ".speakerconfig",
+    "TextNormalization": ".speakerconfig",
     "SpeechAnnotation": ".speechannotation",
     "SpeechAnnotationParam": ".speechannotation",
     "SpeechConfig": ".speechconfig",

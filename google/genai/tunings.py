@@ -2038,6 +2038,12 @@ def _SpeechConfig_to_vertex(
         ),
     )
 
+  if getv(from_object, ['text_normalization']) is not None:
+    raise ValueError(
+        'text_normalization parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
   return to_object
 
 

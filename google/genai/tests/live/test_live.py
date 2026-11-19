@@ -958,6 +958,50 @@ async def test_bidi_setup_to_api_speech_config(vertexai):
 
 @pytest.mark.parametrize('vertexai', [True, False])
 @pytest.mark.asyncio
+async def test_bidi_setup_to_api_speech_config_text_normalization(vertexai):
+  """Tests that text_normalization is Gemini Developer API only."""
+  config = types.LiveConnectConfig(
+      speech_config=types.SpeechConfig(
+          voice_config=types.VoiceConfig(
+              prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                  voice_name='en-default'
+              )
+          ),
+          text_normalization=types.TextNormalization.DISABLED,
+      ),
+  )
+  if vertexai:
+    with pytest.raises(ValueError, match='text_normalization'):
+      await get_connect_message(
+          mock_api_client(vertexai=vertexai), model='test_model', config=config
+      )
+    return
+
+  expected_result = {
+      'setup': {
+          'model': 'models/test_model',
+          'generationConfig': {
+              'speechConfig': {
+                  'voice_config': {
+                      'prebuilt_voice_config': {'voice_name': 'en-default'}
+                  },
+                  'text_normalization': 'DISABLED',
+              },
+          },
+      }
+  }
+  result = await get_connect_message(
+      mock_api_client(vertexai=vertexai), model='test_model', config=config
+  )
+  assert types.LiveClientMessage._from_response(
+      response=result, kwargs=None
+  ) == types.LiveClientMessage._from_response(
+      response=expected_result, kwargs=None
+  )
+
+
+@pytest.mark.parametrize('vertexai', [True, False])
+@pytest.mark.asyncio
 async def test_bidi_setup_error_if_multispeaker_voice_config(vertexai):
 
   # Config is a dict
