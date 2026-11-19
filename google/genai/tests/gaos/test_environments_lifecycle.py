@@ -616,3 +616,43 @@ def test_python_environments_self_hosted_mode_and_key(
       f"GET /{_API_VERSION}/environments?mode=self_hosted",
       f"GET /{_API_VERSION}/environments?mode=on_demand",
   ]
+
+
+def test_python_environments_create_with_env(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  """Tests creating a standalone environment with string and credential env."""
+  mock_gaos_server.default_response = ENVIRONMENT_BODY
+  client = mock_gaos_server.client
+
+  env_input = {
+      "PLAIN_VAR": "hello",
+      "SECRET_VAR": {"credential": "credentials/cred_123"},
+  }
+  req = environments.CreateEnvironmentRequest(env=env_input)
+  assert req.env is not None
+  assert "PLAIN_VAR" in req.env
+  assert "SECRET_VAR" in req.env
+
+  created = client.environments.create(env=env_input)
+  assert created.id == "env_abc_1234"
+  assert mock_gaos_server.captured == [f"POST /{_API_VERSION}/environments"]
+  assert mock_gaos_server.captured_bodies[0] == {"env": env_input}
+
+
+@pytest.mark.asyncio
+async def test_python_environments_async_create_with_env(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  """Tests creating an environment asynchronously with env."""
+  mock_gaos_server.default_response = ENVIRONMENT_BODY
+  client = mock_gaos_server.client
+
+  env_input = {
+      "PLAIN_VAR": "hello",
+      "SECRET_VAR": {"credential": "credentials/cred_123"},
+  }
+  created = await client.aio.environments.create(env=env_input)
+  assert created.id == "env_abc_1234"
+  assert mock_gaos_server.captured == [f"POST /{_API_VERSION}/environments"]
+  assert mock_gaos_server.captured_bodies[0] == {"env": env_input}

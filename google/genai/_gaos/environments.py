@@ -225,6 +225,12 @@ class Environments(BaseSDK):
         *,
         api_version: Optional[str] = None,
         custom_config: Optional[Mapping[str, Any]] = None,
+        env: Optional[
+            Union[
+                Mapping[str, environments_createenvironmentrequest.Env],
+                Mapping[str, environments_createenvironmentrequest.EnvParam],
+            ]
+        ] = None,
         from_environment: Optional[str] = None,
         mode: Optional[interactions_environmentmode.EnvironmentMode] = None,
         network: Optional[
@@ -251,6 +257,7 @@ class Environments(BaseSDK):
         :param custom_config: Optional. Arbitrary customer-defined JSON configuration passed through
             to the self-hosted environment poller. Only supported when `mode` is
             `SELF_HOSTED`.
+        :param env: Environment variables to set in the sandbox environment.
         :param from_environment: Optional. The source environment to copy/fork from.
             Format: `environments/{environment_id}` or `{environment_id}`.
             When specified, `sources` and `env` must be empty.
@@ -283,6 +290,9 @@ class Environments(BaseSDK):
             api_version=api_version,
             body=environments.CreateEnvironmentRequest(
                 custom_config=utils.unmarshal(custom_config, Optional[Dict[str, Any]]),
+                env=utils.get_pydantic_model(
+                    env, Optional[Dict[str, environments.Env]]
+                ),
                 from_environment=from_environment,
                 mode=mode,
                 network=utils.get_pydantic_model(
@@ -960,6 +970,12 @@ class AsyncEnvironments(AsyncBaseSDK):
         *,
         api_version: Optional[str] = None,
         custom_config: Optional[Mapping[str, Any]] = None,
+        env: Optional[
+            Union[
+                Mapping[str, environments_createenvironmentrequest.Env],
+                Mapping[str, environments_createenvironmentrequest.EnvParam],
+            ]
+        ] = None,
         from_environment: Optional[str] = None,
         mode: Optional[interactions_environmentmode.EnvironmentMode] = None,
         network: Optional[
@@ -986,6 +1002,7 @@ class AsyncEnvironments(AsyncBaseSDK):
         :param custom_config: Optional. Arbitrary customer-defined JSON configuration passed through
             to the self-hosted environment poller. Only supported when `mode` is
             `SELF_HOSTED`.
+        :param env: Environment variables to set in the sandbox environment.
         :param from_environment: Optional. The source environment to copy/fork from.
             Format: `environments/{environment_id}` or `{environment_id}`.
             When specified, `sources` and `env` must be empty.
@@ -1018,6 +1035,9 @@ class AsyncEnvironments(AsyncBaseSDK):
             api_version=api_version,
             body=environments.CreateEnvironmentRequest(
                 custom_config=utils.unmarshal(custom_config, Optional[Dict[str, Any]]),
+                env=utils.get_pydantic_model(
+                    env, Optional[Dict[str, environments.Env]]
+                ),
                 from_environment=from_environment,
                 mode=mode,
                 network=utils.get_pydantic_model(

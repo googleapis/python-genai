@@ -27,11 +27,18 @@ from ..basemodel import (
 from ..interactions import (
     environmentmode as interactions_environmentmode,
     environmentnetworkegressallowlist as interactions_environmentnetworkegressallowlist,
+    envvar as interactions_envvar,
     source as interactions_source,
 )
 from pydantic import model_serializer
 from typing import Any, Dict, List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypeAliasType, TypedDict
+
+
+EnvParam = TypeAliasType("EnvParam", Union[interactions_envvar.EnvVarParam, str])
+
+
+Env = TypeAliasType("Env", Union[interactions_envvar.EnvVar, str])
 
 
 CreateEnvironmentRequestNetworkEnum = Literal["disabled",]
@@ -65,6 +72,8 @@ class CreateEnvironmentRequestParam(TypedDict):
     to the self-hosted environment poller. Only supported when `mode` is
     `SELF_HOSTED`.
     """
+    env: NotRequired[Dict[str, EnvParam]]
+    r"""Environment variables to set in the sandbox environment."""
     from_environment: NotRequired[str]
     r"""Optional. The source environment to copy/fork from.
     Format: `environments/{environment_id}` or `{environment_id}`.
@@ -91,6 +100,9 @@ class CreateEnvironmentRequest(BaseModel):
     to the self-hosted environment poller. Only supported when `mode` is
     `SELF_HOSTED`.
     """
+
+    env: Optional[Dict[str, Env]] = None
+    r"""Environment variables to set in the sandbox environment."""
 
     from_environment: Optional[str] = None
     r"""Optional. The source environment to copy/fork from.
@@ -121,6 +133,7 @@ class CreateEnvironmentRequest(BaseModel):
         optional_fields = set(
             [
                 "custom_config",
+                "env",
                 "from_environment",
                 "mode",
                 "network",

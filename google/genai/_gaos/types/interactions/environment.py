@@ -78,7 +78,9 @@ class EnvironmentParam(TypedDict):
     r"""Environment variables to set in the sandbox environment."""
     environment_id: NotRequired[str]
     r"""Optional. The environment ID for the interaction. If specified, the request will
-    update the existing environment instead of creating a new one.
+    update the existing environment instead of creating a new one;
+    creation-only fields (`env` and `sources`) cannot be updated when resuming
+    an existing environment.
     """
     mode: NotRequired[EnvironmentMode]
     r"""The compute lifecycle mode for an environment."""
@@ -102,7 +104,9 @@ class Environment(BaseModel):
 
     environment_id: Optional[str] = None
     r"""Optional. The environment ID for the interaction. If specified, the request will
-    update the existing environment instead of creating a new one.
+    update the existing environment instead of creating a new one;
+    creation-only fields (`env` and `sources`) cannot be updated when resuming
+    an existing environment.
     """
 
     mode: Optional[EnvironmentMode] = None
