@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Tests for the local tokenizer install extras declared in pyproject.toml."""
+"""Tests for the install extras declared in pyproject.toml."""
 
 import os
 import pathlib
@@ -64,3 +64,8 @@ def test_local_tokenizer_transformers_extra_has_full_stack():
   packages = _extra_packages('local-tokenizer-transformers')
 
   assert packages >= {'sentencepiece', 'protobuf'} | _TRANSFORMERS_STACK
+
+
+def test_pillow_extra_installs_pillow():
+  """The pillow extra lets type checkers resolve the PIL types in types.py."""
+  assert _extra_packages('pillow') == {'pillow'}

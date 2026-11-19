@@ -53,6 +53,7 @@ local-tokenizer-transformers = [
     "torchvision",
     "transformers",
 ]
+pillow = ["pillow"]
 pyopenssl = ["pyopenssl"]
 
 [project.urls]
