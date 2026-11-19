@@ -18,11 +18,12 @@
 import asyncio
 import io
 import json
-from typing import Any, List
+from typing import Any, List, Optional
 from unittest import mock
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 from unittest.mock import patch
+import google.auth.transport.requests
 import pytest
 import requests
 
@@ -930,3 +931,273 @@ async def test_httpx_async_stream_line_separator_in_text(
 
   assert results == ['{"t": "a\u2028b"}', '{"t": "c"}']
   httpx_response.aclose.assert_called_once()
+
+
+# pylint: disable=protected-access
+def _build_requests_response(
+    status_code: int,
+    body_bytes: bytes,
+    content_type: Optional[str] = 'application/json',
+    reason: str = 'OK',
+) -> requests.Response:
+  """Builds a requests.Response the way HTTPAdapter.build_response does."""
+  resp = requests.Response()
+  resp.status_code = status_code
+  resp.reason = reason
+  resp.headers = requests.structures.CaseInsensitiveDict(
+      {'Content-Type': content_type} if content_type is not None else {}
+  )
+  resp.encoding = requests.utils.get_encoding_from_headers(resp.headers)
+  resp.raw = io.BytesIO(body_bytes)
+  return resp
+
+
+def _client_with_authorized_session(resp: requests.Response) -> Client:
+  """Returns a Client wired to a mock AuthorizedSession returning `resp`."""
+  client = Client(api_key='test_api_key')
+  mock_session = mock.create_autospec(
+      google.auth.transport.requests.AuthorizedSession, instance=True
+  )
+  mock_session._is_mtls = False
+  mock_session.request.return_value = resp
+  client._api_client._authorized_session = mock_session
+  return client
+
+
+def test_authorized_session_sse_error_defaults_to_utf8():
+  """AuthorizedSession HTTP errors without charset decode UTF-8 CJK messages."""
+  error_message = '无效的请求参数：内容不能为空'
+  body = json.dumps(
+      {
+          'error': {
+              'code': 400,
+              'message': error_message,
+              'status': 'INVALID_ARGUMENT',
+          }
+      },
+      ensure_ascii=False,
+  ).encode('utf-8')
+  resp = _build_requests_response(
+      400, body, content_type='text/event-stream', reason='Bad Request'
+  )
+  assert resp.encoding == 'ISO-8859-1'
+  client = _client_with_authorized_session(resp)
+
+  with patch.object(
+      client._api_client, '_use_google_auth_sync', return_value=True
+  ):
+    with pytest.raises(errors.ClientError) as exc_info:
+      list(
+          client.models.generate_content_stream(
+              model='gemini-2.5-flash', contents='hi'
+          )
+      )
+
+  assert exc_info.value.message == error_message
+
+
+@pytest.mark.parametrize(
+    'content_type,initial_encoding',
+    [
+        ('text/plain', 'ISO-8859-1'),
+        (None, None),
+    ],
+    ids=['text_plain', 'missing_content_type'],
+)
+def test_authorized_session_non_stream_missing_charset_defaults_to_utf8(
+    content_type: Optional[str], initial_encoding: Optional[str]
+):
+  """AuthorizedSession non-streaming responses without charset use UTF-8."""
+  expected_text = '你好世界 — 11\u2011inch'
+  body = json.dumps(
+      {
+          'candidates': [{
+              'content': {
+                  'role': 'model',
+                  'parts': [{'text': expected_text}],
+              }
+          }]
+      },
+      ensure_ascii=False,
+  ).encode('utf-8')
+  resp = _build_requests_response(200, body, content_type=content_type)
+  assert resp.encoding == initial_encoding
+  client = _client_with_authorized_session(resp)
+
+  with patch.object(
+      client._api_client, '_use_google_auth_sync', return_value=True
+  ):
+    result = client.models.generate_content(
+        model='gemini-2.5-flash', contents='hi'
+    )
+
+  assert result.text == expected_text
+  assert resp.encoding == 'utf-8'
+
+
+@pytest.mark.parametrize(
+    'use_destination', [False, True], ids=['bytes', 'destination']
+)
+def test_authorized_session_download_error_defaults_to_utf8(
+    use_destination: bool,
+):
+  """AuthorizedSession download_file errors without charset decode UTF-8."""
+  error_message = '文件不存在：请检查资源路径'
+  body = json.dumps(
+      {
+          'error': {
+              'code': 404,
+              'message': error_message,
+              'status': 'NOT_FOUND',
+          }
+      },
+      ensure_ascii=False,
+  ).encode('utf-8')
+  resp = _build_requests_response(
+      404, body, content_type='text/plain', reason='Not Found'
+  )
+  assert resp.encoding == 'ISO-8859-1'
+  client = _client_with_authorized_session(resp)
+  dest = io.BytesIO() if use_destination else None
+
+  with patch.object(
+      client._api_client, '_use_google_auth_sync', return_value=True
+  ):
+    with pytest.raises(errors.ClientError) as exc_info:
+      client._api_client.download_file(
+          'files/missing:download', destination=dest
+      )
+
+  assert exc_info.value.message == error_message
+
+
+def test_authorized_session_respects_explicit_charset():
+  """Explicit charset parameters in Content-Type are preserved unchanged."""
+  body = json.dumps(
+      {
+          'candidates': [{
+              'content': {
+                  'role': 'model',
+                  'parts': [{'text': 'café'}],
+              }
+          }]
+      },
+      ensure_ascii=False,
+  ).encode('iso-8859-1')
+  resp = _build_requests_response(
+      200, body, content_type='text/plain; charset=iso-8859-1'
+  )
+  assert resp.encoding == 'iso-8859-1'
+  client = _client_with_authorized_session(resp)
+
+  with patch.object(
+      client._api_client, '_use_google_auth_sync', return_value=True
+  ):
+    result = client.models.generate_content(
+        model='gemini-2.5-flash', contents='hi'
+    )
+
+  assert resp.encoding == 'iso-8859-1'
+  assert result.text == 'café'
+
+
+def test_authorized_session_stream_cjk_utf8_with_iso8859_1_encoding():
+  """Sync SSE streaming decodes multibyte CJK UTF-8 across 512-byte reads."""
+  cjk_tail = '内部测试：日本語テキスト — 11\u2011inch'
+  prefix = (
+      'data: {"candidates": [{"content": {"role": "model", "parts": [{"text": "'
+  )
+  # Pad ASCII so the 3-byte UTF-8 sequence for '内' (\xe5\x86\x85) straddles 512.
+  pad_len = 511 - len(prefix.encode('utf-8'))
+  first_text = ('a' * pad_len) + cjk_tail
+  events = [
+      {
+          'candidates': [{
+              'content': {'role': 'model', 'parts': [{'text': first_text}]},
+          }]
+      },
+      {
+          'candidates': [{
+              'content': {'role': 'model', 'parts': [{'text': '完毕'}]},
+              'finishReason': 'STOP',
+          }]
+      },
+  ]
+  sse_bytes = b''.join(
+      b'data: '
+      + json.dumps(e, ensure_ascii=False).encode('utf-8')
+      + b'\r\n\r\n'
+      for e in events
+  )
+  assert sse_bytes[511:514] == '内'.encode('utf-8')
+  resp = _build_requests_response(
+      200, sse_bytes, content_type='text/event-stream'
+  )
+  assert resp.encoding == 'ISO-8859-1'
+  client = _client_with_authorized_session(resp)
+
+  with patch.object(
+      client._api_client, '_use_google_auth_sync', return_value=True
+  ):
+    chunks = list(
+        client.models.generate_content_stream(
+            model='gemini-2.5-flash', contents='hi'
+        )
+    )
+
+  assert [c.text for c in chunks] == [first_text, '完毕']
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_aiohttp_stream_preserves_unicode_line_separators_and_blank_data_lines():
+  """The aiohttp branch preserves trailing U+2028 and empty data: lines."""
+  api_client.has_aiohttp = True
+  pieces = [
+      b'data: {"t": "a\xe2\x80\xa8\n',
+      b'data: b"}\n\n',
+      b'data: {\n',
+      b'data: \n',
+      b'data: "a": 1}\n\n',
+  ]
+  mock_resp = MockAIOHTTPResponseFromReader(_ChunkedContent(pieces))
+  resp = api_client.HttpResponse(headers={}, response_stream=mock_resp)
+
+  results = [line async for line in resp._aiter_response_stream()]
+
+  assert results == ['{"t": "a\u2028\nb"}', '{\n\n"a": 1}']
+  assert json.loads(results[1]) == {'a': 1}
+  mock_resp.release.assert_called_once()
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_aiohttp_stream_cr_only_terminators():
+  """A bare CR ends an SSE line in the aiohttp branch."""
+  api_client.has_aiohttp = True
+  mock_resp = MockAIOHTTPResponseFromReader(
+      _aiohttp_stream_reader(b'data: {"a": 1}\r\rdata: {"b": 2}\r\r')
+  )
+  resp = api_client.HttpResponse(headers={}, response_stream=mock_resp)
+
+  results = [line async for line in resp._aiter_response_stream()]
+
+  assert results == ['{"a": 1}', '{"b": 2}']
+  mock_resp.release.assert_called_once()
+
+
+@requires_aiohttp
+@pytest.mark.asyncio
+async def test_aiohttp_stream_invalid_utf8_is_replaced():
+  """Invalid UTF-8 bytes in aiohttp streams become U+FFFD instead of raising."""
+  api_client.has_aiohttp = True
+  mock_resp = MockAIOHTTPResponseFromReader(
+      _aiohttp_stream_reader(b'data: {"t": "\xff"}\n\n')
+  )
+  resp = api_client.HttpResponse(headers={}, response_stream=mock_resp)
+
+  results = [line async for line in resp._aiter_response_stream()]
+
+  assert results == ['{"t": "\ufffd"}']
+  mock_resp.release.assert_called_once()
+# pylint: enable=protected-access
