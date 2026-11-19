@@ -1,0 +1,70 @@
+# Regenerates the GAOS (Interactions) SDK from the exported OpenAPI spec and
+# asserts that it matches the checked-in sources under google/genai/_gaos/.
+#
+# This runs once per PR/push (not per Python version), since the generated
+# output does not depend on the Python version.
+name: GAOS SDK Consistency
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  SPEAKEASY_VERSION: v2.959.1
+
+jobs:
+  gaos-consistency:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache Speakeasy Generator
+        id: cache-generator
+        uses: actions/cache@v4
+        with:
+          path: ~/go/bin/generate
+          key: speakeasy-generator-${{ env.SPEAKEASY_VERSION }}
+
+      - name: Clone Speakeasy Generator
+        if: steps.cache-generator.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "${{ env.SPEAKEASY_VERSION }}" https://github.com/speakeasy-api/openapi-generation.git /tmp/openapi-generation
+
+      # Use the Go version the generator asks for in its go.mod.
+      - name: Set up Go
+        if: steps.cache-generator.outputs.cache-hit != 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: /tmp/openapi-generation/go.mod
+          cache: false
+
+      - name: Install Speakeasy Generator
+        if: steps.cache-generator.outputs.cache-hit != 'true'
+        run: |
+          cd /tmp/openapi-generation
+          GOBIN="$HOME/go/bin" go install ./cmd/generate
+          rm -rf /tmp/openapi-generation
+
+      # generate_gaos.sh finds the generator in ~/go/bin.
+      - name: Generate GAOS SDK
+        env:
+          SPEAKEASY_LICENSE_TOKEN: ${{ secrets.SPEAKEASY_LICENSE_TOKEN }}
+        run: |
+          ./scripts/generate_gaos.sh
+
+      # `git diff` alone ignores untracked files, so mark new files as
+      # intent-to-add first; that way files the generator adds also fail the check.
+      - name: Assert no diff in GAOS SDK
+        run: |
+          git add --intent-to-add google/genai/_gaos/
+          git status --porcelain google/genai/_gaos/
+          git diff --exit-code google/genai/_gaos/

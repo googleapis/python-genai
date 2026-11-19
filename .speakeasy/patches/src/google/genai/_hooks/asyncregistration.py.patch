@@ -1,0 +1,39 @@
+diff --git a/src/google/genai/_hooks/asyncregistration.py b/src/google/genai/_hooks/asyncregistration.py
+--- a/src/google/genai/_hooks/asyncregistration.py
++++ b/src/google/genai/_hooks/asyncregistration.py
+@@ -1,4 +1,13 @@
+ from .asynctypes import AsyncHooks
++from .adapters import (
++    SyncToAsyncAfterErrorAdapter,
++    SyncToAsyncAfterParseErrorAdapter,
++    SyncToAsyncBeforeRequestAdapter,
++)
++from .google_genai_auth import GoogleGenAIAuthHook
++from ..lib.compat_errors import CompatErrorHook
++from typing import cast
++from .types import AfterErrorHook, AfterParseErrorHook
+ 
+ 
+ # This file is only ever generated once on the first generation and then is free to be modified.
+@@ -8,7 +17,7 @@
+ 
+ def init_async_hooks(hooks: AsyncHooks):
+     # pylint: disable=unused-argument
+-    """Add async hooks by calling hooks.register_{sdk_init/before_request/after_success/after_error/after_parse_error}_hook
++    """Add async hooks by calling hooks.register_{sdk_init/before_request/after_success/after_error}_hook
+     with an instance of a hook that implements that specific AsyncHook interface.
+     Async hooks are registered per SDK instance, and are valid for the lifetime of the SDK instance.
+ 
+@@ -30,3 +39,12 @@
+ 
+         hooks.register_before_request_hook(MyAsyncHook())
+     """
++    hooks.register_before_request_hook(
++        SyncToAsyncBeforeRequestAdapter(GoogleGenAIAuthHook())
++    )
++    hooks.register_after_error_hook(
++        SyncToAsyncAfterErrorAdapter(cast(AfterErrorHook, CompatErrorHook()))
++    )
++    hooks.register_after_parse_error_hook(
++        SyncToAsyncAfterParseErrorAdapter(cast(AfterParseErrorHook, CompatErrorHook()))
++    )

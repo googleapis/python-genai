@@ -1,0 +1,112 @@
+configVersion: 2.0.0
+generation:
+  sdkClassName: GenAI
+  maintainOpenAPIOrder: true
+  usageSnippets:
+    optionalPropertyRendering: withExample
+    sdkInitStyle: constructor
+  useClassNamesForArrayFields: true
+  fixes:
+    nameResolutionDec2023: true
+    nameResolutionFeb2025: true
+    parameterOrderingFeb2024: true
+    requestResponseComponentNamesFeb2024: true
+    securityFeb2025: true
+    sharedErrorComponentsApr2025: true
+    sharedNestedComponentsJan2026: true
+    nameOverrideFeb2026: true
+    openSingleValueEnumsOct2026: true
+  auth:
+    oAuth2ClientCredentialsEnabled: true
+    oAuth2PasswordEnabled: true
+    hoistGlobalSecurity: true
+  inferSSEOverload: true
+  sdkHooksConfigAccess: true
+  schemas:
+    allOfMergeStrategy: shallowMerge
+  requestBodyFieldName: body
+  versioningStrategy: manual
+  mockServer:
+    disabled: true
+  persistentEdits:
+    enabled: never
+  tests:
+    generateTests: false
+    generateNewTests: false
+    skipResponseBodyAssertions: false
+  repoSubDirectory: dist/sp_python
+  repoURL: https://github.com/speakeasy-sdks/genai-next.git
+python:
+  version: 2.4.1-preview.5
+  additionalDependencies:
+    dev: {}
+    main:
+      pydantic: ==2.12.5
+  allowedRedefinedBuiltins:
+    - id
+    - object
+    - input
+    - dir
+  asyncMode: split
+  authors:
+    - Google LLC
+  baseErrorName: GenAiError
+  bodyVariantOverloads: true
+  clientServerStatusCodesAsErrors: true
+  constFieldCasing: normal
+  defaultErrorName: GenAiDefaultError
+  description: GenAI Python SDK
+  durationFormat: false
+  enableCustomCodeRegions: false
+  enumFormat: union
+  envVarPrefix: GOOGLE_GENAI
+  errorSchemaValidation: false
+  eventStreamClassNames:
+    async: AsyncStream
+    sync: Stream
+  fixFlags:
+    asyncPaginationSep2025: true
+    conflictResistantModelImportsFeb2026: true
+    responseRequiredSep2024: true
+  flattenGlobalSecurity: true
+  flattenRequests: true
+  flatteningOrder: parameters-first
+  forwardCompatibleEnumsByDefault: true
+  forwardCompatibleUnionsByDefault: tagged-only
+  httpClientLibrary: httpx
+  imports:
+    option: openapi
+    paths:
+      callbacks: ""
+      errors: errors
+      operations: ""
+      resources: resources
+      shared: types
+      webhooks: ""
+    relative: true
+  inferUnionDiscriminators: true
+  inputModelSuffix: input
+  inputTypedDictSuffix: Param
+  license: Apache-2.0
+  maxMethodParams: 999
+  methodArguments: positional-path-with-extras
+  methodTimeoutArgument: timeout
+  methodTimeoutUnits: seconds
+  modelSerializationMethods: true
+  moduleName: google.genai
+  multipartArrayFormat: standard
+  optionalDependencies: {}
+  outputModelSuffix: output
+  packageManager: uv
+  packageName: google-genai
+  preApplyUnionDiscriminators: true
+  preserveUnknownFields: true
+  pytestFilterWarnings: []
+  pytestTimeout: 0
+  rawResponseHelpers: true
+  responseFormat: flat
+  responseSchemaValidation: lenient
+  sseFlatResponse: true
+  templateVersion: v2
+  useAsyncHooks: true
+  uuidFormat: false
