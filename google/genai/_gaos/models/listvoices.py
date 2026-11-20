@@ -107,8 +107,8 @@ class ListVoicesRequestParam(TypedDict):
     1000.
     """
     page_token: NotRequired[str]
-    r"""Optional. A page token received from a previous `ListVoices` call. Provide
-    this to retrieve the subsequent page.
+    r"""Optional. A page token received from a previous call to list voices.
+    Provide this to retrieve the subsequent page.
 
     When paginating, all filter query parameters (`language_code`,
     `region_code`, `accent`, `persona`, `context`, `gender`, `pitch`, `type`,
@@ -201,8 +201,8 @@ class ListVoicesRequest(BaseModel):
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. A page token received from a previous `ListVoices` call. Provide
-    this to retrieve the subsequent page.
+    r"""Optional. A page token received from a previous call to list voices.
+    Provide this to retrieve the subsequent page.
 
     When paginating, all filter query parameters (`language_code`,
     `region_code`, `accent`, `persona`, `context`, `gender`, `pitch`, `type`,

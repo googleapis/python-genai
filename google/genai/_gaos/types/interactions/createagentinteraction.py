@@ -117,7 +117,8 @@ class CreateAgentInteractionParam(TypedDict):
     continuation_token: NotRequired[str]
     r"""Opaque token to resume a long decode. Output: set when status is
     REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-    token back unchanged in CreateInteraction to continue decoding.
+    token back unchanged when creating the next interaction to continue
+    decoding.
     """
     environment: NotRequired[CreateAgentInteractionEnvironmentParam]
     r"""The environment configuration for the interaction. Can be an object
@@ -174,7 +175,8 @@ class CreateAgentInteraction(BaseModel):
     continuation_token: Optional[str] = None
     r"""Opaque token to resume a long decode. Output: set when status is
     REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-    token back unchanged in CreateInteraction to continue decoding.
+    token back unchanged when creating the next interaction to continue
+    decoding.
     """
 
     environment: Optional[CreateAgentInteractionEnvironment] = None

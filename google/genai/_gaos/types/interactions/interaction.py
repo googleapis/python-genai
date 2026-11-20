@@ -191,7 +191,8 @@ class InteractionTypedDict(TypedDict):
     continuation_token: NotRequired[str]
     r"""Opaque token to resume a long decode. Output: set when status is
     REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-    token back unchanged in CreateInteraction to continue decoding.
+    token back unchanged when creating the next interaction to continue
+    decoding.
     """
     created: NotRequired[str]
     r"""Required. Output only. The time at which the response was created in ISO 8601 format
@@ -293,7 +294,8 @@ class Interaction(BaseModel):
     continuation_token: Optional[str] = None
     r"""Opaque token to resume a long decode. Output: set when status is
     REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-    token back unchanged in CreateInteraction to continue decoding.
+    token back unchanged when creating the next interaction to continue
+    decoding.
     """
 
     created: Optional[str] = None

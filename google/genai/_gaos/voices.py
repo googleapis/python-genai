@@ -79,8 +79,8 @@ class Voices(BaseSDK):
             return fewer than this value. If unspecified, at most 50 voices are
             returned. The maximum value is 1000; values above 1000 are coerced to
             1000.
-        :param page_token: Optional. A page token received from a previous `ListVoices` call. Provide
-            this to retrieve the subsequent page.
+        :param page_token: Optional. A page token received from a previous call to list voices.
+            Provide this to retrieve the subsequent page.
 
             When paginating, all filter query parameters (`language_code`,
             `region_code`, `accent`, `persona`, `context`, `gender`, `pitch`, `type`,
@@ -264,16 +264,16 @@ class Voices(BaseSDK):
         (`VOICE_TYPE_PROMPTED`) or from reference and consent audio recordings
         (`VOICE_TYPE_REPLICATED`).
 
-        :param voice: A voice resource representing either a custom voice (created via
-            `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+        :param voice: A voice resource representing either a custom voice that you create or a
+            prebuilt system voice (returned when listing voices).
         :param api_version: API version for request routing.
         :param store: Optional. Whether the created voice is persisted and managed by Google.
 
             * When `true`, Google stores the voice and returns `Voice.id` (for example,
-            `voice_abc123def456`), which can be managed via `GetVoice`, `ListVoices`,
-            and `DeleteVoice` and referenced by ID in synthesis requests. Stored
-            voices expire after 1 year of inactivity; using a stored voice in speech
-            synthesis or as a `base_voice` in `CreateVoice` extends its
+            `voice_abc123def456`), which you can get, list, and delete, and
+            reference by ID in synthesis requests. Stored voices expire after 1
+            year of inactivity; using a stored voice in speech synthesis or as a
+            `base_voice` when creating another voice extends its
             `expire_time`. Projects are subject to a maximum active stored voice
             quota; exceeding the quota returns `RESOURCE_EXHAUSTED`.
             * When `false` (default), the voice is not stored by Google and `Voice.key`
@@ -593,8 +593,8 @@ class Voices(BaseSDK):
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> voices.VoiceOutput:
         r"""Gets a custom stored voice (`store = true`) by resource name.
-        Prebuilt catalog voices (`VOICE_TYPE_PREBUILT`) cannot be retrieved via
-        `GetVoice`; use `ListVoices` instead.
+        Prebuilt catalog voices (`VOICE_TYPE_PREBUILT`) can't be retrieved this
+        way; list voices instead.
 
         :param id: Required. The resource name of the custom stored voice to retrieve
             (for example, `voices/voice_abc123def456`).
@@ -815,8 +815,8 @@ class AsyncVoices(AsyncBaseSDK):
             return fewer than this value. If unspecified, at most 50 voices are
             returned. The maximum value is 1000; values above 1000 are coerced to
             1000.
-        :param page_token: Optional. A page token received from a previous `ListVoices` call. Provide
-            this to retrieve the subsequent page.
+        :param page_token: Optional. A page token received from a previous call to list voices.
+            Provide this to retrieve the subsequent page.
 
             When paginating, all filter query parameters (`language_code`,
             `region_code`, `accent`, `persona`, `context`, `gender`, `pitch`, `type`,
@@ -1003,16 +1003,16 @@ class AsyncVoices(AsyncBaseSDK):
         (`VOICE_TYPE_PROMPTED`) or from reference and consent audio recordings
         (`VOICE_TYPE_REPLICATED`).
 
-        :param voice: A voice resource representing either a custom voice (created via
-            `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+        :param voice: A voice resource representing either a custom voice that you create or a
+            prebuilt system voice (returned when listing voices).
         :param api_version: API version for request routing.
         :param store: Optional. Whether the created voice is persisted and managed by Google.
 
             * When `true`, Google stores the voice and returns `Voice.id` (for example,
-            `voice_abc123def456`), which can be managed via `GetVoice`, `ListVoices`,
-            and `DeleteVoice` and referenced by ID in synthesis requests. Stored
-            voices expire after 1 year of inactivity; using a stored voice in speech
-            synthesis or as a `base_voice` in `CreateVoice` extends its
+            `voice_abc123def456`), which you can get, list, and delete, and
+            reference by ID in synthesis requests. Stored voices expire after 1
+            year of inactivity; using a stored voice in speech synthesis or as a
+            `base_voice` when creating another voice extends its
             `expire_time`. Projects are subject to a maximum active stored voice
             quota; exceeding the quota returns `RESOURCE_EXHAUSTED`.
             * When `false` (default), the voice is not stored by Google and `Voice.key`
@@ -1338,8 +1338,8 @@ class AsyncVoices(AsyncBaseSDK):
         timeout: Optional[Union[float, httpx.Timeout]] = None,
     ) -> voices.VoiceOutput:
         r"""Gets a custom stored voice (`store = true`) by resource name.
-        Prebuilt catalog voices (`VOICE_TYPE_PREBUILT`) cannot be retrieved via
-        `GetVoice`; use `ListVoices` instead.
+        Prebuilt catalog voices (`VOICE_TYPE_PREBUILT`) can't be retrieved this
+        way; list voices instead.
 
         :param id: Required. The resource name of the custom stored voice to retrieve
             (for example, `voices/voice_abc123def456`).

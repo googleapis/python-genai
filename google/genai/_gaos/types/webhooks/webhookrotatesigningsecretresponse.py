@@ -30,14 +30,14 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class WebhookRotateSigningSecretResponseTypedDict(TypedDict):
-    r"""Response message for WebhookService.RotateSigningSecret."""
+    r"""Response for rotating a webhook's signing secret."""
 
     secret: NotRequired[str]
     r"""Output only. The newly generated signing secret."""
 
 
 class WebhookRotateSigningSecretResponse(BaseModel):
-    r"""Response message for WebhookService.RotateSigningSecret."""
+    r"""Response for rotating a webhook's signing secret."""
 
     secret: Optional[str] = None
     r"""Output only. The newly generated signing secret."""

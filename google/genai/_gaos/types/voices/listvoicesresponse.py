@@ -31,7 +31,7 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class ListVoicesResponseTypedDict(TypedDict):
-    r"""Response message for `VoicesService.ListVoices`."""
+    r"""Response for listing voices."""
 
     next_page_token: NotRequired[str]
     r"""A token that can be sent as `page_token` to retrieve the next page.
@@ -42,7 +42,7 @@ class ListVoicesResponseTypedDict(TypedDict):
 
 
 class ListVoicesResponse(BaseModel):
-    r"""Response message for `VoicesService.ListVoices`."""
+    r"""Response for listing voices."""
 
     next_page_token: Optional[str] = None
     r"""A token that can be sent as `page_token` to retrieve the next page.

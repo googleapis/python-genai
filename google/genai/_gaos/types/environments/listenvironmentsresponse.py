@@ -31,7 +31,7 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class ListEnvironmentsResponseTypedDict(TypedDict):
-    r"""Response for `ListEnvironments`."""
+    r"""Response for listing environments."""
 
     environments: NotRequired[List[EnvironmentTypedDict]]
     r"""Environments belonging to the provided project."""
@@ -40,7 +40,7 @@ class ListEnvironmentsResponseTypedDict(TypedDict):
 
 
 class ListEnvironmentsResponse(BaseModel):
-    r"""Response for `ListEnvironments`."""
+    r"""Response for listing environments."""
 
     environments: Optional[List[Environment]] = None
     r"""Environments belonging to the provided project."""

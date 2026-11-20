@@ -37,14 +37,14 @@ r"""Optional. The revocation behavior for previous signing secrets."""
 
 
 class RotateSigningSecretRequestParam(TypedDict):
-    r"""Request message for WebhookService.RotateSigningSecret."""
+    r"""Request for rotating a webhook's signing secret."""
 
     revocation_behavior: NotRequired[RevocationBehavior]
     r"""Optional. The revocation behavior for previous signing secrets."""
 
 
 class RotateSigningSecretRequest(BaseModel):
-    r"""Request message for WebhookService.RotateSigningSecret."""
+    r"""Request for rotating a webhook's signing secret."""
 
     revocation_behavior: Optional[RevocationBehavior] = None
     r"""Optional. The revocation behavior for previous signing secrets."""

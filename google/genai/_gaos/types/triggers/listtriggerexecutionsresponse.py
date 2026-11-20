@@ -31,22 +31,22 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class ListTriggerExecutionsResponseTypedDict(TypedDict):
-    r"""Response message for TriggerService.ListTriggerExecutions."""
+    r"""Response for listing trigger executions."""
 
     next_page_token: NotRequired[str]
-    r"""A page token, received from a previous `ListTriggerExecutions` call.
-    Provide this to retrieve the subsequent page.
+    r"""A token to retrieve the next page of trigger executions. Pass it as
+    `page_token` in the next request. If empty, there are no more pages.
     """
     trigger_executions: NotRequired[List[TriggerExecutionTypedDict]]
     r"""The list of trigger executions."""
 
 
 class ListTriggerExecutionsResponse(BaseModel):
-    r"""Response message for TriggerService.ListTriggerExecutions."""
+    r"""Response for listing trigger executions."""
 
     next_page_token: Optional[str] = None
-    r"""A page token, received from a previous `ListTriggerExecutions` call.
-    Provide this to retrieve the subsequent page.
+    r"""A token to retrieve the next page of trigger executions. Pass it as
+    `page_token` in the next request. If empty, there are no more pages.
     """
 
     trigger_executions: Optional[List[TriggerExecution]] = None

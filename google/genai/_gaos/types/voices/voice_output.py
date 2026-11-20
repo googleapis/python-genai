@@ -36,8 +36,8 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class VoiceOutputTypedDict(TypedDict):
-    r"""A voice resource representing either a custom voice (created via
-    `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+    r"""A voice resource representing either a custom voice that you create or a
+    prebuilt system voice (returned when listing voices).
     """
 
     type: VoiceType
@@ -57,8 +57,8 @@ class VoiceOutputTypedDict(TypedDict):
     r"""Output only. The timestamp at which a custom stored voice (`store = true`)
     or replicated voice key (`store = false`) expires. For custom stored voices
     (`store = true`), this expiration time is extended when the voice is used
-    for speech synthesis or as a `base_voice` in `CreateVoice`. Unset for
-    prebuilt catalog voices (`\"prebuilt\"`), which do not expire.
+    for speech synthesis or as a `base_voice` when creating another voice.
+    Unset for prebuilt catalog voices (`\"prebuilt\"`), which do not expire.
     """
     gender: NotRequired[str]
     r"""Optional. Perceived voice gender presentation (e.g. \"female\", \"male\",
@@ -69,26 +69,27 @@ class VoiceOutputTypedDict(TypedDict):
 
     * For Google-managed custom voices (`store = true`), this is a generated ID
     with prefix `voice_` (for example, `voice_abc123def456`). Pass
-    `voices/{id}` as the `name` in `GetVoice` and `DeleteVoice`, and pass
+    `voices/{id}` as the `name` when getting or deleting the voice, and pass
     `{id}` directly to `SpeechConfig.voice_config.voice` (or
     `SpeechConfig.voice`) during speech synthesis.
-    * For prebuilt catalog voices (`\"prebuilt\"` returned by `ListVoices`), this
-    is the speaker name (for example, `Puck` or `Charon`).
-    * Unset when `CreateVoice` is called with `store = false`.
+    * For prebuilt catalog voices (`\"prebuilt\"` returned when listing voices),
+    this is the speaker name (for example, `Puck` or `Charon`).
+    * Unset when the voice is created with `store = false`.
     """
     key: NotRequired[str]
     r"""Output only. The client-managed voice replication key (with prefix
-    `voicekey_`). Returned only by `CreateVoice` when `type` is `\"replicated\"`
-    and `store` is `false`. Pass this key to `SpeechConfig.voice_config.voice`
-    (or `SpeechConfig.voice`) during speech synthesis.
+    `voicekey_`). Returned only when creating a voice with `type`
+    `\"replicated\"` and `store` `false`. Pass this key to
+    `SpeechConfig.voice_config.voice` (or `SpeechConfig.voice`) during speech
+    synthesis.
     """
     language_code: NotRequired[str]
     r"""Optional. Primary BCP-47 language tag (e.g. \"en-US\", \"fr-FR\")."""
     model: NotRequired[str]
     r"""Optional. The model used to design or replicate the voice.
-    If omitted in `CreateVoice`, defaults to the latest supported voice design
-    model. Returned in `CreateVoice`, `GetVoice`, and `ListVoices` responses
-    for custom voices (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
+    If omitted when creating a voice, defaults to the latest supported voice
+    design model. Returned when creating, getting, or listing custom voices
+    (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
     voices. Created voices can be synthesized across any supported TTS
     synthesis model.
     """
@@ -99,8 +100,8 @@ class VoiceOutputTypedDict(TypedDict):
     pitch: NotRequired[Pitch]
     prompted: NotRequired[PromptedVoiceParam]
     r"""Parameters for prompted voice generation.
-    Required in `CreateVoice` when `type` is `\"prompted\"`. Returned in
-    `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+    Required when creating a voice with `type` `\"prompted\"`. Returned when
+    creating, getting, or listing prompted voices.
     """
     region_code: NotRequired[str]
     r"""Optional. ISO 3166-1 alpha-2 or UN M.49 geographic region code (e.g. \"US\",
@@ -113,8 +114,8 @@ class VoiceOutputTypedDict(TypedDict):
 
 
 class VoiceOutput(BaseModel):
-    r"""A voice resource representing either a custom voice (created via
-    `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+    r"""A voice resource representing either a custom voice that you create or a
+    prebuilt system voice (returned when listing voices).
     """
 
     type: VoiceType
@@ -139,8 +140,8 @@ class VoiceOutput(BaseModel):
     r"""Output only. The timestamp at which a custom stored voice (`store = true`)
     or replicated voice key (`store = false`) expires. For custom stored voices
     (`store = true`), this expiration time is extended when the voice is used
-    for speech synthesis or as a `base_voice` in `CreateVoice`. Unset for
-    prebuilt catalog voices (`\"prebuilt\"`), which do not expire.
+    for speech synthesis or as a `base_voice` when creating another voice.
+    Unset for prebuilt catalog voices (`\"prebuilt\"`), which do not expire.
     """
 
     gender: Optional[str] = None
@@ -153,19 +154,20 @@ class VoiceOutput(BaseModel):
 
     * For Google-managed custom voices (`store = true`), this is a generated ID
     with prefix `voice_` (for example, `voice_abc123def456`). Pass
-    `voices/{id}` as the `name` in `GetVoice` and `DeleteVoice`, and pass
+    `voices/{id}` as the `name` when getting or deleting the voice, and pass
     `{id}` directly to `SpeechConfig.voice_config.voice` (or
     `SpeechConfig.voice`) during speech synthesis.
-    * For prebuilt catalog voices (`\"prebuilt\"` returned by `ListVoices`), this
-    is the speaker name (for example, `Puck` or `Charon`).
-    * Unset when `CreateVoice` is called with `store = false`.
+    * For prebuilt catalog voices (`\"prebuilt\"` returned when listing voices),
+    this is the speaker name (for example, `Puck` or `Charon`).
+    * Unset when the voice is created with `store = false`.
     """
 
     key: Optional[str] = None
     r"""Output only. The client-managed voice replication key (with prefix
-    `voicekey_`). Returned only by `CreateVoice` when `type` is `\"replicated\"`
-    and `store` is `false`. Pass this key to `SpeechConfig.voice_config.voice`
-    (or `SpeechConfig.voice`) during speech synthesis.
+    `voicekey_`). Returned only when creating a voice with `type`
+    `\"replicated\"` and `store` `false`. Pass this key to
+    `SpeechConfig.voice_config.voice` (or `SpeechConfig.voice`) during speech
+    synthesis.
     """
 
     language_code: Optional[str] = None
@@ -173,9 +175,9 @@ class VoiceOutput(BaseModel):
 
     model: Optional[str] = None
     r"""Optional. The model used to design or replicate the voice.
-    If omitted in `CreateVoice`, defaults to the latest supported voice design
-    model. Returned in `CreateVoice`, `GetVoice`, and `ListVoices` responses
-    for custom voices (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
+    If omitted when creating a voice, defaults to the latest supported voice
+    design model. Returned when creating, getting, or listing custom voices
+    (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
     voices. Created voices can be synthesized across any supported TTS
     synthesis model.
     """
@@ -189,8 +191,8 @@ class VoiceOutput(BaseModel):
 
     prompted: Optional[PromptedVoice] = None
     r"""Parameters for prompted voice generation.
-    Required in `CreateVoice` when `type` is `\"prompted\"`. Returned in
-    `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+    Required when creating a voice with `type` `\"prompted\"`. Returned when
+    creating, getting, or listing prompted voices.
     """
 
     region_code: Optional[str] = None

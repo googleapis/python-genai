@@ -85,7 +85,7 @@ class ListTriggerExecutionsRequestParam(TypedDict):
     page_size: NotRequired[int]
     r"""The maximum number of executions to return per page."""
     page_token: NotRequired[str]
-    r"""A page token from a previous ListTriggerExecutions call."""
+    r"""A page token from a previous call to list trigger executions."""
 
 
 class ListTriggerExecutionsRequest(BaseModel):
@@ -112,7 +112,7 @@ class ListTriggerExecutionsRequest(BaseModel):
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""A page token from a previous ListTriggerExecutions call."""
+    r"""A page token from a previous call to list trigger executions."""
 
     @model_serializer(mode="wrap")
     def _serialize_model_with_info(self, handler, info):

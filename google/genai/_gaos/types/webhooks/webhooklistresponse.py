@@ -31,7 +31,7 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class WebhookListResponseTypedDict(TypedDict):
-    r"""Response message for WebhookService.ListWebhooks."""
+    r"""Response for listing webhooks."""
 
     next_page_token: NotRequired[str]
     r"""A token, which can be sent as `page_token` to retrieve the next page.
@@ -42,7 +42,7 @@ class WebhookListResponseTypedDict(TypedDict):
 
 
 class WebhookListResponse(BaseModel):
-    r"""Response message for WebhookService.ListWebhooks."""
+    r"""Response for listing webhooks."""
 
     next_page_token: Optional[str] = None
     r"""A token, which can be sent as `page_token` to retrieve the next page.

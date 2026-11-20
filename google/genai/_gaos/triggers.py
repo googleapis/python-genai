@@ -59,7 +59,7 @@ class Triggers(BaseSDK):
         :param api_version: API version for request routing.
         :param filter_: Optional. Filter expression (e.g., by state).
         :param page_size: Optional. The maximum number of triggers to return per page.
-        :param page_token: Optional. A page token from a previous ListTriggers call.
+        :param page_token: Optional. A page token from a previous call to list triggers.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -871,7 +871,7 @@ class Triggers(BaseSDK):
         :param trigger_id: Required. The trigger ID to list executions from.
         :param api_version: API version for request routing.
         :param page_size: The maximum number of executions to return per page.
-        :param page_token: A page token from a previous ListTriggerExecutions call.
+        :param page_token: A page token from a previous call to list trigger executions.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -1233,7 +1233,7 @@ class AsyncTriggers(AsyncBaseSDK):
         :param api_version: API version for request routing.
         :param filter_: Optional. Filter expression (e.g., by state).
         :param page_size: Optional. The maximum number of triggers to return per page.
-        :param page_token: Optional. A page token from a previous ListTriggers call.
+        :param page_token: Optional. A page token from a previous call to list triggers.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds
@@ -2060,7 +2060,7 @@ class AsyncTriggers(AsyncBaseSDK):
         :param trigger_id: Required. The trigger ID to list executions from.
         :param api_version: API version for request routing.
         :param page_size: The maximum number of executions to return per page.
-        :param page_token: A page token from a previous ListTriggerExecutions call.
+        :param page_token: A page token from a previous call to list trigger executions.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
         :param timeout: Override the default request timeout configuration for this method in seconds

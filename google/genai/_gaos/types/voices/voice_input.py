@@ -35,8 +35,8 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class VoiceInputParam(TypedDict):
-    r"""A voice resource representing either a custom voice (created via
-    `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+    r"""A voice resource representing either a custom voice that you create or a
+    prebuilt system voice (returned when listing voices).
     """
 
     type: VoiceType
@@ -60,9 +60,9 @@ class VoiceInputParam(TypedDict):
     r"""Optional. Primary BCP-47 language tag (e.g. \"en-US\", \"fr-FR\")."""
     model: NotRequired[str]
     r"""Optional. The model used to design or replicate the voice.
-    If omitted in `CreateVoice`, defaults to the latest supported voice design
-    model. Returned in `CreateVoice`, `GetVoice`, and `ListVoices` responses
-    for custom voices (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
+    If omitted when creating a voice, defaults to the latest supported voice
+    design model. Returned when creating, getting, or listing custom voices
+    (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
     voices. Created voices can be synthesized across any supported TTS
     synthesis model.
     """
@@ -73,8 +73,8 @@ class VoiceInputParam(TypedDict):
     pitch: NotRequired[Pitch]
     prompted: NotRequired[PromptedVoiceParam]
     r"""Parameters for prompted voice generation.
-    Required in `CreateVoice` when `type` is `\"prompted\"`. Returned in
-    `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+    Required when creating a voice with `type` `\"prompted\"`. Returned when
+    creating, getting, or listing prompted voices.
     """
     region_code: NotRequired[str]
     r"""Optional. ISO 3166-1 alpha-2 or UN M.49 geographic region code (e.g. \"US\",
@@ -90,8 +90,8 @@ class VoiceInputParam(TypedDict):
 
 
 class VoiceInput(BaseModel):
-    r"""A voice resource representing either a custom voice (created via
-    `CreateVoice`) or a prebuilt system voice (returned by `ListVoices`).
+    r"""A voice resource representing either a custom voice that you create or a
+    prebuilt system voice (returned when listing voices).
     """
 
     type: VoiceType
@@ -122,9 +122,9 @@ class VoiceInput(BaseModel):
 
     model: Optional[str] = None
     r"""Optional. The model used to design or replicate the voice.
-    If omitted in `CreateVoice`, defaults to the latest supported voice design
-    model. Returned in `CreateVoice`, `GetVoice`, and `ListVoices` responses
-    for custom voices (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
+    If omitted when creating a voice, defaults to the latest supported voice
+    design model. Returned when creating, getting, or listing custom voices
+    (`\"prompted\"` and `\"replicated\"`); unset for `\"prebuilt\"`
     voices. Created voices can be synthesized across any supported TTS
     synthesis model.
     """
@@ -138,8 +138,8 @@ class VoiceInput(BaseModel):
 
     prompted: Optional[PromptedVoice] = None
     r"""Parameters for prompted voice generation.
-    Required in `CreateVoice` when `type` is `\"prompted\"`. Returned in
-    `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+    Required when creating a voice with `type` `\"prompted\"`. Returned when
+    creating, getting, or listing prompted voices.
     """
 
     region_code: Optional[str] = None

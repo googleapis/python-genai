@@ -85,7 +85,7 @@ class ListWebhooksRequestParam(TypedDict):
     returned. The maximum value is 1000.
     """
     page_token: NotRequired[str]
-    r"""Optional. A page token, received from a previous `ListWebhooks` call.
+    r"""Optional. A page token, received from a previous call to list webhooks.
     Provide this to retrieve the subsequent page.
     """
 
@@ -110,7 +110,7 @@ class ListWebhooksRequest(BaseModel):
         Optional[str],
         FieldMetadata(query=QueryParamMetadata(style="form", explode=True)),
     ] = None
-    r"""Optional. A page token, received from a previous `ListWebhooks` call.
+    r"""Optional. A page token, received from a previous call to list webhooks.
     Provide this to retrieve the subsequent page.
     """
 

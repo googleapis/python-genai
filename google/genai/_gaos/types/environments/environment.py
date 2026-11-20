@@ -93,9 +93,8 @@ class EnvironmentTypedDict(TypedDict):
     environment_key: NotRequired[str]
     r"""Output only. Secret token generated upon environment creation for self_hosted
     environments. Used by the self-hosted sandbox daemon to authenticate
-    polling and streaming requests. Only returned in the CreateEnvironment
-    response; omitted from subsequent GetEnvironment and ListEnvironments
-    calls.
+    polling and streaming requests. Only returned when the environment is
+    created; omitted when getting or listing environments later.
     """
     file_count: NotRequired[int]
     r"""Output only. The number of files in the environment, output only."""
@@ -139,9 +138,8 @@ class Environment(BaseModel):
     environment_key: Optional[str] = None
     r"""Output only. Secret token generated upon environment creation for self_hosted
     environments. Used by the self-hosted sandbox daemon to authenticate
-    polling and streaming requests. Only returned in the CreateEnvironment
-    response; omitted from subsequent GetEnvironment and ListEnvironments
-    calls.
+    polling and streaming requests. Only returned when the environment is
+    created; omitted when getting or listing environments later.
     """
 
     file_count: Annotated[

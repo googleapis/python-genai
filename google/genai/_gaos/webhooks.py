@@ -61,7 +61,7 @@ class Webhooks(BaseSDK):
         :param page_size: Optional. The maximum number of webhooks to return. The service may return
             fewer than this value. If unspecified, at most 50 webhooks will be
             returned. The maximum value is 1000.
-        :param page_token: Optional. A page token, received from a previous `ListWebhooks` call.
+        :param page_token: Optional. A page token, received from a previous call to list webhooks.
             Provide this to retrieve the subsequent page.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.
@@ -1278,7 +1278,7 @@ class AsyncWebhooks(AsyncBaseSDK):
         :param page_size: Optional. The maximum number of webhooks to return. The service may return
             fewer than this value. If unspecified, at most 50 webhooks will be
             returned. The maximum value is 1000.
-        :param page_token: Optional. A page token, received from a previous `ListWebhooks` call.
+        :param page_token: Optional. A page token, received from a previous call to list webhooks.
             Provide this to retrieve the subsequent page.
         :param extra_headers: Additional headers to set or replace on requests.
         :param extra_query: Additional query parameters to append to requests.

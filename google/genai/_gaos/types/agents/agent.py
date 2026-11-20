@@ -55,7 +55,7 @@ r"""The environment configuration for the agent."""
 
 
 class AgentParam(TypedDict):
-    r"""An agent definition for the CreateAgent API.
+    r"""An agent definition, used when creating an agent.
     This message is the target for annotation-parser-based JSON parsing.
     New format:
     {
@@ -84,7 +84,7 @@ class AgentParam(TypedDict):
 
 
 class Agent(BaseModel):
-    r"""An agent definition for the CreateAgent API.
+    r"""An agent definition, used when creating an agent.
     This message is the target for annotation-parser-based JSON parsing.
     New format:
     {

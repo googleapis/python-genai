@@ -116,7 +116,8 @@ class Interactions(BaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -184,7 +185,8 @@ class Interactions(BaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -252,7 +254,8 @@ class Interactions(BaseSDK):
         :param background: Input only. Whether to run the model interaction in the background.
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -318,7 +321,8 @@ class Interactions(BaseSDK):
         :param background: Input only. Whether to run the model interaction in the background.
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -369,7 +373,8 @@ class Interactions(BaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -422,7 +427,8 @@ class Interactions(BaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1413,7 +1419,8 @@ class AsyncInteractions(AsyncBaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1481,7 +1488,8 @@ class AsyncInteractions(AsyncBaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1549,7 +1557,8 @@ class AsyncInteractions(AsyncBaseSDK):
         :param background: Input only. Whether to run the model interaction in the background.
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1615,7 +1624,8 @@ class AsyncInteractions(AsyncBaseSDK):
         :param background: Input only. Whether to run the model interaction in the background.
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1666,7 +1676,8 @@ class AsyncInteractions(AsyncBaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.
@@ -1719,7 +1730,8 @@ class AsyncInteractions(AsyncBaseSDK):
         :param cached_content: The name of the cached content used as context to serve the prediction. Note: only used in explicit caching, where users can have control over caching (e.g. what content to cache) and enjoy guaranteed cost savings. Format: cachedContents/{cachedContent}
         :param continuation_token: Opaque token to resume a long decode. Output: set when status is
             REQUIRES_CONTINUATION and decoding can be resumed. Input: pass the latest
-            token back unchanged in CreateInteraction to continue decoding.
+            token back unchanged when creating the next interaction to continue
+            decoding.
         :param environment: The environment configuration for the interaction. Can be an object
             specifying remote environment sources or a string referencing an existing
             environment ID.

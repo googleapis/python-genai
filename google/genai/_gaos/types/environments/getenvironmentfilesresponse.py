@@ -31,7 +31,7 @@ from typing_extensions import NotRequired, TypedDict
 
 
 class GetEnvironmentFilesResponseTypedDict(TypedDict):
-    r"""Response for `GetEnvironmentFiles`."""
+    r"""Response for getting an environment's files."""
 
     files: NotRequired[List[EnvironmentFileTypedDict]]
     r"""If the requested path is a directory, this contains its contents.
@@ -46,7 +46,7 @@ class GetEnvironmentFilesResponseTypedDict(TypedDict):
 
 
 class GetEnvironmentFilesResponse(BaseModel):
-    r"""Response for `GetEnvironmentFiles`."""
+    r"""Response for getting an environment's files."""
 
     files: Optional[List[EnvironmentFile]] = None
     r"""If the requested path is a directory, this contains its contents.

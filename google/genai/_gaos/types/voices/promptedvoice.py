@@ -31,8 +31,8 @@ from typing_extensions import NotRequired, TypedDict
 
 class PromptedVoiceParam(TypedDict):
     r"""Parameters for prompted voice generation.
-    Required in `CreateVoice` when `type` is `\"prompted\"`. Returned in
-    `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+    Required when creating a voice with `type` `\"prompted\"`. Returned when
+    creating, getting, or listing prompted voices.
     """
 
     input: str
@@ -51,8 +51,8 @@ class PromptedVoiceParam(TypedDict):
 
 class PromptedVoice(BaseModel):
     r"""Parameters for prompted voice generation.
-    Required in `CreateVoice` when `type` is `\"prompted\"`. Returned in
-    `CreateVoice`, `GetVoice`, and `ListVoices` responses for prompted voices.
+    Required when creating a voice with `type` `\"prompted\"`. Returned when
+    creating, getting, or listing prompted voices.
     """
 
     input: str

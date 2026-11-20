@@ -65,7 +65,7 @@ r"""Network configuration for the environment."""
 
 
 class CreateEnvironmentRequestParam(TypedDict):
-    r"""Request for `CreateEnvironment`."""
+    r"""Request for creating an environment."""
 
     custom_config: NotRequired[Dict[str, Any]]
     r"""Optional. Arbitrary customer-defined JSON configuration passed through
@@ -93,7 +93,7 @@ class CreateEnvironmentRequestParam(TypedDict):
 
 
 class CreateEnvironmentRequest(BaseModel):
-    r"""Request for `CreateEnvironment`."""
+    r"""Request for creating an environment."""
 
     custom_config: Optional[Dict[str, Any]] = None
     r"""Optional. Arbitrary customer-defined JSON configuration passed through
