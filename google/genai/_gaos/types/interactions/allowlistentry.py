@@ -25,7 +25,7 @@ from ..basemodel import (
     current_serialization_methods_dump,
 )
 from pydantic import model_serializer
-from typing import Dict, List, Optional, Union
+from typing import ClassVar, Dict, FrozenSet, List, Optional, Union
 from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 
@@ -54,6 +54,8 @@ class AllowlistEntryParam(TypedDict):
 
 class AllowlistEntry(BaseModel):
     r"""A single domain allowlist rule with optional header injection."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"transform"})
 
     domain: str
     r"""Domain to allow outbound requests to. Supports wildcards (e.g.
