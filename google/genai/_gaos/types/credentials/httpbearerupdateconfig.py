@@ -28,7 +28,7 @@ from ..basemodel import (
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Any, Literal, Optional
+from typing import Any, ClassVar, FrozenSet, Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -50,6 +50,8 @@ class HTTPBearerUpdateConfigParam(TypedDict):
 
 class HTTPBearerUpdateConfig(BaseModel):
     r"""Configuration for updating HTTP Bearer token credentials."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"token"})
 
     header_name: Optional[str] = None
     r"""Optional. Header name to inject the token into. Defaults to

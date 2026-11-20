@@ -39,7 +39,7 @@ from ..interactions import (
 from pydantic import model_serializer
 from pydantic.functional_serializers import PlainSerializer
 from pydantic.functional_validators import BeforeValidator
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, ClassVar, Dict, FrozenSet, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
@@ -120,6 +120,8 @@ class EnvironmentTypedDict(TypedDict):
 
 class Environment(BaseModel):
     r"""An execution environment for an agent."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"environment_key"})
 
     id: str
     r"""Required. Output only. The ID of the environment."""
