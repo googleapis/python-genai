@@ -29,6 +29,8 @@ from ... import types
 from .. import pytest_helper
 from enum import Enum
 
+from ... import models as models_module
+
 GEMINI_FLASH_LATEST = 'gemini-2.5-flash'
 GEMINI_FLASH_2_0 = 'gemini-2.0-flash-001'
 GEMINI_FLASH_IMAGE_LATEST = 'gemini-2.5-flash-image'
@@ -62,6 +64,19 @@ class InstrumentEnum(Enum):
   WOODWIND = 'Woodwind'
   BRASS = 'Brass'
   KEYBOARD = 'Keyboard'
+
+
+def test_generate_content_labels_are_serialized_for_mldev():
+  request = models_module._GenerateContentConfig_to_mldev(
+      {
+          'labels': {'purpose': 'exploration', 'environment': 'development'},
+      }
+  )
+
+  assert request['labels'] == {
+      'purpose': 'exploration',
+      'environment': 'development',
+  }
 
 
 test_table: list[pytest_helper.TestTableItem] = [
