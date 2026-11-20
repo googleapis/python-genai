@@ -25,8 +25,6 @@ from typing import Literal, Union
 AgentOption = Union[
     Literal[
         # Gemini Deep Research Agent
-        "deep-research-pro-preview-12-2025",
-        # Gemini Deep Research Agent
         "deep-research-preview-04-2026",
         # Gemini Deep Research Max Agent
         "deep-research-max-preview-04-2026",
