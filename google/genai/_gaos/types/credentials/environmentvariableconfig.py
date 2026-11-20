@@ -29,7 +29,7 @@ from .injectionlocation_enum import InjectionLocationEnum
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, ClassVar, FrozenSet, List, Literal, Optional, Union
 from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
@@ -75,6 +75,8 @@ class EnvironmentVariableConfigParam(TypedDict):
 
 class EnvironmentVariableConfig(BaseModel):
     r"""Configuration for environment variable credentials."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"value"})
 
     id: str
 

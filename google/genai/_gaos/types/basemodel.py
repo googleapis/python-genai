@@ -21,7 +21,7 @@ from contextvars import ContextVar
 from pydantic import ConfigDict, model_serializer
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic_core import PydanticSerializationUnexpectedValue, core_schema
-from typing import TYPE_CHECKING, Any, Callable, Literal, Optional, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, FrozenSet, Iterator, Literal, Optional, Tuple, Type, TypeVar, Union
 from typing_extensions import TypeAliasType, TypeAlias
 
 
@@ -29,6 +29,16 @@ class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(
         populate_by_name=True, arbitrary_types_allowed=True, protected_namespaces=(), extra="allow"
     )
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset()
+
+    def __repr_args__(self) -> Iterator[Tuple[Optional[str], Any]]:
+        sensitive = type(self)._sensitive_fields
+        for key, value in super().__repr_args__():
+            if key in sensitive and value is not None and not isinstance(value, Unset):
+                yield key, "[REDACTED]"
+            else:
+                yield key, value
 
     def to_dict(
         self,
