@@ -62,6 +62,36 @@ def _validate_response(response: GenerateContentResponse) -> bool:
   return _validate_content(response.candidates[0].content)
 
 
+def _has_function_call(content: Content) -> bool:
+  return any(part.function_call is not None for part in content.parts or [])
+
+
+def _has_function_response(content: Content) -> bool:
+  return any(part.function_response is not None for part in content.parts or [])
+
+
+def _drop_rejected_input(curated_history: list[Content]) -> None:
+  """Drops the input of a rejected turn from the end of the curated history.
+
+  If that input is a function response, the model turn holding the call it
+  answers is dropped too, and so is the input before that call. This repeats
+  back to the input that started the exchange.
+
+  Args:
+    curated_history: The curated history to trim in place.
+  """
+  while curated_history:
+    rejected_input = curated_history.pop()
+    if not _has_function_response(rejected_input):
+      return
+    call_start = len(curated_history)
+    while call_start > 0 and curated_history[call_start - 1].role == "model":
+      call_start -= 1
+    if not any(_has_function_call(c) for c in curated_history[call_start:]):
+      return
+    del curated_history[call_start:]
+
+
 def _extract_curated_history(
     comprehensive_history: list[Content],
 ) -> list[Content]:
@@ -104,8 +134,8 @@ def _extract_curated_history(
         i += 1
       if is_valid:
         curated_history.extend(current_output)
-      elif curated_history:
-        curated_history.pop()
+      else:
+        _drop_rejected_input(curated_history)
   return curated_history
 
 
@@ -165,6 +195,18 @@ class _BaseChat:
     if is_valid:
       self._curated_history.extend(input_contents)
       self._curated_history.extend(output_contents)
+
+  def _drop_afc_exchange(self, curated_length: int) -> None:
+    """Drops a rejected AFC exchange from the curated history.
+
+    AFC records each function call and its response as it runs. If the final
+    model output is invalid, the whole exchange is dropped, as the input of
+    any invalid turn is.
+
+    Args:
+      curated_length: The curated history length before the exchange began.
+    """
+    del self._curated_history[curated_length:]
 
   def get_history(self, curated: bool = False) -> list[Content]:
     """Returns the chat history.
@@ -334,6 +376,7 @@ class Chat(_BaseChat):
     response = types.GenerateContentResponse()
     function_map = _extra_utils.get_function_map(parsed_config)
     i = 0
+    curated_length = len(self._curated_history)
     while remaining_remote_calls_afc > 0:
       i += 1
       response = self._modules.generate_content(
@@ -383,11 +426,14 @@ class Chat(_BaseChat):
         if response.candidates and response.candidates[0].content
         else []
     )
+    is_valid = _validate_response(response)
     self.record_history(
         user_input=user_input,
         model_output=model_output,
-        is_valid=_validate_response(response),
+        is_valid=is_valid,
     )
+    if not is_valid:
+      self._drop_afc_exchange(curated_length)
     return response
 
   def send_message_stream(
@@ -503,6 +549,7 @@ class Chat(_BaseChat):
     function_map = _extra_utils.get_function_map(parsed_config)
     i = 0
     if isinstance(self._modules, Models):
+      curated_length = len(self._curated_history)
       while remaining_remote_calls_afc > 0:
         i += 1
         response_stream = self._modules.generate_content_stream(
@@ -570,15 +617,16 @@ class Chat(_BaseChat):
           )
           user_input = func_response_content
 
+      is_valid = bool(
+          is_valid and model_output is not None and finish_reason is not None
+      )
       self.record_history(
           user_input=user_input,
           model_output=model_output,
-          is_valid=bool(
-              is_valid
-              and model_output is not None
-              and finish_reason is not None
-          ),
+          is_valid=is_valid,
       )
+      if not is_valid:
+        self._drop_afc_exchange(curated_length)
 
 
 class Chats:
@@ -822,6 +870,7 @@ class AsyncChat(_BaseChat):
       )
 
       i = 0
+      curated_length = len(self._curated_history)
       while remaining_remote_calls_afc > 0:
         i += 1
         response = await self._modules.generate_content(
@@ -878,11 +927,14 @@ class AsyncChat(_BaseChat):
           if response.candidates and response.candidates[0].content
           else []
       )
+      is_valid = _validate_response(response)
       self.record_history(
           user_input=user_input,
           model_output=model_output,
-          is_valid=_validate_response(response),
+          is_valid=is_valid,
       )
+      if not is_valid:
+        self._drop_afc_exchange(curated_length)
       return response
 
   async def send_message_stream(
@@ -1075,6 +1127,7 @@ class AsyncChat(_BaseChat):
         finish_reason = None
         is_valid = True
 
+        curated_length = len(self._curated_history)
         while remaining_remote_calls_afc > 0:
           i += 1
           response_stream = await self._modules.generate_content_stream(
@@ -1144,15 +1197,14 @@ class AsyncChat(_BaseChat):
           )
           user_input = func_response_content
 
+        is_valid = bool(is_valid and model_output and finish_reason is not None)
         self.record_history(
             user_input=user_input,
             model_output=model_output,
-            is_valid=bool(
-                is_valid
-                and model_output
-                and finish_reason is not None
-            ),
+            is_valid=is_valid,
         )
+        if not is_valid:
+          self._drop_afc_exchange(curated_length)
 
     return async_generator()  # type: ignore[no-untyped-call, no-any-return]
 

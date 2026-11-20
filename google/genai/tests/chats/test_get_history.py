@@ -46,7 +46,7 @@ pytest_plugins = 'pytest_asyncio'
 
 @pytest.fixture
 def mock_api_client(vertexai=False):
-  api_client = mock.MagicMock(spec=client.ApiClient)
+  api_client = mock.MagicMock(spec=client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}  # Ensure headers exist
@@ -519,3 +519,288 @@ def test_chat_stream_with_empty_content(
   ]
   assert chat.get_history() == expected_comprehensive_history
   assert not chat.get_history(curated=True)
+
+
+def get_weather(city: str) -> dict[str, int]:
+  """Returns the weather for a city."""
+  del city  # Unused.
+  return {'c': 21}
+
+
+_AFC_CONFIG = types.GenerateContentConfig(tools=[get_weather])
+
+_PRIOR_VALID_TURN = [
+    types.Content(role='user', parts=[types.Part.from_text(text='hi')]),
+    types.Content(role='model', parts=[types.Part.from_text(text='hello')]),
+]
+
+
+def _function_call_content() -> types.Content:
+  return types.Content(
+      role='model',
+      parts=[
+          types.Part.from_function_call(
+              name='get_weather', args={'city': 'Paris'}
+          )
+      ],
+  )
+
+
+def _function_response_content() -> types.Content:
+  return types.Content(
+      role='user',
+      parts=[
+          types.Part.from_function_response(
+              name='get_weather', response={'result': {'c': 21}}
+          )
+      ],
+  )
+
+
+def _call_response() -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=_function_call_content(),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+
+def _blocked_response() -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[types.Candidate(finish_reason=types.FinishReason.SAFETY)]
+  )
+
+
+def _text_response(text: str) -> types.GenerateContentResponse:
+  return types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  role='model', parts=[types.Part.from_text(text=text)]
+              ),
+              finish_reason=types.FinishReason.STOP,
+          )
+      ]
+  )
+
+
+def _user_text(text: str) -> types.Content:
+  return types.UserContent(parts=[types.Part.from_text(text=text)])
+
+
+_EMPTY_MODEL_CONTENT = types.Content(role='model', parts=[])
+
+
+def test_chat_afc_invalid_final_turn_drops_exchange(mock_api_client):
+  """A rejected final AFC answer drops the exchange from later requests."""
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG
+  )
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      side_effect=[_call_response(), _blocked_response(), _text_response('ok')],
+  ) as mock_generate_content:
+    chat.send_message('what is the weather in Paris')
+
+    assert chat.get_history() == [
+        _user_text('what is the weather in Paris'),
+        _function_call_content(),
+        _function_response_content(),
+        _EMPTY_MODEL_CONTENT,
+    ]
+    assert not chat.get_history(curated=True)
+
+    chat.send_message('try again')
+    assert mock_generate_content.call_args_list[2].kwargs['contents'] == [
+        _user_text('try again')
+    ]
+
+
+def test_chat_afc_invalid_final_turn_keeps_earlier_turns(mock_api_client):
+  """Dropping a rejected AFC exchange keeps the valid turns before it."""
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG, history=_PRIOR_VALID_TURN
+  )
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      side_effect=[_call_response(), _blocked_response()],
+  ):
+    chat.send_message('what is the weather in Paris')
+
+  assert chat.get_history(curated=True) == _PRIOR_VALID_TURN
+  assert len(chat.get_history()) == 6
+
+
+def test_chat_afc_invalid_final_turn_after_two_calls_drops_exchange(
+    mock_api_client,
+):
+  """Every function call and response of a rejected exchange is dropped."""
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG
+  )
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      side_effect=[_call_response(), _call_response(), _blocked_response()],
+  ):
+    chat.send_message('what is the weather in Paris')
+
+  assert len(chat.get_history()) == 6
+  assert not chat.get_history(curated=True)
+
+
+def test_chat_stream_afc_invalid_final_turn_drops_exchange(mock_api_client):
+  """The streaming AFC path drops the exchange when the final stream is empty."""
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG
+  )
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      side_effect=[
+          iter([_call_response()]),
+          iter([types.GenerateContentResponse(candidates=[])]),
+      ],
+  ):
+    for _ in chat.send_message_stream('what is the weather in Paris'):
+      pass
+
+  assert chat.get_history() == [
+      _user_text('what is the weather in Paris'),
+      _function_call_content(),
+      _function_response_content(),
+      _EMPTY_MODEL_CONTENT,
+  ]
+  assert not chat.get_history(curated=True)
+
+
+@pytest.mark.asyncio
+async def test_async_chat_afc_invalid_final_turn_drops_exchange(
+    mock_api_client,
+):
+  """The async AFC path drops the exchange when the final answer is invalid."""
+  chat = chats.AsyncChats(modules=models.AsyncModels(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG
+  )
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content',
+      new_callable=mock.AsyncMock,
+      side_effect=[_call_response(), _blocked_response()],
+  ):
+    await chat.send_message('what is the weather in Paris')
+
+  assert len(chat.get_history()) == 4
+  assert not chat.get_history(curated=True)
+
+
+@pytest.mark.asyncio
+async def test_async_chat_stream_afc_invalid_final_turn_drops_exchange(
+    mock_api_client,
+):
+  """The async streaming AFC path drops the exchange on an empty final stream."""
+
+  async def call_stream():
+    yield _call_response()
+
+  async def empty_stream():
+    yield types.GenerateContentResponse(candidates=[])
+
+  chat = chats.AsyncChats(modules=models.AsyncModels(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG
+  )
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=[call_stream(), empty_stream()],
+  ):
+    async for _ in await chat.send_message_stream(
+        'what is the weather in Paris'
+    ):
+      pass
+
+  assert len(chat.get_history()) == 4
+  assert not chat.get_history(curated=True)
+
+
+def test_history_afc_invalid_final_turn_drops_exchange(mock_api_client):
+  """A saved history with a rejected AFC exchange curates to the turns before."""
+  history = _PRIOR_VALID_TURN + [
+      _user_text('what is the weather in Paris'),
+      _function_call_content(),
+      _function_response_content(),
+      _function_call_content(),
+      _function_response_content(),
+      _EMPTY_MODEL_CONTENT,
+  ]
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', history=history
+  )
+
+  assert chat.get_history() == history
+  assert chat.get_history(curated=True) == _PRIOR_VALID_TURN
+
+
+def test_chat_afc_valid_final_turn_keeps_exchange(mock_api_client):
+  """A valid AFC exchange stays in the curated history."""
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', config=_AFC_CONFIG
+  )
+  with mock.patch.object(
+      models.Models,
+      'generate_content',
+      side_effect=[_call_response(), _text_response('21 degrees')],
+  ):
+    chat.send_message('what is the weather in Paris')
+
+  assert chat.get_history(curated=True) == [
+      _user_text('what is the weather in Paris'),
+      _function_call_content(),
+      _function_response_content(),
+      _text_response('21 degrees').candidates[0].content,
+  ]
+
+
+def test_chat_afc_spent_budget_keeps_function_call(mock_api_client):
+  """With no remote calls left, the unanswered function call is kept."""
+  config = types.GenerateContentConfig(
+      tools=[get_weather],
+      automatic_function_calling=types.AutomaticFunctionCallingConfig(
+          maximum_remote_calls=1
+      ),
+  )
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', config=config
+  )
+  with mock.patch.object(
+      models.Models, 'generate_content', side_effect=[_call_response()]
+  ):
+    chat.send_message('what is the weather in Paris')
+
+  assert chat.get_history(curated=True) == [
+      _user_text('what is the weather in Paris'),
+      _function_call_content(),
+  ]
+
+
+def test_history_spent_budget_tail_survives_rejected_next_turn(
+    mock_api_client,
+):
+  """A rejected plain turn after a spent-budget tail drops only its input."""
+  history = [
+      _user_text('what is the weather in Paris'),
+      _function_call_content(),
+      _user_text('and in Rome?'),
+      _EMPTY_MODEL_CONTENT,
+  ]
+  chat = chats.Chats(modules=models.Models(mock_api_client)).create(
+      model='gemini-2.5-flash', history=history
+  )
+
+  assert chat.get_history(curated=True) == history[:2]
