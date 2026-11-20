@@ -34,7 +34,7 @@ from .types import (
     Hooks,
 )
 from .registration import init_hooks
-from .google_genai_auth import GoogleGenAIAuthHook
+from .google_genai_auth import GoogleGenAIAgentMessageHook, GoogleGenAIAuthHook
 from ..lib.compat_errors import CompatErrorHook
 from typing import cast, List, Optional, Tuple
 from ..sdkconfiguration import SDKConfiguration
@@ -49,6 +49,8 @@ class SDKHooks(Hooks):
         self.after_parse_error_hooks: List[AfterParseErrorHook] = []
         init_hooks(self)
         self.register_before_request_hook(GoogleGenAIAuthHook())
+        self.register_after_success_hook(GoogleGenAIAgentMessageHook())
+        self.register_after_error_hook(GoogleGenAIAgentMessageHook())
         self.register_after_error_hook(cast(AfterErrorHook, CompatErrorHook()))
         self.register_after_parse_error_hook(
             cast(AfterParseErrorHook, CompatErrorHook())
