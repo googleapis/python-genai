@@ -25,7 +25,7 @@ from ..basemodel import (
     current_serialization_methods_dump,
 )
 from pydantic import model_serializer
-from typing import Optional
+from typing import ClassVar, FrozenSet, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
@@ -38,6 +38,8 @@ class WebhookRotateSigningSecretResponseTypedDict(TypedDict):
 
 class WebhookRotateSigningSecretResponse(BaseModel):
     r"""Response for rotating a webhook's signing secret."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"secret"})
 
     secret: Optional[str] = None
     r"""Output only. The newly generated signing secret."""
