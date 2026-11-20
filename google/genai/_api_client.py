@@ -508,21 +508,19 @@ async def _aiter_sse_lines(
     yield line
 
 
-async def _aiter_aiohttp_lines(
-    content: 'aiohttp.StreamReader',
-) -> AsyncIterator[bytes]:
-  """Yields newline-terminated lines from an aiohttp stream, of any length."""
-  buffer = bytearray()
-  async for data in content.iter_any():
-    scan_start = len(buffer)
-    buffer += data
-    line_start = 0
-    while (newline_pos := buffer.find(b'\n', scan_start)) != -1:
-      yield bytes(buffer[line_start : newline_pos + 1])
-      line_start = scan_start = newline_pos + 1
-    del buffer[:line_start]
-  if buffer:
-    yield bytes(buffer)
+def _ensure_requests_utf8_default(response: Any) -> None:
+  """Defaults requests.Response encoding to UTF-8 without explicit charset."""
+  requests_module = _common.loaded_requests()
+  if (
+      requests_module is not None
+      and isinstance(response, requests_module.Response)
+      and isinstance(
+          getattr(response, 'headers', None),
+          (dict, requests_module.structures.CaseInsensitiveDict),
+      )
+      and 'charset' not in (response.headers.get('content-type') or '').lower()
+  ):
+    response.encoding = 'utf-8'
 
 
 class HttpResponse:
@@ -733,11 +731,9 @@ class HttpResponse:
         self.response_stream, aiohttp.ClientResponse
     ):
       try:
-        async for line_bytes in _aiter_aiohttp_lines(
-            self.response_stream.content
+        async for line in _aiter_sse_lines(
+            self.response_stream.content.iter_any()
         ):
-          # Decode the bytes and remove trailing whitespace and newlines.
-          line = line_bytes.decode('utf-8').rstrip()
           if not line:
             if data_buffer:
               yield '\n'.join(data_buffer)
@@ -1378,7 +1374,9 @@ class BaseApiClient:
     self._aiohttp_sessions: dict[Any, Any] = {}
     if self._use_aiohttp():
       try:
-        import aiohttp  # pylint: disable=g-import-not-at-top
+        # pylint: disable=g-import-not-at-top,unused-import,redefined-outer-name
+        import aiohttp
+        # pylint: enable=g-import-not-at-top,unused-import,redefined-outer-name
         # Do it once at the genai.Client level. Share among all requests.
         self._async_client_session_request_args = (
             self._ensure_aiohttp_ssl_ctx(
@@ -2115,6 +2113,7 @@ class BaseApiClient:
           timeout=http_request.timeout,
           stream=stream,
       )
+      _ensure_requests_utf8_default(response)
     else:
       httpx_request = self._httpx_client.build_request(  # type: ignore[union-attr]
           method=http_request.method,
@@ -2685,6 +2684,7 @@ class BaseApiClient:
             stream=True,
         )
         try:
+          _ensure_requests_utf8_default(response)
           errors.APIError.raise_for_response(response)
           _write_chunks(response.iter_content(chunk_size=chunk_size))
         finally:
@@ -2698,6 +2698,7 @@ class BaseApiClient:
             headers=http_request.headers,
             timeout=http_request.timeout,
         )
+        _ensure_requests_utf8_default(response)
         errors.APIError.raise_for_response(response)
         return cast(bytes, response.content)
     else:
