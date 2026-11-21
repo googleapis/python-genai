@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import copy
 from unittest import mock
 import pytest
 from ... import _api_client
@@ -103,9 +104,58 @@ def get_aqi_from_city(location: str) -> str:
   return None
 
 
+SPLIT_FUNCTION_CALL_PARTS = [
+    types.Part(
+        function_call=types.FunctionCall(name='what_date_is_today', args={}),
+        thought_signature=b'sig1',
+    ),
+    types.Part(
+        function_call=types.FunctionCall(name='what_time_is_now', args={})
+    ),
+    types.Part(text=''),
+]
+
+
+def what_date_is_today() -> str:
+  """Returns today's date."""
+  return '2026-01-01'
+
+
+def what_time_is_now() -> str:
+  """Returns the current time."""
+  return '12:00'
+
+
+def _split_function_call_chunks() -> list[types.GenerateContentResponse]:
+  """Returns one streamed model turn split across three chunks."""
+  chunks = []
+  for i, part in enumerate(SPLIT_FUNCTION_CALL_PARTS):
+    is_last = i == len(SPLIT_FUNCTION_CALL_PARTS) - 1
+    chunks.append(
+        types.GenerateContentResponse(
+            candidates=[
+                types.Candidate(
+                    content=types.Content(role='model', parts=[part]),
+                    finish_reason=types.FinishReason.STOP if is_last else None,
+                )
+            ]
+        )
+    )
+  return chunks
+
+
+def _assert_merged_afc_contents(contents: list[types.Content]) -> None:
+  assert [c.role for c in contents] == ['user', 'model', 'user']
+  assert contents[1].parts == SPLIT_FUNCTION_CALL_PARTS
+  assert [p.function_response.name for p in contents[2].parts] == [
+      'what_date_is_today',
+      'what_time_is_now',
+  ]
+
+
 @pytest.fixture
 def mock_api_client(vertexai=False):
-  api_client = mock.MagicMock(spec=client.ApiClient)
+  api_client = mock.MagicMock(spec=client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}  # Ensure headers exist
@@ -546,3 +596,110 @@ async def test_generate_content_stream_with_thought_summaries_async(
     assert chunk.automatic_function_calling_history[i].model_dump(
         exclude_none=True
     ) == TEST_AFC_HISTORY[i].model_dump(exclude_none=True)
+
+
+def test_generate_content_stream_afc_merges_split_function_calls(
+    mock_api_client,
+):
+  """A streamed turn split over chunks is sent back as one model content."""
+  requests = []
+  streams = [
+      _split_function_call_chunks(),
+      [
+          types.GenerateContentResponse(
+              candidates=[types.Candidate(content=TEST_AFC_TEXT_CONTENT)]
+          )
+      ],
+  ]
+
+  def fake_stream(**kwargs):
+    requests.append(copy.deepcopy(kwargs['contents']))
+    return streams[len(requests) - 1]
+
+  with mock.patch.object(
+      models.Models, '_generate_content_stream', side_effect=fake_stream
+  ):
+    stream = models.Models(api_client_=mock_api_client).generate_content_stream(
+        model='test_model',
+        contents='What date and time is it?',
+        config=types.GenerateContentConfig(
+            tools=[what_date_is_today, what_time_is_now]
+        ),
+    )
+    chunks = list(stream)
+
+  assert len(requests) == 2
+  _assert_merged_afc_contents(requests[1])
+  _assert_merged_afc_contents(chunks[-1].automatic_function_calling_history)
+
+
+@pytest.mark.asyncio
+async def test_generate_content_stream_afc_merges_split_function_calls_async(
+    mock_api_client,
+):
+  """A streamed turn split over chunks is sent back as one model content."""
+  requests = []
+  streams = [
+      _split_function_call_chunks(),
+      [
+          types.GenerateContentResponse(
+              candidates=[types.Candidate(content=TEST_AFC_TEXT_CONTENT)]
+          )
+      ],
+  ]
+
+  def fake_stream(**kwargs):
+    requests.append(copy.deepcopy(kwargs['contents']))
+    chunks = streams[len(requests) - 1]
+
+    async def generator():
+      for chunk in chunks:
+        yield chunk
+
+    return generator()
+
+  with mock.patch.object(
+      models.AsyncModels, '_generate_content_stream', side_effect=fake_stream
+  ):
+    stream = await models.AsyncModels(
+        api_client_=mock_api_client
+    ).generate_content_stream(
+        model='test_model',
+        contents='What date and time is it?',
+        config=types.GenerateContentConfig(
+            tools=[what_date_is_today, what_time_is_now]
+        ),
+    )
+    chunks = [chunk async for chunk in stream]
+
+  assert len(requests) == 2
+  _assert_merged_afc_contents(requests[1])
+  _assert_merged_afc_contents(chunks[-1].automatic_function_calling_history)
+
+
+def test_merge_streamed_contents_empty():
+  merged = _extra_utils.merge_streamed_contents([])
+  assert isinstance(merged, list)
+  assert not merged
+
+
+def test_merge_streamed_contents_keeps_every_part_in_order():
+  """Parts stay unmerged, None parts are skipped and the role is model."""
+  signed_empty_text = types.Part(text='', thought_signature=b'sig')
+  merged = _extra_utils.merge_streamed_contents([
+      types.Content(parts=[signed_empty_text]),
+      types.Content(role='model', parts=None),
+      types.Content(role='model', parts=[types.Part(text='a')]),
+      types.Content(role='model', parts=[types.Part(text='b')]),
+  ])
+
+  assert merged == [
+      types.Content(
+          role='model',
+          parts=[
+              signed_empty_text,
+              types.Part(text='a'),
+              types.Part(text='b'),
+          ],
+      )
+  ]
