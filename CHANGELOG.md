@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.7.0](https://github.com/googleapis/python-genai/compare/v3.6.1...v3.7.0) (2026-11-21)
+
+
+### Features
+
+* Add `text_normalization` to `SpeechConfig` (Gemini API). ([a6ad785](https://github.com/googleapis/python-genai/commit/a6ad78555367b38ec720d34fa04ab116a012208b))
+* **environments:** Expose CreateEnvironmentRequest.env on the gemini platform ([074f507](https://github.com/googleapis/python-genai/commit/074f5070edfe1d93c675a01e2457b16c0b4d53ac))
+
+
+### Documentation
+
+* Describe Interactions API operations in plain words instead of RPC names ([a8b851b](https://github.com/googleapis/python-genai/commit/a8b851b4714663901cf42705b38f3f9ce4480fa8))
+
 ## [3.6.1](https://github.com/googleapis/python-genai/compare/v3.6.0...v3.6.1) (2026-11-18)
 
 
