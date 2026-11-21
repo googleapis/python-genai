@@ -492,6 +492,9 @@ def _Candidate_from_mldev(
         ),
     )
 
+  if getv(from_object, ['finishMessage']) is not None:
+    setv(to_object, ['finish_message'], getv(from_object, ['finishMessage']))
+
   if getv(from_object, ['tokenCount']) is not None:
     setv(to_object, ['token_count'], getv(from_object, ['tokenCount']))
 
