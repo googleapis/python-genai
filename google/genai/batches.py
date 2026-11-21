@@ -378,6 +378,13 @@ def _BatchJob_from_mldev(
         ),
     )
 
+  if getv(from_object, ['metadata', 'inputConfig', 'fileName']) is not None:
+    setv(
+        to_object,
+        ['src', 'file_name'],
+        getv(from_object, ['metadata', 'inputConfig', 'fileName']),
+    )
+
   return to_object
 
 

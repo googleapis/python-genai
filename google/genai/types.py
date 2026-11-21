@@ -19628,7 +19628,7 @@ class BatchJob(_common.BaseModel):
   )
   src: Optional[BatchJobSource] = Field(
       default=None,
-      description="""Configuration for the input data. This field is for Gemini Enterprise Agent Platform only.
+      description="""Configuration for the input data. In Gemini Developer API responses, only `file_name` is populated.
       """,
   )
   dest: Optional[BatchJobDestination] = Field(
@@ -19712,7 +19712,7 @@ class BatchJobDict(TypedDict, total=False):
       """
 
   src: Optional[BatchJobSourceDict]
-  """Configuration for the input data. This field is for Gemini Enterprise Agent Platform only.
+  """Configuration for the input data. In Gemini Developer API responses, only `file_name` is populated.
       """
 
   dest: Optional[BatchJobDestinationDict]
