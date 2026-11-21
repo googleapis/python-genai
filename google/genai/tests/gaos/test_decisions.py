@@ -125,6 +125,40 @@ def test_python_decisions_with_raw_response(
   parsed = raw_res.parse()
   assert parsed.answers is not None
   assert parsed.answers["q1"].type == "noul"
+  assert parsed.answers["q1"].noul == 0.95
+  assert parsed.answers["q1"].confidence == 0.95
+
+
+def test_python_decisions_unknown_criteria_keys_are_forwarded(
+    mock_gaos_server: conftest.MockGaosServer,
+):
+  # b/577986221: Unknown criteria keys (e.g. `true`/`false` instead of
+  # `true_description`/`false_description`) must be sent to the API so it can
+  # reject them, instead of being silently dropped by the SDK.
+  mock_gaos_server.handler_fn = _decisions_handler
+  client = mock_gaos_server.client
+
+  client.decisions.create(
+      model="decisions-prerelease",
+      input="The mug arrived cracked.",
+      questions={
+          "is_damaged": {
+              "type": "noul",
+              "instructions": "Did the item arrive damaged?",
+              "criteria": {
+                  "true": "the item is damaged",
+                  "false": "the item is not damaged",
+              },
+          }
+      },
+  )
+
+  assert mock_gaos_server.captured_bodies[0]["questions"]["is_damaged"][
+      "criteria"
+  ] == {
+      "true": "the item is damaged",
+      "false": "the item is not damaged",
+  }
 
 
 def test_python_decisions_types_and_empty_criteria():
