@@ -11,7 +11,7 @@
 Google Gen AI Python SDK provides an interface for developers to integrate
 Google's generative models into their Python applications. It supports
 the [Gemini Developer API](https://aistudio.google.com/docs) and
-[Gemini Enterprise Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
+[Gemini platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)
 APIs.
 
 > [!WARNING]
@@ -19,7 +19,7 @@ APIs.
 > Major version 3 changes:
 >
 > * **Default Gemini Developer API version is now `v1` (was `v1beta`).**
->   Enterprise (Vertex AI) clients are unaffected and still default to
+>   Gemini platform (formerly Gemini Enterprise Agent Platform and Vertex AI) clients are unaffected and still default to
 >   `v1beta1`.
 >     * The `gemini-flash-latest`, `gemini-flash-lite-latest` and
 >       `gemini-pro-latest` aliases exist only on `v1beta`. Use a specific
@@ -57,7 +57,7 @@ To ensure your AI coding helper (such as Antigravity, Claude Code, Cursor, or ot
 Depending on your target platform, use the corresponding Agent Skill repository:
 
 *   **Gemini Developer API**: Use the [google-gemini/gemini-skills](https://github.com/google-gemini/gemini-skills) repository.
-*   **Gemini Enterprise Agent Platform (formerly Vertex AI)**: Use the [google/skills](https://github.com/google/skills/tree/main/skills/cloud/gemini-api) repository.
+*   **Gemini platform (formerly Gemini Enterprise Agent Platform and Vertex AI)**: Use the [google/skills](https://github.com/google/skills/tree/main/skills/cloud/gemini-api) repository.
 
 ## Installation
 
@@ -81,7 +81,7 @@ from google.genai import types
 ## Create a client
 
 Please run one of the following code blocks to create a client for
-different services ([Gemini Developer API](https://aistudio.google.com/docs) or [Agent Platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)).
+different services ([Gemini Developer API](https://aistudio.google.com/docs) or [Gemini platform](https://docs.cloud.google.com/gemini-enterprise-agent-platform)).
 
 ```python
 from google import genai
@@ -93,7 +93,7 @@ client = genai.Client(api_key='GEMINI_API_KEY')
 ```python
 from google import genai
 
-# Only run this block for Agent Platform
+# Only run this block for Gemini platform
 client = genai.Client(
     enterprise=True, project='your-project-id', location='global'
 )
@@ -112,7 +112,7 @@ Below is an example `generate_content()` call using `Part` from the `types` modu
 
 ```python
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents=types.Part.from_text(text='Why is the sky blue?')
 )
 ```
@@ -122,7 +122,7 @@ types:
 
 ```python
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents={'text': 'Why is the sky blue?'}
 )
 ```
@@ -131,7 +131,7 @@ response = client.models.generate_content(
 
 You can create a client by configuring the necessary environment variables.
 Configuration setup instructions depends on whether you're using the Gemini
-Developer API or the Gemini API in the Gemini Enterprise Agent Platform.
+Developer API or the Gemini API in Gemini platform.
 
 **Gemini Developer API:** Set the `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
 It will automatically be picked up by the client. It's recommended that you
@@ -142,7 +142,7 @@ precedence.
 export GEMINI_API_KEY='your-api-key'
 ```
 
-**Gemini API on Agent Platform:** Set `GOOGLE_GENAI_USE_ENTERPRISE`,
+**Gemini API in Gemini platform:** Set `GOOGLE_GENAI_USE_ENTERPRISE`,
 `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION`, as shown below:
 
 ```bash
@@ -238,17 +238,17 @@ async with Client().aio as aclient:
 
 By default, the SDK uses:
 - the stable `v1` API endpoints for the Gemini Developer API.
-- and the beta `v1beta1` API endpoints for Gemini Enterprise Agent Platform.
+- and the beta `v1beta1` API endpoints for Gemini platform.
 
 A different API version (for example `v1beta` or `v1alpha`) can be selected
 with `http_options` or with the `GOOGLE_GENAI_API_VERSION` environment
 variable. An explicitly configured version in `http_options` takes precedence
 over the environment variable. Setting `GOOGLE_GENAI_API_VERSION=beta` selects
 the beta version of whichever backend is in use: `v1beta` for the Gemini
-Developer API and `v1beta1` for Gemini Enterprise Agent Platform.
+Developer API and `v1beta1` for Gemini platform.
 
 To set the API version use `http_options`. For example, to set the API version
-to `v1` for Gemini Enterprise Agent Platform:
+to `v1` for Gemini platform:
 
 ```python
 from google import genai
@@ -357,7 +357,7 @@ client = Client(
 )
 
 response = client.models.generate_content(
-    model='gemini-3.1-pro-preview', contents='Why is the sky blue?'
+    model='gemini-4-hydrogen', contents='Why is the sky blue?'
 )
 ```
 
@@ -365,7 +365,7 @@ If `base_url_resource_scope=types.ResourceScope.COLLECTION`, the resource name
 will not include api version, project, or location.
 
 Expected request url will be:
-https://test-api-gateway-proxy.com/publishers/google/models/gemini-3-pro-preview
+https://test-api-gateway-proxy.com/publishers/google/models/gemini-4-hydrogen
 
 ## Types
 
@@ -384,7 +384,7 @@ See the 'Create a client' section above to initialize a client.
 
 ```python
 response = client.models.generate_content(
-    model='gemini-3.8-flash', contents='Why is the sky blue?'
+    model='gemini-4-hydrogen', contents='Why is the sky blue?'
 )
 print(response.text)
 ```
@@ -395,7 +395,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.1-flash-lite-image',
+    model='gemini-nano-banana-2.1',
     contents='A cartoon infographic for flying sneakers',
     config=types.GenerateContentConfig(
         response_modalities=["IMAGE"],
@@ -450,7 +450,7 @@ python code.
 ```python
 file = client.files.upload(file='a11.txt')
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents=['Could you summarize this file?', file]
 )
 print(response.text)
@@ -671,7 +671,7 @@ The output of the model can be influenced by several optional settings
 available in generate_content's config parameter. For example, increasing
 `max_output_tokens` is essential for longer model responses. Capabilities and parameter defaults
 for each model is shown in the
-[Gemini Enterprise Agent Platform docs](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/google-models)
+[Gemini platform docs](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/google-models)
 and [Gemini API docs](https://aistudio.google.com/docs/models)
 respectively. Note that all API methods support Pydantic types and
 dictionaries, which you can access from `google.genai.types`. In this example,
@@ -681,7 +681,7 @@ we use `GenerateContentConfig` to specify the desired behavior from the model.
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='high',
     config=types.GenerateContentConfig(
         system_instruction='I say high, you say low',
@@ -714,14 +714,14 @@ client = genai.Client(
 
 # Automatic continuation is enabled by default.
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='Write a comprehensive multi-chapter guide on compiler design.',
 )
 print(response.text)
 
 # Set automatic_continuation=False to disable automatic continuation.
 single_hop_response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='Write a comprehensive multi-chapter guide on compiler design.',
     config=types.GenerateContentConfig(
         automatic_continuation=False,
@@ -768,7 +768,7 @@ print(async_pager[0])
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='Say something bad.',
     config=types.GenerateContentConfig(
         safety_settings=[
@@ -802,7 +802,7 @@ def get_current_weather(location: str) -> str:
 
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[get_current_weather]),
 )
@@ -820,7 +820,7 @@ as follows:
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -867,7 +867,7 @@ function = types.FunctionDeclaration(
 tool = types.Tool(function_declarations=[function])
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='What is the weather like in Boston?',
     config=types.GenerateContentConfig(tools=[tool]),
 )
@@ -911,7 +911,7 @@ function_response_content = types.Content(
 )
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents=[
         user_prompt_content,
         function_call_content,
@@ -946,7 +946,7 @@ def get_current_weather(location: str) -> str:
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-3.8-flash",
+    model="gemini-4-hydrogen",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -976,7 +976,7 @@ def get_current_weather(location: str) -> str:
     return "sunny"
 
 response = client.models.generate_content(
-    model="gemini-3.8-flash",
+    model="gemini-4-hydrogen",
     contents="What is the weather like in Boston?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
@@ -992,7 +992,7 @@ response = client.models.generate_content(
 
 #### Model Context Protocol (MCP) support (experimental)
 
-See below for examples of how to use MCP for the Gemini Developer API and Gemini Enterprise Agent Platform.
+See below for examples of how to use MCP for the Gemini Developer API and Gemini platform.
 
 ##### MCP for Gemini Developer API
 
@@ -1027,7 +1027,7 @@ async def run():
 
             # Send request to the model with MCP function declarations
             response = await client.aio.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-4-hydrogen",
                 contents=prompt,
                 config=genai.types.GenerateContentConfig(
                     tools=[session],  # uses the session, will automatically call the tool using automatic function calling
@@ -1039,14 +1039,14 @@ async def run():
 asyncio.run(run())
 ```
 
-##### MCP for Gemini Enterprise Agent Platform
+##### MCP for Gemini platform
 
-To use MCP with Agent Platform, provide the MCP tool you want to use to
+To use MCP with Gemini platform, provide the MCP tool you want to use to
 `Tool.mcp_servers` in your `generate_content` request. See
 [here](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/mcp#toolsets)
 for a list of available MCP tools.
 
-The `mcp` package is required to use Agent Platform MCP servers.
+The `mcp` package is required to use Gemini platform MCP servers.
 You can install it with `pip install mcp`.
 
 ```python
@@ -1060,9 +1060,9 @@ LOCATION="your-location"
 client = genai.Client(enterprise=True, project=PROJECT_ID, location=LOCATION)
 
 
-async def agent_platform_mcp():
+async def gemini_platform_mcp():
     response = await client.aio.models.generate_content(
-        model="gemini-3.8-flash",
+        model="gemini-4-hydrogen",
         contents=f"List my endpoints in {LOCATION} for my {PROJECT_ID} project.",
         config = types.GenerateContentConfig(
             tools=[
@@ -1091,7 +1091,7 @@ async def agent_platform_mcp():
                     print(f"  Tool Response: {part.function_response.response}")
             print("-" * 40)
 
-asyncio.run(agent_platform_mcp())
+asyncio.run(gemini_platform_mcp())
 ```
 
 ### JSON Response Schema
@@ -1126,7 +1126,7 @@ user_profile = {
 }
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='Give me a random user profile.',
     config={
         'response_mime_type': 'application/json',
@@ -1156,7 +1156,7 @@ class CountryInfo(BaseModel):
 
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -1170,7 +1170,7 @@ print(response.text)
 from google.genai import types
 
 response = client.models.generate_content(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='Give me information for the United States.',
     config=types.GenerateContentConfig(
         response_mime_type='application/json',
@@ -1209,7 +1209,7 @@ to you, rather than being returned as one chunk.
 
 ```python
 for chunk in client.models.generate_content_stream(
-    model='gemini-3.8-flash', contents='Tell me a story in 300 words.'
+    model='gemini-4-hydrogen', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1223,7 +1223,7 @@ you can use the `from_uri` class method to create a `Part` object.
 from google.genai import types
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents=[
         'What is this image about?',
         types.Part.from_uri(
@@ -1247,7 +1247,7 @@ with open(YOUR_IMAGE_PATH, 'rb') as f:
     image_bytes = f.read()
 
 for chunk in client.models.generate_content_stream(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents=[
         'What is this image about?',
         types.Part.from_bytes(data=image_bytes, mime_type=YOUR_IMAGE_MIME_TYPE),
@@ -1266,7 +1266,7 @@ of `client.models.generate_content`
 
 ```python
 response = await client.aio.models.generate_content(
-    model='gemini-3.8-flash', contents='Tell me a story in 300 words.'
+    model='gemini-4-hydrogen', contents='Tell me a story in 300 words.'
 )
 
 print(response.text)
@@ -1276,7 +1276,7 @@ print(response.text)
 
 ```python
 async for chunk in await client.aio.models.generate_content_stream(
-    model='gemini-3.8-flash', contents='Tell me a story in 300 words.'
+    model='gemini-4-hydrogen', contents='Tell me a story in 300 words.'
 ):
     print(chunk.text, end='')
 ```
@@ -1285,7 +1285,7 @@ async for chunk in await client.aio.models.generate_content_stream(
 
 ```python
 response = client.models.count_tokens(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1293,11 +1293,11 @@ print(response)
 
 #### Compute Tokens
 
-Compute tokens is only supported in Gemini Enterprise Agent Platform.
+Compute tokens is only supported in Gemini platform.
 
 ```python
 response = client.models.compute_tokens(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1307,7 +1307,7 @@ print(response)
 
 ```python
 response = await client.aio.models.count_tokens(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1330,7 +1330,7 @@ pip install "google-genai[local-tokenizer-transformers]"
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.8-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
 result = tokenizer.count_tokens("What is your name?")
 ```
 
@@ -1339,7 +1339,7 @@ result = tokenizer.count_tokens("What is your name?")
 ```python
 from google.genai import local_tokenizer
 
-tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.8-flash')
+tokenizer = local_tokenizer.LocalTokenizer(model_name='gemini-3.5-flash')
 result = tokenizer.compute_tokens("What is your name?")
 ```
 
@@ -1347,7 +1347,7 @@ result = tokenizer.compute_tokens("What is your name?")
 
 ```python
 response = client.models.embed_content(
-    model='gemini-embedding-001',
+    model='gemini-embedding-2',
     contents='why is the sky blue?',
 )
 print(response)
@@ -1357,7 +1357,7 @@ print(response)
 from google.genai import types
 
 response = client.models.embed_content(
-    model='gemini-embedding-001',
+    model='gemini-embedding-2',
     contents=['why is the sky blue?', 'What is your age?'],
     config=types.EmbedContentConfig(output_dimensionality=10),
 )
@@ -1386,7 +1386,7 @@ response1.generated_images[0].image.show()
 
 #### Upscale Image
 
-Upscale image is only supported in Gemini Enterprise Agent Platform.
+Upscale image is only supported in Gemini platform.
 
 ```python
 from google.genai import types
@@ -1407,7 +1407,7 @@ response2.generated_images[0].image.show()
 
 Edit image uses a separate model from generate and upscale.
 
-Edit image is only supported in Gemini Enterprise Agent Platform.
+Edit image is only supported in Gemini platform.
 
 ```python
 # Edit the generated image from above
@@ -1444,7 +1444,7 @@ response3.generated_images[0].image.show()
 
 ### Veo
 
-Currently, only Gemini Enterprise Agent Platform supports video generation.
+Currently, only Gemini platform supports video generation.
 
 #### Generate Videos (Text to Video)
 
@@ -1452,7 +1452,7 @@ Currently, only Gemini Enterprise Agent Platform supports video generation.
 from google import genai
 from google.genai import types
 
-client = genai.Client(vertexai=True)
+client = genai.Client(enterprise=True)
 
 # Create operation
 operation = client.models.generate_videos(
@@ -1482,7 +1482,7 @@ video.show()
 from google import genai
 from google.genai import types
 
-client = genai.Client(vertexai=True)
+client = genai.Client(enterprise=True)
 
 # Read local image (uses mimetypes.guess_type to infer mime type)
 image = types.Image.from_file(location="local/path/file.png")
@@ -1514,13 +1514,13 @@ video.show()
 
 #### Generate Videos (Video to Video)
 
-Currently, only Gemini Enterprise Agent Platform supports Video to Video generation (Video extension).
+Currently, only Gemini platform supports Video to Video generation (Video extension).
 
 ```python
 from google import genai
 from google.genai import types
 
-client = genai.Client(vertexai=True)
+client = genai.Client(enterprise=True)
 
 # Read local video (uses mimetypes.guess_type to infer mime type)
 video = types.Video.from_file("local/path/video.mp4")
@@ -1531,7 +1531,7 @@ operation = client.models.generate_videos(
     source=types.GenerateVideosSource(
         # Prompt is optional if Video is provided
         prompt='Night sky',
-        # Input video must be in GCS for Gemini Enterprise Agent Platform or a URI for Gemini
+        # Input video must be in GCS for Gemini platform or a URI for Gemini
         video=types.Video(
             uri="gs://bucket-name/inputs/videos/cat_driving.mp4",
         ),
@@ -1562,7 +1562,7 @@ that it can reflect on its previous responses (i.e., engage in an ongoing
 ### Send Message (Synchronous Non-Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-3.8-flash')
+chat = client.chats.create(model='gemini-4-hydrogen')
 response = chat.send_message('tell me a story')
 print(response.text)
 response = chat.send_message('summarize the story you told me in 1 sentence')
@@ -1572,7 +1572,7 @@ print(response.text)
 ### Send Message (Synchronous Streaming)
 
 ```python
-chat = client.chats.create(model='gemini-3.8-flash')
+chat = client.chats.create(model='gemini-4-hydrogen')
 for chunk in chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1580,7 +1580,7 @@ for chunk in chat.send_message_stream('tell me a story'):
 ### Send Message (Asynchronous Non-Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-3.8-flash')
+chat = client.aio.chats.create(model='gemini-4-hydrogen')
 response = await chat.send_message('tell me a story')
 print(response.text)
 ```
@@ -1588,7 +1588,7 @@ print(response.text)
 ### Send Message (Asynchronous Streaming)
 
 ```python
-chat = client.aio.chats.create(model='gemini-3.8-flash')
+chat = client.aio.chats.create(model='gemini-4-hydrogen')
 async for chunk in await chat.send_message_stream('tell me a story'):
     print(chunk.text)
 ```
@@ -1701,7 +1701,7 @@ See the [documentation site](https://aistudio.google.com/docs/interactions-overv
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input='Tell me a short joke about programming.'
 )
 print(interaction.output_text)
@@ -1715,14 +1715,14 @@ The Interactions API supports server-side state management. You can continue a c
 ```python
 # 1. First turn
 interaction1 = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input='Hi, my name is Amir.'
 )
 print(f"Model: {interaction1.output_text}")
 
 # 2. Second turn (passing previous_interaction_id)
 interaction2 = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input='What is my name?',
     previous_interaction_id=interaction1.id
 )
@@ -1772,7 +1772,7 @@ import base64
 # base64_image = ...
 
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input=[
         {'type': 'text', 'text': 'Describe the image.'},
         {'type': 'image', 'data': base64_image, 'mime_type': 'image/png'}
@@ -1807,7 +1807,7 @@ weather_tool = {
 
 # 2. Send the request with tools
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input='What is the weather in Mountain View, CA?',
     tools=[weather_tool]
 )
@@ -1822,7 +1822,7 @@ for step in (interaction.steps or []):
 
         # Send result back to the model
         interaction = client.interactions.create(
-            model='gemini-3.8-flash',
+            model='gemini-4-hydrogen',
             previous_interaction_id=interaction.id,
             input=[{
                 'type': 'function_result',
@@ -1842,7 +1842,7 @@ You can also use Google's built-in tools, such as **Google Search** or **Code Ex
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input='Who won the last Super Bowl?',
     tools=[{'type': 'google_search'}]
 )
@@ -1854,7 +1854,7 @@ print(interaction.output_text)
 
 ```python
 interaction = client.interactions.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     input='Calculate the 50th Fibonacci number.',
     tools=[{'type': 'code_execution'}]
 )
@@ -1872,7 +1872,7 @@ The Interactions API can generate multimodal outputs, such as images or audio. Y
 import base64
 
 interaction = client.interactions.create(
-    model='gemini-3.1-flash-lite-image',
+    model='gemini-nano-banana-2.1',
     input='Generate an image of a futuristic city.',
     response_modalities=['IMAGE']
 )
@@ -1904,17 +1904,17 @@ if interaction.output_audio:
 ## Tunings
 
 `client.tunings` contains tuning job APIs and supports supervised fine
-tuning through `tune`. Only supported in Gemini Enterprise Agent Platform. See the 'Create a client'
+tuning through `tune`. Only supported in Gemini platform. See the 'Create a client'
 section above to initialize a client.
 
 ### Tune
 
--   Gemini Enterprise Agent Platform supports tuning from GCS source or from a [Gemini Enterprise Agent Platform Multimodal Dataset](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/datasets)
+-   Gemini platform supports tuning from GCS source or from a [Gemini platform Multimodal Dataset](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/datasets)
 
 ```python
 from google.genai import types
 
-model = 'gemini-3.8-flash'
+model = 'gemini-3.1-flash-lite'
 training_dataset = types.TuningDataset(
     # or gcs_uri=my_enterprise_multimodal_dataset
     gcs_uri='gs://your-gcs-bucket/your-tuning-data.jsonl',
@@ -2058,17 +2058,17 @@ print(async_pager[0])
 
 ## Batch Prediction
 
-Only supported in Gemini Enterprise Agent Platform. See the 'Create a client' section above to
+Only supported in Gemini platform. See the 'Create a client' section above to
 initialize a client.
 
 ### Create
 
-Gemini Enterprise Agent Platform:
+Gemini platform:
 
 ```python
 # Specify model and source file only, destination and job display name will be auto-populated
 job = client.batches.create(
-    model='gemini-3.8-flash',
+    model='gemini-4-hydrogen',
     src='bq://my-project.my-dataset.my-table',  # or "gs://path/to/input/data"
 )
 
@@ -2080,7 +2080,7 @@ Gemini Developer API:
 ```python
 # Create a batch job with inlined requests
 batch_job = client.batches.create(
-    model="gemini-3.8-flash",
+    model="gemini-4-hydrogen",
     src=[{
         "contents": [{
             "parts": [{
@@ -2115,7 +2115,7 @@ file = client.files.upload(
 
 # Create a batch job with file name
 batch_job = client.batches.create(
-    model="gemini-3.8-flash",
+    model="gemini-4-hydrogen",
     src="files/test-json",
 )
 ```
@@ -2212,12 +2212,12 @@ properties to include in the request body. This can be used to access new or
 experimental backend features that are not yet formally supported in the SDK.
 The structure of the dictionary must match the backend API's request structure.
 
-- Gemini Enterprise Agent Platform backend API docs: https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest
+- Gemini platform backend API docs: https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest
 - Gemini API backend API docs: https://aistudio.google.com/api-reference
 
 ```python
 response = client.models.generate_content(
-    model="gemini-3.8-flash",
+    model="gemini-4-hydrogen",
     contents="What is the weather in Boston? and how about Sunnyvale?",
     config=types.GenerateContentConfig(
         tools=[get_current_weather],
