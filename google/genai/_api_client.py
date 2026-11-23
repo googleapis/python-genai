@@ -81,6 +81,10 @@ try:
       aiohttp.ClientConnectorError,
       aiohttp.ClientOSError,
       aiohttp.ServerDisconnectedError,
+      # ClientTimeout and aiohttp's ServerTimeoutError family raise this.
+      asyncio.TimeoutError,
+      # google.auth.aio converts aiohttp timeouts into this.
+      auth_exceptions.TimeoutError,
   )
 except ImportError:
   pass
@@ -819,9 +823,10 @@ def retry_args(options: Optional[HttpRetryOptions]) -> _common.StringDict:
       or isinstance(e, _HTTPX_TRANSIENT_EXC)
       or isinstance(e, _AIOHTTP_TRANSIENT_EXC)
       # Google Auth reports a network failure during a credential refresh as
-      # TransportError. The refresh runs inside the retried request, so the
-      # predicate must accept it. RefreshError is a sibling class, so permanent
-      # authentication failures stay non-retryable.
+      # TransportError, and google.auth.aio re-raises dropped aiohttp
+      # connections as TransportError. Both happen inside the retried request,
+      # so the predicate must accept it. RefreshError is a sibling class, so
+      # permanent authentication failures stay non-retryable.
       or isinstance(e, auth_exceptions.TransportError),
   )
   wait = tenacity.wait_exponential_jitter(
