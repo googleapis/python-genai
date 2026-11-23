@@ -76,8 +76,15 @@ class TestGetTokenizerName(unittest.TestCase):
   def test_get_tokenizer_name_unsupported(self):
     with self.assertRaisesRegex(
         ValueError, "Model unsupported-model is not supported"
-    ):
+    ) as ctx:
       loader.get_tokenizer_name("unsupported-model")
+    error_message = str(ctx.exception)
+    for model_name in (
+        *loader._GEMINI_MODELS_TO_TOKENIZER_NAMES,
+        *loader._GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES,
+        *loader._GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES,
+    ):
+      self.assertIn(model_name, error_message)
 
 
 @patch("genai._local_tokenizer_loader.os.rename")
