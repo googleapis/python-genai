@@ -103,6 +103,16 @@ def test_factory_method_from_function_response_part():
   assert isinstance(my_part, SubPart)
 
 
+def test_factory_method_from_function_response_part_with_id():
+  my_part = SubPart.from_function_response(
+      name='func', response={'response': 'value'}, id='call_1'
+  )
+  assert my_part.function_response.id == 'call_1'
+  assert my_part.function_response.name == 'func'
+  assert my_part.function_response.response == {'response': 'value'}
+  assert isinstance(my_part, SubPart)
+
+
 def test_factory_method_part_from_function_response_with_multi_modal_parts():
   my_part = SubPart.from_function_response(
       name='func',

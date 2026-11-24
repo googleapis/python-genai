@@ -2868,9 +2868,10 @@ class Part(_common.BaseModel):
       name: str,
       response: dict[str, Any],
       parts: Optional[list[FunctionResponsePart]] = None,
+      id: Optional[str] = None,  # pylint: disable=redefined-builtin
   ) -> 'Part':
     function_response = FunctionResponse(
-        name=name, response=response, parts=parts
+        name=name, response=response, parts=parts, id=id
     )
     return cls(function_response=function_response)
 

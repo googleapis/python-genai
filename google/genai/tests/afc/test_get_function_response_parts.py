@@ -162,6 +162,74 @@ def test_string_value():
     ) == expected_part.model_dump_json(exclude_none=True)
 
 
+def _function_call_with_id_response() -> GenerateContentResponse:
+  return GenerateContentResponse(
+      candidates=[
+          Candidate(
+              content=Content(
+                  parts=[
+                      Part(
+                          function_call=FunctionCall(
+                              id='call_1',
+                              name='func_under_test',
+                              args={'a': 1},
+                          )
+                      ),
+                      Part(
+                          function_call=FunctionCall(
+                              id='call_2',
+                              name='func_under_test',
+                              args={'a': 2},
+                          )
+                      ),
+                  ]
+              )
+          )
+      ]
+  )
+
+
+def test_function_call_id_is_propagated():
+  """Each function response preserves its corresponding function call id."""
+
+  def func_under_test(a: int) -> int:
+    return a + 1
+
+  function_map = {'func_under_test': func_under_test}
+  actual_parts = get_function_response_parts(
+      _function_call_with_id_response(), function_map
+  )
+
+  assert len(actual_parts) == 2
+  assert actual_parts[0].function_response.id == 'call_1'
+  assert actual_parts[0].function_response.name == 'func_under_test'
+  assert actual_parts[0].function_response.response == {'result': 2}
+  assert actual_parts[1].function_response.id == 'call_2'
+  assert actual_parts[1].function_response.name == 'func_under_test'
+  assert actual_parts[1].function_response.response == {'result': 3}
+
+
+@pytest.mark.asyncio
+async def test_function_call_id_is_propagated_async():
+  """The async path preserves each corresponding function call id."""
+
+  def func_under_test(a: int) -> int:
+    return a + 1
+
+  function_map = {'func_under_test': func_under_test}
+  actual_parts = await get_function_response_parts_async(
+      _function_call_with_id_response(), function_map
+  )
+
+  assert len(actual_parts) == 2
+  assert actual_parts[0].function_response.id == 'call_1'
+  assert actual_parts[0].function_response.name == 'func_under_test'
+  assert actual_parts[0].function_response.response == {'result': 2}
+  assert actual_parts[1].function_response.id == 'call_2'
+  assert actual_parts[1].function_response.name == 'func_under_test'
+  assert actual_parts[1].function_response.response == {'result': 3}
+
+
 def _datetime_and_uuid_response() -> GenerateContentResponse:
   return GenerateContentResponse(
       candidates=[
