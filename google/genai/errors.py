@@ -212,6 +212,7 @@ class APIError(Exception):
       ServerError: If the status code is in the 5xx range.
       APIError: For other error status codes.
     """
+    _warn_from_agent_message_headers(response)
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
@@ -297,12 +298,24 @@ class APIError(Exception):
       ServerError: If the status code is in the 5xx range.
       APIError: For other error status codes.
     """
+    _warn_from_agent_message_headers(response)
     if 400 <= status_code < 500:
       raise ClientError(status_code, response_json, response)
     elif 500 <= status_code < 600:
       raise ServerError(status_code, response_json, response)
     else:
       raise cls(status_code, response_json, response)
+
+
+def _warn_from_agent_message_headers(response: Any) -> None:
+  """Surfaces Agent-Message warnings carried by an error response."""
+  headers = getattr(response, 'headers', None)
+  if not headers:
+    return
+  # Imported lazily: _api_client imports this module.
+  from . import _api_client  # pylint: disable=g-import-not-at-top
+
+  _api_client.warn_from_agent_message_headers(headers)
 
 
 class ClientError(APIError):
