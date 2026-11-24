@@ -12,13 +12,18 @@ yields a client that talks to the real backend.
 
 import pytest
 
+from ... import types
+
 
 @pytest.fixture
-def http_options():
+def http_options(use_vertex):
   """Required by the parent `client` fixture.
 
-  Normally injected by pytest_helper.setup(); live tests use the SDK defaults.
+  The Gemini API only serves the Live WebSocket on v1beta; Vertex uses the SDK
+  default.
   """
+  if not use_vertex:
+    return types.HttpOptions(api_version='v1beta')
   return None
 
 

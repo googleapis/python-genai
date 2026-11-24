@@ -31,12 +31,7 @@ if TYPE_CHECKING:
         ListTriggersResponseTypedDict,
     )
     from .trigger import Trigger, TriggerStatus, TriggerTypedDict
-    from .triggercreateparams import (
-        Interaction,
-        InteractionParam,
-        TriggerCreateParams,
-        TriggerCreateParamsParam,
-    )
+    from .triggercreateparams import TriggerCreateParams, TriggerCreateParamsParam
     from .triggerexecution import (
         TriggerExecution,
         TriggerExecutionStatus,
@@ -45,8 +40,6 @@ if TYPE_CHECKING:
     from .triggerupdate import TriggerUpdate, TriggerUpdateParam, TriggerUpdateStatus
 
 __all__ = [
-    "Interaction",
-    "InteractionParam",
     "ListTriggerExecutionsResponse",
     "ListTriggerExecutionsResponseTypedDict",
     "ListTriggersResponse",
@@ -72,8 +65,6 @@ _dynamic_imports: dict[str, str] = {
     "Trigger": ".trigger",
     "TriggerStatus": ".trigger",
     "TriggerTypedDict": ".trigger",
-    "Interaction": ".triggercreateparams",
-    "InteractionParam": ".triggercreateparams",
     "TriggerCreateParams": ".triggercreateparams",
     "TriggerCreateParamsParam": ".triggercreateparams",
     "TriggerExecution": ".triggerexecution",

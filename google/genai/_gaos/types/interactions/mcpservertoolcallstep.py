@@ -63,6 +63,9 @@ class MCPServerToolCallStep(BaseModel):
         pydantic.Field(alias="type"),
     ] = "mcp_server_tool_call"
 
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
+
 
 try:
     MCPServerToolCallStep.model_rebuild()

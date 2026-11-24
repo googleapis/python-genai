@@ -24,13 +24,21 @@ from .. import (
     BaseModel,
     UNSET_SENTINEL,
     UnrecognizedStr,
+    current_exclude_none,
+    serialize_with_info,
 )
 from ...utils import validate_const
+from ..basemodel import (
+    current_by_alias,
+    current_filtered_dump,
+    current_serialization_methods_dump,
+)
+from .audiomediaprocessing import AudioMediaProcessing, AudioMediaProcessingParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing import Any, Literal, Optional, Union
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 AudioContentMimeType = Union[
@@ -54,6 +62,21 @@ AudioContentMimeType = Union[
 r"""The mime type of the audio."""
 
 
+AudioProcessingEnum = Union[Literal["static",], UnrecognizedStr]
+
+
+AudioProcessingParam = TypeAliasType(
+    "AudioProcessingParam", Union[AudioMediaProcessingParam, AudioProcessingEnum]
+)
+r"""How the model processes this audio for understanding."""
+
+
+AudioProcessing = TypeAliasType(
+    "AudioProcessing", Union[AudioMediaProcessing, AudioProcessingEnum]
+)
+r"""How the model processes this audio for understanding."""
+
+
 class AudioContentParam(TypedDict):
     r"""An audio content block."""
 
@@ -63,6 +86,8 @@ class AudioContentParam(TypedDict):
     r"""The audio content."""
     mime_type: NotRequired[AudioContentMimeType]
     r"""The mime type of the audio."""
+    processing: NotRequired[AudioProcessingParam]
+    r"""How the model processes this audio for understanding."""
     sample_rate: NotRequired[int]
     r"""The sample rate of the audio."""
     type: Literal["audio"]
@@ -82,6 +107,9 @@ class AudioContent(BaseModel):
     mime_type: Optional[AudioContentMimeType] = None
     r"""The mime type of the audio."""
 
+    processing: Optional[AudioProcessing] = None
+    r"""How the model processes this audio for understanding."""
+
     sample_rate: Optional[int] = None
     r"""The sample rate of the audio."""
 
@@ -93,19 +121,41 @@ class AudioContent(BaseModel):
     uri: Optional[str] = None
     r"""The URI of the audio."""
 
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
+
     @model_serializer(mode="wrap")
+    def _serialize_model_with_info(self, handler, info):
+        return serialize_with_info(self.serialize_model, handler, info)
+
     def serialize_model(self, handler):
-        optional_fields = set(["channels", "data", "mime_type", "sample_rate", "uri"])
+        optional_fields = set(
+            ["channels", "data", "mime_type", "processing", "sample_rate", "uri"]
+        )
+        exclude_none = current_exclude_none()
+        by_alias = current_by_alias()
+        use_field_names = by_alias is False
+        serialization_methods_dump = current_serialization_methods_dump()
+        skip_filtered = (
+            serialization_methods_dump
+            or exclude_none is False
+            or current_filtered_dump()
+        )
         serialized = handler(self)
         m = {}
 
         for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
+            k = f.alias if f.alias is not None else n
+            key = k if by_alias or k in serialized else n
+            if key not in serialized and skip_filtered:
+                continue
+            val = serialized.pop(key, None)
 
             if val != UNSET_SENTINEL:
                 if val is not None or k not in optional_fields:
-                    m[k] = val
+                    m[n if use_field_names else k] = val
+        for k, v in serialized.items():
+            m[k] = v
 
         return m
 

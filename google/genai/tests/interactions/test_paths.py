@@ -19,11 +19,17 @@
 
 from unittest import mock
 import pytest
-from httpx import Request, Response
-from ..._api_client import AsyncHttpxClient
-from httpx import Client as HTTPClient
+from ... import _api_client
+from ..._api_client import GOOGLE_AI_API_DEFAULT_VERSION
 from .. import pytest_helper
 import google.auth
+
+if _api_client._get_http_client_backend() == "httpx2":
+    from httpx2 import Client as HTTPClient, Request, Response  # pylint: disable=g-import-not-at-top
+    AsyncHttpxClient = _api_client.AsyncHttpx2Client
+else:
+    from httpx import Client as HTTPClient, Request, Response  # pylint: disable=g-import-not-at-top
+    AsyncHttpxClient = _api_client.AsyncHttpxClient
 
 @mock.patch.object(google.auth, "default", autospec=True)
 def test_interactions_paths(mock_auth_default, client):
@@ -42,7 +48,7 @@ def test_interactions_paths(mock_auth_default, client):
         else:
             expected_base_url = "https://aiplatform.googleapis.com/v1beta1"
     else:
-        expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
+        expected_base_url = f"https://generativelanguage.googleapis.com/{GOOGLE_AI_API_DEFAULT_VERSION}"
 
     with mock.patch.object(HTTPClient, "send") as mock_send:
         mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
@@ -50,6 +56,12 @@ def test_interactions_paths(mock_auth_default, client):
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}?stream=false'
+        assert request.extensions.get("timeout") == {
+            "connect": None,
+            "read": None,
+            "write": None,
+            "pool": None,
+        }
 
         mock_send.reset_mock()
         mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
@@ -83,7 +95,7 @@ async def test_async_interactions_paths(mock_auth_default, client):
         else:
             expected_base_url = "https://aiplatform.googleapis.com/v1beta1"
     else:
-        expected_base_url = "https://generativelanguage.googleapis.com/v1beta"
+        expected_base_url = f"https://generativelanguage.googleapis.com/{GOOGLE_AI_API_DEFAULT_VERSION}"
 
     with mock.patch.object(AsyncHttpxClient, "send") as mock_send:
         mock_send.return_value = Response(200, request=Request('GET', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')
@@ -91,6 +103,12 @@ async def test_async_interactions_paths(mock_auth_default, client):
         mock_send.assert_called_once()
         request = mock_send.call_args[0][0]
         assert str(request.url) == f'{expected_base_url}/interactions/{interaction_id}?stream=false'
+        assert request.extensions.get("timeout") == {
+            "connect": None,
+            "read": None,
+            "write": None,
+            "pool": None,
+        }
 
         mock_send.reset_mock()
         mock_send.return_value = Response(200, request=Request('POST', ''), headers={'content-type': 'application/json'}, content='{"status": "completed"}')

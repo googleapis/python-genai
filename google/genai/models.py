@@ -39,16 +39,6 @@ from .pagers import AsyncPager, Pager
 logger = logging.getLogger('google_genai.models')
 
 
-def _VideoGenerationReferenceType_to_mldev_enum_validate(
-    enum_value: Any,
-) -> None:
-  if enum_value in set(['STYLE']):
-    raise ValueError(
-        f'{enum_value} enum value is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-
 def _AuthConfig_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -151,6 +141,13 @@ def _Candidate_from_mldev(
         getv(from_object, ['urlContextMetadata']),
     )
 
+  if getv(from_object, ['continuationToken']) is not None:
+    setv(
+        to_object,
+        ['continuation_token'],
+        getv(from_object, ['continuationToken']),
+    )
+
   return to_object
 
 
@@ -213,38 +210,6 @@ def _ComputeTokensResponse_from_vertex(
         to_object,
         ['tokens_info'],
         [item for item in getv(from_object, ['tokensInfo'])],
-    )
-
-  return to_object
-
-
-def _ComputerUse_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
-    setv(
-        to_object,
-        ['enablePromptInjectionDetection'],
-        getv(from_object, ['enable_prompt_injection_detection']),
-    )
-
-  if getv(from_object, ['disabled_safety_policies']) is not None:
-    raise ValueError(
-        'disabled_safety_policies parameter is only supported in Gemini'
-        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -845,6 +810,13 @@ def _EmbedContentConfig_to_vertex(
           ['embedContentConfig', 'taskType'],
           getv(from_object, ['task_type']),
       )
+  elif discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['task_type']) is not None:
+      setv(
+          parent_object,
+          ['requests[]', 'embedContentConfig', 'taskType'],
+          getv(from_object, ['task_type']),
+      )
 
   discriminator = getv(root_object, ['embedding_api_type'])
   if discriminator is None:
@@ -859,6 +831,13 @@ def _EmbedContentConfig_to_vertex(
       setv(
           parent_object,
           ['embedContentConfig', 'title'],
+          getv(from_object, ['title']),
+      )
+  elif discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['title']) is not None:
+      setv(
+          parent_object,
+          ['requests[]', 'embedContentConfig', 'title'],
           getv(from_object, ['title']),
       )
 
@@ -877,6 +856,13 @@ def _EmbedContentConfig_to_vertex(
       setv(
           parent_object,
           ['embedContentConfig', 'outputDimensionality'],
+          getv(from_object, ['output_dimensionality']),
+      )
+  elif discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['output_dimensionality']) is not None:
+      setv(
+          parent_object,
+          ['requests[]', 'embedContentConfig', 'outputDimensionality'],
           getv(from_object, ['output_dimensionality']),
       )
 
@@ -908,6 +894,13 @@ def _EmbedContentConfig_to_vertex(
           ['embedContentConfig', 'autoTruncate'],
           getv(from_object, ['auto_truncate']),
       )
+  elif discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['auto_truncate']) is not None:
+      setv(
+          parent_object,
+          ['requests[]', 'embedContentConfig', 'autoTruncate'],
+          getv(from_object, ['auto_truncate']),
+      )
 
   discriminator = getv(root_object, ['embedding_api_type'])
   if discriminator is None:
@@ -919,6 +912,13 @@ def _EmbedContentConfig_to_vertex(
           ['embedContentConfig', 'documentOcr'],
           getv(from_object, ['document_ocr']),
       )
+  elif discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['document_ocr']) is not None:
+      setv(
+          parent_object,
+          ['requests[]', 'embedContentConfig', 'documentOcr'],
+          getv(from_object, ['document_ocr']),
+      )
 
   discriminator = getv(root_object, ['embedding_api_type'])
   if discriminator is None:
@@ -928,6 +928,13 @@ def _EmbedContentConfig_to_vertex(
       setv(
           parent_object,
           ['embedContentConfig', 'audioTrackExtraction'],
+          getv(from_object, ['audio_track_extraction']),
+      )
+  elif discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['audio_track_extraction']) is not None:
+      setv(
+          parent_object,
+          ['requests[]', 'embedContentConfig', 'audioTrackExtraction'],
           getv(from_object, ['audio_track_extraction']),
       )
 
@@ -963,6 +970,12 @@ def _EmbedContentParametersPrivate_to_mldev(
   if getv(from_object, ['content']) is not None:
     _Content_to_mldev(
         t.t_content(getv(from_object, ['content'])), to_object, root_object
+    )
+
+  if getv(from_object, ['batch_contents']) is not None:
+    raise ValueError(
+        'batch_contents parameter is only supported in Gemini Enterprise Agent'
+        ' Platform mode, not in Gemini Developer API mode.'
     )
 
   if getv(from_object, ['config']) is not None:
@@ -1023,6 +1036,20 @@ def _EmbedContentParametersPrivate_to_vertex(
           ),
       )
 
+  discriminator = getv(root_object, ['embedding_api_type'])
+  if discriminator is None:
+    discriminator = 'PREDICT'
+  if discriminator == 'BATCH_EMBED_CONTENTS':
+    if getv(from_object, ['batch_contents']) is not None:
+      setv(
+          to_object,
+          ['requests[]', 'content'],
+          [
+              _Content_to_vertex(item, to_object, root_object)
+              for item in t.t_contents(getv(from_object, ['batch_contents']))
+          ],
+      )
+
   if getv(from_object, ['config']) is not None:
     _EmbedContentConfig_to_vertex(
         getv(from_object, ['config']), to_object, root_object
@@ -1052,6 +1079,9 @@ def _EmbedContentResponse_from_mldev(
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(to_object, ['usage_metadata'], getv(from_object, ['usageMetadata']))
+
   return to_object
 
 
@@ -1079,6 +1109,18 @@ def _EmbedContentResponse_from_vertex(
   if getv(from_object, ['metadata']) is not None:
     setv(to_object, ['metadata'], getv(from_object, ['metadata']))
 
+  if getv(from_object, ['truncated']) is not None:
+    setv(to_object, ['truncated'], getv(from_object, ['truncated']))
+
+  if getv(from_object, ['usageMetadata']) is not None:
+    setv(
+        to_object,
+        ['usage_metadata'],
+        _UsageMetadata_from_vertex(
+            getv(from_object, ['usageMetadata']), to_object, root_object
+        ),
+    )
+
   if getv(root_object, ['embedding_api_type']) == 'EMBED_CONTENT':
     embedding = getv(from_object, ['embedding'])
     usage_metadata = getv(from_object, ['usageMetadata'])
@@ -1093,6 +1135,17 @@ def _EmbedContentResponse_from_vertex(
         stats['truncated'] = truncated
       embedding['statistics'] = stats
       setv(to_object, ['embeddings'], [embedding])
+  elif getv(root_object, ['embedding_api_type']) == 'BATCH_EMBED_CONTENTS':
+    embeddings = getv(from_object, ['embeddings'])
+    if embeddings is not None:
+      setv(
+          to_object,
+          ['embeddings'],
+          [
+              _ContentEmbedding_from_vertex(item, to_object, root_object)
+              for item in embeddings
+          ],
+      )
 
   return to_object
 
@@ -1165,6 +1218,89 @@ def _FunctionCallingConfig_to_mldev(
         'stream_function_call_arguments parameter is only supported in Gemini'
         ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
     )
+
+  return to_object
+
+
+def _FunctionResponsePart_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['media_processing']) is not None:
+    raise ValueError(
+        'media_processing parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
+
+  return to_object
+
+
+def _FunctionResponse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError(
+        'will_continue parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['scheduling']) is not None:
+    setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
+
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _FunctionResponsePart_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
 
   return to_object
 
@@ -1367,6 +1503,22 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['audio_transcription_config']),
     )
 
+  if getv(from_object, ['continuation_token']) is not None:
+    setv(
+        parent_object,
+        ['continuationToken'],
+        getv(from_object, ['continuation_token']),
+    )
+
+  if getv(from_object, ['generation_output_config']) is not None:
+    raise ValueError(
+        'generation_output_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['store']) is not None:
+    setv(parent_object, ['store'], getv(from_object, ['store']))
+
   return to_object
 
 
@@ -1562,6 +1714,26 @@ def _GenerateContentConfig_to_vertex(
         to_object,
         ['audioTranscriptionConfig'],
         getv(from_object, ['audio_transcription_config']),
+    )
+
+  if getv(from_object, ['continuation_token']) is not None:
+    setv(
+        parent_object,
+        ['continuationToken'],
+        getv(from_object, ['continuation_token']),
+    )
+
+  if getv(from_object, ['generation_output_config']) is not None:
+    setv(
+        parent_object,
+        ['outputConfig'],
+        getv(from_object, ['generation_output_config']),
+    )
+
+  if getv(from_object, ['store']) is not None:
+    raise ValueError(
+        'store parameter is only supported in Gemini Developer API mode, not in'
+        ' Gemini Enterprise Agent Platform mode.'
     )
 
   return to_object
@@ -1895,145 +2067,6 @@ def _GenerateImagesResponse_from_vertex(
   return to_object
 
 
-def _GenerateVideosConfig_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-
-  if getv(from_object, ['number_of_videos']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'sampleCount'],
-        getv(from_object, ['number_of_videos']),
-    )
-
-  if getv(from_object, ['output_gcs_uri']) is not None:
-    raise ValueError(
-        'output_gcs_uri parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['fps']) is not None:
-    raise ValueError(
-        'fps parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['duration_seconds']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'durationSeconds'],
-        getv(from_object, ['duration_seconds']),
-    )
-
-  if getv(from_object, ['seed']) is not None:
-    raise ValueError(
-        'seed parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['aspect_ratio']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'aspectRatio'],
-        getv(from_object, ['aspect_ratio']),
-    )
-
-  if getv(from_object, ['resolution']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'resolution'],
-        getv(from_object, ['resolution']),
-    )
-
-  if getv(from_object, ['person_generation']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'personGeneration'],
-        getv(from_object, ['person_generation']),
-    )
-
-  if getv(from_object, ['pubsub_topic']) is not None:
-    raise ValueError(
-        'pubsub_topic parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['negative_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'negativePrompt'],
-        getv(from_object, ['negative_prompt']),
-    )
-
-  if getv(from_object, ['enhance_prompt']) is not None:
-    setv(
-        parent_object,
-        ['parameters', 'enhancePrompt'],
-        getv(from_object, ['enhance_prompt']),
-    )
-
-  if getv(from_object, ['generate_audio']) is not None:
-    raise ValueError(
-        'generate_audio parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['last_frame']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'lastFrame'],
-        _Image_to_mldev(
-            getv(from_object, ['last_frame']), to_object, root_object
-        ),
-    )
-
-  if getv(from_object, ['reference_images']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'referenceImages'],
-        [
-            _VideoGenerationReferenceImage_to_mldev(
-                item, to_object, root_object
-            )
-            for item in getv(from_object, ['reference_images'])
-        ],
-    )
-
-  if getv(from_object, ['mask']) is not None:
-    raise ValueError(
-        'mask parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['compression_quality']) is not None:
-    raise ValueError(
-        'compression_quality parameter is only supported in Gemini Enterprise'
-        ' Agent Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['labels']) is not None:
-    raise ValueError(
-        'labels parameter is only supported in Gemini Enterprise Agent Platform'
-        ' mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['webhook_config']) is not None:
-    setv(
-        parent_object, ['webhookConfig'], getv(from_object, ['webhook_config'])
-    )
-
-  if getv(from_object, ['resize_mode']) is not None:
-    raise ValueError(
-        'resize_mode parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  return to_object
-
-
 def _GenerateVideosConfig_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2173,49 +2206,6 @@ def _GenerateVideosConfig_to_vertex(
   return to_object
 
 
-def _GenerateVideosOperation_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['name']) is not None:
-    setv(to_object, ['name'], getv(from_object, ['name']))
-
-  if getv(from_object, ['metadata']) is not None:
-    setv(to_object, ['metadata'], getv(from_object, ['metadata']))
-
-  if getv(from_object, ['done']) is not None:
-    setv(to_object, ['done'], getv(from_object, ['done']))
-
-  if getv(from_object, ['error']) is not None:
-    setv(to_object, ['error'], getv(from_object, ['error']))
-
-  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
-    setv(
-        to_object,
-        ['response'],
-        _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']),
-            to_object,
-            root_object,
-        ),
-    )
-
-  if getv(from_object, ['response', 'generateVideoResponse']) is not None:
-    setv(
-        to_object,
-        ['result'],
-        _GenerateVideosResponse_from_mldev(
-            getv(from_object, ['response', 'generateVideoResponse']),
-            to_object,
-            root_object,
-        ),
-    )
-
-  return to_object
-
-
 def _GenerateVideosOperation_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2250,50 +2240,6 @@ def _GenerateVideosOperation_from_vertex(
         _GenerateVideosResponse_from_vertex(
             getv(from_object, ['response']), to_object, root_object
         ),
-    )
-
-  return to_object
-
-
-def _GenerateVideosParameters_to_mldev(
-    api_client: BaseApiClient,
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['model']) is not None:
-    setv(
-        to_object,
-        ['_url', 'model'],
-        t.t_model(api_client, getv(from_object, ['model'])),
-    )
-
-  if getv(from_object, ['prompt']) is not None:
-    setv(to_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt']))
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
-    )
-
-  if getv(from_object, ['source']) is not None:
-    _GenerateVideosSource_to_mldev(
-        getv(from_object, ['source']), to_object, root_object
-    )
-
-  if getv(from_object, ['config']) is not None:
-    _GenerateVideosConfig_to_mldev(
-        getv(from_object, ['config']), to_object, root_object
     )
 
   return to_object
@@ -2343,39 +2289,6 @@ def _GenerateVideosParameters_to_vertex(
   return to_object
 
 
-def _GenerateVideosResponse_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['generatedSamples']) is not None:
-    setv(
-        to_object,
-        ['generated_videos'],
-        [
-            _GeneratedVideo_from_mldev(item, to_object, root_object)
-            for item in getv(from_object, ['generatedSamples'])
-        ],
-    )
-
-  if getv(from_object, ['raiMediaFilteredCount']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_count'],
-        getv(from_object, ['raiMediaFilteredCount']),
-    )
-
-  if getv(from_object, ['raiMediaFilteredReasons']) is not None:
-    setv(
-        to_object,
-        ['rai_media_filtered_reasons'],
-        getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
 def _GenerateVideosResponse_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -2404,34 +2317,6 @@ def _GenerateVideosResponse_from_vertex(
         to_object,
         ['rai_media_filtered_reasons'],
         getv(from_object, ['raiMediaFilteredReasons']),
-    )
-
-  return to_object
-
-
-def _GenerateVideosSource_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['prompt']) is not None:
-    setv(
-        parent_object, ['instances[0]', 'prompt'], getv(from_object, ['prompt'])
-    )
-
-  if getv(from_object, ['image']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['video']) is not None:
-    setv(
-        parent_object,
-        ['instances[0]', 'video'],
-        _Video_to_mldev(getv(from_object, ['video']), to_object, root_object),
     )
 
   return to_object
@@ -2521,22 +2406,6 @@ def _GeneratedImage_from_vertex(
 
   if getv(from_object, ['prompt']) is not None:
     setv(to_object, ['enhanced_prompt'], getv(from_object, ['prompt']))
-
-  return to_object
-
-
-def _GeneratedVideo_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['video']) is not None:
-    setv(
-        to_object,
-        ['video'],
-        _Video_from_mldev(getv(from_object, ['video']), to_object, root_object),
-    )
 
   return to_object
 
@@ -2904,31 +2773,6 @@ def _Image_from_vertex(
 
   if getv(from_object, ['mimeType']) is not None:
     setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Image_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['gcs_uri']) is not None:
-    raise ValueError(
-        'gcs_uri parameter is only supported in Gemini Enterprise Agent'
-        ' Platform mode, not in Gemini Developer API mode.'
-    )
-
-  if getv(from_object, ['image_bytes']) is not None:
-    setv(
-        to_object,
-        ['bytesBase64Encoded'],
-        base_t.t_bytes(getv(from_object, ['image_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['mimeType'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -3363,6 +3207,23 @@ def _Part_to_mldev(
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
 
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
+
   return to_object
 
 
@@ -3397,7 +3258,9 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        _FunctionResponse_to_vertex(
+            getv(from_object, ['function_response']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['inline_data']) is not None:
@@ -3451,6 +3314,23 @@ def _Part_to_vertex(
 
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
 
   return to_object
 
@@ -3949,6 +3829,12 @@ def _SpeechConfig_to_vertex(
         ),
     )
 
+  if getv(from_object, ['text_normalization']) is not None:
+    raise ValueError(
+        'text_normalization parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
   return to_object
 
 
@@ -4106,13 +3992,7 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ComputerUse_to_vertex(
-            getv(from_object, ['computer_use']), to_object, root_object
-        ),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
@@ -4453,6 +4333,86 @@ def _UpscaleImageResponse_from_vertex(
   return to_object
 
 
+def _UsageMetadata_from_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['promptTokenCount']) is not None:
+    setv(
+        to_object,
+        ['prompt_token_count'],
+        getv(from_object, ['promptTokenCount']),
+    )
+
+  if getv(from_object, ['cachedContentTokenCount']) is not None:
+    setv(
+        to_object,
+        ['cached_content_token_count'],
+        getv(from_object, ['cachedContentTokenCount']),
+    )
+
+  if getv(from_object, ['candidatesTokenCount']) is not None:
+    setv(
+        to_object,
+        ['response_token_count'],
+        getv(from_object, ['candidatesTokenCount']),
+    )
+
+  if getv(from_object, ['toolUsePromptTokenCount']) is not None:
+    setv(
+        to_object,
+        ['tool_use_prompt_token_count'],
+        getv(from_object, ['toolUsePromptTokenCount']),
+    )
+
+  if getv(from_object, ['thoughtsTokenCount']) is not None:
+    setv(
+        to_object,
+        ['thoughts_token_count'],
+        getv(from_object, ['thoughtsTokenCount']),
+    )
+
+  if getv(from_object, ['totalTokenCount']) is not None:
+    setv(
+        to_object, ['total_token_count'], getv(from_object, ['totalTokenCount'])
+    )
+
+  if getv(from_object, ['promptTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['prompt_tokens_details'],
+        [item for item in getv(from_object, ['promptTokensDetails'])],
+    )
+
+  if getv(from_object, ['cacheTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['cache_tokens_details'],
+        [item for item in getv(from_object, ['cacheTokensDetails'])],
+    )
+
+  if getv(from_object, ['candidatesTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['response_tokens_details'],
+        [item for item in getv(from_object, ['candidatesTokensDetails'])],
+    )
+
+  if getv(from_object, ['toolUsePromptTokensDetails']) is not None:
+    setv(
+        to_object,
+        ['tool_use_prompt_tokens_details'],
+        [item for item in getv(from_object, ['toolUsePromptTokensDetails'])],
+    )
+
+  if getv(from_object, ['trafficType']) is not None:
+    setv(to_object, ['traffic_type'], getv(from_object, ['trafficType']))
+
+  return to_object
+
+
 def _VideoGenerationMask_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -4468,28 +4428,6 @@ def _VideoGenerationMask_to_vertex(
 
   if getv(from_object, ['mask_mode']) is not None:
     setv(to_object, ['maskMode'], getv(from_object, ['mask_mode']))
-
-  return to_object
-
-
-def _VideoGenerationReferenceImage_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['image']) is not None:
-    setv(
-        to_object,
-        ['image'],
-        _Image_to_mldev(getv(from_object, ['image']), to_object, root_object),
-    )
-
-  if getv(from_object, ['reference_type']) is not None:
-    _VideoGenerationReferenceType_to_mldev_enum_validate(
-        getv(from_object, ['reference_type'])
-    )
-    setv(to_object, ['referenceType'], getv(from_object, ['reference_type']))
 
   return to_object
 
@@ -4513,28 +4451,6 @@ def _VideoGenerationReferenceImage_to_vertex(
   return to_object
 
 
-def _Video_from_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['encodedVideo']) is not None:
-    setv(
-        to_object,
-        ['video_bytes'],
-        base_t.t_bytes(getv(from_object, ['encodedVideo'])),
-    )
-
-  if getv(from_object, ['encoding']) is not None:
-    setv(to_object, ['mime_type'], getv(from_object, ['encoding']))
-
-  return to_object
-
-
 def _Video_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -4553,28 +4469,6 @@ def _Video_from_vertex(
 
   if getv(from_object, ['mimeType']) is not None:
     setv(to_object, ['mime_type'], getv(from_object, ['mimeType']))
-
-  return to_object
-
-
-def _Video_to_mldev(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['uri']) is not None:
-    setv(to_object, ['uri'], getv(from_object, ['uri']))
-
-  if getv(from_object, ['video_bytes']) is not None:
-    setv(
-        to_object,
-        ['encodedVideo'],
-        base_t.t_bytes(getv(from_object, ['video_bytes'])),
-    )
-
-  if getv(from_object, ['mime_type']) is not None:
-    setv(to_object, ['encoding'], getv(from_object, ['mime_type']))
 
   return to_object
 
@@ -4841,6 +4735,9 @@ class Models(_api_module.BaseModule):
           Union[types.ContentUnion, types.ContentUnionDict]
       ] = None,
       embedding_api_type: Optional[types.EmbeddingApiType] = None,
+      batch_contents: Optional[
+          Union[types.ContentListUnion, types.ContentListUnionDict]
+      ] = None,
       config: Optional[types.EmbedContentConfigOrDict] = None,
   ) -> types.EmbedContentResponse:
     """Calculates embeddings for the given contents. Only text is supported.
@@ -4871,6 +4768,7 @@ class Models(_api_module.BaseModule):
         contents=contents,
         content=content,
         embedding_api_type=embedding_api_type,
+        batch_contents=batch_contents,
         config=config,
     )
 
@@ -4881,7 +4779,18 @@ class Models(_api_module.BaseModule):
           self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
-      endpoint_url = '{model}:embedContent' if t.t_is_vertex_embed_content_model(parameter_model.model) else '{model}:predict'  # type: ignore[arg-type]
+      if (
+          parameter_model.embedding_api_type
+          == types.EmbeddingApiType.BATCH_EMBED_CONTENTS
+      ):
+        endpoint_url = '{model}:batchEmbedContents'
+      elif (
+          parameter_model.embedding_api_type
+          == types.EmbeddingApiType.EMBED_CONTENT
+      ):
+        endpoint_url = '{model}:embedContent'
+      else:
+        endpoint_url = '{model}:predict'
       if request_url_dict:
         path = endpoint_url.format_map(request_url_dict)
       else:
@@ -5765,7 +5674,7 @@ class Models(_api_module.BaseModule):
     .. code-block:: python
 
       response = client.models.count_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='What is your name?',
       )
       print(response)
@@ -5876,7 +5785,7 @@ class Models(_api_module.BaseModule):
     .. code-block:: python
 
       response = client.models.compute_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='What is your name?',
       )
       print(response)
@@ -5979,8 +5888,12 @@ class Models(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
       request_dict = _GenerateVideosParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
       )
@@ -5989,15 +5902,7 @@ class Models(_api_module.BaseModule):
         path = '{model}:predictLongRunning'.format_map(request_url_dict)
       else:
         path = '{model}:predictLongRunning'
-    else:
-      request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = '{model}:predictLongRunning'.format_map(request_url_dict)
-      else:
-        path = '{model}:predictLongRunning'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -6022,11 +5927,6 @@ class Models(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          response_dict, None, parameter_model
-      )
-
-    if not self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_mldev(
           response_dict, None, parameter_model
       )
 
@@ -6085,7 +5985,7 @@ class Models(_api_module.BaseModule):
       )
 
       multimodal_embeddings = client.models.embed_content(
-          model='gemini-embedding-2-preview',
+          model='gemini-embedding-2',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -6098,20 +5998,26 @@ class Models(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
-      if 'gemini-embedding-2' in model:
+      if t.t_is_multimodal_embedding_model(model):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return self._embed_content(model=model, contents=contents, config=config)
 
     if t.t_is_vertex_embed_content_model(model):
-      normalized_contents = t.t_contents(contents)
+      normalized_contents = t.t_embed_contents(model, contents)
       if len(normalized_contents) > 1:
-        raise ValueError(
-            'The embedContent API for this model only supports one content at a'
-            ' time.'
+        if t.t_is_vertex_maas_model(model):
+          raise ValueError(
+              'The embedContent API for this model only supports one content at'
+              ' a time.'
+          )
+        return self._embed_content(
+            model=model,
+            batch_contents=normalized_contents,
+            embedding_api_type=types.EmbeddingApiType.BATCH_EMBED_CONTENTS,
+            config=config,
         )
       return self._embed_content(
           model=model,
-          contents=None,
           content=normalized_contents[0],
           embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
           config=config,
@@ -6119,11 +6025,58 @@ class Models(_api_module.BaseModule):
     else:
       return self._embed_content(
           model=model,
-          content=None,
           contents=contents,
           embedding_api_type=types.EmbeddingApiType.PREDICT,
           config=config,
       )
+
+  def _generate_content_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: types.ContentListUnionDict,
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> types.GenerateContentResponse:
+    """Generates content and, when automatic_continuation is enabled, follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    continuation_token: Optional[bytes] = None
+    responses: list[types.GenerateContentResponse] = []
+
+    while not responses or (enable_continuation and continuation_token):
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      response = self._generate_content(
+          model=model, contents=contents, config=call_config
+      )
+      responses.append(response)
+      continuation_token = _extra_utils.should_continue_generation(response)
+
+    return _extra_utils.merge_continuation_responses(responses, config=config)
+
+  def _generate_content_stream_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: types.ContentListUnionDict,
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> Iterator[types.GenerateContentResponse]:
+    """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    state = _extra_utils.StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error: Optional[Exception] = None
+      try:
+        for chunk in self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        ):
+          yield state.observe(chunk)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        error = e
+      if not state.end_hop(error):
+        return
 
   def generate_content(
       self,
@@ -6136,23 +6089,31 @@ class Models(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-3.8-flash'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-3.8-flash'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-3.8-flash' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-3.8-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-3.8-flash'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-3.8-flash'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -6168,7 +6129,7 @@ class Models(_api_module.BaseModule):
       )
 
       response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-3.8-flash',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       )
@@ -6179,7 +6140,7 @@ class Models(_api_module.BaseModule):
       # * Timeless Petals
 
       response = client.models.generate_content(
-        model='gemini-2.0-flash',
+        model='gemini-3.8-flash',
         contents=[
           types.Part.from_text(text='What is shown in this image?'),
           types.Part.from_uri(file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -6204,14 +6165,14 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
-      return self._generate_content(
+      return self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
     if incompatible_tools_indexes:
       _extra_utils.log_afc_incompatible_tools_warning(
           config, incompatible_tools_indexes
       )
-      return self._generate_content(
+      return self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
 
@@ -6221,15 +6182,6 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
-    if not Models._logged_afc_warning:
-      logger.warning(
-          'Direct use of automatic function calling (AFC) in'
-          ' Models.generate_content is not recommended. Instead, we recommend'
-          ' to use AFC in Chat.send_message. Similarly, direct use of AFC in'
-          ' Models.generate_content_stream is not recommended. Instead, we'
-          ' recommend to use AFC in Chat.send_message_stream.'
-      )
-      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     response = types.GenerateContentResponse()
     i = 0
@@ -6239,13 +6191,23 @@ class Models(_api_module.BaseModule):
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
+        if not Models._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'Models.generate_content is not recommended. Instead, we '
+              'recommend to use AFC in Chat.send_message. Similarly, direct '
+              'use of AFC in Models.generate_content_stream is not '
+              'recommended. Instead, we recommend to use AFC in '
+              'Chat.send_message_stream.'
+          )
+          Models._logged_afc_warning = True
         parsed_config_to_call = _extra_utils.get_usage_header(
             parsed_config_to_call,
             types.GenerateContentConfig,
             'afc',
         )
       i += 1
-      response = self._generate_content(
+      response = self._generate_content_with_continuation(
           model=model, contents=contents, config=parsed_config_to_call
       )
 
@@ -6306,23 +6268,32 @@ class Models(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-3.8-flash'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-3.8-flash'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-3.8-flash' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-3.8-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-3.8-flash'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-3.8-flash'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -6338,7 +6309,7 @@ class Models(_api_module.BaseModule):
       )
 
       for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-3.8-flash',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       ):
@@ -6349,7 +6320,7 @@ class Models(_api_module.BaseModule):
       # * Timeless Petals
 
       for chunk in client.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-3.8-flash',
         contents=[
           types.Part.from_text('What is shown in this image?'),
           types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
@@ -6374,7 +6345,7 @@ class Models(_api_module.BaseModule):
           'MCP sessions are not supported in synchronous methods.'
       )
     if _extra_utils.should_disable_afc(parsed_config):
-      yield from self._generate_content_stream(
+      yield from self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -6383,7 +6354,7 @@ class Models(_api_module.BaseModule):
       _extra_utils.log_afc_incompatible_tools_warning(
           config, incompatible_tools_indexes
       )
-      yield from self._generate_content_stream(
+      yield from self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config
       )
       return
@@ -6398,15 +6369,6 @@ class Models(_api_module.BaseModule):
     logger.info(
         f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
     )
-    if not Models._logged_afc_warning:
-      logger.warning(
-          'Direct use of automatic function calling (AFC) in '
-          'Models.generate_content_stream is not recommended. Instead, we '
-          'recommend to use AFC in Chat.send_message_stream. Similarly, direct '
-          'use of AFC in Models.generate_content is not recommended. Instead, '
-          'we recommend to use AFC in Chat.send_message.'
-      )
-      Models._logged_afc_warning = True
     automatic_function_calling_history: list[types.Content] = []
     i = 0
     while remaining_remote_calls_afc > 0:
@@ -6415,11 +6377,21 @@ class Models(_api_module.BaseModule):
       )
       function_map = _extra_utils.get_function_map(parsed_config)
       if function_map:
+        if not Models._logged_afc_warning:
+          logger.warning(
+              'Direct use of automatic function calling (AFC) in '
+              'Models.generate_content_stream is not recommended. Instead, we '
+              'recommend to use AFC in Chat.send_message_stream. Similarly, '
+              'direct use of AFC in Models.generate_content is not '
+              'recommended. Instead, we recommend to use AFC in '
+              'Chat.send_message.'
+          )
+          Models._logged_afc_warning = True
         parsed_config_to_call = _extra_utils.get_usage_header(
             parsed_config_to_call, types.GenerateContentConfig, 'afc'
         )
       i += 1
-      response = self._generate_content_stream(
+      response = self._generate_content_stream_with_continuation(
           model=model, contents=contents, config=parsed_config_to_call
       )
       remaining_remote_calls_afc -= 1
@@ -6432,7 +6404,7 @@ class Models(_api_module.BaseModule):
 
       model_output = []
       func_response_parts = []
-      chunk = None
+      chunk: Optional[types.GenerateContentResponse] = None
 
       for chunk in response:
         if (
@@ -6486,8 +6458,7 @@ class Models(_api_module.BaseModule):
       'The generate_images method is deprecated and will be removed in the '
       'next major release (not before Jan. 1 2027). Please use the '
       'generate_content method with image models instead. '
-      'See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models'
-      ' and '
+      'See https://aistudio.google.com/docs/deprecations#imagen-models and '
       'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images',
   )
   def generate_images(
@@ -6813,7 +6784,7 @@ class Models(_api_module.BaseModule):
 
       response=client.models.list(config={'page_size': 5, 'query_base': True})
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-3.8-flash' ...
     """
 
     config = (
@@ -7055,6 +7026,9 @@ class AsyncModels(_api_module.BaseModule):
           Union[types.ContentUnion, types.ContentUnionDict]
       ] = None,
       embedding_api_type: Optional[types.EmbeddingApiType] = None,
+      batch_contents: Optional[
+          Union[types.ContentListUnion, types.ContentListUnionDict]
+      ] = None,
       config: Optional[types.EmbedContentConfigOrDict] = None,
   ) -> types.EmbedContentResponse:
     """Calculates embeddings for the given contents. Only text is supported.
@@ -7085,6 +7059,7 @@ class AsyncModels(_api_module.BaseModule):
         contents=contents,
         content=content,
         embedding_api_type=embedding_api_type,
+        batch_contents=batch_contents,
         config=config,
     )
 
@@ -7095,7 +7070,18 @@ class AsyncModels(_api_module.BaseModule):
           self._api_client, parameter_model, None, parameter_model
       )
       request_url_dict = request_dict.get('_url')
-      endpoint_url = '{model}:embedContent' if t.t_is_vertex_embed_content_model(parameter_model.model) else '{model}:predict'  # type: ignore[arg-type]
+      if (
+          parameter_model.embedding_api_type
+          == types.EmbeddingApiType.BATCH_EMBED_CONTENTS
+      ):
+        endpoint_url = '{model}:batchEmbedContents'
+      elif (
+          parameter_model.embedding_api_type
+          == types.EmbeddingApiType.EMBED_CONTENT
+      ):
+        endpoint_url = '{model}:embedContent'
+      else:
+        endpoint_url = '{model}:predict'
       if request_url_dict:
         path = endpoint_url.format_map(request_url_dict)
       else:
@@ -7986,7 +7972,7 @@ class AsyncModels(_api_module.BaseModule):
     .. code-block:: python
 
       response = await client.aio.models.count_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='What is your name?',
       )
       print(response)
@@ -8096,7 +8082,7 @@ class AsyncModels(_api_module.BaseModule):
     .. code-block:: python
 
       response = await client.aio.models.compute_tokens(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='What is your name?',
       )
       print(response)
@@ -8199,8 +8185,12 @@ class AsyncModels(_api_module.BaseModule):
     )
 
     request_url_dict: Optional[dict[str, str]]
-
-    if self._api_client.vertexai:
+    if not self._api_client.vertexai:
+      raise ValueError(
+          'This method is only supported in Gemini Enterprise Agent Platform'
+          ' mode, not in Gemini Developer API mode.'
+      )
+    else:
       request_dict = _GenerateVideosParameters_to_vertex(
           self._api_client, parameter_model, None, parameter_model
       )
@@ -8209,15 +8199,7 @@ class AsyncModels(_api_module.BaseModule):
         path = '{model}:predictLongRunning'.format_map(request_url_dict)
       else:
         path = '{model}:predictLongRunning'
-    else:
-      request_dict = _GenerateVideosParameters_to_mldev(
-          self._api_client, parameter_model, None, parameter_model
-      )
-      request_url_dict = request_dict.get('_url')
-      if request_url_dict:
-        path = '{model}:predictLongRunning'.format_map(request_url_dict)
-      else:
-        path = '{model}:predictLongRunning'
+
     query_params = request_dict.get('_query')
     if query_params:
       path = f'{path}?{urlencode(query_params)}'
@@ -8242,11 +8224,6 @@ class AsyncModels(_api_module.BaseModule):
 
     if self._api_client.vertexai:
       response_dict = _GenerateVideosOperation_from_vertex(
-          response_dict, None, parameter_model
-      )
-
-    if not self._api_client.vertexai:
-      response_dict = _GenerateVideosOperation_from_mldev(
           response_dict, None, parameter_model
       )
 
@@ -8275,6 +8252,55 @@ class AsyncModels(_api_module.BaseModule):
   _logged_generate_videos_deprecation_warning = False
   _logged_afc_warning = False
 
+  async def _generate_content_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> types.GenerateContentResponse:
+    """Generates content and, when automatic_continuation is enabled, follows continuation tokens until finish_reason != CONTINUATION."""
+    enable_continuation = _extra_utils.should_enable_automatic_continuation(
+        config, default_enabled=True
+    )
+    continuation_token: Optional[bytes] = None
+    responses: list[types.GenerateContentResponse] = []
+
+    while not responses or (enable_continuation and continuation_token):
+      call_config = _extra_utils.prepare_continuation_config(
+          config, continuation_token
+      )
+      response = await self._generate_content(
+          model=model, contents=contents, config=call_config
+      )
+      responses.append(response)
+      continuation_token = _extra_utils.should_continue_generation(response)
+
+    return _extra_utils.merge_continuation_responses(responses, config=config)
+
+  async def _generate_content_stream_with_continuation(
+      self,
+      *,
+      model: str,
+      contents: Union[types.ContentListUnion, types.ContentListUnionDict],
+      config: Optional[types.GenerateContentConfigOrDict] = None,
+  ) -> AsyncIterator[types.GenerateContentResponse]:
+    """Streams content and, when automatic_continuation is enabled, follows continuation tokens across hops until finish_reason != CONTINUATION."""
+    state = _extra_utils.StreamContinuation(config)
+    while True:
+      call_config = state.start_hop()
+      error: Optional[Exception] = None
+      try:
+        response_stream = await self._generate_content_stream(
+            model=model, contents=contents, config=call_config
+        )
+        async for chunk in response_stream:  # type: ignore[attr-defined]
+          yield state.observe(chunk)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        error = e
+      if not state.end_hop(error):
+        return
+
   async def generate_content(
       self,
       *,
@@ -8285,6 +8311,14 @@ class AsyncModels(_api_module.BaseModule):
     """Makes an API request to generate content using a model.
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When the model stops with
+    `finish_reason == FinishReason.CONTINUATION` and returns a
+    `continuation_token` on the first candidate, the SDK automatically sends
+    follow-up requests with the `continuation_token` until `finish_reason` is no
+    longer `CONTINUATION`, and returns the merged response. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -8300,7 +8334,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       response = await client.aio.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='User input: I like bagels. Answer:',
           config=types.GenerateContentConfig(
               system_instruction=
@@ -8326,7 +8360,7 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      parsed_config = _extra_utils.deep_copy_config_except_tools(config)
 
     # Use AsyncExitStack to keep MCP connections alive across the entire AFC loop
     async with contextlib.AsyncExitStack() as stack:
@@ -8389,7 +8423,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       if _extra_utils.should_disable_afc(final_parsed_config):
-        return await self._generate_content(
+        return await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config
         )
 
@@ -8397,7 +8431,7 @@ class AsyncModels(_api_module.BaseModule):
         _extra_utils.log_afc_incompatible_tools_warning(
             config, incompatible_tools_indexes
         )
-        return await self._generate_content(
+        return await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config
         )
 
@@ -8407,16 +8441,6 @@ class AsyncModels(_api_module.BaseModule):
       logger.info(
           f'AFC is enabled with max remote calls: {remaining_remote_calls_afc}.'
       )
-      if not AsyncModels._logged_afc_warning:
-        logger.warning(
-            'Direct use of automatic function calling (AFC) in '
-            'AsyncModels.generate_content is not recommended. Instead, we '
-            'recommend to use AFC in AsyncChat.send_message. Similarly, direct '
-            'use of AFC in AsyncModels.generate_content_stream is not '
-            'recommended. Instead, we recommend to use AFC in '
-            'AsyncChat.send_message_stream.'
-        )
-        AsyncModels._logged_afc_warning = True
       automatic_function_calling_history: list[types.Content] = []
       response = types.GenerateContentResponse()
 
@@ -8432,12 +8456,22 @@ class AsyncModels(_api_module.BaseModule):
             else None
         )
         if function_map:
+          if not AsyncModels._logged_afc_warning:
+            logger.warning(
+                'Direct use of automatic function calling (AFC) in '
+                'AsyncModels.generate_content is not recommended. Instead, we '
+                'recommend to use AFC in AsyncChat.send_message. Similarly, '
+                'direct use of AFC in AsyncModels.generate_content_stream is '
+                'not recommended. Instead, we recommend to use AFC in '
+                'AsyncChat.send_message_stream.'
+            )
+            AsyncModels._logged_afc_warning = True
           final_parsed_config_to_call = _extra_utils.get_usage_header(
               final_parsed_config_to_call,
               types.GenerateContentConfig,
               usage='afc',
           )
-        response = await self._generate_content(
+        response = await self._generate_content_with_continuation(
             model=model, contents=contents, config=final_parsed_config_to_call
         )
         remaining_remote_calls_afc -= 1
@@ -8502,23 +8536,32 @@ class AsyncModels(_api_module.BaseModule):
 
     For the `model` parameter, supported formats for Gemini Enterprise Agent
     Platform API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-3.8-flash'
     - The full resource name starts with 'projects/', for example:
-      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-2.0-flash'
+      'projects/my-project-id/locations/us-central1/publishers/google/models/gemini-3.8-flash'
     - The partial resource name with 'publishers/', for example:
-      'publishers/google/models/gemini-2.0-flash' or
+      'publishers/google/models/gemini-3.8-flash' or
     - `/` separated publisher and model name, for example:
-      'google/gemini-2.0-flash'
+      'google/gemini-3.8-flash'
 
     For the `model` parameter, supported formats for Gemini API include:
-    - The Gemini model ID, for example: 'gemini-2.0-flash'
+    - The Gemini model ID, for example: 'gemini-3.8-flash'
     - The model name starts with 'models/', for example:
-      'models/gemini-2.0-flash'
+      'models/gemini-3.8-flash'
     - For tuned models, the model name starts with 'tunedModels/',
       for example:
       'tunedModels/1234567890123456789'
 
     Some models support multimodal input and output.
+
+    Automatic continuation is enabled by default. When a stream hop ends with
+    `finish_reason == FinishReason.CONTINUATION` and includes a
+    `continuation_token` on the first candidate, the SDK automatically clears
+    the intermediate `CONTINUATION` `finish_reason`, starts follow-up stream
+    requests with the `continuation_token`, and yields chunks until
+    `finish_reason` is no longer `CONTINUATION`. Set
+    `config=types.GenerateContentConfig(automatic_continuation=False)` to
+    disable this behavior.
 
     Built-in MCP support is an experimental feature.
 
@@ -8534,7 +8577,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-3.8-flash',
         contents='''What is a good name for a flower shop that specializes in
           selling bouquets of dried flowers?'''
       ):
@@ -8545,7 +8588,7 @@ class AsyncModels(_api_module.BaseModule):
       # * Timeless Petals
 
       async for chunk in await client.aio.models.generate_content_stream(
-        model='gemini-2.0-flash',
+        model='gemini-3.8-flash',
         contents=[
           types.Part.from_text('What is shown in this image?'),
           types.Part.from_uri('gs://generativeai-downloads/images/scones.jpg',
@@ -8561,7 +8604,7 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      parsed_config = _extra_utils.deep_copy_config_except_tools(config)
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(
@@ -8628,7 +8671,7 @@ class AsyncModels(_api_module.BaseModule):
         )
 
         if _extra_utils.should_disable_afc(final_parsed_config):
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
@@ -8639,7 +8682,7 @@ class AsyncModels(_api_module.BaseModule):
           _extra_utils.log_afc_incompatible_tools_warning(
               config, incompatible_tools_indexes
           )
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model, contents=contents, config=final_parsed_config
           )
           async for chunk in response:  # type: ignore[attr-defined]
@@ -8657,16 +8700,6 @@ class AsyncModels(_api_module.BaseModule):
             'AFC is enabled with max remote calls:'
             f' {remaining_remote_calls_afc}.'
         )
-        if not AsyncModels._logged_afc_warning:
-          logger.warning(
-              'Direct use of automatic function calling (AFC) in '
-              'AsyncModels.generate_content_stream is not recommended. '
-              'Instead, we recommend to use AFC in '
-              'AsyncChat.send_message_stream. Similarly, direct use of AFC in '
-              'AsyncModels.generate_content is not recommended. '
-              'Instead, we recommend to use AFC in AsyncChat.send_message.'
-          )
-          AsyncModels._logged_afc_warning = True
         automatic_function_calling_history: list[types.Content] = []
         i = 0
         loop_contents = contents
@@ -8685,6 +8718,16 @@ class AsyncModels(_api_module.BaseModule):
               else None
           )
           if function_map:
+            if not AsyncModels._logged_afc_warning:
+              logger.warning(
+                  'Direct use of automatic function calling (AFC) in '
+                  'AsyncModels.generate_content_stream is not recommended. '
+                  'Instead, we recommend to use AFC in '
+                  'AsyncChat.send_message_stream. Similarly, direct use of AFC '
+                  'in AsyncModels.generate_content is not recommended. '
+                  'Instead, we recommend to use AFC in AsyncChat.send_message.'
+              )
+              AsyncModels._logged_afc_warning = True
             final_parsed_config_to_call = _extra_utils.get_usage_header(
                 final_parsed_config_to_call,
                 types.GenerateContentConfig,
@@ -8693,7 +8736,7 @@ class AsyncModels(_api_module.BaseModule):
 
           i += 1
 
-          response = await self._generate_content_stream(
+          response = self._generate_content_stream_with_continuation(
               model=model,
               contents=loop_contents,
               config=final_parsed_config_to_call,
@@ -8710,7 +8753,6 @@ class AsyncModels(_api_module.BaseModule):
 
           model_output = []
           func_response_parts = []
-          chunk = None
 
           async for chunk in response:  # type: ignore[attr-defined]
             if (
@@ -8852,7 +8894,7 @@ class AsyncModels(_api_module.BaseModule):
           config={'page_size': 5, 'query_base': True}
         )
       print(response.page)
-      # [Model(name='publishers/google/models/gemini-2.0-flash-exp' ...
+      # [Model(name='publishers/google/models/gemini-3.8-flash' ...
     """
 
     config = (
@@ -8882,8 +8924,7 @@ class AsyncModels(_api_module.BaseModule):
       'The generate_images method is deprecated and will be removed in the '
       'next major release (not before Jan. 1 2027). Please use the '
       'generate_content method with image models instead. '
-      'See https://ai.google.dev/gemini-api/docs/deprecations#imagen-models'
-      ' and '
+      'See https://aistudio.google.com/docs/deprecations#imagen-models and '
       'https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation#generate-images',
   )
   async def generate_images(
@@ -9153,7 +9194,7 @@ class AsyncModels(_api_module.BaseModule):
       )
 
       multimodal_embeddings = await client.aio.models.embed_content(
-          model='gemini-embedding-2-preview',
+          model='gemini-embedding-2',
           contents=[
               types.Part.from_uri(
                   file_uri='gs://generativeai-downloads/images/scones.jpg',
@@ -9166,21 +9207,27 @@ class AsyncModels(_api_module.BaseModule):
       )
     """
     if not self._api_client.vertexai:
-      if 'gemini-embedding-2' in model:
+      if t.t_is_multimodal_embedding_model(model):
         contents = t.t_contents(contents)  # type: ignore[assignment]
       return await self._embed_content(
           model=model, contents=contents, config=config
       )
     if t.t_is_vertex_embed_content_model(model):
-      normalized_contents = t.t_contents(contents)
+      normalized_contents = t.t_embed_contents(model, contents)
       if len(normalized_contents) > 1:
-        raise ValueError(
-            'The embedContent API for this model only supports one content at a'
-            ' time.'
+        if t.t_is_vertex_maas_model(model):
+          raise ValueError(
+              'The embedContent API for this model only supports one content at'
+              ' a time.'
+          )
+        return await self._embed_content(
+            model=model,
+            batch_contents=normalized_contents,
+            embedding_api_type=types.EmbeddingApiType.BATCH_EMBED_CONTENTS,
+            config=config,
         )
       return await self._embed_content(
           model=model,
-          contents=contents,
           content=normalized_contents[0],
           embedding_api_type=types.EmbeddingApiType.EMBED_CONTENT,
           config=config,

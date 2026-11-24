@@ -23,12 +23,14 @@ import functools
 import logging
 import re
 import sys
+import threading
 import typing
 from typing import Any, Callable, FrozenSet, Optional, Union, get_args, get_origin
 import uuid
 import warnings
 import pydantic
 from pydantic import alias_generators
+import pydantic.main
 from typing_extensions import TypeAlias
 
 logger = logging.getLogger('google_genai._common')
@@ -326,6 +328,30 @@ def _is_struct_type(annotation: type) -> bool:
   return key_type is str and value_type is typing.Any
 
 
+def _as_base_model_type(
+    annotation: Any,
+) -> Optional[typing.Type[pydantic.BaseModel]]:
+  """Returns the BaseModel subclass an annotation refers to, or None.
+
+  `Annotated[Model, ...]` refers to `Model`: the metadata does not change the
+  fields to prune against.
+
+  Args:
+    annotation: A field type annotation, e.g. `Model`, `Annotated[Model, ...]`,
+      `Any` or `str`.
+
+  Returns:
+    The BaseModel subclass, or None if the annotation is not a model.
+  """
+  while typing.get_origin(annotation) is typing.Annotated:
+    annotation = typing.get_args(annotation)[0]
+  if isinstance(annotation, type) and issubclass(
+      annotation, pydantic.BaseModel
+  ):
+    return annotation
+  return None
+
+
 def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
   """Removes extra fields from the response that are not in the model.
 
@@ -361,18 +387,25 @@ def _remove_extra_fields(model: Any, response: dict[str, object]) -> None:
     if typing.get_origin(annotation) is Union:
       annotation = typing.get_args(annotation)[0]
 
-    # if dict, assume BaseModel but also check that field type is not dict
-    # example: FunctionCall.args
-    if isinstance(value, dict) and typing.get_origin(annotation) is not dict:
-      _remove_extra_fields(annotation, value)
+    # Only recurse into dicts that map to a BaseModel. Fields typed `Any` (or
+    # `list[Any]`) carry free-form JSON, e.g. PredictResponse.predictions, and
+    # have no fields to prune against.
+    model_type = _as_base_model_type(annotation)
+    if isinstance(value, dict) and model_type is not None:
+      _remove_extra_fields(model_type, value)
     elif isinstance(value, list):
       if _is_struct_type(annotation):
         continue
 
+      item_type_args = typing.get_args(annotation)
+      item_type = _as_base_model_type(
+          item_type_args[0] if item_type_args else None
+      )
+      if item_type is None:
+        continue
       for item in value:
-        # assume a list of dict is list of BaseModel
         if isinstance(item, dict):
-          _remove_extra_fields(typing.get_args(annotation)[0], item)
+          _remove_extra_fields(item_type, item)
 
 
 T = typing.TypeVar('T', bound='BaseModel')
@@ -566,6 +599,15 @@ def _format_collection(
   return f'{brackets[0]}\n' + ',\n'.join(elements) + f',\n{indent}{brackets[1]}'
 
 
+# Pydantic's model_rebuild() is not thread-safe; defer_build calls it lazily.
+# Pydantic 2.14+ serializes its own rebuilds with `pydantic.main._rebuild_lock`;
+# sharing that lock keeps plain `pydantic.BaseModel` rebuilds and ours from
+# taking two locks in opposite orders. Older versions have no such lock.
+_MODEL_BUILD_LOCK = (
+    getattr(pydantic.main, '_rebuild_lock', None) or threading.RLock()
+)
+
+
 class BaseModel(pydantic.BaseModel):
 
   model_config = pydantic.ConfigDict(
@@ -585,6 +627,30 @@ class BaseModel(pydantic.BaseModel):
       # most of what importing this package costs.
       defer_build=True,
   )
+
+  @classmethod
+  def model_rebuild(
+      cls,
+      *,
+      force: bool = False,
+      raise_errors: bool = True,
+      _parent_namespace_depth: int = 2,
+      _types_namespace: Optional[collections.abc.Mapping[str, Any]] = None,
+  ) -> Optional[bool]:
+    """Builds the model like Pydantic, but one thread at a time."""
+    # Pydantic sets `__pydantic_complete__` last, after the validator.
+    if not force and cls.__pydantic_complete__:
+      return None
+    with _MODEL_BUILD_LOCK:
+      return super().model_rebuild(
+          force=force,
+          raise_errors=raise_errors,
+          # This override adds one frame between the caller and Pydantic.
+          _parent_namespace_depth=(
+              _parent_namespace_depth + 1 if _parent_namespace_depth > 0 else 0
+          ),
+          _types_namespace=_types_namespace,
+      )
 
   @pydantic.model_validator(mode='before')
   @classmethod

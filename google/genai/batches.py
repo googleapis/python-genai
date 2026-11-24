@@ -528,6 +528,13 @@ def _Candidate_from_mldev(
         getv(from_object, ['urlContextMetadata']),
     )
 
+  if getv(from_object, ['continuationToken']) is not None:
+    setv(
+        to_object,
+        ['continuation_token'],
+        getv(from_object, ['continuationToken']),
+    )
+
   return to_object
 
 
@@ -1146,6 +1153,22 @@ def _GenerateContentConfig_to_mldev(
         getv(from_object, ['audio_transcription_config']),
     )
 
+  if getv(from_object, ['continuation_token']) is not None:
+    setv(
+        parent_object,
+        ['continuationToken'],
+        getv(from_object, ['continuation_token']),
+    )
+
+  if getv(from_object, ['generation_output_config']) is not None:
+    raise ValueError(
+        'generation_output_config parameter is only supported in Gemini'
+        ' Enterprise Agent Platform mode, not in Gemini Developer API mode.'
+    )
+
+  if getv(from_object, ['store']) is not None:
+    setv(parent_object, ['store'], getv(from_object, ['store']))
+
   return to_object
 
 
@@ -1582,6 +1605,23 @@ def _Part_to_mldev(
 
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
 
   return to_object
 
@@ -2272,7 +2312,7 @@ class Batches(_api_module.BaseModule):
     .. code-block:: python
 
       batch_job = client.batches.create(
-          model="gemini-2.0-flash-001",
+          model="gemini-3.8-flash",
           src="gs://path/to/input/data",
       )
       print(batch_job.state)
@@ -2902,7 +2942,7 @@ class AsyncBatches(_api_module.BaseModule):
     .. code-block:: python
 
       batch_job = await client.aio.batches.create(
-          model="gemini-2.0-flash-001",
+          model="gemini-3.8-flash",
           src="gs://path/to/input/data",
       )
     """

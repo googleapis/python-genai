@@ -157,6 +157,26 @@ def _redact_request_url(url: str) -> str:
   return result
 
 
+def _normalize_mldev_upload_url(url: str) -> str:
+  """Drops the API version from a redacted Gemini API upload URL.
+
+  Gemini API upload URLs are `upload/{api_version}/...`, and the redaction in
+  `_redact_request_url` only removes the `upload` segment, so the recorded URL
+  keeps the version (e.g. `{MLDEV_URL_PREFIX}/v1beta/files`). Other Gemini API
+  URLs are version-free after redaction, so ignore the upload version too when
+  matching, so that replays work with any client API version.
+
+  Args:
+    url: A URL redacted by `_redact_request_url`.
+
+  Returns:
+    The URL with any leading version segment after the prefix removed.
+  """
+  return re.sub(
+      r'^\{MLDEV_URL_PREFIX\}/v\d[^/]*/', '{MLDEV_URL_PREFIX}/', url
+  )
+
+
 def _redact_project_location_path(path: str) -> str:
   # Redact a field in the request that is known to vary based on project and
   # location.
@@ -446,7 +466,9 @@ class ReplayApiClient(BaseApiClient):
   ) -> None:
     _debug_print(f'http_request.url: {http_request.url}')
     _debug_print(f'interaction.request.url: {interaction.request.url}')
-    assert http_request.url == interaction.request.url
+    assert _normalize_mldev_upload_url(
+        http_request.url
+    ) == _normalize_mldev_upload_url(interaction.request.url)
     # tentatively disable this assert because too much effort to keep it in sync
     # when adding new tracking headers, plus headers are tested separately in unit tests.
     # assert http_request.headers == interaction.request.headers, (

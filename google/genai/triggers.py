@@ -37,8 +37,6 @@ from ._gaos.types.triggers.trigger import (
     TriggerStatus,
 )
 from ._gaos.types.triggers.triggercreateparams import (
-    Interaction,
-    InteractionParam,
     TriggerCreateParams,
     TriggerCreateParamsParam,
 )
@@ -54,8 +52,6 @@ from ._gaos.types.triggers.triggerupdate import (
 )
 
 __all__ = [
-    "Interaction",
-    "InteractionParam",
     "ListTriggerExecutionsResponse",
     "ListTriggersResponse",
     "Trigger",

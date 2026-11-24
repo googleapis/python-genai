@@ -26,22 +26,40 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Mapping, Optional, TypeVar, Union, cast
 
+import functools
 import io
 import json
 import mimetypes
 import os
 
-import httpx
+try:
+    import httpx
+except ImportError:
+    import httpx2 as httpx
+from pydantic import ValidationError
 
+from .. import _api_client
+from .. import _interactions_continuation
+from .._live_interactions_experimental import _warn_live_interactions_experimental
+from .._interactions_websocket import (
+    APIWebSocketError as APIWebSocketError,
+    InteractionWebSocketConnection as InteractionWebSocketConnection,
+    InteractionWebSocketConnectionContext,
+)
 from ._hooks.google_genai_auth import (
     GOOGLE_GENAI_API_REVISION as _GOOGLE_GENAI_API_REVISION,
     GoogleGenAISecurityProvider,
 )
 from .agents import AsyncAgents as GeneratedAsyncAgents
 from .agents import Agents as GeneratedAgents
+from .auth_tokens import AsyncAuthTokens as GeneratedAsyncAuthTokens
+from .auth_tokens import AuthTokens as GeneratedAuthTokens
 from .interactions import AsyncInteractions as GeneratedAsyncInteractions
 from .interactions import Interactions as GeneratedInteractions
+from .lib import compat_errors
 from .lib.compat_errors import (
+    APIConnectionError as APIConnectionError,
+    APIError as APIError,
     _AsyncRawResponseAccessorProxy,
     _RawResponseAccessorProxy,
     async_wrap_sdk_call,
@@ -51,11 +69,18 @@ from .lib.compat_errors import (
     wrap_stream_errors,
 )
 from .sdk import AsyncGenAI, GenAI
+from .types import BaseModel
 from .types import environments
 from .types import credentials
 from .types import interactions
+from .types.interactions import (
+    ClientEvent as ClientEvent,
+    ClientEventTypedDict as ClientEventTypedDict,
+    ServerEvent as ServerEvent,
+)
+from .types.basemodel import Unset
 from .types.security import Security
-from .utils import BackoffStrategy, RetryConfig, eventstreaming
+from .utils import BackoffStrategy, RetryConfig, eventstreaming, unmarshal
 from .triggers import AsyncTriggers as GeneratedAsyncTriggers
 from .triggers import Triggers as GeneratedTriggers
 from .webhooks import AsyncWebhooks as GeneratedAsyncWebhooks
@@ -66,6 +91,8 @@ from .credentials import AsyncCredentials as GeneratedAsyncCredentials
 from .credentials import Credentials as GeneratedCredentials
 from .voices import AsyncVoices as GeneratedAsyncVoices
 from .voices import Voices as GeneratedVoices
+from .decisions import AsyncDecisions as GeneratedAsyncDecisions
+from .decisions import Decisions as GeneratedDecisions
 from .files import AsyncFiles as GeneratedAsyncFiles
 from .files import Files as GeneratedFiles
 from ._internal import AsyncInternal as GeneratedAsyncInternal
@@ -75,6 +102,29 @@ from ._internal import Internal as GeneratedInternal
 GOOGLE_GENAI_API_REVISION = _GOOGLE_GENAI_API_REVISION
 _LEGACY_LYRIA_MODELS = frozenset({'lyria-3-pro-preview', 'lyria-3-clip-preview'})
 ModelT = TypeVar('ModelT')
+
+
+def _parse_server_event(
+    payload: dict[str, Any],
+) -> Union[ServerEvent, interactions.ErrorEvent]:
+    """Unmarshal a raw server event dict into a typed ``ServerEvent`` or ``ErrorEvent``."""
+    target_type: Any = (
+        interactions.ErrorEvent
+        if payload.get('event_type') == 'error'
+        else interactions.ServerEvent
+    )
+    try:
+        return cast(
+            Union[ServerEvent, interactions.ErrorEvent],
+            unmarshal(
+                payload, target_type, allow_unknown_union_variants=True
+            ),
+        )
+    except ValidationError:
+        return cast(
+            Union[ServerEvent, interactions.ErrorEvent],
+            BaseModel.model_validate(payload),
+        )
 
 
 def get_google_genai_server_url(api_client: Any) -> str:
@@ -137,7 +187,6 @@ def _get_google_genai_security(api_client: Any) -> Optional[Any]:
     return None
 
 
-_DEFAULT_MAX_RETRIES = 2
 # Default backoff shape (ms): 0.5s initial, 8s cap, base 2. Individual fields
 # are overridden by the matching `retry_options` value when set.
 _DEFAULT_INITIAL_INTERVAL_MS = 500
@@ -149,15 +198,19 @@ _MAX_ELAPSED_TIME_MS = 30000
 def _translate_retry_config(http_options: Any) -> RetryConfig:
     """Maps parent `HttpOptions.retry_options` onto a `RetryConfig`.
 
-    `attempts` becomes the retry count (an unset `attempts` falls back to the
-    default retry count). The delay-shaping options (`initial_delay`,
+    `attempts` counts the original request, so `attempts - 1` becomes the retry
+    count: 0 and 1 both mean no retries (an unset `attempts` falls back to
+    `_api_client._RETRY_ATTEMPTS`, shared with the rest of the SDK). The
+    delay-shaping options (`initial_delay`,
     `max_delay`, `exp_base`, `jitter`) and `http_status_codes` are honored when
     provided, each defaulting to the built-in behavior when omitted.
     """
     options = getattr(http_options, 'retry_options', None)
 
     attempts = getattr(options, 'attempts', None) if options is not None else None
-    max_retries = attempts if attempts is not None else _DEFAULT_MAX_RETRIES + 1
+    if attempts is None:
+        attempts = _api_client._RETRY_ATTEMPTS
+    max_retries = max(attempts - 1, 0)
 
     initial_interval = _DEFAULT_INITIAL_INTERVAL_MS
     max_interval = _DEFAULT_MAX_INTERVAL_MS
@@ -226,6 +279,153 @@ def build_google_genai_async_client(
     return sdk
 
 
+def _normalize_auth_token_delete_args(
+    args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> tuple[tuple[Any, ...], dict[str, Any]]:
+    if (
+        len(args) >= 2
+        and isinstance(args[1], str)
+        and args[1].startswith('auth_tokens/')
+    ):
+        args = (args[0], args[1][len('auth_tokens/') :], *args[2:])
+    if isinstance(kwargs.get('auth_token'), str) and kwargs[
+        'auth_token'
+    ].startswith('auth_tokens/'):
+        kwargs = {
+            **kwargs,
+            'auth_token': kwargs['auth_token'][len('auth_tokens/') :],
+        }
+    return args, kwargs
+
+
+def _check_auth_tokens_gemini_only(api_client: Any) -> None:
+    if getattr(api_client, 'vertexai', False) is True:
+        raise ValueError('Live Interactions is currently Gemini API only.')
+
+
+class _AuthTokensAccessorProxy:
+    """Applies the auth_tokens warning, Gemini-only guard, and prefix strip.
+
+    Wraps the `with_raw_response` / `with_streaming_response` accessors so
+    `create` and `delete` behave like the plain methods: they emit the
+    experimental warning, Vertex clients are rejected, and `delete` accepts the
+    `auth_tokens/<token>` form returned by `create`.
+    """
+
+    __slots__ = ('_inner', '_api_client')
+
+    def __init__(self, inner: Any, api_client: Any) -> None:
+        object.__setattr__(self, '_inner', inner)
+        object.__setattr__(self, '_api_client', api_client)
+
+    def __getattr__(self, name: str) -> Any:
+        attr = getattr(object.__getattribute__(self, '_inner'), name)
+        if name not in ('create', 'delete'):
+            return attr
+        api_client = object.__getattribute__(self, '_api_client')
+
+        def _wrapped(*args: Any, **kwargs: Any) -> Any:
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(api_client)
+            if name == 'delete':
+                args, kwargs = _normalize_auth_token_delete_args(args, kwargs)
+            return attr(*args, **kwargs)
+
+        return _wrapped
+
+
+class GeminiNextGenAuthTokens(GeneratedAuthTokens):
+    """Public interaction auth_tokens sub-resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    def __init__(self, *args: Any, api_client: Any = None, **kwargs: Any) -> None:
+        self._api_client = api_client
+        super().__init__(*args, **kwargs)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AuthTokensAccessorProxy(
+                _RawResponseAccessorProxy(super().with_raw_response), self._api_client
+            )
+
+        @property
+        def with_streaming_response(self):
+            return _AuthTokensAccessorProxy(
+                _RawResponseAccessorProxy(super().with_streaming_response), self._api_client
+            )
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+        def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            args, kwargs = _normalize_auth_token_delete_args(args, kwargs)
+            return wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class AsyncGeminiNextGenAuthTokens(GeneratedAsyncAuthTokens):
+    """Async public interaction auth_tokens sub-resource backed by the NextGen client.
+
+    Experimental: Live Interactions SDK support is experimental and may change
+    in future versions.
+    """
+
+    def __init__(self, *args: Any, api_client: Any = None, **kwargs: Any) -> None:
+        self._api_client = api_client
+        super().__init__(*args, **kwargs)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AuthTokensAccessorProxy(
+                _AsyncRawResponseAccessorProxy(super().with_raw_response), self._api_client
+            )
+
+        @property
+        def with_streaming_response(self):
+            return _AuthTokensAccessorProxy(
+                _AsyncRawResponseAccessorProxy(super().with_streaming_response), self._api_client
+            )
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            """Create a short-lived auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
+
+        async def delete(self, *args: Any, **kwargs: Any) -> Any:
+            """Delete (revoke) an auth token for a Live Interaction.
+
+            Experimental: Live Interactions SDK support is experimental and may
+            change in future versions.
+            """
+            _warn_live_interactions_experimental(stacklevel=2)
+            _check_auth_tokens_gemini_only(self._api_client)
+            args, kwargs = _normalize_auth_token_delete_args(args, kwargs)
+            return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+
 class GeminiNextGenInteractions(GeneratedInteractions):
     """Public interactions resource backed by the NextGen client.
 
@@ -238,9 +438,19 @@ class GeminiNextGenInteractions(GeneratedInteractions):
     runtime stub here.
     """
 
+    auth_tokens: GeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
+        self._api_client = api_client
         sdk = build_google_genai_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = GeminiNextGenAuthTokens(
+            self.sdk_configuration,
+            parent_ref=self.parent_ref,
+            api_client=self._api_client,
+        )
 
     if not TYPE_CHECKING:
         @property
@@ -262,46 +472,173 @@ class GeminiNextGenInteractions(GeneratedInteractions):
             extra_query: Optional[Mapping[str, Any]] = None,
             extra_body: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
+            automatic_continuation: Optional[bool] = None,
             **body: Any,
         ) -> Union[
             interactions.Interaction,
             eventstreaming.Stream[interactions.InteractionSSEEvent],
         ]:
-            if request is not None:
-                if body:
-                    raise TypeError(_REQUEST_AND_BODY_ERROR)
-                stream = _request_stream(request)
-                response = wrap_sdk_call(
-                    super().create,
-                    request=request,
-                    api_version=api_version,
-                    extra_headers=extra_headers,
-                    extra_query=extra_query,
-                    extra_body=extra_body,
-                    timeout=timeout,
-                )
-                if stream:
-                    if is_stream(response):
-                        return wrap_stream_errors(response)
-                    return response
-                return _add_output_properties_if_interaction(response)
+            """Creates a new interaction.
 
-            stream = _optional_bool(body.get('stream'), default=False)
-            body = _normalize_create_body(body)
-            response = wrap_sdk_call(
-                super().create,
-                api_version=api_version,
-                **cast(Any, body),
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
+            :param request: Optional request object (`CreateInteractionRequest`).
+            :param api_version: API version for request routing.
+            :param extra_headers: Additional headers to set or replace on requests.
+            :param extra_query: Additional query parameters to append to requests.
+            :param extra_body: Additional JSON object fields to merge into request bodies.
+            :param timeout: Override the default request timeout configuration
+                for this method in seconds. When `automatic_continuation` is
+                enabled (the default) a numeric `timeout` bounds the whole call
+                (all continuation hops together), while the client-level
+                `http_options.timeout` and `http_options.retry_options` apply
+                to each hop; see the `automatic_continuation` notes below.
+            :param automatic_continuation: Defaults to `True`. When `True`,
+                automatically resumes decoding across multiple continuation hops
+                whenever a response or stream stops at the per-request decode
+                token limit (`status='requires_continuation'` with a
+                `continuation_token`) until the interaction completes, reaches
+                `incomplete` (e.g. `max_output_tokens`), requires action, or
+                fails. Pass `automatic_continuation=False` to disable.
+                - For `stream=True`, events from all continuation hops are
+                  yielded sequentially on the returned `Stream`. Each
+                  intermediate hop ends with an `interaction.completed` event
+                  whose `event.interaction.status` is `'requires_continuation'`,
+                  followed by `interaction.created` for the next hop; check
+                  `event.interaction.status != 'requires_continuation'` before
+                  treating an `interaction.completed` event as terminal.
+                  `event.interaction.usage` on streamed events reflects only
+                  that hop rather than cumulative usage across hops.
+                - For `stream=False`, each continuation hop is a separate
+                  interaction on the server that only contains that hop's
+                  output. The SDK merges the hops into one `Interaction`:
+                  `steps` are concatenated in hop order, `usage`
+                  token counts are summed across hops (with
+                  `usage.initial_input_tokens` set to the first hop's input
+                  tokens), and all other fields (`id`, `status`, ...) come from
+                  the final hop. The final hop's `id` can be passed as
+                  `previous_interaction_id` to continue the conversation.
+                  `continuation_ids` lists the ids of every hop in order (the
+                  last one is `id`); note that `interactions.get(id)` returns
+                  only the final hop. `previous_interaction_id`, `created` and
+                  `input` come from the first hop.
+                - With `store=True` (the default), each continuation hop sends
+                  the hop that issued the `continuation_token` as
+                  `previous_interaction_id` and omits `input` (the server
+                  already has it). With `store=False`, the original `input` is
+                  resent with the token.
+                - Client-side continuation is skipped for `background=True` and
+                  agent interactions (`agent` / `agent_config`), whose loops are
+                  managed by the server.
+                - Timeouts: a numeric per-call `timeout` is a wall-clock budget
+                  for the whole `create()` call. Each hop is sent with the
+                  time left, and once it runs out the call stops with
+                  `ContinuationInterruptedError` (see Errors) so the work so
+                  far can be resumed. The client-level `http_options.timeout`
+                  (and an `httpx.Timeout` passed as `timeout`) is a per-request
+                  setting and applies to each hop separately.
+                  `http_options.retry_options` also applies per hop: transient
+                  errors on a continuation hop retry that hop using the latest
+                  `continuation_token` without restarting from the initial
+                  request.
+                - Billing note: With `background=False`, each continuation hop
+                  re-prefills the conversation and generated prefix, so input
+                  tokens are billed on every hop (and summed in
+                  `usage.total_input_tokens`). If an unrecoverable error occurs
+                  after one or more hops have completed, those completed hops
+                  are still billed. For server-managed continuation without
+                  client-side hop loops, use `background=True` (with
+                  `store=True`).
+                - Errors: a failure on the first request is raised as usual.
+                  A failure after progress (a later hop, or a stream after a
+                  resumable checkpoint) raises
+                  `google.genai.errors.ContinuationInterruptedError` (with the
+                  failure as `__cause__`) carrying `continuation_token`,
+                  `interaction_id` and `continuation_ids`, plus
+                  `partial_interaction` (the completed hops merged, for
+                  `stream=False`), so the output already produced is not lost
+                  and the call can be resumed manually. Running out of the
+                  per-call `timeout` after progress is reported the same way
+                  (with a `TimeoutError` as `__cause__`).
+            """
+            prepared = _interactions_continuation.ContinuationRequest.from_create_args(
+                request=request,
+                body=body,
+                automatic_continuation=automatic_continuation,
+                normalize_body=_normalize_create_body,
+                unset_cls=Unset,
             )
-            if stream:
-                if is_stream(response):
-                    return wrap_stream_errors(response)
-                return response
-            return _add_output_properties_if_interaction(response)
+            call_kwargs = {
+                'api_version': api_version,
+                'extra_headers': extra_headers,
+                'extra_query': extra_query,
+                'extra_body': extra_body,
+            }
+            deadline = _interactions_continuation.CallDeadline(
+                timeout, enabled=prepared.enable_continuation
+            )
+            send_once = functools.partial(
+                self._send_create_once, prepared, call_kwargs, deadline
+            )
+
+            response = send_once()
+            if prepared.stream:
+                if not is_stream(response):
+                    return response
+
+                wrapped_stream = wrap_stream_errors(response)
+                if not prepared.enable_continuation:
+                    if prepared.warn_on_incomplete:
+                        return _interactions_continuation.wrap_stream_incomplete_warning(
+                            wrapped_stream
+                        )
+                    return wrapped_stream
+
+                return _interactions_continuation.wrap_stream_continuation(
+                    wrapped_stream,
+                    send_once,
+                    is_stream_fn=is_stream,
+                    wrap_errors_fn=wrap_stream_errors,
+                    connection_error_type=compat_errors.APIConnectionError,
+                    initial_continuation_token=prepared.caller_token,
+                    deadline=deadline,
+                    stateful=prepared.stateful,
+                )
+
+            if prepared.enable_continuation:
+                return _interactions_continuation.continue_unary_interaction(
+                    response,
+                    send_once,
+                    initial_continuation_token=prepared.caller_token,
+                    normalize_interaction=_normalize_interaction_shape,
+                    finalize_interaction=_add_output_properties_if_interaction,
+                    deadline=deadline,
+                    stateful=prepared.stateful,
+                )
+            result = _add_output_properties_if_interaction(response)
+            if prepared.warn_on_incomplete:
+                _interactions_continuation.warn_if_incomplete_unary(result)
+            return result
+
+        def _send_create_once(
+            self,
+            prepared: _interactions_continuation.ContinuationRequest,
+            call_kwargs: Mapping[str, Any],
+            deadline: _interactions_continuation.CallDeadline,
+            token: Optional[str] = None,
+            token_owner_id: Optional[str] = None,
+        ) -> Any:
+            req, req_body = prepared.hop_args(token, token_owner_id)
+            call_kwargs = {**call_kwargs, 'timeout': deadline.hop_timeout()}
+            if req is not None:
+                return wrap_sdk_call(
+                    super().create,
+                    request=req,
+                    **call_kwargs,
+                )
+            return wrap_sdk_call(
+                super().create,
+                **cast(Any, req_body),
+                **call_kwargs,
+            )
 
 
     if not TYPE_CHECKING:
@@ -390,9 +727,65 @@ class GeminiNextGenInteractions(GeneratedInteractions):
 class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
     """Async public interactions resource backed by the NextGen client."""
 
+    auth_tokens: AsyncGeminiNextGenAuthTokens
+
     def __init__(self, api_client: Any):
+        self._api_client = api_client
         sdk = build_google_genai_async_client(api_client)
         super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    def _init_sdks(self) -> None:
+        self.auth_tokens = AsyncGeminiNextGenAuthTokens(
+            self.sdk_configuration,
+            parent_ref=self.parent_ref,
+            api_client=self._api_client,
+        )
+
+    def connect(
+        self,
+        id: str,
+        *,
+        api_version: Optional[str] = None,
+        extra_headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 30.0,
+    ) -> InteractionWebSocketConnectionContext[
+        Union[ClientEvent, ClientEventTypedDict],
+        Union[ServerEvent, interactions.ErrorEvent],
+    ]:
+        """Connect to an existing live interaction over WebSocket.
+
+        If the client was created with an auth token
+        (``Client(api_key="auth_tokens/...")``), the token is sent in the
+        ``x-goog-api-key`` header on the WebSocket handshake, and any
+        ``Authorization`` header is omitted.
+
+        Terminal server events (``interaction.completed``,
+        ``interaction.canceled``, or ``reconnection_required``),
+        ``await connection.cancel()``, and fatal transport or protocol errors
+        automatically close the local WebSocket. Exiting an ``async with``
+        block (or calling ``await connection.detach()``) while the session is
+        still active detaches early (sending ``interaction.disconnect`` and
+        closing the local transport) without ending the server-side
+        interaction, leaving it alive and resumable for a later ``connect(id)``.
+
+        To end the server-side interaction before exiting:
+        - Call ``await connection.complete()`` and consume ``connection.receive()``
+          until ``interaction.completed`` to finish and persist the interaction.
+        - Call ``await connection.cancel()`` to abort the interaction.
+
+        Experimental: Live Interactions SDK support is experimental and may
+        change in future versions.
+        """
+        _warn_live_interactions_experimental(stacklevel=2)
+        return InteractionWebSocketConnectionContext(
+            self._api_client,
+            id,
+            api_version=api_version,
+            extra_headers=extra_headers,
+            timeout=timeout,
+            api_revision=GOOGLE_GENAI_API_REVISION,
+            event_parser=_parse_server_event,
+        )
 
     if not TYPE_CHECKING:
         @property
@@ -414,46 +807,173 @@ class AsyncGeminiNextGenInteractions(GeneratedAsyncInteractions):
             extra_query: Optional[Mapping[str, Any]] = None,
             extra_body: Optional[Mapping[str, Any]] = None,
             timeout: Optional[Union[float, httpx.Timeout]] = None,
+            automatic_continuation: Optional[bool] = None,
             **body: Any,
         ) -> Union[
             interactions.Interaction,
             eventstreaming.AsyncStream[interactions.InteractionSSEEvent],
         ]:
-            if request is not None:
-                if body:
-                    raise TypeError(_REQUEST_AND_BODY_ERROR)
-                stream = _request_stream(request)
-                response = await async_wrap_sdk_call(
-                    super().create,
-                    request=request,
-                    api_version=api_version,
-                    extra_headers=extra_headers,
-                    extra_query=extra_query,
-                    extra_body=extra_body,
-                    timeout=timeout,
-                )
-                if stream:
-                    if is_stream(response):
-                        return wrap_async_stream_errors(response)
-                    return response
-                return _add_output_properties_if_interaction(response)
+            """Creates a new interaction asynchronously.
 
-            stream = _optional_bool(body.get('stream'), default=False)
-            body = _normalize_create_body(body)
-            response = await async_wrap_sdk_call(
-                super().create,
-                api_version=api_version,
-                **cast(Any, body),
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
+            :param request: Optional request object (`CreateInteractionRequest`).
+            :param api_version: API version for request routing.
+            :param extra_headers: Additional headers to set or replace on requests.
+            :param extra_query: Additional query parameters to append to requests.
+            :param extra_body: Additional JSON object fields to merge into request bodies.
+            :param timeout: Override the default request timeout configuration
+                for this method in seconds. When `automatic_continuation` is
+                enabled (the default) a numeric `timeout` bounds the whole call
+                (all continuation hops together), while the client-level
+                `http_options.timeout` and `http_options.retry_options` apply
+                to each hop; see the `automatic_continuation` notes below.
+            :param automatic_continuation: Defaults to `True`. When `True`,
+                automatically resumes decoding across multiple continuation hops
+                whenever a response or stream stops at the per-request decode
+                token limit (`status='requires_continuation'` with a
+                `continuation_token`) until the interaction completes, reaches
+                `incomplete` (e.g. `max_output_tokens`), requires action, or
+                fails. Pass `automatic_continuation=False` to disable.
+                - For `stream=True`, events from all continuation hops are
+                  yielded sequentially on the returned `AsyncStream`. Each
+                  intermediate hop ends with an `interaction.completed` event
+                  whose `event.interaction.status` is `'requires_continuation'`,
+                  followed by `interaction.created` for the next hop; check
+                  `event.interaction.status != 'requires_continuation'` before
+                  treating an `interaction.completed` event as terminal.
+                  `event.interaction.usage` on streamed events reflects only
+                  that hop rather than cumulative usage across hops.
+                - For `stream=False`, each continuation hop is a separate
+                  interaction on the server that only contains that hop's
+                  output. The SDK merges the hops into one `Interaction`:
+                  `steps` are concatenated in hop order, `usage`
+                  token counts are summed across hops (with
+                  `usage.initial_input_tokens` set to the first hop's input
+                  tokens), and all other fields (`id`, `status`, ...) come from
+                  the final hop. The final hop's `id` can be passed as
+                  `previous_interaction_id` to continue the conversation.
+                  `continuation_ids` lists the ids of every hop in order (the
+                  last one is `id`); note that `interactions.get(id)` returns
+                  only the final hop. `previous_interaction_id`, `created` and
+                  `input` come from the first hop.
+                - With `store=True` (the default), each continuation hop sends
+                  the hop that issued the `continuation_token` as
+                  `previous_interaction_id` and omits `input` (the server
+                  already has it). With `store=False`, the original `input` is
+                  resent with the token.
+                - Client-side continuation is skipped for `background=True` and
+                  agent interactions (`agent` / `agent_config`), whose loops are
+                  managed by the server.
+                - Timeouts: a numeric per-call `timeout` is a wall-clock budget
+                  for the whole `create()` call. Each hop is sent with the
+                  time left, and once it runs out the call stops with
+                  `ContinuationInterruptedError` (see Errors) so the work so
+                  far can be resumed. The client-level `http_options.timeout`
+                  (and an `httpx.Timeout` passed as `timeout`) is a per-request
+                  setting and applies to each hop separately.
+                  `http_options.retry_options` also applies per hop: transient
+                  errors on a continuation hop retry that hop using the latest
+                  `continuation_token` without restarting from the initial
+                  request.
+                - Billing note: With `background=False`, each continuation hop
+                  re-prefills the conversation and generated prefix, so input
+                  tokens are billed on every hop (and summed in
+                  `usage.total_input_tokens`). If an unrecoverable error occurs
+                  after one or more hops have completed, those completed hops
+                  are still billed. For server-managed continuation without
+                  client-side hop loops, use `background=True` (with
+                  `store=True`).
+                - Errors: a failure on the first request is raised as usual.
+                  A failure after progress (a later hop, or a stream after a
+                  resumable checkpoint) raises
+                  `google.genai.errors.ContinuationInterruptedError` (with the
+                  failure as `__cause__`) carrying `continuation_token`,
+                  `interaction_id` and `continuation_ids`, plus
+                  `partial_interaction` (the completed hops merged, for
+                  `stream=False`), so the output already produced is not lost
+                  and the call can be resumed manually. Running out of the
+                  per-call `timeout` after progress is reported the same way
+                  (with a `TimeoutError` as `__cause__`).
+            """
+            prepared = _interactions_continuation.ContinuationRequest.from_create_args(
+                request=request,
+                body=body,
+                automatic_continuation=automatic_continuation,
+                normalize_body=_normalize_create_body,
+                unset_cls=Unset,
             )
-            if stream:
-                if is_stream(response):
-                    return wrap_async_stream_errors(response)
-                return response
-            return _add_output_properties_if_interaction(response)
+            call_kwargs = {
+                'api_version': api_version,
+                'extra_headers': extra_headers,
+                'extra_query': extra_query,
+                'extra_body': extra_body,
+            }
+            deadline = _interactions_continuation.CallDeadline(
+                timeout, enabled=prepared.enable_continuation
+            )
+            send_once = functools.partial(
+                self._send_create_once, prepared, call_kwargs, deadline
+            )
+
+            response = await send_once()
+            if prepared.stream:
+                if not is_stream(response):
+                    return response
+
+                wrapped_stream = wrap_async_stream_errors(response)
+                if not prepared.enable_continuation:
+                    if prepared.warn_on_incomplete:
+                        return _interactions_continuation.wrap_async_stream_incomplete_warning(
+                            wrapped_stream
+                        )
+                    return wrapped_stream
+
+                return _interactions_continuation.wrap_async_stream_continuation(
+                    wrapped_stream,
+                    send_once,
+                    is_stream_fn=is_stream,
+                    wrap_errors_fn=wrap_async_stream_errors,
+                    connection_error_type=compat_errors.APIConnectionError,
+                    initial_continuation_token=prepared.caller_token,
+                    deadline=deadline,
+                    stateful=prepared.stateful,
+                )
+
+            if prepared.enable_continuation:
+                return await _interactions_continuation.continue_async_unary_interaction(
+                    response,
+                    send_once,
+                    initial_continuation_token=prepared.caller_token,
+                    normalize_interaction=_normalize_interaction_shape,
+                    finalize_interaction=_add_output_properties_if_interaction,
+                    deadline=deadline,
+                    stateful=prepared.stateful,
+                )
+            result = _add_output_properties_if_interaction(response)
+            if prepared.warn_on_incomplete:
+                _interactions_continuation.warn_if_incomplete_unary(result)
+            return result
+
+        async def _send_create_once(
+            self,
+            prepared: _interactions_continuation.ContinuationRequest,
+            call_kwargs: Mapping[str, Any],
+            deadline: _interactions_continuation.CallDeadline,
+            token: Optional[str] = None,
+            token_owner_id: Optional[str] = None,
+        ) -> Any:
+            req, req_body = prepared.hop_args(token, token_owner_id)
+            call_kwargs = {**call_kwargs, 'timeout': deadline.hop_timeout()}
+            if req is not None:
+                return await async_wrap_sdk_call(
+                    super().create,
+                    request=req,
+                    **call_kwargs,
+                )
+            return await async_wrap_sdk_call(
+                super().create,
+                **cast(Any, req_body),
+                **call_kwargs,
+            )
 
 
     if not TYPE_CHECKING:
@@ -755,6 +1275,52 @@ class AsyncGeminiNextGenVoices(GeneratedAsyncVoices):
 
         async def delete(self, *args: Any, **kwargs: Any) -> Any:
             return await async_wrap_sdk_call(super().delete, *args, **kwargs)
+
+
+class GeminiNextGenDecisions(GeneratedDecisions):
+    """Decisions resource backed by the NextGen client.
+
+    Subclasses the generated resource so every public method is wrapped in
+    `wrap_sdk_call`, translating per-operation `GenAiError` raises into the
+    status-code `APIError` hierarchy exposed at the
+    `google.genai._interactions` import surface.
+    """
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _RawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _RawResponseAccessorProxy(super().with_streaming_response)
+
+        def create(self, *args: Any, **kwargs: Any) -> Any:
+            return wrap_sdk_call(super().create, *args, **kwargs)
+
+
+class AsyncGeminiNextGenDecisions(GeneratedAsyncDecisions):
+    """Async decisions resource backed by the NextGen client."""
+
+    def __init__(self, api_client: Any):
+        sdk = build_google_genai_async_client(api_client)
+        super().__init__(sdk.sdk_configuration, parent_ref=sdk)
+
+    if not TYPE_CHECKING:
+        @property
+        def with_raw_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_raw_response)
+
+        @property
+        def with_streaming_response(self):
+            return _AsyncRawResponseAccessorProxy(super().with_streaming_response)
+
+        async def create(self, *args: Any, **kwargs: Any) -> Any:
+            return await async_wrap_sdk_call(super().create, *args, **kwargs)
 
 
 class GeminiNextGenAgents(GeneratedAgents):
@@ -1338,16 +1904,9 @@ def _add_output_properties_if_interaction(value: Any) -> Any:
     steps = _get_value(normalized, 'steps')
     updates = _output_properties_from_steps(steps)
     if not updates:
-        return value
+        return normalized
 
-    if hasattr(normalized, 'model_copy'):
-        return normalized.model_copy(update=updates)
-    if isinstance(normalized, dict):
-        return {**normalized, **updates}
-
-    for name, output_value in updates.items():
-        setattr(normalized, name, output_value)
-    return normalized
+    return _set_or_copy(normalized, updates)
 
 
 def _normalize_interaction_shape(value: Any) -> Optional[Any]:
@@ -1382,28 +1941,31 @@ def _output_properties_from_steps(steps: list[Any]) -> dict[str, Any]:
     collecting = False
 
     for step in reversed(steps):
-        if _get_value(step, 'type') == 'user_input':
+        step_type = _get_value(step, 'type')
+        if step_type == 'user_input':
             break
-        if _get_value(step, 'type') != 'model_output':
+        if step_type == 'thought':
+            continue
+        if step_type != 'model_output':
             if collecting:
                 break
             continue
 
         content = _get_value(step, 'content')
         if not isinstance(content, list):
-            if collecting:
-                break
             continue
 
         should_stop = False
         for item in reversed(content):
-            if _get_value(item, 'type') == 'text':
-                collecting = True
-                text = _get_value(item, 'text')
-                text_parts.append(text if isinstance(text, str) else '')
-            elif collecting:
-                should_stop = True
-                break
+            item_type = _get_value(item, 'type')
+            if item_type != 'text':
+                if collecting:
+                    should_stop = True
+                    break
+                continue
+            collecting = True
+            text = _get_value(item, 'text')
+            text_parts.append(text if isinstance(text, str) else '')
         if should_stop:
             break
 
@@ -1446,7 +2008,7 @@ def _output_properties_from_steps(steps: list[Any]) -> dict[str, Any]:
 
 
 def _get_value(value: Any, name: str) -> Any:
-    if isinstance(value, dict):
+    if isinstance(value, Mapping):
         return value.get(name)
     return getattr(value, name, None)
 
@@ -1460,12 +2022,6 @@ _CREATE_BODY_KEYS = frozenset(
         interactions.CreateAgentInteraction,
     )
     for name, field in model.model_fields.items()
-)
-
-
-_REQUEST_AND_BODY_ERROR = (
-    'create() accepts either request=... or individual body keyword arguments, '
-    'not both.'
 )
 
 
@@ -1545,15 +2101,11 @@ def _optional_str(value: Any) -> Optional[str]:
     return None
 
 
-def _request_stream(request: Any) -> bool:
-    body = (
-        request.get('body')
-        if isinstance(request, Mapping)
-        else getattr(request, 'body', None)
-    )
-    stream = (
-        body.get('stream')
-        if isinstance(body, Mapping)
-        else getattr(body, 'stream', None)
-    )
-    return bool(_optional_bool(stream, default=False))
+def _set_or_copy(target: Any, updates: dict[str, Any]) -> Any:
+    if hasattr(target, 'model_copy'):
+        return target.model_copy(update=updates)
+    if isinstance(target, dict):
+        return {**target, **updates}
+    for name, value in updates.items():
+        setattr(target, name, value)
+    return target

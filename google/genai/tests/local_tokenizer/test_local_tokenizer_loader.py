@@ -13,11 +13,17 @@
 # limitations under the License.
 #
 
+import sys
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-import sentencepiece as spm
-from sentencepiece import sentencepiece_model_pb2
+import pytest
+
+try:
+  import sentencepiece as spm
+  from sentencepiece import sentencepiece_model_pb2
+except ImportError:
+  pytest.skip("sentencepiece is not installed", allow_module_level=True)
 
 from ... import _local_tokenizer_loader as loader
 
@@ -70,8 +76,15 @@ class TestGetTokenizerName(unittest.TestCase):
   def test_get_tokenizer_name_unsupported(self):
     with self.assertRaisesRegex(
         ValueError, "Model unsupported-model is not supported"
-    ):
+    ) as ctx:
       loader.get_tokenizer_name("unsupported-model")
+    error_message = str(ctx.exception)
+    for model_name in (
+        *loader._GEMINI_MODELS_TO_TOKENIZER_NAMES,
+        *loader._GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES,
+        *loader._GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES,
+    ):
+      self.assertIn(model_name, error_message)
 
 
 @patch("genai._local_tokenizer_loader.os.rename")
@@ -244,3 +257,10 @@ class TestLoaderFunctions(unittest.TestCase):
     mock_get.assert_called_once()
 
 
+class TestGetHuggingfaceTokenizer(unittest.TestCase):
+
+  def test_get_huggingface_tokenizer_error_names_extra(self):
+    """A missing transformers install names the extra that provides it."""
+    with patch.dict(sys.modules, {"transformers": None}):
+      with self.assertRaisesRegex(ImportError, "local-tokenizer-transformers"):
+        loader.get_huggingface_tokenizer("gemma4")

@@ -28,6 +28,7 @@ ThinkingLevel = Union[
         "low",
         "medium",
         "high",
+        "xhigh",
     ],
     UnrecognizedStr,
 ]

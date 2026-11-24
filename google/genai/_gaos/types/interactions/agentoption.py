@@ -25,13 +25,13 @@ from typing import Literal, Union
 AgentOption = Union[
     Literal[
         # Gemini Deep Research Agent
-        "deep-research-pro-preview-12-2025",
-        # Gemini Deep Research Agent
         "deep-research-preview-04-2026",
         # Gemini Deep Research Max Agent
         "deep-research-max-preview-04-2026",
         # Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
         "antigravity-preview-05-2026",
+        # Use the Antigravity managed agent to perform multi-step tasks that require reasoning, file operations, and tool use.
+        "antigravity-preview-09-2026",
     ],
     UnrecognizedStr,
 ]

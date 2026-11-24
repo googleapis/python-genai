@@ -78,6 +78,7 @@ GCS_REMOVE_STATIC_MASK = types.Image(
 test_table: list[pytest_helper.TestTableItem] = [
     pytest_helper.TestTableItem(
         name="test_simple_prompt",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="Man with a dog",
@@ -85,6 +86,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_vertex",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="A neon hologram of a cat driving at top speed",
@@ -104,10 +106,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 labels={"veo_label_key": "generate_videos"},
             ),
         ),
-        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(prompt="Man with a dog"),
@@ -118,6 +120,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_from_image_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
@@ -130,6 +133,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_and_image_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
@@ -143,6 +147,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_from_video_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
@@ -156,12 +161,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_gcs_uri=OUTPUT_GCS_URI,
             ),
         ),
-        exception_if_mldev=(
-            "parameter is only supported in Gemini Enterprise Agent Platform mode"
-        ),
     ),
     pytest_helper.TestTableItem(
         name="test_from_text_and_video_source",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             source=types.GenerateVideosSource(
@@ -176,12 +179,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 output_gcs_uri=OUTPUT_GCS_URI,
             ),
         ),
-        exception_if_mldev=(
-            "parameter is only supported in Gemini Enterprise Agent Platform mode"
-        ),
     ),
     pytest_helper.TestTableItem(
         name="test_video_edit_outpaint",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_2_EXP,
             source=types.GenerateVideosSource(
@@ -200,10 +201,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ),
             ),
         ),
-        exception_if_mldev="only supported in Gemini Enterprise Agent Platform mode",
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_mldev",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_2,
             prompt="A neon hologram of a cat driving at top speed",
@@ -219,6 +220,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_all_parameters_veo3_mldev",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="A neon hologram of a cat driving at top speed",
@@ -232,6 +234,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_reference_to_video",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="Rain",
@@ -245,12 +248,10 @@ test_table: list[pytest_helper.TestTableItem] = [
                 ],
             ),
         ),
-        exception_if_mldev=(
-            "only supported in Gemini Enterprise Agent Platform mode"
-        ),
     ),
     pytest_helper.TestTableItem(
         name="test_with_webhook_config",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="Man with a dog",
@@ -268,6 +269,7 @@ test_table: list[pytest_helper.TestTableItem] = [
     ),
     pytest_helper.TestTableItem(
         name="test_with_webhook_config_dict",
+        exception_if_mldev="only supported in Gemini Enterprise Agent Platform",
         parameters=types._GenerateVideosParameters(
             model=VEO_MODEL_LATEST,
             prompt="Man with a dog",
@@ -293,57 +295,61 @@ pytestmark = pytest_helper.setup(
 
 
 def test_text_to_video_poll(client):
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="A neon hologram of a cat driving at top speed",
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="A neon hologram of a cat driving at top speed",
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_image_to_video_poll(client):
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_text_and_image_to_video_poll(client):
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Lightning storm",
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
-          resize_mode=(types.ImageResizeMode.CROP
-                       if client.vertexai else None),
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Lightning storm",
+        image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE,
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+            resize_mode=(
+                types.ImageResizeMode.CROP if client.vertexai else None
+            ),
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_video_to_video_poll(client):
@@ -395,179 +401,48 @@ def test_text_and_video_to_video_poll(client):
   assert operation.result.generated_videos[0].video.uri
 
 
-def test_generated_video_extension_poll(client):
-  # Gemini API only supports video extension on generated videos.
-  if client.vertexai:
-    return
-
-  operation1 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation1.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation1 = client.operations.get(operation=operation1)
-
-  video1 = operation1.result.generated_videos[0].video
-  assert video1.uri
-  client.files.download(file=video1)
-  assert video1.video_bytes
-
-  operation2 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Sun",
-      video=video1,
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation2.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation2 = client.operations.get(operation=operation2)
-
-  video2 = operation2.result.generated_videos[0].video
-  assert video2.uri
-  client.files.download(file=video2)
-  assert video2.video_bytes
-
-
-def test_generated_video_extension_from_source_poll(client):
-  # Gemini API only supports video extension on generated videos.
-  if client.vertexai:
-    return
-
-  operation1 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation1.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation1 = client.operations.get(operation=operation1)
-
-  video1 = operation1.result.generated_videos[0].video
-  assert video1.uri
-  client.files.download(file=video1)
-  assert video1.video_bytes
-
-  operation2 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      source=types.GenerateVideosSource(
-          prompt="Sun",
-          video=video1
-      ),
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation2.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation2 = client.operations.get(operation=operation2)
-
-  video2 = operation2.result.generated_videos[0].video
-  assert video2.uri
-  client.files.download(file=video2)
-  assert video2.video_bytes
-
-
-def test_generated_video_extension_from_source_dict_poll(client):
-  # Gemini API only supports video extension on generated videos.
-  if client.vertexai:
-    return
-
-  operation1 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation1.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation1 = client.operations.get(operation=operation1)
-
-  video1 = operation1.result.generated_videos[0].video
-  assert video1.uri
-  client.files.download(file=video1)
-  assert video1.video_bytes
-
-  operation2 = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      source={
-          "prompt": "Sun",
-          "video": video1,
-      },
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation2.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation2 = client.operations.get(operation=operation2)
-
-  video2 = operation2.result.generated_videos[0].video
-  assert video2.uri
-  client.files.download(file=video2)
-  assert video2.video_bytes
-
-
 def test_image_to_video_frame_interpolation_poll(client):
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
-          last_frame=GCS_IMAGE2 if client.vertexai else LOCAL_IMAGE_DOG,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Rain",
+        image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+            last_frame=GCS_IMAGE2 if client.vertexai else LOCAL_IMAGE_DOG,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_reference_images_to_video_poll(client):
-  operation = client.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Chirping birds in a colorful forest",
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
-          reference_images=[
-              types.VideoGenerationReferenceImage(
-                  image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
-                  reference_type=types.VideoGenerationReferenceType.ASSET,
-              ),
-          ],
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = client.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = client.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="Chirping birds in a colorful forest",
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+            reference_images=[
+                types.VideoGenerationReferenceImage(
+                    image=GCS_IMAGE if client.vertexai else LOCAL_IMAGE_MAN,
+                    reference_type=types.VideoGenerationReferenceType.ASSET,
+                ),
+            ],
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = client.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
+    assert operation.result.generated_videos[0].video.uri
 
 
 def test_video_edit_outpaint_poll(client):
@@ -730,61 +605,18 @@ def test_source_and_prompt_raises(client):
 
 @pytest.mark.asyncio
 async def test_text_to_video_poll_async(client):
-  operation = await client.aio.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="A neon hologram of a cat driving at top speed",
-      config=types.GenerateVideosConfig(
-          output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
-      ),
-  )
-  while not operation.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation = await client.aio.operations.get(operation=operation)
+  with pytest_helper.exception_if_mldev(client, ValueError):
+    operation = await client.aio.models.generate_videos(
+        model=VEO_MODEL_LATEST,
+        prompt="A neon hologram of a cat driving at top speed",
+        config=types.GenerateVideosConfig(
+            output_gcs_uri=OUTPUT_GCS_URI if client.vertexai else None,
+        ),
+    )
+    while not operation.done:
+      # Skip the sleep when in replay mode.
+      if client._api_client._mode not in ("replay", "auto"):
+        time.sleep(20)
+      operation = await client.aio.operations.get(operation=operation)
 
-  assert operation.result.generated_videos[0].video.uri
-
-
-@pytest.mark.asyncio
-async def test_generated_video_extension_from_source_poll_async(client):
-  # Gemini API only supports video extension on generated videos.
-  if client.vertexai:
-    return
-
-  operation1 = await client.aio.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      prompt="Rain",
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation1.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation1 = await client.aio.operations.get(operation=operation1)
-
-  video1 = operation1.result.generated_videos[0].video
-  assert video1.uri
-  assert await client.aio.files.download(file=video1)
-
-  operation2 = await client.aio.models.generate_videos(
-      model=VEO_MODEL_LATEST,
-      source=types.GenerateVideosSource(
-          prompt="Sun",
-          video=video1
-      ),
-      config=types.GenerateVideosConfig(
-          number_of_videos=1,
-      ),
-  )
-  while not operation2.done:
-    # Skip the sleep when in replay mode.
-    if client._api_client._mode not in ("replay", "auto"):
-      time.sleep(20)
-    operation2 = await client.aio.operations.get(operation=operation2)
-
-  video2 = operation2.result.generated_videos[0].video
-  assert video2.uri
-  assert await client.aio.files.download(file=video2)
+    assert operation.result.generated_videos[0].video.uri

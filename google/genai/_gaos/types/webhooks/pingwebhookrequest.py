@@ -23,8 +23,8 @@ from typing_extensions import TypedDict
 
 
 class PingWebhookRequestParam(TypedDict):
-    r"""Request message for WebhookService.PingWebhook."""
+    r"""Request for pinging a webhook."""
 
 
 class PingWebhookRequest(BaseModel):
-    r"""Request message for WebhookService.PingWebhook."""
+    r"""Request for pinging a webhook."""

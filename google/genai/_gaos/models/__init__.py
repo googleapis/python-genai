@@ -40,6 +40,12 @@ if TYPE_CHECKING:
         CreateCredentialRequest,
         CreateCredentialRequestParam,
     )
+    from .createdecision import (
+        CreateDecisionGlobals,
+        CreateDecisionGlobalsTypedDict,
+        CreateDecisionRequest,
+        CreateDecisionRequestParam,
+    )
     from .createenvironment import (
         CreateEnvironmentGlobals,
         CreateEnvironmentGlobalsTypedDict,
@@ -55,6 +61,12 @@ if TYPE_CHECKING:
         CreateInteractionRequestParam,
         CreateInteractionResponse,
         CreateInteractionResponseTypedDict,
+    )
+    from .createinteractionauthtoken import (
+        CreateInteractionAuthTokenGlobals,
+        CreateInteractionAuthTokenGlobalsTypedDict,
+        CreateInteractionAuthTokenRequest,
+        CreateInteractionAuthTokenRequestParam,
     )
     from .createtrigger import (
         CreateTriggerGlobals,
@@ -97,6 +109,12 @@ if TYPE_CHECKING:
         DeleteInteractionGlobalsTypedDict,
         DeleteInteractionRequest,
         DeleteInteractionRequestParam,
+    )
+    from .deleteinteractionauthtoken import (
+        DeleteInteractionAuthTokenGlobals,
+        DeleteInteractionAuthTokenGlobalsTypedDict,
+        DeleteInteractionAuthTokenRequest,
+        DeleteInteractionAuthTokenRequestParam,
     )
     from .deletetrigger import (
         DeleteTriggerGlobals,
@@ -267,10 +285,18 @@ __all__ = [
     "CreateCredentialGlobalsTypedDict",
     "CreateCredentialRequest",
     "CreateCredentialRequestParam",
+    "CreateDecisionGlobals",
+    "CreateDecisionGlobalsTypedDict",
+    "CreateDecisionRequest",
+    "CreateDecisionRequestParam",
     "CreateEnvironmentGlobals",
     "CreateEnvironmentGlobalsTypedDict",
     "CreateEnvironmentRequest",
     "CreateEnvironmentRequestParam",
+    "CreateInteractionAuthTokenGlobals",
+    "CreateInteractionAuthTokenGlobalsTypedDict",
+    "CreateInteractionAuthTokenRequest",
+    "CreateInteractionAuthTokenRequestParam",
     "CreateInteractionGlobals",
     "CreateInteractionGlobalsTypedDict",
     "CreateInteractionRequest",
@@ -303,6 +329,10 @@ __all__ = [
     "DeleteEnvironmentGlobalsTypedDict",
     "DeleteEnvironmentRequest",
     "DeleteEnvironmentRequestParam",
+    "DeleteInteractionAuthTokenGlobals",
+    "DeleteInteractionAuthTokenGlobalsTypedDict",
+    "DeleteInteractionAuthTokenRequest",
+    "DeleteInteractionAuthTokenRequestParam",
     "DeleteInteractionGlobals",
     "DeleteInteractionGlobalsTypedDict",
     "DeleteInteractionRequest",
@@ -426,6 +456,10 @@ _dynamic_imports: dict[str, str] = {
     "CreateCredentialGlobalsTypedDict": ".createcredential",
     "CreateCredentialRequest": ".createcredential",
     "CreateCredentialRequestParam": ".createcredential",
+    "CreateDecisionGlobals": ".createdecision",
+    "CreateDecisionGlobalsTypedDict": ".createdecision",
+    "CreateDecisionRequest": ".createdecision",
+    "CreateDecisionRequestParam": ".createdecision",
     "CreateEnvironmentGlobals": ".createenvironment",
     "CreateEnvironmentGlobalsTypedDict": ".createenvironment",
     "CreateEnvironmentRequest": ".createenvironment",
@@ -438,6 +472,10 @@ _dynamic_imports: dict[str, str] = {
     "CreateInteractionRequestParam": ".createinteraction",
     "CreateInteractionResponse": ".createinteraction",
     "CreateInteractionResponseTypedDict": ".createinteraction",
+    "CreateInteractionAuthTokenGlobals": ".createinteractionauthtoken",
+    "CreateInteractionAuthTokenGlobalsTypedDict": ".createinteractionauthtoken",
+    "CreateInteractionAuthTokenRequest": ".createinteractionauthtoken",
+    "CreateInteractionAuthTokenRequestParam": ".createinteractionauthtoken",
     "CreateTriggerGlobals": ".createtrigger",
     "CreateTriggerGlobalsTypedDict": ".createtrigger",
     "CreateTriggerRequest": ".createtrigger",
@@ -466,6 +504,10 @@ _dynamic_imports: dict[str, str] = {
     "DeleteInteractionGlobalsTypedDict": ".deleteinteraction",
     "DeleteInteractionRequest": ".deleteinteraction",
     "DeleteInteractionRequestParam": ".deleteinteraction",
+    "DeleteInteractionAuthTokenGlobals": ".deleteinteractionauthtoken",
+    "DeleteInteractionAuthTokenGlobalsTypedDict": ".deleteinteractionauthtoken",
+    "DeleteInteractionAuthTokenRequest": ".deleteinteractionauthtoken",
+    "DeleteInteractionAuthTokenRequestParam": ".deleteinteractionauthtoken",
     "DeleteTriggerGlobals": ".deletetrigger",
     "DeleteTriggerGlobalsTypedDict": ".deletetrigger",
     "DeleteTriggerRequest": ".deletetrigger",

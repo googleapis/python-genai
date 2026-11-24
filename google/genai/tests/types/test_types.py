@@ -19,6 +19,7 @@ import json
 import sys
 import typing
 from typing import Optional, assert_never
+import warnings
 import PIL.Image
 import pydantic
 import pytest
@@ -135,6 +136,55 @@ def test_factory_method_function_response_part_from_uri():
   )
   assert my_part.file_data.mime_type == 'image/jpeg'
   assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_bytes_display_name():
+  my_part = SubFunctionResponsePart.from_bytes(
+      data=b'123', mime_type='image/png', display_name='chart.png'
+  )
+  assert my_part.inline_data.display_name == 'chart.png'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+def test_factory_method_function_response_part_from_uri_display_name():
+  my_part = SubFunctionResponsePart.from_uri(
+      file_uri='gs://generativeai-downloads/images/scones.jpg',
+      display_name='scones.jpg',
+  )
+  assert my_part.file_data.mime_type == 'image/jpeg'
+  assert my_part.file_data.display_name == 'scones.jpg'
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+@pytest.mark.parametrize(
+    'file_uri',
+    [
+        'https://generativelanguage.googleapis.com/v1beta/files/abc123',
+        'https://autopush-generativelanguage.sandbox.googleapis.com/v1beta/files/abc123',
+    ],
+)
+def test_factory_method_function_response_part_from_files_api_uri(file_uri):
+  my_part = SubFunctionResponsePart.from_uri(file_uri=file_uri)
+  assert my_part.file_data.file_uri == file_uri
+  assert my_part.file_data.mime_type is None
+  assert isinstance(my_part, SubFunctionResponsePart)
+
+
+@pytest.mark.parametrize(
+    'file_uri',
+    [
+        'gs://bucket/no_extension',
+        # Files API resource names are not URIs. The API rejects them.
+        'files/abc123',
+        'https://example.com/v1beta/files/abc123',
+        'https://generativelanguage.googleapis.com/v1beta/models/x?q=/files/a',
+    ],
+)
+def test_factory_method_function_response_part_from_uri_unknown_mime_type(
+    file_uri,
+):
+  with pytest.raises(ValueError, match='Failed to determine mime type'):
+    SubFunctionResponsePart.from_uri(file_uri=file_uri)
 
 
 def test_factory_method_from_executable_code_part():
@@ -1093,7 +1143,6 @@ def test_generic_alias_complex_array_with_default_value():
 
   assert actual_schema_vertex == expected_schema
   assert actual_schema_mldev == expected_schema
-
 
 
 @pytest.mark.skip(
@@ -2768,6 +2817,28 @@ def test_unknown_enum_value_in_nested_dict():
   assert schema.category.value == 'NEW_CATEGORY'
 
 
+def test_finish_reason_malformed_response():
+  """MALFORMED_RESPONSE from the API parses into a real member, unwarned."""
+  with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter('always')
+    response = types.GenerateContentResponse._from_response(
+        response={'candidates': [{'finish_reason': 'MALFORMED_RESPONSE'}]},
+        kwargs={},
+    )
+  assert not [w for w in caught if 'is not a valid' in str(w.message)]
+  assert 'MALFORMED_RESPONSE' in types.FinishReason.__members__
+  assert response.candidates[0].finish_reason in list(types.FinishReason)
+
+
+def test_finish_reason_malformed_response_case_insensitive():
+  """A lowercase value resolves to the same member without a warning."""
+  with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter('always')
+    reason = types.FinishReason('malformed_response')
+  assert not [w for w in caught if 'is not a valid' in str(w.message)]
+  assert reason is types.FinishReason.MALFORMED_RESPONSE
+
+
 # Tests that TypedDict types from types.py are compatible with pydantic
 # pydantic requires TypedDict from typing_extensions for Python <3.12
 def test_typed_dict_pydantic_field():
@@ -2970,3 +3041,88 @@ def test_computer_use_types():
   assert len(c.disabled_safety_policies) == 2
   assert types.SafetyPolicy.FINANCIAL_TRANSACTIONS in c.disabled_safety_policies
 
+
+def test_thinking_level_xhigh():
+  config = types.ThinkingConfig(thinking_level=types.ThinkingLevel.XHIGH)
+  assert config.thinking_level is types.ThinkingLevel.XHIGH
+  assert types.ThinkingLevel('xhigh') is types.ThinkingLevel.XHIGH
+
+
+class _OversizedIntModel(pydantic.BaseModel):
+  count: int
+
+
+def _text_response(text: str) -> dict[str, object]:
+  return {
+      'candidates': [{'content': {'role': 'model', 'parts': [{'text': text}]}}]
+  }
+
+
+_skip_without_int_digit_limit = pytest.mark.skipif(
+    getattr(sys, 'get_int_max_str_digits', lambda: 0)() == 0,
+    reason='int string digit limit is unavailable or disabled',
+)
+
+
+@_skip_without_int_digit_limit
+@pytest.mark.parametrize(
+    'config',
+    [
+        {'response_json_schema': {'type': 'integer'}},
+        {'response_schema': {'type': 'integer'}},
+        {'response_schema': types.Schema(type=types.Type.INTEGER)},
+        {'response_schema': int},
+        {'response_schema': list[int]},
+        {'response_schema': typing.Union[_OversizedIntModel, int]},
+    ],
+    ids=[
+        'json_schema_dict',
+        'schema_dict',
+        'schema_object',
+        'type',
+        'generic_alias',
+        'union',
+    ],
+)
+def test_from_response_oversized_int_keeps_response(config):
+  """An integer over the digit limit leaves .parsed unset instead of raising."""
+  big = '9' * (sys.get_int_max_str_digits() + 1)
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response(big), kwargs={'config': config}
+  )
+  assert response.text == big
+  assert response.parsed is None
+
+
+@_skip_without_int_digit_limit
+def test_from_response_oversized_int_pydantic_schema():
+  """Regression guard: pydantic raises ValidationError for an oversized int."""
+  big = '9' * (sys.get_int_max_str_digits() + 1)
+  text = '{"count": ' + big + '}'
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response(text),
+      kwargs={'config': {'response_schema': _OversizedIntModel}},
+  )
+  assert response.text == text
+  assert response.parsed is None
+
+
+@_skip_without_int_digit_limit
+def test_from_response_int_at_digit_limit_still_parses():
+  """An integer exactly at the digit limit still parses."""
+  text = '9' * sys.get_int_max_str_digits()
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response(text),
+      kwargs={'config': {'response_json_schema': {'type': 'integer'}}},
+  )
+  assert response.parsed == int(text)
+
+
+def test_from_response_malformed_json_parsed_is_none():
+  """Malformed JSON leaves .parsed unset without raising."""
+  response = types.GenerateContentResponse._from_response(
+      response=_text_response('{not json'),
+      kwargs={'config': {'response_json_schema': {'type': 'object'}}},
+  )
+  assert response.text == '{not json'
+  assert response.parsed is None

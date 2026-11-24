@@ -209,8 +209,14 @@ def get_tokenizer_name(model_name: str) -> str:
     return _GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES[model_name]
   if model_name in _GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES.keys():
     return _GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES[model_name]
+  supported_models = ", ".join((
+      *_GEMINI_MODELS_TO_TOKENIZER_NAMES.keys(),
+      *_GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES.keys(),
+      *_GEMINI_MODELS_TO_HUGGINGFACE_TOKENIZER_NAMES.keys(),
+  ))
   raise ValueError(
-      f"Model {model_name} is not supported. Supported models: {', '.join(_GEMINI_MODELS_TO_TOKENIZER_NAMES.keys())}, {', '.join(_GEMINI_STABLE_MODELS_TO_TOKENIZER_NAMES.keys())}.\n"  # pylint: disable=line-too-long
+      f"Model {model_name} is not supported. Supported models:"
+      f" {supported_models}.\n"
   )
 
 
@@ -219,11 +225,11 @@ def get_huggingface_tokenizer(tokenizer_name: str) -> Any:
   # Load the processor which includes the tokenizer
   try:
     from transformers import AutoProcessor
-  except ImportError:
+  except ImportError as e:
     raise ImportError(
-        "Please install transformers to use huggingface tokenizer: pip install"
-        " transformers"
-    ) from ImportError
+        "The transformers library is required to tokenize this model. Install"
+        ' it with: pip install "google-genai[local-tokenizer-transformers]"'
+    ) from e
   processor = AutoProcessor.from_pretrained(  # type: ignore[no-untyped-call]
       GEMMA_TOKENIZER_TO_MODEL_NAMES[tokenizer_name]
   )

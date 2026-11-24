@@ -15,7 +15,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import os
 from typing import Any, Optional, TYPE_CHECKING, Union
 import warnings
@@ -43,6 +42,7 @@ if TYPE_CHECKING:
   from ._gaos.google_genai import (
       AsyncGeminiNextGenAgents,
       AsyncGeminiNextGenCredentials,
+      AsyncGeminiNextGenDecisions,
       AsyncGeminiNextGenEnvironments,
       AsyncGeminiNextGenInteractions,
       AsyncGeminiNextGenTriggers,
@@ -50,6 +50,7 @@ if TYPE_CHECKING:
       AsyncGeminiNextGenWebhooks,
       GeminiNextGenAgents,
       GeminiNextGenCredentials,
+      GeminiNextGenDecisions,
       GeminiNextGenEnvironments,
       GeminiNextGenInteractions,
       GeminiNextGenTriggers,
@@ -88,6 +89,7 @@ class AsyncClient:
     self._environments: Optional[AsyncGeminiNextGenEnvironments] = None
     self._credentials: Optional[AsyncGeminiNextGenCredentials] = None
     self._voices: Optional[AsyncGeminiNextGenVoices] = None
+    self._decisions: Optional[AsyncGeminiNextGenDecisions] = None
 
   @property
   def _nextgen_client(self) -> AsyncGeminiNextGenAPI:
@@ -191,6 +193,15 @@ class AsyncClient:
     return self._voices
 
   @property
+  def decisions(self) -> AsyncGeminiNextGenDecisions:
+    """Decisions resource."""
+    if self._decisions is None:
+      from ._gaos.google_genai import AsyncGeminiNextGenDecisions
+
+      self._decisions = AsyncGeminiNextGenDecisions(self._api_client)
+    return self._decisions
+
+  @property
   def models(self) -> AsyncModels:
     return self._models
 
@@ -245,11 +256,11 @@ class AsyncClient:
           enterprise=True, project='my-project-id', location='us-central1'
       ).aio
       response_1 = await async_client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       response_2 = await async_client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       # Close the client to release resources.
@@ -263,12 +274,6 @@ class AsyncClient:
   async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
     del args, kwargs
     await self.aclose()
-
-  def __del__(self) -> None:
-    try:
-      asyncio.get_running_loop().create_task(self.aclose())
-    except Exception:
-      pass
 
 
 class DebugConfig(pydantic.BaseModel):
@@ -306,13 +311,13 @@ class Client:
   `GOOGLE_CLOUD_LOCATION` environment variables.
 
   Attributes:
-    api_key: The `API key <https://ai.google.dev/gemini-api/docs/api-key>`_ to
-      use for authentication. Applies to the Gemini Developer API only.
+    api_key: The `API key <https://aistudio.google.com/docs/api-key>`_ to use
+      for authentication. Applies to the Gemini Developer API only.
     enterprise (bool): Indicates whether the client should use the Gemini
-      Enterprise Agent Platform endpoints (previously Vertex AI API).
-      Defaults to False (uses Gemini Developer API endpoints). When
-      `enterprise` and `vertexai` are both set, and they have conflicting
-      values, a `ValueError` will be raised.
+      Enterprise Agent Platform endpoints (previously Vertex AI API). Defaults
+      to False (uses Gemini Developer API endpoints). When `enterprise` and
+      `vertexai` are both set, and they have conflicting values, a `ValueError`
+      will be raised.
     vertexai (bool): Legacy flag for `enterprise`.
     credentials: The credentials to use for authentication when calling the
       Gemini Enterprise Agent Platform APIs. Credentials can be obtained from
@@ -323,8 +328,8 @@ class Client:
     project: The `Google Cloud project ID
       <https://cloud.google.com/vertex-ai/docs/start/cloud-environment>`_ to use
       for quota. Can be obtained from environment variables (for example,
-      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only.
-      Find your `Google Cloud project ID
+      ``GOOGLE_CLOUD_PROJECT``). Applies to the Vertex AI API only. Find your
+      `Google Cloud project ID
       <https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects>`_.
     location: The `location
       <https://cloud.google.com/vertex-ai/generative-ai/docs/learn/locations>`_
@@ -376,9 +381,8 @@ class Client:
          `enterprise` and `vertexai` are both set, and they have conflicting
          values, a `ValueError` will be raised.
        vertexai (bool): Legacy flag for `enterprise`.
-       api_key (str): The `API key
-         <https://ai.google.dev/gemini-api/docs/api-key>`_ to use for
-         authentication. Applies to the Gemini Developer API only.
+       api_key (str): The `API key <https://aistudio.google.com/docs/api-key>`_
+         to use for authentication. Applies to the Gemini Developer API only.
        credentials (google.auth.credentials.Credentials): The credentials to use
          for authentication when calling the Vertex AI APIs. Credentials can be
          obtained from environment variables and default credentials. For more
@@ -446,6 +450,7 @@ class Client:
     self._environments: Optional[GeminiNextGenEnvironments] = None
     self._credentials: Optional[GeminiNextGenCredentials] = None
     self._voices: Optional[GeminiNextGenVoices] = None
+    self._decisions: Optional[GeminiNextGenDecisions] = None
 
   @staticmethod
   def _get_api_client(
@@ -582,6 +587,15 @@ class Client:
     return self._voices
 
   @property
+  def decisions(self) -> GeminiNextGenDecisions:
+    """Decisions resource."""
+    if self._decisions is None:
+      from ._gaos.google_genai import GeminiNextGenDecisions
+
+      self._decisions = GeminiNextGenDecisions(self._api_client)
+    return self._decisions
+
+  @property
   def chats(self) -> Chats:
     return Chats(modules=self.models)
 
@@ -638,14 +652,14 @@ class Client:
       from google.genai import Client
 
       client = Client(
-          vertexai=True, project='my-project-id', location='us-central1'
+          enterprise=True, project='my-project-id', location='us-central1'
       )
       response_1 = client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       response_2 = client.models.generate_content(
-          model='gemini-2.0-flash',
+          model='gemini-3.8-flash',
           contents='Hello World',
       )
       # Close the client to release resources.

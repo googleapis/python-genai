@@ -23,8 +23,8 @@ from typing_extensions import TypedDict
 
 
 class DeleteVoiceResponseTypedDict(TypedDict):
-    r"""Response message for `VoicesService.DeleteVoice`."""
+    r"""Response for deleting a voice."""
 
 
 class DeleteVoiceResponse(BaseModel):
-    r"""Response message for `VoicesService.DeleteVoice`."""
+    r"""Response for deleting a voice."""

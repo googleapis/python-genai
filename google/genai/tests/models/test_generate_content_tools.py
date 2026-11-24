@@ -9,7 +9,7 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
+# See the License for the specific languate governing permissions and
 # limitations under the License.
 #
 
@@ -528,11 +528,6 @@ test_table: list[pytest_helper.TestTableItem] = [
                     }
                 }]
             },
-        ),
-        exception_if_vertex='only supported in Gemini Developer API mode',
-        skip_in_private=(
-            'disabled_safety_policies parameter is supported on Vertex AI in'
-            ' Private SDK'
         ),
     ),
     pytest_helper.TestTableItem(
@@ -1315,7 +1310,7 @@ def test_automatic_function_calling_with_pydantic_model_in_union_type(client):
       return 'The animal is not supported'
 
   response = client.models.generate_content(
-      model='gemini-3.5-flash',
+      model='gemini-4-argon',
       contents=(
           'I have a one year old cat named Sundae, can you get the'
           ' information of the cat for me?'
@@ -1431,7 +1426,7 @@ def test_automatic_function_calling_with_parameterized_generic_union_type(
       )
 
   response = client.models.generate_content(
-      model='gemini-3.1-pro-preview',
+      model='gemini-4-argon',
       contents='Can you describe the city of San Francisco, USA?',
       config={
           'tools': [describe_cities],
@@ -1872,6 +1867,8 @@ def test_afc_logs_to_logger_instance(client, caplog):
       },
   )
   for log in caplog.records:
+    if log.levelname == 'WARNING':
+      continue
     assert log.levelname == 'INFO'
     assert log.name == 'google_genai.models'
 

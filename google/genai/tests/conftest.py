@@ -31,13 +31,14 @@ from .. import types
 # Retry options for the shared integration tests, applied to every request the
 # test client makes so that a transient 5xx or 429 does not fail the nightly.
 #
-# Deliberately shorter than the SDK defaults: a multistep test retries per
-# request, so the backoff has to stay well inside the test timeout. Keep aligned with
-# the shared test clients in the other SDKs.
+# The max delay is deliberately capped below the SDK default: a multistep test
+# retries per request, so the backoff (about 30 s per request) has to stay well
+# inside the test timeout. Keep aligned with the shared test clients in the
+# other SDKs.
 _SHARED_TEST_RETRY_OPTIONS = types.HttpRetryOptions(
-    attempts=3,
-    initial_delay=1.0,
-    max_delay=10.0,
+    attempts=5,
+    initial_delay=2.0,
+    max_delay=16.0,
     exp_base=2.0,
     http_status_codes=[408, 429, 500, 502, 503, 504],
 )
@@ -61,6 +62,19 @@ def _with_shared_test_retry_options(http_options):
   return http_options.model_copy(
       update={'retry_options': _SHARED_TEST_RETRY_OPTIONS}
   )
+
+
+def _with_api_version(http_options, api_version: str):
+  """Sets api_version when not already configured by the test."""
+  if http_options is None:
+    return types.HttpOptions(api_version=api_version)
+  if isinstance(http_options, dict):
+    if http_options.get('api_version') or http_options.get('apiVersion'):
+      return http_options
+    return {**http_options, 'api_version': api_version}
+  if getattr(http_options, 'api_version', None):
+    return http_options
+  return http_options.model_copy(update={'api_version': api_version})
 
 
 def pytest_addoption(parser):
@@ -180,6 +194,9 @@ def client(use_vertex, replays_prefix, http_options, request, location_override)
 
   if not use_vertex:
     location_override = None
+    if 'caches' in replays_prefix:
+      # The Gemini API only serves cachedContents on v1beta.
+      http_options = _with_api_version(http_options, 'v1beta')
   elif location_override is None and 'tunings' in replays_prefix:
     # Tuning jobs are not supported on the global endpoint.
     if os.environ.get('GOOGLE_CLOUD_LOCATION') == 'global':

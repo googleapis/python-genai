@@ -18,6 +18,8 @@
 from __future__ import annotations
 
 import copy
+from typing import Annotated
+
 import pydantic
 
 from ... import types
@@ -99,3 +101,27 @@ def test_future_annotation_complex_type():
 
   assert actual_schema_mldev == expected_schema_mldev
   assert actual_schema_vertex == expected_schema_vertex
+
+
+def test_future_annotation_annotated_metadata_json_schema():
+  """The JSON schema keeps Annotated metadata from string annotations."""
+
+  def func_under_test(
+      days: Annotated[
+          int,
+          pydantic.Field(description='Forecast length in days', ge=1, le=7),
+      ] = 3,
+  ) -> str:
+    return '123'
+
+  actual_schema = types.FunctionDeclaration.from_callable(
+      client=mldev_client, callable=func_under_test, use_json_schema=True
+  )
+
+  assert actual_schema.parameters_json_schema['properties']['days'] == {
+      'description': 'Forecast length in days',
+      'maximum': 7,
+      'minimum': 1,
+      'type': 'integer',
+      'default': 3,
+  }

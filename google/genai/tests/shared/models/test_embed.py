@@ -16,8 +16,24 @@
 
 """Tests for models.embed()."""
 
+import os
+
+import pytest
+
 from .... import types as genai_types
 from ... import pytest_helper
+
+
+@pytest.fixture
+def location_override(request):
+  # gemini-embedding-001 is not served on the Vertex global endpoint, so its
+  # Vertex case runs in us-central1. The client fixture ignores this for mldev.
+  if (
+      request.node.originalname == 'test_embed'
+      and os.environ.get('GOOGLE_CLOUD_LOCATION') == 'global'
+  ):
+    return 'us-central1'
+  return None
 
 
 test_table: list[pytest_helper.TestTableItem] = [

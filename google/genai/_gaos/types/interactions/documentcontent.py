@@ -24,23 +24,61 @@ from .. import (
     BaseModel,
     UNSET_SENTINEL,
     UnrecognizedStr,
+    current_exclude_none,
+    serialize_with_info,
 )
 from ...utils import validate_const
+from ..basemodel import (
+    current_by_alias,
+    current_filtered_dump,
+    current_serialization_methods_dump,
+)
+from .documentmediaprocessing import (
+    DocumentMediaProcessing,
+    DocumentMediaProcessingParam,
+)
+from .mediaresolution import MediaResolution
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Literal, Optional, Union
-from typing_extensions import Annotated, NotRequired, TypedDict
+from typing import Any, Literal, Optional, Union
+from typing_extensions import Annotated, NotRequired, TypeAliasType, TypedDict
 
 
 DocumentContentMimeType = Union[
     Literal[
         "application/pdf",
         "text/csv",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.ms-powerpoint",
+        "application/vnd.oasis.opendocument.presentation",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+        "application/vnd.oasis.opendocument.text",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "application/vnd.oasis.opendocument.spreadsheet",
     ],
     UnrecognizedStr,
 ]
 r"""The mime type of the document."""
+
+
+DocumentProcessingEnum = Union[Literal["static",], UnrecognizedStr]
+
+
+DocumentProcessingParam = TypeAliasType(
+    "DocumentProcessingParam",
+    Union[DocumentMediaProcessingParam, DocumentProcessingEnum],
+)
+r"""How the model processes this document for understanding."""
+
+
+DocumentProcessing = TypeAliasType(
+    "DocumentProcessing", Union[DocumentMediaProcessing, DocumentProcessingEnum]
+)
+r"""How the model processes this document for understanding."""
 
 
 class DocumentContentParam(TypedDict):
@@ -50,6 +88,9 @@ class DocumentContentParam(TypedDict):
     r"""The document content."""
     mime_type: NotRequired[DocumentContentMimeType]
     r"""The mime type of the document."""
+    processing: NotRequired[DocumentProcessingParam]
+    r"""How the model processes this document for understanding."""
+    resolution: NotRequired[MediaResolution]
     type: Literal["document"]
     uri: NotRequired[str]
     r"""The URI of the document."""
@@ -64,6 +105,11 @@ class DocumentContent(BaseModel):
     mime_type: Optional[DocumentContentMimeType] = None
     r"""The mime type of the document."""
 
+    processing: Optional[DocumentProcessing] = None
+    r"""How the model processes this document for understanding."""
+
+    resolution: Optional[MediaResolution] = None
+
     type: Annotated[
         Annotated[Literal["document"], AfterValidator(validate_const("document"))],
         pydantic.Field(alias="type"),
@@ -72,19 +118,39 @@ class DocumentContent(BaseModel):
     uri: Optional[str] = None
     r"""The URI of the document."""
 
+    def model_post_init(self, context: Any, /) -> None:
+        self.__pydantic_fields_set__.update(["type"])
+
     @model_serializer(mode="wrap")
+    def _serialize_model_with_info(self, handler, info):
+        return serialize_with_info(self.serialize_model, handler, info)
+
     def serialize_model(self, handler):
-        optional_fields = set(["data", "mime_type", "uri"])
+        optional_fields = set(["data", "mime_type", "processing", "resolution", "uri"])
+        exclude_none = current_exclude_none()
+        by_alias = current_by_alias()
+        use_field_names = by_alias is False
+        serialization_methods_dump = current_serialization_methods_dump()
+        skip_filtered = (
+            serialization_methods_dump
+            or exclude_none is False
+            or current_filtered_dump()
+        )
         serialized = handler(self)
         m = {}
 
         for n, f in type(self).model_fields.items():
-            k = f.alias or n
-            val = serialized.get(k, serialized.get(n))
+            k = f.alias if f.alias is not None else n
+            key = k if by_alias or k in serialized else n
+            if key not in serialized and skip_filtered:
+                continue
+            val = serialized.pop(key, None)
 
             if val != UNSET_SENTINEL:
                 if val is not None or k not in optional_fields:
-                    m[k] = val
+                    m[n if use_field_names else k] = val
+        for k, v in serialized.items():
+            m[k] = v
 
         return m
 

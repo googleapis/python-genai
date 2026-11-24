@@ -181,6 +181,7 @@ def mock_api_client():
   # generate_content reads both to decide whether the request goes over a
   # secure session; None sends it down the ordinary path.
   api_client._ws_connection = None
+  setattr(api_client, '_async_ws_connection', None)
   api_client.tls_connection = None
   return api_client
 
@@ -360,3 +361,87 @@ def test_afc_history_holds_the_rounds_that_completed(mock_api_client):
   assert [content.role for content in history] == ['user', 'model', 'user']
   assert history[1].parts[0].function_call
   assert history[2].parts[0].function_response
+
+
+def test_direct_afc_warning_only_logged_when_functions_present(
+    mock_api_client, monkeypatch, caplog
+):
+  """Direct AFC warning only logs when callable functions are provided."""
+  monkeypatch.setattr(models.Models, '_logged_afc_warning', False)
+  text_response = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[types.Part(text='Hello')], role='model'
+              )
+          )
+      ]
+  )
+  with mock.patch.object(
+      models.Models, '_generate_content', return_value=text_response
+  ), mock.patch.object(
+      models.Models, '_generate_content_stream', return_value=[text_response]
+  ):
+    models_client = models.Models(api_client_=mock_api_client)
+    models_client.generate_content(model='test_model', contents='hello')
+    list(
+        models_client.generate_content_stream(
+            model='test_model', contents='hello'
+        )
+    )
+    assert 'Direct use of automatic function calling (AFC)' not in caplog.text
+
+    models_client.generate_content(
+        model='test_model',
+        contents='what is the weather?',
+        config=types.GenerateContentConfig(tools=[get_current_weather]),
+    )
+    assert 'Direct use of automatic function calling (AFC)' in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_async_direct_afc_warning_only_logged_when_functions_present(
+    mock_api_client, monkeypatch, caplog
+):
+  """Async direct AFC warning only logs when callable functions are provided."""
+  monkeypatch.setattr(models.AsyncModels, '_logged_afc_warning', False)
+  text_response = types.GenerateContentResponse(
+      candidates=[
+          types.Candidate(
+              content=types.Content(
+                  parts=[types.Part(text='Hello')], role='model'
+              )
+          )
+      ]
+  )
+
+  async def _stream():
+    yield text_response
+
+  with mock.patch.object(
+      models.AsyncModels,
+      '_generate_content',
+      new=mock.AsyncMock(return_value=text_response),
+  ), mock.patch.object(
+      models.AsyncModels,
+      '_generate_content_stream',
+      new=mock.AsyncMock(side_effect=lambda **_: _stream()),
+  ):
+    async_models_client = models.AsyncModels(api_client_=mock_api_client)
+    await async_models_client.generate_content(
+        model='test_model', contents='hello'
+    )
+    stream = await async_models_client.generate_content_stream(
+        model='test_model', contents='hello'
+    )
+    async for _ in stream:
+      pass
+    assert 'Direct use of automatic function calling (AFC)' not in caplog.text
+
+    await async_models_client.generate_content(
+        model='test_model',
+        contents='what is the weather?',
+        config=types.GenerateContentConfig(tools=[get_current_weather]),
+    )
+    assert 'Direct use of automatic function calling (AFC)' in caplog.text
+

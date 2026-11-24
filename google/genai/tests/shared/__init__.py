@@ -13,4 +13,4 @@
 # limitations under the License.
 #
 
-GEMINI_MODEL = 'gemini-3.5-flash'  # Gemini only
+GEMINI_MODEL = 'gemini-3.8-flash'  # Gemini only

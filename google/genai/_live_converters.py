@@ -70,37 +70,6 @@ def _AuthConfig_to_mldev(
   return to_object
 
 
-def _ComputerUse_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
-    setv(
-        to_object,
-        ['enablePromptInjectionDetection'],
-        getv(from_object, ['enable_prompt_injection_detection']),
-    )
-
-  if getv(from_object, ['disabled_safety_policies']) is not None:
-    raise ValueError(
-        'disabled_safety_policies parameter is only supported in Gemini'
-        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  return to_object
-
-
 def _Content_to_mldev(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -168,6 +137,87 @@ def _FunctionCall_to_mldev(
         'will_continue parameter is only supported in Gemini Enterprise Agent'
         ' Platform mode, not in Gemini Developer API mode.'
     )
+
+  return to_object
+
+
+def _FunctionResponsePart_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['media_processing']) is not None:
+    raise ValueError(
+        'media_processing parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
+
+  return to_object
+
+
+def _FunctionResponse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError(
+        'will_continue parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['scheduling']) is not None:
+    setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
+
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _FunctionResponsePart_to_vertex(item, to_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
 
   return to_object
 
@@ -409,6 +459,98 @@ def _LiveClientContent_to_vertex(
   return to_object
 
 
+def _LiveClientContextUpdateTools_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        to_object,
+        ['tools'],
+        [
+            _Tool_to_mldev(t.t_tool(api_client, item), to_object)
+            for item in t.t_tools(api_client, getv(from_object, ['tools']))
+        ],
+    )
+
+  return to_object
+
+
+def _LiveClientContextUpdateTools_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        to_object,
+        ['tools'],
+        [
+            _Tool_to_vertex(t.t_tool(api_client, item), to_object)
+            for item in t.t_tools(api_client, getv(from_object, ['tools']))
+        ],
+    )
+
+  return to_object
+
+
+def _LiveClientContextUpdate_to_mldev(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        to_object,
+        ['systemInstruction'],
+        _Content_to_mldev(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        to_object,
+        ['tools'],
+        _LiveClientContextUpdateTools_to_mldev(
+            api_client, getv(from_object, ['tools']), to_object
+        ),
+    )
+
+  return to_object
+
+
+def _LiveClientContextUpdate_to_vertex(
+    api_client: BaseApiClient,
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['system_instruction']) is not None:
+    setv(
+        to_object,
+        ['systemInstruction'],
+        _Content_to_vertex(
+            t.t_content(getv(from_object, ['system_instruction'])), to_object
+        ),
+    )
+
+  if getv(from_object, ['tools']) is not None:
+    setv(
+        to_object,
+        ['tools'],
+        _LiveClientContextUpdateTools_to_vertex(
+            api_client, getv(from_object, ['tools']), to_object
+        ),
+    )
+
+  return to_object
+
+
 def _LiveClientMessage_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -438,6 +580,15 @@ def _LiveClientMessage_to_mldev(
 
   if getv(from_object, ['tool_response']) is not None:
     setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+
+  if getv(from_object, ['context_update']) is not None:
+    setv(
+        to_object,
+        ['contextUpdate'],
+        _LiveClientContextUpdate_to_mldev(
+            api_client, getv(from_object, ['context_update']), to_object
+        ),
+    )
 
   return to_object
 
@@ -476,7 +627,22 @@ def _LiveClientMessage_to_vertex(
     )
 
   if getv(from_object, ['tool_response']) is not None:
-    setv(to_object, ['toolResponse'], getv(from_object, ['tool_response']))
+    setv(
+        to_object,
+        ['toolResponse'],
+        _LiveClientToolResponse_to_vertex(
+            getv(from_object, ['tool_response']), to_object
+        ),
+    )
+
+  if getv(from_object, ['context_update']) is not None:
+    setv(
+        to_object,
+        ['contextUpdate'],
+        _LiveClientContextUpdate_to_vertex(
+            api_client, getv(from_object, ['context_update']), to_object
+        ),
+    )
 
   return to_object
 
@@ -710,6 +876,24 @@ def _LiveClientSetup_to_vertex(
   return to_object
 
 
+def _LiveClientToolResponse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['function_responses']) is not None:
+    setv(
+        to_object,
+        ['functionResponses'],
+        [
+            _FunctionResponse_to_vertex(item, to_object)
+            for item in getv(from_object, ['function_responses'])
+        ],
+    )
+
+  return to_object
+
+
 def _LiveConnectConfig_to_mldev(
     api_client: BaseApiClient,
     from_object: Union[dict[str, Any], object],
@@ -895,6 +1079,9 @@ def _LiveConnectConfig_to_mldev(
             getv(from_object, ['translation_config']), to_object
         ),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['setup', 'labels'], getv(from_object, ['labels']))
 
   return to_object
 
@@ -1085,6 +1272,9 @@ def _LiveConnectConfig_to_vertex(
             getv(from_object, ['translation_config']), to_object
         ),
     )
+
+  if getv(from_object, ['labels']) is not None:
+    setv(parent_object, ['setup', 'labels'], getv(from_object, ['labels']))
 
   return to_object
 
@@ -1550,6 +1740,23 @@ def _Part_to_mldev(
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
 
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
+
   return to_object
 
 
@@ -1583,7 +1790,9 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        _FunctionResponse_to_vertex(
+            getv(from_object, ['function_response']), to_object
+        ),
     )
 
   if getv(from_object, ['inline_data']) is not None:
@@ -1637,6 +1846,23 @@ def _Part_to_vertex(
 
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
 
   return to_object
 
@@ -1750,6 +1976,12 @@ def _SpeechConfig_to_vertex(
         ),
     )
 
+  if getv(from_object, ['text_normalization']) is not None:
+    raise ValueError(
+        'text_normalization parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
   return to_object
 
 
@@ -1841,11 +2073,7 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ComputerUse_to_vertex(getv(from_object, ['computer_use']), to_object),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(

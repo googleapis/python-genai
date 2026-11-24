@@ -17,6 +17,7 @@
 
 import base64
 from collections.abc import Iterable, Mapping
+import copy
 from enum import Enum, EnumMeta
 import inspect
 import io
@@ -661,6 +662,7 @@ def process_schema(
     *,
     order_properties: bool = True,
     visited_dicts_path: Optional[set[int]] = None,
+    visited_refs: Optional[set[str]] = None,
 ) -> None:
   """Updates the schema and each sub-schema inplace to be API-compatible.
 
@@ -724,6 +726,8 @@ def process_schema(
   """
   if visited_dicts_path is None:
     visited_dicts_path = set()
+  if visited_refs is None:
+    visited_refs = set()
 
   if id(schema) in visited_dicts_path:
     return
@@ -748,17 +752,25 @@ def process_schema(
 
   if defs is None:
     defs = schema.pop('$defs', {})
-    for _, sub_schema in defs.items():
-      # We can skip the '$ref' check, because JSON schema forbids a '$ref' from
-      # directly referencing another '$ref':
-      # https://json-schema.org/understanding-json-schema/structuring#recursion
+
+  def _resolve_ref(ref: str) -> Optional[_common.StringDict]:
+    ref_name = ref.split('defs/')[-1]
+    if ref_name in visited_refs:
+      return None
+    ref_schema: _common.StringDict = copy.deepcopy(defs[ref_name])
+    visited_refs.add(ref_name)
+    try:
       process_schema(
-          sub_schema,
+          ref_schema,
           client,
           defs,
           order_properties=order_properties,
           visited_dicts_path=visited_dicts_path,
+          visited_refs=visited_refs,
       )
+    finally:
+      visited_refs.remove(ref_name)
+    return ref_schema
 
   handle_null_fields(schema)
 
@@ -766,14 +778,16 @@ def process_schema(
   # will have a $ref key that needs to be flattened
   # For example: {'default': None, 'description': 'Name of the person', 'nullable': True, '$ref': '#/$defs/TestPerson'}
   if (ref := schema.pop('$ref', None)) is not None:
-    schema.update(defs[ref.split('defs/')[-1]])
+    if (resolved := _resolve_ref(ref)) is not None:
+      schema.update(resolved)
+    visited_dicts_path.remove(id(schema))
+    return
 
   def _recurse(sub_schema: _common.StringDict) -> _common.StringDict:
     """Returns the processed `sub_schema`, resolving its '$ref' if any."""
     if (ref := sub_schema.pop('$ref', None)) is not None:
-      sub_schema = defs[ref.split('defs/')[-1]]
-      if id(sub_schema) in visited_dicts_path:
-        return {}
+      resolved = _resolve_ref(ref)
+      return {} if resolved is None else resolved
 
     process_schema(
         sub_schema,
@@ -781,6 +795,7 @@ def process_schema(
         defs,
         order_properties=order_properties,
         visited_dicts_path=visited_dicts_path,
+        visited_refs=visited_refs,
     )
     return sub_schema
 
@@ -1387,12 +1402,55 @@ def t_metrics(
 
 
 def t_is_vertex_embed_content_model(model: str) -> bool:
-  return (
-      # Gemini Embeddings except gemini-embedding-001.
-      'gemini' in model and model != 'gemini-embedding-001'
-      # Open-source MaaS embedding models.
-      or 'maas' in model
+  model_id = model.rsplit('/', 1)[-1]
+  return 'gemini' in model_id or 'maas' in model_id
+
+
+def t_is_vertex_maas_model(model: str) -> bool:
+  model_id = model.rsplit('/', 1)[-1]
+  return 'maas' in model_id
+
+
+def t_is_multimodal_embedding_model(model: str) -> bool:
+  model_id = model.rsplit('/', 1)[-1]
+  return 'gemini' in model_id and not model_id.startswith(
+      ('gemini-embedding-001', 'gemini-embedding-exp')
   )
+
+
+def t_embed_contents(
+    model: str,
+    contents: Optional[
+        Union[
+            types.ContentListUnion,
+            types.ContentListUnionDict,
+            types.Content,
+        ]
+    ],
+) -> list[types.Content]:
+  """Converts embedContent inputs to Contents for the Gemini Enterprise API.
+
+  Multimodal Gemini embedding models and MaaS models merge strings and Parts
+  into one Content. Other models keep each Content whole and turn each string
+  or Part in a list into its own Content.
+
+  Args:
+    model: The embedding model name.
+    contents: The contents to embed.
+
+  Returns:
+    The Contents to send, one per embedding input.
+
+  Raises:
+    ValueError: If `contents` is empty.
+  """
+  if t_is_multimodal_embedding_model(model) or t_is_vertex_maas_model(model):
+    return t_contents(contents)
+  if contents is None or (isinstance(contents, list) and not contents):
+    raise ValueError('contents are required.')
+  if isinstance(contents, list):
+    return [t_content(item) for item in contents]  # type: ignore[arg-type]
+  return [t_content(contents)]  # type: ignore[arg-type]
 
 
 def t_json_schema(origin: Any) -> Any:

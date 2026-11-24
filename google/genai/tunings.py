@@ -222,38 +222,6 @@ def _CompositeReinforcementTuningRewardConfig_to_vertex(
   return to_object
 
 
-def _ComputerUse_to_vertex(
-    from_object: Union[dict[str, Any], object],
-    parent_object: Optional[dict[str, Any]] = None,
-    root_object: Optional[Union[dict[str, Any], object]] = None,
-) -> dict[str, Any]:
-  to_object: dict[str, Any] = {}
-  if getv(from_object, ['environment']) is not None:
-    setv(to_object, ['environment'], getv(from_object, ['environment']))
-
-  if getv(from_object, ['excluded_predefined_functions']) is not None:
-    setv(
-        to_object,
-        ['excludedPredefinedFunctions'],
-        getv(from_object, ['excluded_predefined_functions']),
-    )
-
-  if getv(from_object, ['enable_prompt_injection_detection']) is not None:
-    setv(
-        to_object,
-        ['enablePromptInjectionDetection'],
-        getv(from_object, ['enable_prompt_injection_detection']),
-    )
-
-  if getv(from_object, ['disabled_safety_policies']) is not None:
-    raise ValueError(
-        'disabled_safety_policies parameter is only supported in Gemini'
-        ' Developer API mode, not in Gemini Enterprise Agent Platform mode.'
-    )
-
-  return to_object
-
-
 def _Content_to_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1119,6 +1087,89 @@ def _EvaluationConfig_to_vertex(
   return to_object
 
 
+def _FunctionResponsePart_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['inline_data']) is not None:
+    setv(to_object, ['inlineData'], getv(from_object, ['inline_data']))
+
+  if getv(from_object, ['file_data']) is not None:
+    setv(to_object, ['fileData'], getv(from_object, ['file_data']))
+
+  if getv(from_object, ['media_processing']) is not None:
+    raise ValueError(
+        'media_processing parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['media_resolution']) is not None:
+    setv(
+        to_object, ['mediaResolution'], getv(from_object, ['media_resolution'])
+    )
+
+  if getv(from_object, ['video_metadata']) is not None:
+    setv(to_object, ['videoMetadata'], getv(from_object, ['video_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
+
+  return to_object
+
+
+def _FunctionResponse_to_vertex(
+    from_object: Union[dict[str, Any], object],
+    parent_object: Optional[dict[str, Any]] = None,
+    root_object: Optional[Union[dict[str, Any], object]] = None,
+) -> dict[str, Any]:
+  to_object: dict[str, Any] = {}
+  if getv(from_object, ['will_continue']) is not None:
+    raise ValueError(
+        'will_continue parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
+  if getv(from_object, ['scheduling']) is not None:
+    setv(to_object, ['scheduling'], getv(from_object, ['scheduling']))
+
+  if getv(from_object, ['parts']) is not None:
+    setv(
+        to_object,
+        ['parts'],
+        [
+            _FunctionResponsePart_to_vertex(item, to_object, root_object)
+            for item in getv(from_object, ['parts'])
+        ],
+    )
+
+  if getv(from_object, ['id']) is not None:
+    setv(to_object, ['id'], getv(from_object, ['id']))
+
+  if getv(from_object, ['name']) is not None:
+    setv(to_object, ['name'], getv(from_object, ['name']))
+
+  if getv(from_object, ['response']) is not None:
+    setv(to_object, ['response'], getv(from_object, ['response']))
+
+  return to_object
+
+
 def _GenerationConfig_from_vertex(
     from_object: Union[dict[str, Any], object],
     parent_object: Optional[dict[str, Any]] = None,
@@ -1556,7 +1607,9 @@ def _Part_to_vertex(
     setv(
         to_object,
         ['functionResponse'],
-        getv(from_object, ['function_response']),
+        _FunctionResponse_to_vertex(
+            getv(from_object, ['function_response']), to_object, root_object
+        ),
     )
 
   if getv(from_object, ['inline_data']) is not None:
@@ -1610,6 +1663,23 @@ def _Part_to_vertex(
 
   if getv(from_object, ['speech_metadata']) is not None:
     setv(to_object, ['speechMetadata'], getv(from_object, ['speech_metadata']))
+
+  if getv(from_object, ['document_metadata']) is not None:
+    setv(
+        to_object,
+        ['documentMetadata'],
+        getv(from_object, ['document_metadata']),
+    )
+
+  if getv(from_object, ['spreadsheet_metadata']) is not None:
+    setv(
+        to_object,
+        ['spreadsheetMetadata'],
+        getv(from_object, ['spreadsheet_metadata']),
+    )
+
+  if getv(from_object, ['audio_metadata']) is not None:
+    setv(to_object, ['audioMetadata'], getv(from_object, ['audio_metadata']))
 
   return to_object
 
@@ -1968,6 +2038,12 @@ def _SpeechConfig_to_vertex(
         ),
     )
 
+  if getv(from_object, ['text_normalization']) is not None:
+    raise ValueError(
+        'text_normalization parameter is only supported in Gemini Developer API'
+        ' mode, not in Gemini Enterprise Agent Platform mode.'
+    )
+
   return to_object
 
 
@@ -1981,13 +2057,7 @@ def _Tool_to_vertex(
     setv(to_object, ['retrieval'], getv(from_object, ['retrieval']))
 
   if getv(from_object, ['computer_use']) is not None:
-    setv(
-        to_object,
-        ['computerUse'],
-        _ComputerUse_to_vertex(
-            getv(from_object, ['computer_use']), to_object, root_object
-        ),
-    )
+    setv(to_object, ['computerUse'], getv(from_object, ['computer_use']))
 
   if getv(from_object, ['file_search']) is not None:
     raise ValueError(
@@ -2456,6 +2526,9 @@ def _TuningJob_from_vertex(
             root_object,
         ),
     )
+
+  if getv(from_object, ['gcsMetricsUri']) is not None:
+    setv(to_object, ['gcs_metrics_uri'], getv(from_object, ['gcsMetricsUri']))
 
   return to_object
 

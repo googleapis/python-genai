@@ -28,6 +28,8 @@ if TYPE_CHECKING:
         CreateEnvironmentRequestNetworkUnion,
         CreateEnvironmentRequestNetworkUnionParam,
         CreateEnvironmentRequestParam,
+        Env,
+        EnvParam,
     )
     from .environment import (
         Environment,
@@ -53,6 +55,8 @@ __all__ = [
     "CreateEnvironmentRequestNetworkUnion",
     "CreateEnvironmentRequestNetworkUnionParam",
     "CreateEnvironmentRequestParam",
+    "Env",
+    "EnvParam",
     "Environment",
     "EnvironmentFile",
     "EnvironmentFileTypedDict",
@@ -74,6 +78,8 @@ _dynamic_imports: dict[str, str] = {
     "CreateEnvironmentRequestNetworkUnion": ".createenvironmentrequest",
     "CreateEnvironmentRequestNetworkUnionParam": ".createenvironmentrequest",
     "CreateEnvironmentRequestParam": ".createenvironmentrequest",
+    "Env": ".createenvironmentrequest",
+    "EnvParam": ".createenvironmentrequest",
     "Environment": ".environment",
     "EnvironmentNetworkEnum": ".environment",
     "EnvironmentNetworkUnion": ".environment",

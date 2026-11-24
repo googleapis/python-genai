@@ -16,10 +16,14 @@
 
 """Tests tools in the _common module."""
 
+import collections
+import concurrent.futures
 from enum import Enum
 import inspect
 import logging
+import sys
 import textwrap
+import threading
 import typing
 from typing import List, Optional
 import warnings
@@ -979,3 +983,210 @@ def test_from_response_resolves_forward_references():
 
   assert result.items is not None
   assert result.items[0].value == "a"
+
+
+class _PrunedNestedModel(_common.BaseModel):
+  name: Optional[str] = None
+
+
+class _FreeFormJsonModel(_common.BaseModel):
+  # Mirrors PredictResponse: model servers return arbitrary JSON here.
+  predictions: Optional[List[typing.Any]] = None
+  metadata: Optional[typing.Any] = None
+  nested: Optional[_PrunedNestedModel] = None
+  nested_list: Optional[List[_PrunedNestedModel]] = None
+
+
+@pytest.mark.parametrize(
+    "response,field,expected",
+    [
+        pytest.param(
+            {"predictions": [{"content": "a", "score": 0.9}]},
+            "predictions",
+            [{"content": "a", "score": 0.9}],
+            id="dicts_in_list_of_any",
+        ),
+        pytest.param(
+            {"predictions": ["a", {"content": "b"}, [0.1, 0.2]]},
+            "predictions",
+            ["a", {"content": "b"}, [0.1, 0.2]],
+            id="mixed_items_in_list_of_any",
+        ),
+        pytest.param(
+            {"metadata": {"tokens": 3, "extraField": True}},
+            "metadata",
+            {"tokens": 3, "extraField": True},
+            id="dict_in_any",
+        ),
+    ],
+)
+def test_from_response_keeps_free_form_json(response, field, expected):
+  """Dicts in `Any`-typed fields are free-form JSON and are kept verbatim."""
+  result = _FreeFormJsonModel._from_response(response=response, kwargs={})
+
+  assert getattr(result, field) == expected
+
+
+def test_from_response_still_prunes_nested_models_next_to_any_fields():
+  """Pruning still recurses into BaseModel fields alongside `Any` fields."""
+  result = _FreeFormJsonModel._from_response(
+      response={
+          "predictions": [{"content": "a"}],
+          "nested": {"name": "n", "extraField": 1},
+          "nestedList": [{"name": "m", "extraField": 2}],
+          "unknownTopLevel": 3,
+      },
+      kwargs={},
+  )
+
+  assert result.predictions == [{"content": "a"}]
+  assert result.nested.name == "n"
+  assert "extra_field" not in result.nested.model_dump()
+  assert result.nested_list[0].name == "m"
+  assert "unknown_top_level" not in result.model_dump()
+
+
+class _AnnotatedNestedModel(_common.BaseModel):
+  nested: Optional[typing.Annotated[_PrunedNestedModel, "metadata"]] = None
+  nested_list: Optional[
+      List[typing.Annotated[_PrunedNestedModel, "metadata"]]
+  ] = None
+
+
+def test_from_response_prunes_annotated_nested_models():
+  """`Annotated[Model, ...]` fields are pruned like `Model` fields."""
+  result = _AnnotatedNestedModel._from_response(
+      response={
+          "nested": {"name": "n", "extraField": 1},
+          "nestedList": [{"name": "m", "extraField": 2}],
+      },
+      kwargs={},
+  )
+
+  assert result.nested.name == "n"
+  assert result.nested_list[0].name == "m"
+
+
+def _build_from_threads(model_class, num_threads):
+  """Instantiates `model_class` from threads released together."""
+  barrier = threading.Barrier(num_threads)
+
+  def build():
+    barrier.wait()
+    return model_class(max_output_tokens=1, seed=42).max_output_tokens
+
+  with concurrent.futures.ThreadPoolExecutor(num_threads) as executor:
+    futures = [executor.submit(build) for _ in range(num_threads)]
+  errors_seen = [f.exception() for f in futures if f.exception()]
+  results = [f.result() for f in futures if not f.exception()]
+  return results, errors_seen
+
+
+def test_concurrent_first_use_does_not_race_model_build(monkeypatch):
+  """Threads that first use a model together build it one at a time."""
+  # Unserialized builds of one class can delete each other's validator.
+  original = pydantic.BaseModel.__dict__["model_rebuild"].__func__
+  threads_inside = collections.Counter()
+  counter_lock = threading.Lock()
+  max_threads_inside = 0
+  first_call = True
+  second_thread_entered = threading.Event()
+
+  def tracking(
+      cls,
+      *,
+      force=False,
+      raise_errors=True,
+      _parent_namespace_depth=2,
+      _types_namespace=None,
+  ):
+    nonlocal max_threads_inside, first_call
+    ident = threading.get_ident()
+    with counter_lock:
+      threads_inside[ident] += 1
+      max_threads_inside = max(max_threads_inside, len(threads_inside))
+      is_first = first_call
+      first_call = False
+      if len(threads_inside) > 1:
+        second_thread_entered.set()
+    try:
+      if is_first:
+        second_thread_entered.wait(timeout=1.0)
+      return original(
+          cls,
+          force=force,
+          raise_errors=raise_errors,
+          _parent_namespace_depth=(
+              _parent_namespace_depth + 1 if _parent_namespace_depth > 0 else 0
+          ),
+          _types_namespace=_types_namespace,
+      )
+    finally:
+      with counter_lock:
+        threads_inside[ident] -= 1
+        if not threads_inside[ident]:
+          del threads_inside[ident]
+
+  monkeypatch.setattr(
+      pydantic.BaseModel, "model_rebuild", classmethod(tracking)
+  )
+
+  class _FreshConfig(types.GenerateContentConfig):
+    pass
+
+  results, errors_seen = _build_from_threads(_FreshConfig, 8)
+
+  assert not errors_seen
+  assert results == [1] * 8
+  assert max_threads_inside == 1
+
+
+def test_concurrent_first_use_of_fresh_models_succeeds():
+  """Many threads can instantiate a model nothing has built yet.
+
+  A smoke test only: the race does not reproduce reliably this way, so
+  `test_concurrent_first_use_does_not_race_model_build` is the regression test.
+  """
+  original_interval = sys.getswitchinterval()
+  sys.setswitchinterval(1e-6)
+  try:
+    for _ in range(3):
+
+      class _FreshConfig(types.GenerateContentConfig):
+        pass
+
+      results, errors_seen = _build_from_threads(_FreshConfig, 16)
+      assert not errors_seen
+      assert results == [1] * 16
+  finally:
+    sys.setswitchinterval(original_interval)
+
+
+def test_model_rebuild_returns_none_when_built():
+  """A built model skips the rebuild unless `force` is set."""
+
+  class Model(_common.BaseModel):
+    x: int
+
+  Model(x=1)
+
+  assert Model.model_rebuild() is None
+  assert Model.model_rebuild(force=True)
+  assert Model(x=2).x == 2
+
+
+def test_model_rebuild_resolves_caller_namespace():
+  """`model_rebuild` resolves forward references in the caller's locals.
+
+  The alias is defined after the class, so only the caller frame has it.
+  """
+
+  class Model(_common.BaseModel):
+    x: "later_int"
+
+  later_int = int
+
+  Model.model_rebuild()
+
+  assert Model.model_fields["x"].annotation is later_int
+  assert Model(x=1).x == 1
