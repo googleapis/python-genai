@@ -602,6 +602,23 @@ def should_append_afc_history(
   return not config_model.automatic_function_calling.ignore_call_history
 
 
+def deep_copy_config_except_tools(
+    config: types.GenerateContentConfig,
+) -> types.GenerateContentConfig:
+  """Deep-copies a config, but keeps its `tools` list instead of deep-copying it.
+
+  `model_copy` deep-copies before it applies `update`, so a live MCP
+  `ClientSession` in `tools` can't be deep-copied. Clear `tools` with a
+  shallow copy first, deep-copy the rest, then give the copy its own list.
+  """
+  copied_config = config.model_copy(update={'tools': None}).model_copy(
+      deep=True
+  )
+  if config.tools is not None:
+    copied_config.tools = list(config.tools)
+  return copied_config
+
+
 def parse_config_for_mcp_usage(
     config: Optional[types.GenerateContentConfigOrDict] = None,
 ) -> Optional[types.GenerateContentConfig]:

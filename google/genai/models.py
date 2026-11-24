@@ -8360,7 +8360,7 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      parsed_config = _extra_utils.deep_copy_config_except_tools(config)
 
     # Use AsyncExitStack to keep MCP connections alive across the entire AFC loop
     async with contextlib.AsyncExitStack() as stack:
@@ -8604,7 +8604,7 @@ class AsyncModels(_api_module.BaseModule):
     elif isinstance(config, dict):
       parsed_config = types.GenerateContentConfig(**config)
     else:
-      parsed_config = config.model_copy(deep=True)
+      parsed_config = _extra_utils.deep_copy_config_except_tools(config)
 
     incompatible_tools_indexes = (
         _extra_utils.find_afc_incompatible_tool_indexes(

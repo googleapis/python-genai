@@ -707,7 +707,7 @@ class AsyncChat(_BaseChat):
     elif isinstance(method_config, dict):
       parsed_config = types.GenerateContentConfig(**method_config)
     else:
-      parsed_config = method_config.model_copy(deep=True)
+      parsed_config = _extra_utils.deep_copy_config_except_tools(method_config)
 
     if incompatible_tools_indexes:
       _extra_utils.log_afc_incompatible_tools_warning(
