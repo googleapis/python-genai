@@ -44,13 +44,16 @@ def _list_resources(client: Client) -> None:
   client.voices.list()
 
 
-def _expected_paths(api_version: str) -> list[str]:
+def _expected_paths(
+    api_version: str, webhook_version: str | None = None
+) -> list[str]:
+  webhooks = webhook_version if webhook_version is not None else api_version
   return [
       f"GET /{api_version}/agents",
       f"GET /{api_version}/triggers",
       f"GET /{api_version}/environments",
       f"GET /{api_version}/credentials",
-      f"GET /{api_version}/webhooks",
+      f"GET /{webhooks}/webhooks",
       f"GET /{api_version}/voices",
   ]
 
@@ -64,7 +67,9 @@ def test_resources_use_default_api_version(
   client.interactions.delete(id="abc")
 
   version = _api_client.GOOGLE_AI_API_DEFAULT_VERSION
-  assert mock_gaos_server.captured == _expected_paths(version) + [
+  assert mock_gaos_server.captured == _expected_paths(
+      version, webhook_version="v1beta"
+  ) + [
       f"DELETE /{version}/interactions/abc"
   ]
 
@@ -101,7 +106,7 @@ def test_empty_env_var_api_version_is_ignored(
   _list_resources(client)
 
   assert mock_gaos_server.captured == _expected_paths(
-      _api_client.GOOGLE_AI_API_DEFAULT_VERSION
+      _api_client.GOOGLE_AI_API_DEFAULT_VERSION, webhook_version="v1beta"
   )
 
 
@@ -121,3 +126,38 @@ def test_environment_file_download_uses_client_api_version(
   assert mock_gaos_server.captured == [
       "GET /v1alpha/environments/env_123/files/src/main.py?alt=media"
   ]
+
+
+def test_webhooks_use_v1beta_when_client_defaults_to_v1(
+    mock_gaos_server: conftest.MockGaosServer,
+) -> None:
+  client = _make_client(mock_gaos_server)
+
+  client.webhooks.list()
+  client.agents.list()
+
+  assert mock_gaos_server.captured == [
+      "GET /v1beta/webhooks",
+      f"GET /{_api_client.GOOGLE_AI_API_DEFAULT_VERSION}/agents",
+  ]
+
+
+def test_webhooks_remap_explicit_v1_to_v1beta(
+    mock_gaos_server: conftest.MockGaosServer,
+) -> None:
+  client = _make_client(mock_gaos_server, api_version="v1")
+
+  client.webhooks.list()
+
+  assert mock_gaos_server.captured == ["GET /v1beta/webhooks"]
+
+
+def test_webhooks_honor_explicit_v1beta(
+    mock_gaos_server: conftest.MockGaosServer,
+) -> None:
+  client = _make_client(mock_gaos_server, api_version="v1beta")
+
+  client.webhooks.list()
+
+  assert mock_gaos_server.captured == ["GET /v1beta/webhooks"]
+
