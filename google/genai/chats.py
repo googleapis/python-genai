@@ -475,6 +475,7 @@ class Chat(_BaseChat):
           if chunk.candidates and chunk.candidates[0].finish_reason:
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
+        model_output = _extra_utils.merge_streamed_contents(model_output)
         self.record_history(
             user_input=user_input,
             model_output=model_output,
@@ -548,6 +549,7 @@ class Chat(_BaseChat):
           if chunk.candidates and chunk.candidates[0].finish_reason:
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
+        model_output = _extra_utils.merge_streamed_contents(model_output)
 
         if is_last_remote_call_afc:
           break
@@ -973,6 +975,7 @@ class AsyncChat(_BaseChat):
           if chunk.candidates and chunk.candidates[0].finish_reason:
             finish_reason = chunk.candidates[0].finish_reason
           yield chunk
+        output_contents = _extra_utils.merge_streamed_contents(output_contents)
 
         if not output_contents or finish_reason is None:
           is_valid = False
@@ -1122,6 +1125,7 @@ class AsyncChat(_BaseChat):
             if chunk.candidates and chunk.candidates[0].finish_reason:
               finish_reason = chunk.candidates[0].finish_reason
             yield chunk
+          model_output = _extra_utils.merge_streamed_contents(model_output)
 
           if is_last_remote_call_afc:
             break

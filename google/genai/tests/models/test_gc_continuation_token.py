@@ -3920,10 +3920,8 @@ def test_e2e_chat_unary_vs_stream_history():
       == 'Hello world!'
   )
 
-  assert len(stream_history) == 3
-  assert stream_history[0].role == 'user'
-  assert all(h.role == 'model' for h in stream_history[1:])
-  assert [h.parts[0].text for h in stream_history[1:]] == [
+  assert [h.role for h in stream_history] == ['user', 'model']
+  assert [p.text for p in stream_history[1].parts] == [
       'Stream 1 ',
       'Stream 2!',
   ]

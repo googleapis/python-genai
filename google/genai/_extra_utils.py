@@ -712,6 +712,18 @@ def append_chunk_contents(
   return contents
 
 
+def merge_streamed_contents(
+    contents: list[types.Content],
+) -> list[types.Content]:
+  """Combines the streamed contents of one model turn into one Content."""
+  if not contents:
+    return []
+  parts: list[types.Part] = []
+  for content in contents:
+    parts.extend(content.parts or [])
+  return [types.Content(role='model', parts=parts)]
+
+
 def prepare_resumable_upload(
     file: Union[str, os.PathLike[str], io.IOBase],
     user_http_options: Optional[types.HttpOptionsOrDict] = None,

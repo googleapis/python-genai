@@ -14,6 +14,7 @@
 #
 
 
+import copy
 from unittest import mock
 
 import pytest
@@ -40,13 +41,67 @@ AFC_HISTORY = [
     ),
 ]
 
+SPLIT_FUNCTION_CALL_PARTS = [
+    types.Part(
+        function_call=types.FunctionCall(name='what_date_is_today', args={}),
+        thought_signature=b'sig1',
+    ),
+    types.Part(
+        function_call=types.FunctionCall(name='what_time_is_now', args={})
+    ),
+    types.Part(text=''),
+]
+
+
+def what_date_is_today() -> str:
+  """Returns today's date."""
+  return '2026-01-01'
+
+
+def what_time_is_now() -> str:
+  """Returns the current time."""
+  return '12:00'
+
+
+def _split_function_call_chunks() -> list[types.GenerateContentResponse]:
+  """Returns one streamed model turn split across three chunks."""
+  chunks = []
+  for i, part in enumerate(SPLIT_FUNCTION_CALL_PARTS):
+    is_last = i == len(SPLIT_FUNCTION_CALL_PARTS) - 1
+    chunks.append(
+        types.GenerateContentResponse(
+            candidates=[
+                types.Candidate(
+                    content=types.Content(role='model', parts=[part]),
+                    finish_reason=types.FinishReason.STOP if is_last else None,
+                )
+            ]
+        )
+    )
+  return chunks
+
+
+def _text_chunks() -> list[types.GenerateContentResponse]:
+  return [
+      types.GenerateContentResponse(
+          candidates=[
+              types.Candidate(
+                  content=types.Content(
+                      role='model', parts=[types.Part(text='It is noon.')]
+                  ),
+                  finish_reason=types.FinishReason.STOP,
+              )
+          ]
+      )
+  ]
+
 
 pytest_plugins = 'pytest_asyncio'
 
 
 @pytest.fixture
 def mock_api_client(vertexai=False):
-  api_client = mock.MagicMock(spec=client.ApiClient)
+  api_client = mock.MagicMock(spec=client.BaseApiClient)
   api_client.api_key = 'TEST_API_KEY'
   api_client._host = lambda: 'test_host'
   api_client._http_options = {'headers': {}}  # Ensure headers exist
@@ -519,3 +574,156 @@ def test_chat_stream_with_empty_content(
   ]
   assert chat.get_history() == expected_comprehensive_history
   assert not chat.get_history(curated=True)
+
+
+def _assert_merged_afc_request(contents: list[types.Content]) -> None:
+  assert [c.role for c in contents] == ['user', 'model', 'user']
+  assert contents[1].parts == SPLIT_FUNCTION_CALL_PARTS
+  assert contents[1].parts[0].thought_signature == b'sig1'
+  assert [p.function_response.name for p in contents[2].parts] == [
+      'what_date_is_today',
+      'what_time_is_now',
+  ]
+
+
+def test_chat_stream_afc_merges_split_function_calls(mock_api_client):
+  """A streamed turn split over chunks is sent and recorded as one content."""
+  requests = []
+  streams = [_split_function_call_chunks(), _text_chunks()]
+
+  def fake_stream(**kwargs):
+    requests.append(copy.deepcopy(kwargs['contents']))
+    return streams[len(requests) - 1]
+
+  with mock.patch.object(
+      models.Models, 'generate_content_stream', side_effect=fake_stream
+  ):
+    chat = chats.Chats(
+        modules=models.Models(api_client_=mock_api_client)
+    ).create(
+        model='gemini-3-flash',
+        config=types.GenerateContentConfig(
+            tools=[what_date_is_today, what_time_is_now]
+        ),
+    )
+    for _ in chat.send_message_stream('What date and time is it?'):
+      pass
+
+  assert len(requests) == 2
+  _assert_merged_afc_request(requests[1])
+  assert [c.role for c in chat.get_history()] == [
+      'user',
+      'model',
+      'user',
+      'model',
+  ]
+
+
+@pytest.mark.asyncio
+async def test_async_chat_stream_afc_merges_split_function_calls(
+    mock_api_client,
+):
+  """A streamed turn split over chunks is sent and recorded as one content."""
+  requests = []
+  streams = [_split_function_call_chunks(), _text_chunks()]
+
+  async def fake_stream(**kwargs):
+    requests.append(copy.deepcopy(kwargs['contents']))
+    chunks = streams[len(requests) - 1]
+
+    async def generator():
+      for chunk in chunks:
+        yield chunk
+
+    return generator()
+
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content_stream',
+      new_callable=mock.AsyncMock,
+      side_effect=fake_stream,
+  ):
+    chat = chats.AsyncChats(
+        modules=models.AsyncModels(api_client_=mock_api_client)
+    ).create(
+        model='gemini-3-flash',
+        config=types.GenerateContentConfig(
+            tools=[what_date_is_today, what_time_is_now]
+        ),
+    )
+    async for _ in await chat.send_message_stream('What date and time is it?'):
+      pass
+
+  assert len(requests) == 2
+  _assert_merged_afc_request(requests[1])
+  assert [c.role for c in chat.get_history()] == [
+      'user',
+      'model',
+      'user',
+      'model',
+  ]
+
+
+def test_chat_stream_afc_disabled_merges_split_function_calls(
+    mock_api_client,
+):
+  """Without AFC, a streamed turn is still recorded as one model content."""
+  with mock.patch.object(
+      models.Models,
+      'generate_content_stream',
+      return_value=_split_function_call_chunks(),
+  ):
+    chat = chats.Chats(
+        modules=models.Models(api_client_=mock_api_client)
+    ).create(
+        model='gemini-3-flash',
+        config=types.GenerateContentConfig(
+            tools=[what_date_is_today, what_time_is_now],
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                disable=True
+            ),
+        ),
+    )
+    for _ in chat.send_message_stream('What date and time is it?'):
+      pass
+
+  history = chat.get_history()
+  assert [c.role for c in history] == ['user', 'model']
+  assert history[1].parts == SPLIT_FUNCTION_CALL_PARTS
+  assert chat.get_history(curated=True) == history
+
+
+@pytest.mark.asyncio
+async def test_async_chat_stream_afc_disabled_merges_split_function_calls(
+    mock_api_client,
+):
+  """Without AFC, a streamed turn is still recorded as one model content."""
+
+  async def generator():
+    for chunk in _split_function_call_chunks():
+      yield chunk
+
+  with mock.patch.object(
+      models.AsyncModels,
+      'generate_content_stream',
+      new_callable=mock.AsyncMock,
+      return_value=generator(),
+  ):
+    chat = chats.AsyncChats(
+        modules=models.AsyncModels(api_client_=mock_api_client)
+    ).create(
+        model='gemini-3-flash',
+        config=types.GenerateContentConfig(
+            tools=[what_date_is_today, what_time_is_now],
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(
+                disable=True
+            ),
+        ),
+    )
+    async for _ in await chat.send_message_stream('What date and time is it?'):
+      pass
+
+  history = chat.get_history()
+  assert [c.role for c in history] == ['user', 'model']
+  assert history[1].parts == SPLIT_FUNCTION_CALL_PARTS
+  assert chat.get_history(curated=True) == history
