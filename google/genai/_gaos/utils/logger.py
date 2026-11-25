@@ -41,7 +41,12 @@ def get_body_content(req: httpx.Request) -> str:
 
 
 def get_default_logger() -> Logger:
-    if os.getenv("GOOGLE_GENAI_DEBUG"):
+    if os.getenv("GOOGLE_GENAI_DEBUG", "").strip().lower() in (
+        "true",
+        "1",
+        "yes",
+        "on",
+    ):
         logging.basicConfig(level=logging.DEBUG)
         return logging.getLogger("google.genai")
     return NoOpLogger()
