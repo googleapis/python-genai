@@ -1,5 +1,29 @@
 # Changelog
 
+## [3.7.0](https://github.com/googleapis/python-genai/compare/v3.6.1...v3.7.0) (2026-11-25)
+
+
+### Features
+
+* Add `text_normalization` to `SpeechConfig` (Gemini API). ([a6ad785](https://github.com/googleapis/python-genai/commit/a6ad78555367b38ec720d34fa04ab116a012208b))
+* **environments:** Expose CreateEnvironmentRequest.env on the gemini platform ([074f507](https://github.com/googleapis/python-genai/commit/074f5070edfe1d93c675a01e2457b16c0b4d53ac))
+
+
+### Bug Fixes
+
+* Default AuthorizedSession responses without charset to UTF-8 and align aiohttp SSE decoding ([5a7d7f0](https://github.com/googleapis/python-genai/commit/5a7d7f0da5c85b7f2b9e5bb8039601073de4d0cc))
+* **local_tokenizer:** Include Hugging Face tokenizer models in unsupported-model error message ([3a01abf](https://github.com/googleapis/python-genai/commit/3a01abf80df8a3f81afb987dea035d4eac33d3a3))
+* Pass the function call id to the function response in automatic function calling ([feb88ba](https://github.com/googleapis/python-genai/commit/feb88bae41da45e0451606266212ac139fc359f2)), refs [#3192](https://github.com/googleapis/python-genai/issues/3192)
+* Retry aiohttp timeouts and wrapped google-auth transport errors under HttpRetryOptions ([1026f1f](https://github.com/googleapis/python-genai/commit/1026f1f4fdcc579e6ec423c8b30228fb702d14dc)), refs [#3329](https://github.com/googleapis/python-genai/issues/3329)
+* Serialize deferred Pydantic model builds to fix a multithreaded first-use race ([ba539e0](https://github.com/googleapis/python-genai/commit/ba539e07d84301ba005ead8fc50ed51021ee7887)), refs [#2991](https://github.com/googleapis/python-genai/issues/2991)
+* Stop deep-copying MCP session tools in async generate_content ([10f479b](https://github.com/googleapis/python-genai/commit/10f479b29a9696555964b2664b8127b6d0b4fa90)), refs [#2669](https://github.com/googleapis/python-genai/issues/2669)
+
+
+### Documentation
+
+* Describe Interactions API operations in plain words instead of RPC names ([a8b851b](https://github.com/googleapis/python-genai/commit/a8b851b4714663901cf42705b38f3f9ce4480fa8))
+* Update README with latest Gemini models and Gemini platform naming ([2d4bb18](https://github.com/googleapis/python-genai/commit/2d4bb1864ec312dec880b0594e2376fbb7b79786))
+
 ## [3.6.1](https://github.com/googleapis/python-genai/compare/v3.6.0...v3.6.1) (2026-11-18)
 
 
