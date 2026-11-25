@@ -149,6 +149,38 @@ def test_interactions_retry_up_to_attempts(monkeypatch):
     assert mock_send.call_count == 3
 
 
+def test_translate_retry_config_delay_defaults_match_api_client():
+  http_options = types.HttpOptions(
+      retry_options=types.HttpRetryOptions()
+  )
+
+  config = google_genai._translate_retry_config(http_options)
+
+  assert config.backoff.initial_interval == int(
+      google_genai._api_client._RETRY_INITIAL_DELAY * 1000
+  )
+  assert config.backoff.max_interval == int(
+      google_genai._api_client._RETRY_MAX_DELAY * 1000
+  )
+  assert config.backoff.jitter_ms == int(
+      google_genai._api_client._RETRY_JITTER * 1000
+  )
+
+
+def test_translate_retry_config_explicit_delays_override_defaults():
+  http_options = types.HttpOptions(
+      retry_options=types.HttpRetryOptions(
+          initial_delay=0.25, max_delay=3.0, jitter=0.0
+      )
+  )
+
+  config = google_genai._translate_retry_config(http_options)
+
+  assert config.backoff.initial_interval == 250
+  assert config.backoff.max_interval == 3000
+  assert config.backoff.jitter_ms == 0
+
+
 def test_interactions_default_matches_generate_content_attempts(monkeypatch):
   monkeypatch.setenv('GOOGLE_API_KEY', 'test-api-key')
   client = Client(
