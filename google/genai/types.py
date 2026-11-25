@@ -19423,6 +19423,13 @@ class CreateBatchJobConfig(_common.BaseModel):
       operation completes.
       """,
   )
+  encryption_spec: Optional[EncryptionSpec] = Field(
+      default=None,
+      description="""Customer-managed encryption key options for a BatchJob.
+      If this is set, then all resources created by the BatchJob will be
+      encrypted with the provided encryption key.
+      """,
+  )
 
 
 class CreateBatchJobConfigDict(TypedDict, total=False):
@@ -19443,6 +19450,12 @@ class CreateBatchJobConfigDict(TypedDict, total=False):
   webhook_config: Optional[WebhookConfigDict]
   """Webhook configuration for receiving notifications when the batch
       operation completes.
+      """
+  
+  encryption_spec: Optional[EncryptionSpecDict]
+  """Customer-managed encryption key options for a BatchJob.
+      If this is set, then all resources created by the BatchJob will be
+      encrypted with the provided encryption key.
       """
 
 
