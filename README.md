@@ -1,5 +1,7 @@
 # Google Gen AI SDK
 
+[English](README.md) | [简体中文](https://github.com/googleapis/python-genai/blob/main/README.zh.md)
+
 [![PyPI version](https://img.shields.io/pypi/v/google-genai.svg)](https://pypi.org/project/google-genai/)
 ![Python support](https://img.shields.io/pypi/pyversions/google-genai)
 [![PyPI - Downloads](https://img.shields.io/pypi/dw/google-genai)](https://pypistats.org/packages/google-genai)
