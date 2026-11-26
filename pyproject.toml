@@ -55,6 +55,10 @@ local-tokenizer-transformers = [
 ]
 pillow = ["pillow"]
 pyopenssl = ["pyopenssl"]
+migrate = ["libcst>=1.4.0"]
+
+[project.scripts]
+genai-migrate = "google.genai._migrate.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/googleapis/python-genai"
@@ -67,6 +71,7 @@ Homepage = "https://github.com/googleapis/python-genai"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
 
 [tool.mypy]
 exclude = ["tests/", "_test_api_client\\.py", "_gaos/"]
