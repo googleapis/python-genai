@@ -1244,7 +1244,7 @@ def t_file_name(
 
   if name.startswith('https://'):
     suffix = name.split('files/')[1]
-    match = re.match('[a-z0-9]+', suffix)
+    match = re.match('[a-z0-9-]+', suffix)
     if match is None:
       raise ValueError(f'Could not extract file name from URI: {name}')
     name = match.group(0)
