@@ -35,6 +35,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class StepStopTypedDict(TypedDict):
     index: int
+    r"""Required. The 0-based index of the step that stopped."""
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
@@ -48,6 +49,7 @@ class StepStopTypedDict(TypedDict):
 
 class StepStop(BaseModel):
     index: int
+    r"""Required. The 0-based index of the step that stopped."""
 
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from
