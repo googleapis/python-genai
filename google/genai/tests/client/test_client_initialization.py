@@ -2210,7 +2210,7 @@ async def test_async_httpx_download_uses_mtls_endpoint_with_client_cert(
 def test_websocket_uses_mtls_endpoint_with_client_cert(mock_client_cert):
   client = _mtls_test_client()
   assert client._api_client._websocket_base_url() == (
-      "wss://us-central1-aiplatform.mtls.googleapis.com/"
+      "wss://us-central1-aiplatform.mtls.googleapis.com"
   )
 
 
@@ -2223,7 +2223,7 @@ def test_mtls_endpoint_not_used_without_client_cert(monkeypatch):
   )
   client = _mtls_test_client()
   assert client._api_client._websocket_base_url() == (
-      "wss://us-central1-aiplatform.googleapis.com/"
+      "wss://us-central1-aiplatform.googleapis.com"
   )
   assert (
       client._api_client._httpx_url(
@@ -2242,7 +2242,7 @@ def test_mtls_endpoint_not_used_with_custom_transport(mock_client_cert):
   assert client._api_client._httpx_url(url, is_async=True) == url
   assert not client._api_client._aiohttp_use_mtls_endpoint
   assert client._api_client._websocket_base_url() == (
-      "wss://us-central1-aiplatform.googleapis.com/"
+      "wss://us-central1-aiplatform.googleapis.com"
   )
 
 
@@ -2269,7 +2269,7 @@ def test_mtls_endpoint_env_override(
 def test_mtls_endpoint_not_used_for_gemini_api(mock_client_cert):
   client = Client(api_key="test-api-key")
   assert client._api_client._websocket_base_url() == (
-      "wss://generativelanguage.googleapis.com/"
+      "wss://generativelanguage.googleapis.com"
   )
 
 
@@ -2293,7 +2293,7 @@ def test_mtls_endpoint_not_used_when_client_cert_fails_to_load(
   assert client._api_client._httpx_url(url, is_async=False) == url
   assert client._api_client._httpx_url(url, is_async=True) == url
   assert client._api_client._websocket_base_url() == (
-      "wss://us-central1-aiplatform.googleapis.com/"
+      "wss://us-central1-aiplatform.googleapis.com"
   )
 
 
