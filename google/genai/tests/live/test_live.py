@@ -251,6 +251,16 @@ def test_websocket_base_url():
   assert api_client._websocket_base_url() == 'wss://test.com'
 
 
+def test_websocket_base_url_with_trailing_slash():
+  # The default base urls end in '/'; the websocket base url must not, or
+  # joining it with '/ws/...' produces a double slash in the path.
+  api_client = gl_client.BaseApiClient(
+      api_key='google_api_key',
+      http_options={'base_url': 'https://test.com/'},
+  )
+  assert api_client._websocket_base_url() == 'wss://test.com'
+
+
 def test_websocket_base_url_no_auth_with_custom_base_url():
   base_url = 'https://test-api-gateway-proxy.com'
   api_client = gl_client.BaseApiClient(
@@ -2650,6 +2660,26 @@ async def test_connect_keeps_client_base_url():
   capture = await _capture_connect(client, config)
 
   # Without a session-level base url, the client's is used.
+  assert capture['uri'] == (
+      'wss://client-base-url.com/ws/google.ai.generativelanguage.v1beta'
+      '.GenerativeService.BidiGenerateContent'
+  )
+
+
+@pytest.mark.asyncio
+async def test_connect_with_trailing_slash_base_url():
+  client = gl_client.BaseApiClient(
+      vertexai=False,
+      api_key='TEST_API_KEY',
+      http_options={
+          'base_url': 'https://client-base-url.com/',
+          'api_version': 'v1beta',
+      },
+  )
+
+  capture = await _capture_connect(client, None)
+
+  # A base url ending in '/' must not produce a double slash in the path.
   assert capture['uri'] == (
       'wss://client-base-url.com/ws/google.ai.generativelanguage.v1beta'
       '.GenerativeService.BidiGenerateContent'

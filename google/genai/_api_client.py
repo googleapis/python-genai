@@ -262,6 +262,13 @@ def populate_server_timeout_header(
     headers['X-Server-Timeout'] = str(math.ceil(timeout_in_seconds))
 
 
+def _strip_trailing_slash(url):
+  """Removes a single trailing slash from a URL string, if present."""
+  if isinstance(url, str) and url.endswith('/'):
+    return url[:-1]
+  return url
+
+
 def join_url_path(base_url: str, path: str) -> str:
   parsed_base = urlparse(base_url)
   base_path = (
@@ -1901,12 +1908,14 @@ class BaseApiClient:
     if self.custom_base_url and not has_sufficient_auth:
       # API gateway proxy can use the auth in custom headers, not url.
       # Enable custom url if auth is not sufficient.
-      return http_options.base_url or self.custom_base_url
+      return _strip_trailing_slash(
+          http_options.base_url or self.custom_base_url
+      )
     url_parts = urlparse(http_options.base_url)
     url = url_parts._replace(scheme='wss').geturl()  # type: ignore[arg-type]
     if self._websocket_use_mtls_endpoint:
       url = to_mtls_url(url)  # type: ignore[arg-type]
-    return url  # type: ignore[return-value]
+    return _strip_trailing_slash(url)  # type: ignore[return-value]
 
   def _access_token(self) -> str:
     """Retrieves the access token for the credentials."""
