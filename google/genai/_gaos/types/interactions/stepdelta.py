@@ -37,6 +37,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class StepDeltaTypedDict(TypedDict):
     delta: StepDeltaDataTypedDict
     index: int
+    r"""Required. The 0-based index of the step to which this delta applies."""
     event_id: NotRequired[str]
     r"""The event_id token to be used to resume the interaction stream, from
     this event.
@@ -50,6 +51,7 @@ class StepDelta(BaseModel):
     delta: StepDeltaData
 
     index: int
+    r"""Required. The 0-based index of the step to which this delta applies."""
 
     event_id: Optional[str] = None
     r"""The event_id token to be used to resume the interaction stream, from

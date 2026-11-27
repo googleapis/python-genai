@@ -35,6 +35,7 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 class StepStartTypedDict(TypedDict):
     index: int
+    r"""Required. The 0-based index of the step."""
     step: StepParam
     r"""A step in the interaction."""
     event_id: NotRequired[str]
@@ -46,6 +47,7 @@ class StepStartTypedDict(TypedDict):
 
 class StepStart(BaseModel):
     index: int
+    r"""Required. The 0-based index of the step."""
 
     step: Step
     r"""A step in the interaction."""
