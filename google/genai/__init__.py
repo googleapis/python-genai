@@ -21,11 +21,14 @@ from typing import Any
 from . import types
 from . import version
 from .client import Client
-
+from .errors import APIError, ClientError, ServerError
 
 __version__ = version.__version__
 
 __all__ = [
+    'APIError',
+    'ServerError',
+    'ClientError'
     'Client',
     'agents',
     'credentials',
