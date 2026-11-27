@@ -28,7 +28,7 @@ from ..basemodel import (
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Any, List, Literal, Optional
+from typing import Any, ClassVar, FrozenSet, List, Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -50,6 +50,8 @@ class OAuth2UpdateConfigParam(TypedDict):
 
 class OAuth2UpdateConfig(BaseModel):
     r"""Configuration for updating OAuth2 credentials."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"client_secret", "refresh_token"})
 
     client_id: Optional[str] = None
     r"""Optional. OAuth2 client ID."""
