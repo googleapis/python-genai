@@ -25,7 +25,7 @@ from ..basemodel import (
     current_serialization_methods_dump,
 )
 from pydantic import model_serializer
-from typing import Any, Dict, Optional
+from typing import Any, ClassVar, Dict, FrozenSet, Optional
 from typing_extensions import NotRequired, TypedDict
 
 
@@ -40,6 +40,8 @@ class ParallelAISearchConfigParam(TypedDict):
 
 class ParallelAISearchConfig(BaseModel):
     r"""Used to specify configuration for ParallelAISearch."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"api_key"})
 
     api_key: Optional[str] = None
     r"""Optional. The API key for ParallelAiSearch."""

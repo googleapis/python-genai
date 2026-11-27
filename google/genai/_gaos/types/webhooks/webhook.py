@@ -33,7 +33,7 @@ from ..basemodel import (
 from .signingsecret import SigningSecret, SigningSecretTypedDict
 from datetime import datetime
 from pydantic import model_serializer
-from typing import List, Literal, Optional, Union
+from typing import ClassVar, FrozenSet, List, Literal, Optional, Union
 from typing_extensions import NotRequired, TypedDict
 
 
@@ -103,6 +103,8 @@ class WebhookTypedDict(TypedDict):
 
 class Webhook(BaseModel):
     r"""A Webhook resource."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"new_signing_secret"})
 
     subscribed_events: List[WebhookSubscribedEvent]
     r"""Required. The events that the webhook is subscribed to.

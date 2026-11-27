@@ -29,7 +29,7 @@ from .allowedtools import AllowedTools, AllowedToolsParam
 import pydantic
 from pydantic import model_serializer
 from pydantic.functional_validators import AfterValidator
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, ClassVar, Dict, FrozenSet, List, Literal, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -53,6 +53,8 @@ class MCPServerParam(TypedDict):
 
 class MCPServer(BaseModel):
     r"""A MCPServer is a server that can be called by the model to perform actions."""
+
+    _sensitive_fields: ClassVar[FrozenSet[str]] = frozenset({"headers"})
 
     allowed_tools: Optional[List[AllowedTools]] = None
     r"""The allowed tools."""
