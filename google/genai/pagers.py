@@ -170,7 +170,9 @@ class Pager(_BasePager[T]):
 
   def __next__(self) -> T:
     """Returns the next item."""
-    if self._idx >= len(self):
+    while self._idx >= len(self):
+      # A list response may contain zero items while still carrying a
+      # next_page_token (AIP-158), so keep fetching pages until one has items.
       try:
         self.next_page()
       except IndexError:
@@ -227,7 +229,8 @@ class AsyncPager(_BasePager[T]):
 
   async def __anext__(self) -> T:
     """Returns the next item asynchronously."""
-    if self._idx >= len(self):
+    while self._idx >= len(self):
+      # See the sync Pager: empty pages with a next_page_token are valid.
       try:
         await self.next_page()
       except IndexError:
